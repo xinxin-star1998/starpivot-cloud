@@ -1,0 +1,101 @@
+﻿<template>
+  <ArtSearchBar
+    ref="searchBarRef"
+    v-model="formData"
+    :items="formItems"
+    :rules="rules"
+    @reset="handleReset"
+    @search="handleSearch"
+  >
+  </ArtSearchBar>
+</template>
+
+<script setup lang="ts">
+  interface Props {
+    modelValue: Record<string, any>
+  }
+  interface Emits {
+    (e: 'update:modelValue', value: Record<string, any>): void
+    (e: 'search', params: Record<string, any>): void
+    (e: 'reset'): void
+  }
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+
+  // 表单数据双向绑定
+  const searchBarRef = ref()
+  const formData = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
+  })
+
+  // 校验规则
+  const rules = {}
+
+  // 表单配置
+  const formItems = computed(() => [
+#foreach($column in $columns)
+#if($column.query)
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+#set($dictType=$column.dictType)
+    {
+      label: '${comment}',
+      key: '${column.javaField}',
+#if($column.htmlType == "input")
+      type: 'input',
+      placeholder: '请输入${comment}',
+      clearable: true
+#elseif(($column.htmlType == "select" || $column.htmlType == "radio") && "" != $dictType)
+      type: 'select',
+      props: {
+        placeholder: '请选择${comment}',
+        clearable: true
+        // 字典类型：${dictType}
+        // options: 需要从字典服务获取
+      }
+#elseif(($column.htmlType == "select" || $column.htmlType == "radio") && $dictType)
+      type: 'select',
+      props: {
+        placeholder: '请选择${comment}',
+        clearable: true,
+        options: [
+          { label: '请选择字典生成', value: '' }
+        ]
+      }
+#elseif($column.htmlType == "datetime" && $column.queryType != "BETWEEN")
+      type: 'date',
+      props: {
+        placeholder: '请选择${comment}',
+        clearable: true,
+        valueFormat: 'YYYY-MM-DD'
+      }
+#elseif($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+      type: 'daterange',
+      props: {
+        placeholder: ['开始日期', '结束日期'],
+        clearable: true,
+        valueFormat: 'YYYY-MM-DD',
+        rangeSeparator: '-'
+      }
+#end
+    },
+#end
+#end
+  ])
+
+  // 事件
+  function handleReset() {
+    emit('reset')
+  }
+
+  async function handleSearch() {
+    await searchBarRef.value.validate()
+    emit('search', formData.value)
+  }
+</script>
+

@@ -1,0 +1,98 @@
+﻿import request from '@/utils/http'
+
+/**
+ * ${functionName}实体类型
+ */
+export interface ${BusinessName} {
+  ${pkColumn.javaField}?: number
+#foreach ($column in $columns)
+    #if(!$table.isSuperColumn($column.javaField) && !$column.pk)
+  $column.javaField?: $column.javaType
+#end
+#end
+#if($table.sub)
+  ${subclassName}List?: ${subClassName}Sub[]
+#end
+}
+
+#if($table.sub)
+/**
+ * ${subTable.functionName}实体类型
+ */
+export interface ${subClassName}Sub {
+#foreach ($column in $subTable.columns)
+#if(!$table.isSuperColumn($column.javaField))
+  $column.javaField?: $column.javaType
+#end
+#end
+}
+#end
+
+/**
+ * ${functionName}搜索参数
+ */
+export interface ${BusinessName}SearchParams {
+#if($table.crud || $table.sub)
+  pageNum?: number
+  pageSize?: number
+#end
+#foreach ($column in $columns)
+#if($column.query)
+  $column.javaField?: $column.javaType
+#end
+#end
+}
+
+/**
+ * 获取${functionName}列表#if($table.tree)（树形，不分页）#else（分页）#end
+ */
+export function fetchGet${BusinessName}List(params: ${BusinessName}SearchParams) {
+#if($table.tree)
+  return request.post<${BusinessName}[]>({
+#else
+  return request.post<Api.Common.PaginatedResponse<${BusinessName}>>({
+#end
+    url: '/api/${moduleName}/${businessName}/list',
+    data: params
+  })
+}
+
+/**
+ * 根据ID获取${functionName}详情
+ */
+export function fetchGet${BusinessName}ById(${pkColumn.javaField}: number) {
+  return request.get<${BusinessName}>({
+    url: `/api/${moduleName}/${businessName}/\${${pkColumn.javaField}}`
+  })
+}
+
+/**
+ * 新增${functionName}
+ */
+export function fetchAdd${BusinessName}(data: ${BusinessName}) {
+  return request.post({
+    url: '/api/${moduleName}/${businessName}',
+    data
+  })
+}
+
+/**
+ * 修改${functionName}
+ */
+export function fetchUpdate${BusinessName}(data: ${BusinessName}) {
+  return request.put({
+    url: '/api/${moduleName}/${businessName}',
+    data
+  })
+}
+
+/**
+ * 删除${functionName}（支持单删和批量删除，请求体 ids）
+ */
+export function fetchDelete${BusinessName}(${pkColumn.javaField}s: number[]) {
+  return request.del({
+    url: '/api/${moduleName}/${businessName}/delete',
+    data: { ids: ${pkColumn.javaField}s }
+  })
+}
+

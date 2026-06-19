@@ -1,0 +1,274 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.system.mapper.SysUserMapper">
+
+    <resultMap type="cn.org.starpivot.system.domain.entity.SysUser" id="SysUserMap">
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="dept_id" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="userType" column="user_type" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="phonenumber" column="phonenumber" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="VARCHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="VARCHAR"/>
+        <result property="loginIp" column="login_ip" jdbcType="VARCHAR"/>
+        <result property="loginDate" column="login_date" jdbcType="TIMESTAMP"/>
+        <result property="pwdUpdateDate" column="pwd_update_date" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 鐢ㄦ埛鍙婂叾瑙掕壊鍏宠仈鏌ヨ鐨?ResultMap锛堜竴瀵瑰鍏崇郴锛?-->
+    <resultMap type="cn.org.starpivot.system.domain.entity.SysUser" id="UserWithRolesMap">
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="dept_id" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="userType" column="user_type" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="phonenumber" column="phonenumber" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="VARCHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="VARCHAR"/>
+        <result property="loginIp" column="login_ip" jdbcType="VARCHAR"/>
+        <result property="loginDate" column="login_date" jdbcType="TIMESTAMP"/>
+        <result property="pwdUpdateDate" column="pwd_update_date" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <!-- 瑙掕壊鍒楄〃锛堜竴瀵瑰鍏崇郴锛?-->
+        <collection property="roles" ofType="cn.org.starpivot.system.domain.entity.SysRole">
+            <result property="roleId" column="role_id" jdbcType="INTEGER"/>
+            <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+            <result property="roleKey" column="role_key" jdbcType="VARCHAR"/>
+            <result property="roleSort" column="role_sort" jdbcType="INTEGER"/>
+            <result property="dataScope" column="data_scope" jdbcType="VARCHAR"/>
+            <result property="menuCheckStrictly" column="menu_check_strictly" jdbcType="INTEGER"/>
+            <result property="deptCheckStrictly" column="dept_check_strictly" jdbcType="INTEGER"/>
+            <result property="status" column="role_status" jdbcType="VARCHAR"/>
+            <result property="delFlag" column="role_del_flag" jdbcType="VARCHAR"/>
+            <result property="createBy" column="role_create_by" jdbcType="VARCHAR"/>
+            <result property="createTime" column="role_create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateBy" column="role_update_by" jdbcType="VARCHAR"/>
+            <result property="updateTime" column="role_update_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="role_remark" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <!--
+        缁熶竴鏁版嵁鏉冮檺杩囨护鐗囨銆?
+        浣跨敤 choose 缁撳悎 dataScope/sqlFilter/deptIds/userDeptId/userId 鍙傛暟锛岄伩鍏?SQL 娉ㄥ叆骞跺噺灏戦噸澶嶄唬鐮併€?
+        娉ㄦ剰锛歱aram 鍓嶇紑涓?SysUserMapper 涓?Service 浼犲叆鐨勫弬鏁扮粨鏋勪繚鎸佷竴鑷淬€?
+    -->
+    <sql id="dataScopeFilter">
+        <!-- 鏁版嵁鏉冮檺杩囨护锛氫娇鐢╟hoose鏍囩閬垮厤SQL娉ㄥ叆椋庨櫓 -->
+        <choose>
+            <when test="param.dataScope != null and param.dataScope.sqlFilter == '1=1'">
+                <!-- 鍏ㄩ儴鏁版嵁锛屼笉闇€瑕侀澶栨潯浠?-->
+            </when>
+            <!-- 鏃犳暟鎹潈闄愶細MySQL 涓嶆敮鎸?IN ()锛岀敤涓嶅彲鑳芥垚绔嬬殑鏉′欢锛坉ept_id 閫氬父涓烘鏁?FK锛?-->
+            <when test="param.dataScope != null and param.dataScope.sqlFilter == 'EMPTY_IN'">
+                AND u.dept_id = -1
+            </when>
+            <when test="param.dataScope != null and param.deptIds != null and param.deptIds.size() > 0">
+                AND u.dept_id IN
+                <foreach collection="param.deptIds" item="deptId" open="(" separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </when>
+            <when test="param.userDeptId != null">
+                AND u.dept_id = #{param.userDeptId}
+            </when>
+            <when test="param.userId != null">
+                AND u.create_by = #{param.userId}
+            </when>
+        </choose>
+    </sql>
+    <select id="selectPageList" resultMap="SysUserMap">
+        select 
+            distinct u.user_id,
+            u.dept_id,
+            u.user_name,
+            u.nick_name,
+            u.user_type,
+            u.email,
+            u.phonenumber,
+            u.sex,
+            u.avatar,
+            u.status,
+            u.login_ip,
+            u.login_date,
+            u.pwd_update_date,
+            u.create_by,
+            u.create_time,
+            u.update_by,
+            u.update_time,
+            u.del_flag,
+            u.remark
+        from sys_user u
+        <where>
+            u.del_flag = '0'
+            <if test="param.userReqBo.userName != null and param.userReqBo.userName != ''">
+                and u.user_name like concat('%',#{param.userReqBo.userName},'%')
+            </if>
+            <if test="param.userReqBo.nickName != null and param.userReqBo.nickName != ''">
+                and u.nick_name like concat('%',#{param.userReqBo.nickName},'%')
+            </if>
+            <if test="param.userReqBo.status != null and param.userReqBo.status != ''">
+                and u.status = #{param.userReqBo.status}
+            </if>
+            <if test="param.userReqBo.phonenumber != null and param.userReqBo.phonenumber != ''">
+                and u.phonenumber like concat('%',#{param.userReqBo.phonenumber},'%')
+            </if>
+            <if test="param.userReqBo.email != null and param.userReqBo.email != ''">
+                    and u.email like concat('%',#{param.userReqBo.email},'%')
+            </if>
+            <if test="param.userReqBo.sex != null and param.userReqBo.sex != ''">
+                and u.sex = #{param.userReqBo.sex}
+            </if>
+            <if test="param.userReqBo.deptId != null">
+                and u.dept_id = #{param.userReqBo.deptId}
+            </if>
+            <include refid="dataScopeFilter"/>
+        </where>
+        order by u.create_time desc
+    </select>
+    <select id="getRolesByUserId" resultType="cn.org.starpivot.system.domain.entity.SysRole">
+        SELECT r.*
+        FROM sys_role r
+                 INNER JOIN sys_user_role ur ON r.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND r.del_flag = '0'
+          AND (r.status = '0' OR r.role_key = 'admin')
+        ORDER BY r.create_time desc
+    </select>
+
+    <!-- 鉁?浣跨敤 LEFT JOIN 鏇夸唬澶氭鏌ヨ锛屼竴娆℃€ц幏鍙栫敤鎴峰強鍏惰鑹蹭俊鎭?-->
+    <select id="selectUserWithRoles" resultMap="UserWithRolesMap">
+        SELECT 
+            u.user_id,
+            u.dept_id,
+            u.user_name,
+            u.nick_name,
+            u.user_type,
+            u.email,
+            u.phonenumber,
+            u.sex,
+            u.avatar,
+            u.password,
+            u.status,
+            u.del_flag,
+            u.login_ip,
+            u.login_date,
+            u.pwd_update_date,
+            u.create_by,
+            u.create_time,
+            u.update_by,
+            u.update_time,
+            u.remark,
+            r.role_id,
+            r.role_name,
+            r.role_key,
+            r.role_sort,
+            r.data_scope,
+            r.menu_check_strictly,
+            r.dept_check_strictly,
+            r.status as role_status,
+            r.del_flag as role_del_flag,
+            r.create_by as role_create_by,
+            r.create_time as role_create_time,
+            r.update_by as role_update_by,
+            r.update_time as role_update_time,
+            r.remark as role_remark
+        FROM sys_user u
+        LEFT JOIN sys_user_role ur ON u.user_id = ur.user_id
+        LEFT JOIN sys_role r ON ur.role_id = r.role_id 
+            AND r.del_flag = '0' 
+            AND (r.status = '0' OR r.role_key = 'admin')
+        WHERE u.user_id = #{userId}
+          AND u.del_flag = '0'
+        ORDER BY r.create_time DESC
+    </select>
+     <select id="getMenuByUserId" resultType="cn.org.starpivot.system.domain.entity.SysMenu">
+         SELECT DISTINCT p.*
+         FROM sys_menu p
+                  INNER JOIN sys_role_menu rp ON p.menu_id = rp.menu_id
+                  INNER JOIN sys_user_role ur ON rp.role_id = ur.role_id
+         WHERE ur.user_id = #{userId}
+           AND p.visible = '0'
+           AND p.status = '0'
+        ORDER BY p.order_num
+    </select>
+    <select id="getUserListByRoleId" resultType="cn.org.starpivot.system.domain.entity.SysUser">
+        select
+            u.*
+        from sys_user u
+        inner join sys_user_role ur on u.user_id = ur.user_id
+        <where>
+            u.del_flag = '0' and u.status = '0'
+            <if test="param.assignUserReqBo.roleId != null">
+                and ur.role_id = #{param.assignUserReqBo.roleId}
+            </if>
+            <if test="param.assignUserReqBo.userName != null and param.assignUserReqBo.userName != ''">
+                and u.user_name like concat('%',#{param.assignUserReqBo.userName},'%')
+            </if>
+            <if test="param.assignUserReqBo.phonenumber != null and param.assignUserReqBo.phonenumber != ''">
+                and u.phonenumber like concat('%',#{param.assignUserReqBo.phonenumber},'%')
+            </if>
+            <include refid="dataScopeFilter"/>
+        </where>
+        order by u.create_time desc
+    </select>
+    <select id="unallocatedList" resultType="cn.org.starpivot.system.domain.entity.SysUser">
+        select
+        u.*
+        from sys_user u
+        <where>
+            u.del_flag = '0' and u.status = '0'
+            <if test="param.assignUserReqBo.roleId != null">
+                AND NOT EXISTS (
+                    SELECT 1 FROM sys_user_role ur2
+                    WHERE ur2.user_id = u.user_id
+                    AND ur2.role_id = #{param.assignUserReqBo.roleId}
+                )
+            </if>
+            <if test="param.assignUserReqBo.userName != null and param.assignUserReqBo.userName != ''">
+                and u.user_name like concat('%',#{param.assignUserReqBo.userName},'%')
+            </if>
+            <if test="param.assignUserReqBo.phonenumber != null and param.assignUserReqBo.phonenumber != ''">
+                and u.phonenumber like concat('%',#{param.assignUserReqBo.phonenumber},'%')
+            </if>
+            <include refid="dataScopeFilter"/>
+        </where>
+        order by u.create_time desc
+    </select>
+    <select id="selectDeptIdByUserId" resultType="java.lang.Long">
+        select dept_id
+        from sys_user
+        where del_flag = '0' and status = '0' and user_id = #{userId}
+    </select>
+
+    <!-- 鎸夋湀浠界粺璁℃柊澧炵敤鎴锋暟 -->
+    <select id="countByMonthRange" resultType="java.util.HashMap">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m') as yearMonth,
+            COUNT(*) as count
+        FROM sys_user
+        WHERE del_flag = '0'
+          AND create_time &gt;= #{start}
+          AND create_time &lt; #{end}
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY yearMonth
+    </select>
+</mapper>

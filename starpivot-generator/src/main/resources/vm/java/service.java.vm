@@ -1,0 +1,78 @@
+﻿package ${servicePackage};
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
+#if($table.crud || $table.sub)
+import cn.org.starpivot.common.domain.PageResponse;
+import ${boPackage}.${ClassName}ReqPageBo;
+#end
+#if($table.tree)
+import ${boPackage}.${ClassName}ReqBo;
+#end
+import ${voPackage}.${ClassName}VO;
+import ${entityPackage}.${ClassName};
+import ${dtoPackage}.${ClassName}DTO;
+#if($table.sub)
+import ${dtoPackage}.${subClassName}DTO;
+#end
+
+/**
+ * ${functionName}Service接口
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+public interface I${ClassName}Service extends IService<${ClassName}>
+{
+#if($table.crud || $table.sub)
+    /**
+     * 分页查询${functionName}列表
+     * 
+     * @param ${className}ReqPageBo 查询条件
+     * @return 分页结果
+     */
+    PageResponse<${ClassName}VO> select${ClassName}Page(${ClassName}ReqPageBo ${className}ReqPageBo);
+#end
+#if($table.tree)
+    /**
+     * 查询${functionName}树形列表（不分页）
+     *
+     * @param ${className}ReqBo 查询条件
+     * @return 树形列表
+     */
+    List<${ClassName}VO> select${ClassName}TreeList(${ClassName}ReqBo ${className}ReqBo);
+#end
+
+    /**
+     * 根据主键查询${functionName}详细信息
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return ${functionName}信息
+     */
+    ${ClassName}VO select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+
+    /**
+     * 新增${functionName}
+     * 
+     * @param ${className}DTO ${functionName}信息
+     * @return 是否成功
+     */
+    boolean insert${ClassName}(${ClassName}DTO ${className}DTO);
+
+    /**
+     * 修改${functionName}
+     * 
+     * @param ${className}DTO ${functionName}信息
+     * @return 是否成功
+     */
+    boolean update${ClassName}(${ClassName}DTO ${className}DTO);
+
+    /**
+     * 批量删除${functionName}
+     * 
+     * @param ${pkColumn.javaField}s 需要删除的${functionName}主键数组
+     * @return 是否成功
+     */
+    boolean delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
+}
+

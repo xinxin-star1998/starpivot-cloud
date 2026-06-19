@@ -1,0 +1,174 @@
+﻿<!-- ${functionName}管理页面（树形）- 纯 Vue3 + Element Plus，无项目 Art 依赖 -->
+<template>
+  <div class="${businessName}-page">
+    <${BusinessName}Search v-model="queryParams" @search="handleSearch" @reset="resetSearch" />
+
+    <ElCard class="table-card" shadow="never">
+      <div class="table-toolbar">
+        <ElSpace wrap>
+          <ElButton type="primary" :icon="Plus" @click="showDialog('add')">新增${functionName}</ElButton>
+          <ElButton :icon="Sort" @click="toggleExpandAll" plain>展开/折叠</ElButton>
+          <ElButton :icon="Refresh" @click="loadList" :loading="loading">刷新</ElButton>
+        </ElSpace>
+      </div>
+
+      <ElTable
+        ref="tableRef"
+        v-if="refreshTable"
+        v-loading="loading"
+        :data="tableData"
+        row-key="${treeCode}"
+        border
+        stripe
+        :default-expand-all="isExpandAll"
+        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      >
+#foreach($column in $columns)
+#if($column.pk)
+#elseif($column.list && $column.htmlType == "datetime")
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" width="180" sortable align="center" />
+#elseif($column.list && "" != $column.dictType)
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" align="center" min-width="100">
+          <template #default="{ row }">
+            {{ row.${column.javaField} ?? '-' }}
+          </template>
+        </ElTableColumn>
+#elseif($column.list && "" != $column.javaField)
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" align="center" />
+#end
+#end
+        <ElTableColumn label="操作" align="center" width="180" fixed="right">
+          <template #default="{ row }">
+            <ElButton type="primary" link size="small" @click="showDialog('edit', row)">编辑</ElButton>
+            <ElButton type="primary" link size="small" @click="showDialog('add', row)">新增</ElButton>
+            <ElButton type="danger" link size="small" @click="delete${BusinessName}(row)">删除</ElButton>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+
+      <${BusinessName}Dialog
+        v-model:visible="dialogVisible"
+        :type="dialogType"
+        :${businessName}-data="current${BusinessName}Data"
+        @submit="handleDialogSubmit"
+      />
+    </ElCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import {nextTick, onMounted, ref} from 'vue'
+  import {ElMessage, ElMessageBox} from 'element-plus'
+
+  import {fetchDelete${BusinessName}} from '@/api/'
+
+  defineOptions({ name: '${BusinessName}' })
+
+  type DialogType = 'add' | 'edit'
+
+  const dialogType = ref<DialogType>('add')
+  const dialogVisible = ref(false)
+  const current${BusinessName}Data = ref<Partial<${BusinessName}>>({})
+  const isExpandAll = ref(true)
+  const refreshTable = ref(true)
+  const tableRef = ref()
+  const loading = ref(false)
+  const tableData = ref<${BusinessName}[]>([])
+
+  const queryParams = ref<Record<string, any>>({
+#foreach ($column in $columns)
+#if($column.query)
+    $column.javaField: undefined,
+#end
+#end
+  })
+
+  const loadList = async () => {
+    loading.value = true
+    try {
+      const res = await fetchGet${BusinessName}List({
+        ...queryParams.value
+      })
+      const list = res?.records ?? res?.rows ?? []
+      tableData.value = Array.isArray(list) ? list : []
+    } catch (e) {
+      console.error('获取${functionName}列表失败:', e)
+      ElMessage.error('获取${functionName}列表失败')
+      tableData.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(() => loadList())
+
+  const handleSearch = (params: Record<string, any>) => {
+    queryParams.value = { ...queryParams.value, ...params }
+    loadList()
+  }
+
+  const resetSearch = () => {
+    queryParams.value = {
+#foreach ($column in $columns)
+#if($column.query)
+      $column.javaField: undefined,
+#end
+#end
+    }
+    loadList()
+  }
+
+  const showDialog = (type: DialogType, row?: ${BusinessName}) => {
+    dialogType.value = type
+    if (type === 'add' && row) {
+      current${BusinessName}Data.value = { ${treeParentCode}: row.${treeCode} }
+    } else {
+      current${BusinessName}Data.value = row ? { ...row } : {}
+    }
+    nextTick(() => {
+      dialogVisible.value = true
+    })
+  }
+
+  const delete${BusinessName} = async (row: ${BusinessName}) => {
+    try {
+      await ElMessageBox.confirm(`确定要删除该${functionName}吗？`, '删除${functionName}', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      })
+      await fetchDelete${BusinessName}([row.${pkColumn.javaField}])
+      ElMessage.success('删除成功')
+      loadList()
+    } catch (err) {
+      if (err !== 'cancel') {
+        console.error('删除${functionName}失败:', err)
+        ElMessage.error('删除失败')
+      }
+    }
+  }
+
+  const toggleExpandAll = () => {
+    refreshTable.value = false
+    isExpandAll.value = !isExpandAll.value
+    nextTick(() => {
+      refreshTable.value = true
+    })
+  }
+
+  const handleDialogSubmit = () => {
+    dialogVisible.value = false
+    current${BusinessName}Data.value = {}
+    loadList()
+  }
+</script>
+
+<style scoped lang="scss">
+  .${businessName}-page {
+    padding: 20px;
+  }
+  .table-toolbar {
+    margin-bottom: 16px;
+  }
+</style>
+

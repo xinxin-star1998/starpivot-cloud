@@ -1,0 +1,246 @@
+﻿<!-- ${functionName}管理页面 - 纯 Vue3 + Element Plus，无项目 Art 依赖 -->
+<template>
+  <div class="${businessName}-page">
+    <!-- 搜索栏 -->
+    <${BusinessName}Search v-model="queryParams" @search="handleSearch" @reset="resetSearch" />
+
+    <ElCard class="table-card" shadow="never">
+      <!-- 工具栏 -->
+      <div class="table-toolbar">
+        <ElSpace wrap>
+          <ElButton type="primary" :icon="Plus" @click="showDialog('add')">新增${functionName}</ElButton>
+#if($table.crud || $table.sub)
+          <ElButton
+            type="danger"
+            :disabled="selectedRows.length === 0"
+            :icon="Delete"
+            @click="handleBatchDelete"
+          >
+            批量删除
+          </ElButton>
+#end
+          <ElButton :icon="Refresh" @click="getList" :loading="loading">刷新</ElButton>
+        </ElSpace>
+      </div>
+
+      <!-- 表格 -->
+      <ElTable
+        v-loading="loading"
+        :data="tableData"
+        border
+        stripe
+        @selection-change="handleSelectionChange"
+      >
+        <ElTableColumn type="selection" width="55" align="center" />
+#if($table.crud || $table.sub)
+        <ElTableColumn type="index" width="60" label="序号" align="center" />
+#end
+#foreach($column in $columns)
+#if($column.pk)
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" width="100" sortable align="center" />
+#elseif($column.list && $column.htmlType == "datetime")
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" width="180" sortable align="center" />
+#elseif($column.list && "" != $column.dictType)
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" align="center" min-width="100">
+          <template #default="{ row }">
+            <!-- 字典类型：$column.dictType，可接入字典标签显示 -->
+            {{ row.${column.javaField} ?? '-' }}
+          </template>
+        </ElTableColumn>
+#elseif($column.list && "" != $column.javaField)
+        <ElTableColumn prop="${column.javaField}" label="${column.columnComment}" align="center" show-overflow-tooltip #if($column.javaField.length() > 10)min-width="150"#else width="120"#end />
+#end
+#end
+        <ElTableColumn label="操作" align="center" width="150" fixed="right">
+          <template #default="{ row }">
+            <ElButton type="primary" link size="small" @click="showDialog('edit', row)">编辑</ElButton>
+            <ElButton type="danger" link size="small" @click="delete${BusinessName}(row)">删除</ElButton>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+
+      <!-- 分页 -->
+      <div class="pagination-wrapper">
+        <ElPagination
+          v-model:current-page="pagination.pageNum"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+
+      <!-- ${functionName}弹窗 -->
+      <${BusinessName}Dialog
+        v-model:visible="dialogVisible"
+        :type="dialogType"
+        :${businessName}-data="current${BusinessName}Data"
+        @submit="handleDialogSubmit"
+      />
+    </ElCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { ref, nextTick } from 'vue'
+  import { Plus, Delete, Refresh } from '@element-plus/icons-vue'
+  import { ElMessageBox, ElMessage } from 'element-plus'
+  import { fetchGet${BusinessName}List, fetchDelete${BusinessName}, type ${BusinessName} } from '@/api/${moduleName}/${businessName}'
+  import ${BusinessName}Search from './modules/${businessName}-search.vue'
+  import ${BusinessName}Dialog from './modules/${businessName}-dialog.vue'
+
+  defineOptions({ name: '${BusinessName}' })
+
+  type DialogType = 'add' | 'edit'
+
+  const dialogType = ref<DialogType>('add')
+  const dialogVisible = ref(false)
+  const current${BusinessName}Data = ref<Partial<${BusinessName}>>({})
+  const selectedRows = ref<${BusinessName}[]>([])
+  const loading = ref(false)
+  const tableData = ref<${BusinessName}[]>([])
+
+  const queryParams = ref<Record<string, any>>({
+#foreach ($column in $columns)
+#if($column.query)
+    $column.javaField: undefined,
+#end
+#end
+  })
+
+  const pagination = ref({
+    pageNum: 1,
+    pageSize: 20,
+    total: 0
+  })
+
+  /** 获取列表数据 */
+  const getList = async () => {
+    loading.value = true
+    try {
+      const res = await fetchGet${BusinessName}List({
+        pageNum: pagination.value.pageNum,
+        pageSize: pagination.value.pageSize,
+        ...queryParams.value
+      })
+      const list = res?.records ?? res?.rows ?? []
+      tableData.value = Array.isArray(list) ? list : []
+      pagination.value.total = res?.total ?? 0
+    } catch (e) {
+      console.error('获取${functionName}列表失败:', e)
+      ElMessage.error('获取${functionName}列表失败')
+      tableData.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const handleSizeChange = (size: number) => {
+    pagination.value.pageSize = size
+    pagination.value.pageNum = 1
+    getList()
+  }
+
+  const handleCurrentChange = (page: number) => {
+    pagination.value.pageNum = page
+    getList()
+  }
+
+  const handleSearch = (params: Record<string, any>) => {
+    queryParams.value = { ...queryParams.value, ...params }
+    pagination.value.pageNum = 1
+    getList()
+  }
+
+  const resetSearch = () => {
+    queryParams.value = {
+#foreach ($column in $columns)
+#if($column.query)
+      $column.javaField: undefined,
+#end
+#end
+    }
+    pagination.value.pageNum = 1
+    getList()
+  }
+
+  const showDialog = (type: DialogType, row?: ${BusinessName}) => {
+    dialogType.value = type
+    current${BusinessName}Data.value = row ? { ...row } : {}
+    nextTick(() => {
+      dialogVisible.value = true
+    })
+  }
+
+  const delete${BusinessName} = async (row: ${BusinessName}) => {
+    try {
+      await ElMessageBox.confirm(`确定要删除该${functionName}吗？`, '删除${functionName}', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      })
+      await fetchDelete${BusinessName}([row.${pkColumn.javaField}])
+      ElMessage.success('删除成功')
+      getList()
+    } catch (err) {
+      if (err !== 'cancel') {
+        console.error('删除${functionName}失败:', err)
+        ElMessage.error('删除失败')
+      }
+    }
+  }
+
+#if($table.crud || $table.sub)
+  const handleBatchDelete = () => {
+    if (selectedRows.value.length === 0) {
+      ElMessage.warning('请选择要删除的${functionName}')
+      return
+    }
+    const names = selectedRows.value.map((r) => r.${pkColumn.javaField}).join('、')
+    ElMessageBox.confirm(`确定要删除以下${functionName}吗？\n${names}`, '批量删除${functionName}', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'error'
+    })
+      .then(() => {
+        const ids = selectedRows.value.map((r) => r.${pkColumn.javaField})
+        return fetchDelete${BusinessName}(ids)
+      })
+      .then(() => {
+        selectedRows.value = []
+        ElMessage.success('删除成功')
+        getList()
+      })
+      .catch(() => {})
+  }
+#end
+
+  const handleDialogSubmit = () => {
+    dialogVisible.value = false
+    current${BusinessName}Data.value = {}
+    getList()
+  }
+
+  const handleSelectionChange = (rows: ${BusinessName}[]) => {
+    selectedRows.value = rows
+  }
+
+  getList()
+</script>
+
+<style scoped lang="scss">
+  .${businessName}-page {
+    padding: 20px;
+  }
+  .table-toolbar {
+    margin-bottom: 16px;
+  }
+  .pagination-wrapper {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+</style>
+

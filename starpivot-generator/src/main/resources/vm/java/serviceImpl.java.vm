@@ -1,0 +1,235 @@
+﻿package ${serviceImplPackage};
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.exception.BizException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+#if($table.crud || $table.sub)
+import ${boPackage}.${ClassName}ReqPageBo;
+#end
+#if($table.tree)
+import ${boPackage}.${ClassName}ReqBo;
+#end
+import ${voPackage}.${ClassName}VO;
+#if($table.sub)
+import java.util.ArrayList;
+import ${entityPackage}.${subClassName};
+import ${dtoPackage}.${subClassName}DTO;
+#end
+import ${mapperPackage}.${ClassName}Mapper;
+import ${entityPackage}.${ClassName};
+import ${dtoPackage}.${ClassName}DTO;
+import ${servicePackage}.I${ClassName}Service;
+#if($table.sub)
+import ${mapperPackage}.${subClassName}Mapper;
+#end
+
+/**
+ * ${functionName}Service业务层实现
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ${ClassName}ServiceImpl extends ServiceImpl<${ClassName}Mapper, ${ClassName}> implements I${ClassName}Service
+{
+#if($table.sub)
+    private final ${subClassName}Mapper ${subclassName}Mapper;
+#end
+
+#if($table.crud || $table.sub)
+    /**
+     * 分页查询${functionName}列表
+     * 
+     * @param ${className}ReqPageBo 查询条件
+     * @return 分页结果
+     */
+    @Override
+    public PageResponse<${ClassName}VO> select${ClassName}Page(${ClassName}ReqPageBo ${className}ReqPageBo)
+    {
+        PageResponse<${ClassName}VO> pageResponse = new PageResponse<>();
+        Page<${ClassName}> page = new Page<>(${className}ReqPageBo.getPageNum(), ${className}ReqPageBo.getPageSize());
+        IPage<${ClassName}> ${className}Page = baseMapper.selectPageList(page, ${className}ReqPageBo);
+        
+        // 转换为VO
+        java.util.List<${ClassName}VO> voList = ${className}Page.getRecords().stream()
+                .map(this::convertToVO)
+                .collect(java.util.stream.Collectors.toList());
+        
+        pageResponse.setTotal(${className}Page.getTotal());
+        pageResponse.setRows(voList);
+        pageResponse.setPageNum(${className}Page.getCurrent());
+        pageResponse.setPageSize(${className}Page.getSize());
+        pageResponse.setPageCount(${className}Page.getPages());
+        return pageResponse;
+    }
+#end
+#if($table.tree)
+#set($TreeParentCap=$treeParentCode.substring(0,1).toUpperCase() + ${treeParentCode.substring(1)})
+#set($TreeCodeCap=$treeCode.substring(0,1).toUpperCase() + ${treeCode.substring(1)})
+
+    private static final Long TREE_ROOT_PARENT_ID = 0L;
+
+    /**
+     * 查询${functionName}树形列表
+     *
+     * @param ${className}ReqBo 查询条件
+     * @return 树形列表
+     */
+    @Override
+    public java.util.List<${ClassName}VO> select${ClassName}TreeList(${ClassName}ReqBo ${className}ReqBo)
+    {
+        java.util.List<${ClassName}> list = baseMapper.selectQueryList(${className}ReqBo);
+        java.util.List<${ClassName}VO> voList = list.stream()
+                .map(this::convertToVO)
+                .collect(java.util.stream.Collectors.toList());
+        return buildTree(voList, TREE_ROOT_PARENT_ID);
+    }
+
+    private java.util.List<${ClassName}VO> buildTree(java.util.List<${ClassName}VO> all, Long parentId)
+    {
+        java.util.List<${ClassName}VO> tree = new java.util.ArrayList<>();
+        for (${ClassName}VO node : all)
+        {
+            if (node.get${TreeParentCap}() != null && node.get${TreeParentCap}().equals(parentId))
+            {
+                java.util.List<${ClassName}VO> children = buildTree(all, node.get${TreeCodeCap}());
+                if (!children.isEmpty())
+                {
+                    node.setChildren(children);
+                }
+                tree.add(node);
+            }
+        }
+        return tree;
+    }
+#end
+
+    /**
+     * 根据主键查询${functionName}详细信息
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return ${functionName}信息
+     */
+    @Override
+    public ${ClassName}VO select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField})
+    {
+        ${ClassName} ${className} = this.getById(${pkColumn.javaField});
+        if (${className} == null) {
+            throw new BizException("${functionName}不存在");
+        }
+        return convertToVO(${className});
+    }
+
+    /**
+     * 新增${functionName}
+     * 
+     * @param ${className}DTO ${functionName}信息
+     * @return 是否成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean insert${ClassName}(${ClassName}DTO ${className}DTO)
+    {
+        ${ClassName} ${className} = new ${ClassName}();
+        BeanUtils.copyProperties(${className}DTO, ${className});
+#if($table.sub)
+        boolean success = this.save(${className});
+        if (success) {
+            insert${subClassName}(${className}.get${pkColumn.capJavaField}(), ${className}DTO.get${subClassName}List());
+        }
+        return success;
+#else
+        return this.save(${className});
+#end
+    }
+
+    /**
+     * 修改${functionName}
+     * 
+     * @param ${className}DTO ${functionName}信息
+     * @return 是否成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean update${ClassName}(${ClassName}DTO ${className}DTO)
+    {
+        ${ClassName} ${className} = this.getById(${className}DTO.get${pkColumn.capJavaField}());
+        if (${className} == null) {
+            throw new BizException("${functionName}不存在");
+        }
+        
+        BeanUtils.copyProperties(${className}DTO, ${className}, "${pkColumn.javaField}");
+#if($table.sub)
+        ${subclassName}Mapper.delete(new LambdaQueryWrapper<${subClassName}>().eq(${subClassName}::get${subTableFkClassName}, ${className}.get${pkColumn.capJavaField}()));
+        insert${subClassName}(${className}.get${pkColumn.capJavaField}(), ${className}DTO.get${subClassName}List());
+#end
+        return this.updateById(${className});
+    }
+
+    /**
+     * 批量删除${functionName}
+     * 
+     * @param ${pkColumn.javaField}s 需要删除的${functionName}主键数组
+     * @return 是否成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s)
+    {
+#if($table.sub)
+        ${subclassName}Mapper.delete(new LambdaQueryWrapper<${subClassName}>().in(${subClassName}::get${subTableFkClassName}, java.util.Arrays.asList(${pkColumn.javaField}s)));
+#end
+        return this.removeByIds(java.util.Arrays.asList(${pkColumn.javaField}s));
+    }
+#if($table.sub)
+
+    /**
+     * 新增${subTable.functionName}信息
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @param ${subclassName}List ${subTable.functionName}列表
+     */
+    private void insert${subClassName}(${pkColumn.javaType} ${pkColumn.javaField}, java.util.List<${subClassName}DTO> ${subclassName}List)
+    {
+        if (${subclassName}List != null && !${subclassName}List.isEmpty())
+        {
+            java.util.List<${subClassName}> list = new ArrayList<>();
+            for (${subClassName}DTO ${subclassName}DTO : ${subclassName}List)
+            {
+                ${subClassName} ${subclassName} = new ${subClassName}();
+                BeanUtils.copyProperties(${subclassName}DTO, ${subclassName});
+                ${subclassName}.set${subTableFkClassName}(${pkColumn.javaField});
+                list.add(${subclassName});
+            }
+            if (!list.isEmpty())
+            {
+                ${subclassName}Mapper.batch${subClassName}(list);
+            }
+        }
+    }
+#end
+
+    /**
+     * 转换为VO
+     * 
+     * @param ${className} 实体对象
+     * @return VO对象
+     */
+    private ${ClassName}VO convertToVO(${ClassName} ${className})
+    {
+        ${ClassName}VO vo = new ${ClassName}VO();
+        BeanUtils.copyProperties(${className}, vo);
+        return vo;
+    }
+}
+

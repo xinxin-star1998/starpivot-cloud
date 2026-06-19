@@ -1,0 +1,110 @@
+﻿<template>
+  <ElCard class="search-card" shadow="never">
+    <ElForm ref="formRef" :model="formData" :inline="true" label-width="auto" class="search-form">
+#foreach($column in $columns)
+#if($column.query)
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+#set($dictType=$column.dictType)
+      <ElFormItem label="${comment}" prop="${column.javaField}">
+#if($column.htmlType == "input")
+        <ElInput
+          v-model="formData.${column.javaField}"
+          placeholder="请输入${comment}"
+          clearable
+          @keyup.enter="handleSearch"
+        />
+#elseif(($column.htmlType == "select" || $column.htmlType == "radio") && "" != $dictType)
+        <ElSelect v-model="formData.${column.javaField}" placeholder="请选择${comment}" clearable style="width: 100%">
+          <!-- 字典类型：${dictType}，需从字典服务获取 options -->
+          <ElOption label="请选择字典生成" value="" />
+        </ElSelect>
+#elseif(($column.htmlType == "select" || $column.htmlType == "radio") && $dictType)
+        <ElSelect v-model="formData.${column.javaField}" placeholder="请选择${comment}" clearable style="width: 100%">
+          <ElOption label="请选择字典生成" value="" />
+        </ElSelect>
+#elseif($column.htmlType == "datetime" && $column.queryType != "BETWEEN")
+        <ElDatePicker
+          v-model="formData.${column.javaField}"
+          type="date"
+          placeholder="请选择${comment}"
+          clearable
+          value-format="YYYY-MM-DD"
+          style="width: 100%"
+        />
+#elseif($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+        <ElDatePicker
+          v-model="formData.${column.javaField}"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          clearable
+          value-format="YYYY-MM-DD"
+          style="width: 100%"
+        />
+#end
+      </ElFormItem>
+#end
+#end
+      <ElFormItem>
+        <ElButton type="primary" :icon="Search" @click="handleSearch">搜索</ElButton>
+        <ElButton :icon="Refresh" @click="handleReset">重置</ElButton>
+      </ElFormItem>
+    </ElForm>
+  </ElCard>
+</template>
+
+<script setup lang="ts">
+  import { ref, computed } from 'vue'
+  import { Search, Refresh } from '@element-plus/icons-vue'
+  import type { FormInstance } from 'element-plus'
+
+  interface Props {
+    modelValue: Record<string, any>
+  }
+  interface Emits {
+    (e: 'update:modelValue', value: Record<string, any>): void
+    (e: 'search', params: Record<string, any>): void
+    (e: 'reset'): void
+  }
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+
+  const formRef = ref<FormInstance>()
+  const formData = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
+  })
+
+  function handleReset() {
+    formData.value = {
+#foreach($column in $columns)
+#if($column.query)
+      $column.javaField: undefined,
+#end
+#end
+    }
+    emit('reset')
+  }
+
+  function handleSearch() {
+    emit('search', { ...formData.value })
+  }
+</script>
+
+<style scoped lang="scss">
+  .search-card {
+    margin-bottom: 16px;
+  }
+  .search-form {
+    :deep(.el-form-item) {
+      margin-bottom: 0;
+    }
+  }
+</style>
+

@@ -1,0 +1,65 @@
+server:
+  port: 9202
+
+spring:
+  application:
+    name: starpivot-file
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        file-extension: yaml
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DB:star_pivot}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    connect-timeout: 10s
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 2
+      logic-not-delete-value: 0
+
+starpivot:
+  jwt:
+    secret: ${JWT_SECRET:Dj4G8272xJONkOqkn1pM8q1n+U5MPLrRUCjXun3/Yeo=}
+    expire: ${JWT_EXPIRE:7200000}
+
+oss:
+  enabled: ${OSS_ENABLED:true}
+  endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com} # OSS 服务端点，例如：oss-cn-hangzhou.aliyuncs.com
+  access-key-id: ${OSS_ACCESS_KEY_ID:LTAI5tG8uSJeTeuRYEY4x3nG} # AccessKey ID
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:UdbPwjfPHoobovEhJ9hsZ3c9sdWqGR} # AccessKey Secret
+  url-prefix: ${OSS_URL_PREFIX:} # 访问文件的前缀（前端展示用，可选，为空则使用默认格式）
+  bucket-name: ${OSS_BUCKET_NAME:star-pivot}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    cn.org.starpivot: debug

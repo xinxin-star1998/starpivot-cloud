@@ -1,0 +1,311 @@
+﻿<!-- ${functionName}管理页面 -->
+<template>
+  <div class="${businessName}-page art-full-height">
+    <!-- 搜索栏 -->
+    <${BusinessName}Search v-model="searchForm" @search="handleSearch" @reset="resetSearchParams"></${BusinessName}Search>
+
+    <ElCard class="art-table-card" shadow="never">
+      <!-- 表格头部 -->
+      <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
+        <template #left>
+          <ElSpace wrap>
+            <ElButton @click="showDialog('add')" v-ripple v-auth="'${permissionPrefix}:add'">新增${functionName}</ElButton>
+#if($table.crud || $table.sub)
+            <ElButton
+              type="danger"
+              :disabled="selectedRows.length === 0"
+              @click="handleBatchDelete"
+              v-ripple
+              v-auth="'${permissionPrefix}:delete'"
+            >
+              批量删除
+            </ElButton>
+#end
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
+
+      <!-- 表格 -->
+      <ArtTable
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="pagination"
+        @selection-change="handleSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      >
+      </ArtTable>
+
+      <!-- ${functionName}弹窗 -->
+      <${BusinessName}Dialog
+        v-model:visible="dialogVisible"
+        :type="dialogType"
+        :${businessName}-data="current${BusinessName}Data"
+        @submit="handleDialogSubmit"
+      />
+    </ElCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import {useTable} from '@/hooks/core/useTable'
+  import {useAuth} from '@/hooks/core/useAuth'
+
+  import {fetchDelete${BusinessName}} from '@/api/'
+  import {ElMessage, ElMessageBox} from 'element-plus'
+  import {DialogType} from '@/types'
+
+  defineOptions({ name: '${BusinessName}' })
+
+  const { hasAuth } = useAuth()
+
+  // 弹窗相关
+  const dialogType = ref<DialogType>('add')
+  const dialogVisible = ref(false)
+  const current${BusinessName}Data = ref<Partial<${BusinessName}>>({})
+
+  // 选中行
+  const selectedRows = ref<${BusinessName}[]>([])
+
+  // 搜索表单
+  const searchForm = ref({
+#foreach ($column in $columns)
+#if($column.query)
+    $column.javaField: undefined,
+#end
+#end
+  })
+
+  const {
+    columns,
+    columnChecks,
+    data,
+    loading,
+    pagination,
+    getData,
+    searchParams,
+    resetSearchParams,
+    handleSizeChange,
+    handleCurrentChange,
+    refreshData
+  } = useTable({
+    // 核心配置
+    core: {
+      apiFn: fetchGet${BusinessName}List,
+      apiParams: {
+        pageNum: 1,
+        pageSize: 20,
+        ...searchForm.value
+      },
+      columnsFactory: () => [
+        { type: 'selection' }, // 勾选列
+#if($table.crud || $table.sub)
+        { type: 'index', width: 60, label: '序号' }, // 序号
+#end
+#foreach($column in $columns)
+#if($column.pk)
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+          width: 100,
+          sortable: true
+        },
+#elseif($column.list && $column.htmlType == "datetime")
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+          width: 180,
+          sortable: true
+        },
+#elseif($column.list && "" != $column.dictType)
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+          formatter: (row) => {
+            // 字典类型：$column.dictType
+            // 这里需要根据实际字典数据格式化显示
+            return row.${column.javaField} || '-'
+          }
+        },
+#elseif($column.list && "" != $column.javaField)
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+#if($column.javaField.length() > 10)
+          minWidth: 150,
+#else
+          width: 120,
+#end
+          showOverflowTooltip: true
+        },
+#end
+#end
+        {
+          prop: 'operation',
+          label: '操作',
+          width: 120,
+          fixed: 'right', // 固定列
+          formatter: (row) => {
+            const actions: any[] = []
+
+            // 编辑${functionName}按钮权限：${permissionPrefix}:edit
+            if (hasAuth('${permissionPrefix}:edit')) {
+              actions.push(
+                h(ArtButtonTable, {
+                  type: 'edit',
+                  onClick: () => showDialog('edit', row)
+                })
+              )
+            }
+
+            // 删除${functionName}按钮权限：${permissionPrefix}:remove
+            if (hasAuth('${permissionPrefix}:delete')) {
+              actions.push(
+                h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => delete${BusinessName}(row)
+                })
+              )
+            }
+
+            if (actions.length === 0) {
+              // 无任何操作权限时返回空占位
+              return h('span', { style: 'color: #999' }, '')
+            }
+
+            return h('div', actions)
+          }
+        }
+      ]
+    },
+    // 数据处理
+    transform: {
+      // 数据转换器
+      dataTransformer: (records) => {
+        // 类型守卫检查
+        if (!Array.isArray(records)) {
+          return []
+        }
+
+        return records
+      }
+    }
+  })
+
+  /**
+   * 构建查询参数（处理日期范围等）
+   */
+  const buildSearchQuery = (params: Record<string, any>) => {
+    const query = { ...params }
+#foreach($column in $columns)
+#if($column.query && $column.queryType == "BETWEEN")
+#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    if (Array.isArray(query.${column.javaField})) {
+      query.begin${AttrName} = query.${column.javaField}[0]
+      query.end${AttrName} = query.${column.javaField}[1]
+      delete query.${column.javaField}
+    }
+#end
+#end
+    return query
+  }
+
+  /**
+   * 搜索处理
+   * @param params 参数
+   */
+  const handleSearch = (params: Record<string, any>) => {
+    Object.assign(searchParams, buildSearchQuery(params))
+    getData()
+  }
+
+  /**
+   * 显示${functionName}弹窗
+   */
+  const showDialog = (type: DialogType, row?: ${BusinessName}): void => {
+    dialogType.value = type
+    current${BusinessName}Data.value = row || {}
+    nextTick(() => {
+      dialogVisible.value = true
+    })
+  }
+
+  /**
+   * 删除${functionName}
+   */
+  const delete${BusinessName} = async (row: ${BusinessName}): Promise<void> => {
+    try {
+      await ElMessageBox.confirm(`确定要删除该${functionName}吗？`, '删除${functionName}', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      })
+      await fetchDelete${BusinessName}([row.${pkColumn.javaField}])
+      refreshData()
+      ElMessage.success('删除成功')
+    } catch (error) {
+      if (error !== 'cancel') {
+        console.error('删除${functionName}失败:', error)
+        ElMessage.error('删除失败')
+      }
+    }
+  }
+
+#if($table.crud || $table.sub)
+  /**
+   * 批量删除${functionName}
+   */
+  const handleBatchDelete = (): void => {
+    if (selectedRows.value.length === 0) {
+      ElMessage.warning('请选择要删除的${functionName}')
+      return
+    }
+    const names = selectedRows.value.map((row) => row.${pkColumn.javaField}).join('、')
+    ElMessageBox.confirm(`确定要删除以下${functionName}吗？\n${names}`, '批量删除${functionName}', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'error'
+    })
+      .then(async () => {
+        const ids = selectedRows.value.map((row) => row.${pkColumn.javaField})
+        await fetchDelete${BusinessName}(ids)
+        selectedRows.value = []
+        refreshData()
+        ElMessage.success('删除成功')
+      })
+      .catch(() => {
+        // 用户取消删除
+      })
+  }
+#end
+
+  /**
+   * 处理弹窗提交事件
+   */
+  const handleDialogSubmit = async () => {
+    try {
+      dialogVisible.value = false
+      current${BusinessName}Data.value = {}
+      // 刷新列表数据
+      refreshData()
+    } catch (error) {
+      console.error('提交失败:', error)
+    }
+  }
+
+  /**
+   * 处理表格行选择变化
+   */
+  const handleSelectionChange = (selection: ${BusinessName}[]): void => {
+    selectedRows.value = selection
+  }
+</script>
+
+<style scoped lang="scss">
+  .${businessName}-page {
+    padding: 20px;
+  }
+</style>
+

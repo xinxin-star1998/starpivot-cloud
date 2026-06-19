@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.system.mapper.SysConfigMapper">
+
+    <resultMap type="cn.org.starpivot.system.domain.entity.SysConfig" id="SysConfigResult">
+        <result property="configId" column="config_id"/>
+        <result property="configName" column="config_name"/>
+        <result property="configKey" column="config_key"/>
+        <result property="configValue" column="config_value"/>
+        <result property="configType" column="config_type"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectSysConfigVo">
+        select config_id,
+               config_name,
+               config_key,
+               config_value,
+               config_type,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               remark
+        from sys_config
+    </sql>
+
+    <select id="selectPageList" parameterType="map" resultMap="SysConfigResult">
+        <include refid="selectSysConfigVo"/>
+        <where>
+            <if test="queryDTO.configName != null  and queryDTO.configName != ''">and config_name like concat('%',
+                #{queryDTO.configName}, '%')
+            </if>
+            <if test="queryDTO.configKey != null  and queryDTO.configKey != ''">and config_key = #{queryDTO.configKey}
+            </if>
+            <if test="queryDTO.configValue != null  and queryDTO.configValue != ''">and config_value =
+                #{queryDTO.configValue}
+            </if>
+            <if test="queryDTO.configType != null  and queryDTO.configType != ''">and config_type =
+                #{queryDTO.configType}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectListByQuery" parameterType="map" resultMap="SysConfigResult">
+        <include refid="selectSysConfigVo"/>
+        <where>
+            <if test="queryDTO.configName != null  and queryDTO.configName != ''">and config_name like concat('%',
+                #{queryDTO.configName}, '%')
+            </if>
+            <if test="queryDTO.configKey != null  and queryDTO.configKey != ''">and config_key = #{queryDTO.configKey}
+            </if>
+            <if test="queryDTO.configValue != null  and queryDTO.configValue != ''">and config_value =
+                #{queryDTO.configValue}
+            </if>
+            <if test="queryDTO.configType != null  and queryDTO.configType != ''">and config_type =
+                #{queryDTO.configType}
+            </if>
+        </where>
+        order by config_id desc
+    </select>
+
+    <select id="selectSysConfigByConfigId" resultMap="SysConfigResult">
+        <include refid="selectSysConfigVo"/>
+        where config_id = #{configId}
+    </select>
+
+    <select id="selectByConfigKey" resultMap="SysConfigResult">
+        <include refid="selectSysConfigVo"/>
+        where config_key = #{configKey}
+        limit 1
+    </select>
+
+    <insert id="insertSysConfig" parameterType="cn.org.starpivot.system.domain.entity.SysConfig" useGeneratedKeys="true"
+            keyProperty="configId">
+        insert into sys_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="configName != null and configName != ''">config_name,</if>
+            <if test="configKey != null and configKey != ''">config_key,</if>
+            <if test="configValue != null">config_value,</if>
+            <if test="configType != null and configType != ''">config_type,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="configName != null and configName != ''">#{configName},</if>
+            <if test="configKey != null and configKey != ''">#{configKey},</if>
+            <if test="configValue != null">#{configValue},</if>
+            <if test="configType != null and configType != ''">#{configType},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysConfig" parameterType="cn.org.starpivot.system.domain.entity.SysConfig">
+        update sys_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="configName != null and configName != ''">config_name = #{configName},</if>
+            <if test="configKey != null and configKey != ''">config_key = #{configKey},</if>
+            <if test="configValue != null">config_value = #{configValue},</if>
+            <if test="configType != null and configType != ''">config_type = #{configType},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where config_id = #{configId}
+    </update>
+
+    <delete id="deleteSysConfigByConfigIds">
+        delete from sys_config where config_id in
+        <foreach item="configId" collection="configIds" open="(" separator="," close=")">
+            #{configId}
+        </foreach>
+    </delete>
+</mapper>

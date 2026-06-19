@@ -1,0 +1,298 @@
+﻿<!-- ${functionName}管理页面（树形结构） -->
+<template>
+  <div class="${businessName}-page art-full-height">
+    <!-- 搜索栏 -->
+    <${BusinessName}Search v-model="searchForm" @search="handleSearch" @reset="resetSearchParams"></${BusinessName}Search>
+
+    <ElCard class="art-table-card" shadow="never">
+      <!-- 表格头部 -->
+      <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
+        <template #left>
+          <ElSpace wrap>
+            <ElButton @click="showDialog('add')" v-ripple v-auth="'${permissionPrefix}:add'">新增${functionName}</ElButton>
+            <ElButton
+              type="info"
+              plain
+              icon="Sort"
+              @click="toggleExpandAll"
+            >
+              展开/折叠
+            </ElButton>
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
+
+      <!-- 表格 -->
+      <ArtTable
+        ref="tableRef"
+        v-if="refreshTable"
+        :loading="loading"
+        :data="tableData"
+        :columns="columns"
+        row-key="${treeCode}"
+        :default-expand-all="isExpandAll"
+        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      >
+      </ArtTable>
+
+      <!-- ${functionName}弹窗 -->
+      <${BusinessName}Dialog
+        v-model:visible="dialogVisible"
+        :type="dialogType"
+        :${businessName}-data="current${BusinessName}Data"
+        @submit="handleDialogSubmit"
+      />
+    </ElCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import {useAuth} from '@/hooks/core/useAuth'
+  import {useTableColumns} from '@/hooks/core/useTableColumns'
+
+  import {fetchDelete${BusinessName}} from '@/api/'
+  import {ElMessage, ElMessageBox} from 'element-plus'
+  import {DialogType} from '@/types'
+
+  defineOptions({ name: '${BusinessName}' })
+
+  const { hasAuth } = useAuth()
+
+  // 弹窗相关
+  const dialogType = ref<DialogType>('add')
+  const dialogVisible = ref(false)
+  const current${BusinessName}Data = ref<Partial<${BusinessName}>>({})
+
+  // 树形结构相关
+  const isExpandAll = ref(true)
+  const refreshTable = ref(true)
+  const tableRef = ref()
+
+  // 搜索表单
+  const searchForm = ref({
+#foreach ($column in $columns)
+#if($column.query)
+    $column.javaField: undefined,
+#end
+#end
+  })
+
+  // 表格数据
+  const tableData = ref<${BusinessName}[]>([])
+  const loading = ref(false)
+
+  /**
+   * 获取${functionName}列表数据（树形结构）
+   */
+  const get${BusinessName}List = async (): Promise<void> => {
+    loading.value = true
+    try {
+      const res = await fetchGet${BusinessName}List({
+        ...searchForm.value
+      })
+      // 后端返回的应该是树形结构数据
+      tableData.value = Array.isArray(res) ? res : (res?.rows ?? res?.records ?? [])
+    } catch (error) {
+      console.error('获取${functionName}列表失败:', error)
+      ElMessage.error('获取${functionName}列表失败')
+      tableData.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 表格列配置
+  const { columns, columnChecks } = useTableColumns<${BusinessName}>(() => [
+#foreach($column in $columns)
+#if($column.pk)
+#elseif($column.list && $column.htmlType == "datetime")
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+          width: 180,
+          sortable: true
+        },
+#elseif($column.list && "" != $column.dictType)
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+          formatter: (row) => {
+            // 字典类型：$column.dictType
+            return row.${column.javaField} || '-'
+          }
+        },
+#elseif($column.list && "" != $column.javaField)
+        {
+          prop: '${column.javaField}',
+          label: '${column.columnComment}',
+          align: 'center',
+        },
+#end
+#end
+        {
+          prop: 'operation',
+          label: '操作',
+          width: 180,
+          fixed: 'right',
+          formatter: (row) => {
+            const actions: any[] = []
+
+            if (hasAuth('${permissionPrefix}:edit')) {
+              actions.push(
+                h(ArtButtonTable, {
+                  type: 'edit',
+                  onClick: () => showDialog('edit', row)
+                })
+              )
+            }
+
+            if (hasAuth('${permissionPrefix}:add')) {
+              actions.push(
+                h(ArtButtonTable, {
+                  type: 'add',
+                  onClick: () => showDialog('add', row)
+                })
+              )
+            }
+
+            if (hasAuth('${permissionPrefix}:delete')) {
+              actions.push(
+                h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => delete${BusinessName}(row)
+                })
+              )
+            }
+
+            if (actions.length === 0) {
+              return h('span', { style: 'color: #999' }, '')
+            }
+
+            return h('div', actions)
+          }
+        }
+      ]
+    })
+
+  // 初始化数据
+  onMounted(() => {
+    get${BusinessName}List()
+  })
+
+  /**
+   * 构建查询参数（处理日期范围等）
+   */
+  const buildSearchQuery = (params: Record<string, any>) => {
+    const query = { ...params }
+#foreach($column in $columns)
+#if($column.query && $column.queryType == "BETWEEN")
+#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    if (Array.isArray(query.${column.javaField})) {
+      query.begin${AttrName} = query.${column.javaField}[0]
+      query.end${AttrName} = query.${column.javaField}[1]
+      delete query.${column.javaField}
+    }
+#end
+#end
+    return query
+  }
+
+  /**
+   * 搜索处理
+   * @param params 参数
+   */
+  const handleSearch = (params: Record<string, any>) => {
+    Object.assign(searchForm.value, buildSearchQuery(params))
+    get${BusinessName}List()
+  }
+
+  /**
+   * 重置搜索参数
+   */
+  const resetSearchParams = () => {
+    searchForm.value = {
+#foreach ($column in $columns)
+#if($column.query)
+      $column.javaField: undefined,
+#end
+#end
+    }
+    get${BusinessName}List()
+  }
+
+  /**
+   * 刷新数据
+   */
+  const refreshData = () => {
+    get${BusinessName}List()
+  }
+
+  /**
+   * 显示${functionName}弹窗
+   */
+  const showDialog = (type: DialogType, row?: ${BusinessName}): void => {
+    dialogType.value = type
+    if (type === 'add' && row) {
+      // 新增子节点，设置父节点
+      current${BusinessName}Data.value = { ${treeParentCode}: row.${treeCode} }
+    } else {
+      current${BusinessName}Data.value = row || {}
+    }
+    nextTick(() => {
+      dialogVisible.value = true
+    })
+  }
+
+  /**
+   * 删除${functionName}
+   */
+  const delete${BusinessName} = async (row: ${BusinessName}): Promise<void> => {
+    try {
+      await ElMessageBox.confirm(`确定要删除该${functionName}吗？`, '删除${functionName}', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      })
+      await fetchDelete${BusinessName}([row.${pkColumn.javaField}])
+      get${BusinessName}List()
+      ElMessage.success('删除成功')
+    } catch (error) {
+      if (error !== 'cancel') {
+        console.error('删除${functionName}失败:', error)
+        ElMessage.error('删除失败')
+      }
+    }
+  }
+
+  /**
+   * 展开/折叠操作
+   */
+  const toggleExpandAll = () => {
+    refreshTable.value = false
+    isExpandAll.value = !isExpandAll.value
+    nextTick(() => {
+      refreshTable.value = true
+    })
+  }
+
+  /**
+   * 处理弹窗提交事件
+   */
+  const handleDialogSubmit = async () => {
+    try {
+      dialogVisible.value = false
+      current${BusinessName}Data.value = {}
+      get${BusinessName}List()
+    } catch (error) {
+      console.error('提交失败:', error)
+    }
+  }
+</script>
+
+<style scoped lang="scss">
+  .${businessName}-page {
+    padding: 20px;
+  }
+</style>
+

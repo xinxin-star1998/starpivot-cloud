@@ -1,0 +1,130 @@
+﻿package ${controllerPackage};
+
+import java.util.List;
+import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import cn.org.starpivot.common.entity.DeleteRequest;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
+import ${servicePackage}.I${ClassName}Service;
+#if($table.crud || $table.sub)
+import ${boPackage}.${ClassName}ReqPageBo;
+#end
+#if($table.tree)
+import ${boPackage}.${ClassName}ReqBo;
+#end
+import ${voPackage}.${ClassName}VO;
+import ${dtoPackage}.${ClassName}DTO;
+
+/**
+ * ${functionName}控制器
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+@Slf4j
+@RestController
+@RequestMapping("/${moduleName}/${businessName}")
+@RequiredArgsConstructor
+public class ${ClassName}Controller
+{
+    private final I${ClassName}Service ${className}Service;
+
+    /**
+     * 查询${functionName}列表
+     * 
+#if($table.tree)
+     * @param ${className}ReqBo 查询参数
+#else
+     * @param ${className}ReqPageBo 查询参数
+#end
+     * @return 列表结果
+     */
+    @PreAuthorize("hasAuthority('${permissionPrefix}:query')")
+    @PostMapping("/list")
+#if($table.crud || $table.sub)
+    public Result<PageResponse<${ClassName}VO>> list(@Valid @RequestBody ${ClassName}ReqPageBo ${className}ReqPageBo)
+    {
+        PageResponse<${ClassName}VO> page = ${className}Service.select${ClassName}Page(${className}ReqPageBo);
+        return Result.success(page);
+    }
+#elseif($table.tree)
+    public Result<List<${ClassName}VO>> list(@RequestBody ${ClassName}ReqBo ${className}ReqBo)
+    {
+        List<${ClassName}VO> list = ${className}Service.select${ClassName}TreeList(${className}ReqBo);
+        return Result.success(list);
+    }
+#end
+
+    /**
+     * 获取${functionName}详细信息
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return ${functionName}信息
+     */
+    @PreAuthorize("hasAuthority('${permissionPrefix}:query')")
+    @GetMapping(value = "/{${pkColumn.javaField}}")
+    public Result<${ClassName}VO> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
+    {
+        ${ClassName}VO ${className}VO = ${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
+        return Result.success(${className}VO);
+    }
+
+    /**
+     * 新增${functionName}
+     * 
+     * @param ${className}DTO ${functionName}信息
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('${permissionPrefix}:add')")
+    @PostMapping
+    public Result<?> add(@Valid @RequestBody ${ClassName}DTO ${className}DTO)
+    {
+        boolean success = ${className}Service.insert${ClassName}(${className}DTO);
+        return success ? Result.success("新增${functionName}成功") : Result.error("新增${functionName}失败");
+    }
+
+    /**
+     * 修改${functionName}
+     * 
+     * @param ${className}DTO ${functionName}信息
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('${permissionPrefix}:edit')")
+    @PutMapping
+    public Result<?> edit(@Valid @RequestBody ${ClassName}DTO ${className}DTO)
+    {
+        boolean success = ${className}Service.update${ClassName}(${className}DTO);
+        return success ? Result.success("修改${functionName}成功") : Result.error("修改${functionName}失败");
+    }
+
+    /**
+     * 删除${functionName}（支持批量删除，请求体 ids）
+     * 
+     * @param deleteRequest 删除请求，包含 ids 数组
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('${permissionPrefix}:delete')")
+    @DeleteMapping("/delete")
+    public Result<?> remove(@RequestBody DeleteRequest deleteRequest)
+    {
+        List<${pkColumn.javaType}> idList = deleteRequest.getIds();
+        if (idList == null || idList.isEmpty()) {
+            return Result.error("删除ID不能为空");
+        }
+        ${pkColumn.javaType}[] ${pkColumn.javaField}s = idList.toArray(new ${pkColumn.javaType}[0]);
+        boolean success = ${className}Service.delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s);
+        return success ? Result.success("删除${functionName}成功") : Result.error("删除${functionName}失败");
+    }
+}
+

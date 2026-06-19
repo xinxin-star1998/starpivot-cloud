@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.system.mapper.UserPostMapper">
+
+    <!--
+      鎵归噺鎻掑叆鐢ㄦ埛涓庡矖浣嶅叧鑱斿叧绯?
+      璇存槑锛氫娇鐢ㄥ崟鏉?INSERT 澶氬€?VALUES 鐨勬柟寮忥紝涓€娆℃€у啓鍏ュ鏉¤褰曪紝鎻愬崌鎻掑叆鎬ц兘
+    -->
+    <insert id="insertBatchUserPosts">
+        INSERT INTO sys_user_post (user_id, post_id)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.postId})
+        </foreach>
+    </insert>
+
+</mapper>
+
+

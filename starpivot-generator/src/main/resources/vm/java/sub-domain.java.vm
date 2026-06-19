@@ -1,0 +1,43 @@
+﻿package ${entityPackage};
+
+#foreach ($import in $subImportList)
+import ${import};
+#end
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+#if($subTable.hasBaseEntityColumns())
+import cn.org.starpivot.common.entity.BaseEntity;
+#end
+
+/**
+ * ${subTable.functionName}实体类 ${subTableName}
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+@Data
+@TableName("${subTableName}" )
+#if($subTable.hasBaseEntityColumns())
+public class ${subClassName} extends BaseEntity
+#else
+public class ${subClassName}
+#end
+{
+    private static final long serialVersionUID = 1L;
+
+#foreach ($column in $subTable.columns)
+#if(!$table.isSuperColumn($column.javaField))
+    /**
+     * $column.columnComment
+     */
+    #if($column.pk)
+    @TableId(value = "$column.columnName" , type = IdType.AUTO)
+    #end
+    private $column.javaType $column.javaField;
+
+#end
+#end
+}
+

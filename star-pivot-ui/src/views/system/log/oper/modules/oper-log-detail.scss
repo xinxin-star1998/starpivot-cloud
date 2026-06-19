@@ -1,0 +1,270 @@
+.log-detail-container {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.log-descriptions {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.log-descriptions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+.log-descriptions-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.log-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:hover {
+    background-color: #fafafa;
+  }
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.log-label {
+  width: 110px;
+  flex-shrink: 0;
+  font-weight: 500;
+  color: #666;
+  font-size: 13px;
+  background: #f5f5f5;
+  padding: 6px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.log-content {
+  padding-left: 16px;
+  font-size: 14px;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+  min-width: 0;
+}
+
+.status-badge .el-tag {
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.id-value {
+  color: #1890ff;
+  font-family: monospace;
+  font-size: 13px;
+}
+.title-value {
+  color: #333;
+  font-weight: 500;
+}
+.type-value {
+  color: #666;
+  font-size: 13px;
+}
+
+.status-text {
+  font-weight: 500;
+  font-size: 13px;
+  &.status-success {
+    color: #52c41a;
+  }
+  &.status-error {
+    color: #ff4d4f;
+  }
+}
+
+.user-value {
+  color: #333;
+  font-weight: 500;
+}
+.dept-value {
+  color: #666;
+}
+
+.method-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  &.method-get {
+    background: #52c41a;
+  }
+  &.method-post {
+    background: #1890ff;
+  }
+  &.method-put {
+    background: #faad14;
+  }
+  &.method-delete {
+    background: #ff4d4f;
+  }
+}
+
+.url-value {
+  color: #667eea;
+  font-family: monospace;
+  font-size: 13px;
+}
+.ip-value {
+  color: #999;
+  font-family: monospace;
+  font-size: 13px;
+}
+.time-value {
+  color: #666;
+  font-size: 13px;
+}
+
+.cost-value {
+  font-weight: 500;
+  font-size: 14px;
+  color: #666;
+  &.cost-high {
+    color: #ff4d4f;
+  }
+}
+
+.method-code {
+  display: block;
+  padding: 8px 12px;
+  background: #f6f8fa;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #333;
+  word-break: break-all;
+}
+
+.code-wrapper {
+  background: #1e1e1e;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 4px;
+  &.code-expanded .code-block {
+    max-height: none;
+  }
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #3d3d3d;
+
+  .code-label {
+    color: #858585;
+    font-size: 12px;
+    width: auto;
+    background: transparent;
+    padding: 0;
+    text-align: left;
+  }
+  .code-actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+.copy-btn,
+.expand-btn {
+  color: #858585;
+  font-size: 12px;
+  &:hover {
+    color: #d4d4d4;
+  }
+}
+
+.code-block {
+  margin: 0;
+  padding: 16px;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d4d4d4;
+  max-height: 250px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+
+  &.code-collapsed {
+    max-height: 150px;
+  }
+  &.result-block {
+    color: #a5d6a7;
+  }
+}
+
+.error-wrapper {
+  margin-top: 4px;
+  .error-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    .error-label {
+      color: #ff4d4f;
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+  :deep(.el-alert) {
+    margin: 0;
+    border-radius: 6px;
+    word-break: break-all;
+  }
+}
+
+.code-block::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.code-block::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+.code-block::-webkit-scrollbar-thumb {
+  background: #4d4d4d;
+}
+
+@media (max-width: 768px) {
+  .log-label {
+    width: 90px;
+    font-size: 12px;
+  }
+  .code-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

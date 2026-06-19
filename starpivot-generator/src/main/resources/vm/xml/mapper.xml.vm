@@ -1,0 +1,128 @@
+﻿#macro(columnMappings $columnList)
+#foreach ($column in $columnList)
+#if($column.isPk())
+        <id property="${column.javaField}" column="${column.columnName}"/>
+#else
+        <result property="${column.javaField}" column="${column.columnName}"/>
+#end
+#end
+#end
+
+#macro(queryWhere $prefix)
+#foreach ($column in $columns)
+#if($column.query)
+#set($queryType=$column.queryType)
+#set($field=$column.javaField)
+#set($columnName=$column.columnName)
+#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+#if($queryType == "EQ")
+            <if test="${prefix}.${field} != null#if($column.javaType == 'String') and ${prefix}.${field} != ''#end">
+                AND ${columnName} = #{${prefix}.${field}}
+            </if>
+#elseif($queryType == "NE")
+            <if test="${prefix}.${field} != null#if($column.javaType == 'String') and ${prefix}.${field} != ''#end">
+                AND ${columnName} != #{${prefix}.${field}}
+            </if>
+#elseif($queryType == "GT")
+            <if test="${prefix}.${field} != null">
+                AND ${columnName} &gt; #{${prefix}.${field}}
+            </if>
+#elseif($queryType == "GTE")
+            <if test="${prefix}.${field} != null">
+                AND ${columnName} &gt;= #{${prefix}.${field}}
+            </if>
+#elseif($queryType == "LT")
+            <if test="${prefix}.${field} != null">
+                AND ${columnName} &lt; #{${prefix}.${field}}
+            </if>
+#elseif($queryType == "LTE")
+            <if test="${prefix}.${field} != null">
+                AND ${columnName} &lt;= #{${prefix}.${field}}
+            </if>
+#elseif($queryType == "LIKE")
+            <if test="${prefix}.${field} != null#if($column.javaType == 'String') and ${prefix}.${field} != ''#end">
+                AND ${columnName} LIKE CONCAT('%', #{${prefix}.${field}}, '%')
+            </if>
+#elseif($queryType == "BETWEEN")
+            <if test="${prefix}.begin${AttrName} != null and ${prefix}.end${AttrName} != null">
+                AND ${columnName} BETWEEN #{${prefix}.begin${AttrName}} AND #{${prefix}.end${AttrName}}
+            </if>
+#end
+#end
+#end
+#end
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${mapperPackage}.${ClassName}Mapper">
+
+    <resultMap type="${entityPackage}.${ClassName}" id="${ClassName}Result">
+#columnMappings($columns)
+    </resultMap>
+#if($table.sub)
+    <resultMap type="${entityPackage}.${subClassName}" id="${subClassName}Result">
+#columnMappings($subTable.columns)
+    </resultMap>
+#end
+
+    <sql id="Base_Column_List">
+#foreach ($column in $columns)
+        ${column.columnName}#if($foreach.count != $columns.size()),#end
+#end
+    </sql>
+
+    <sql id="select${ClassName}Vo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM ${tableName}
+    </sql>
+
+#if($table.crud || $table.sub)
+    <select id="selectPageList" resultMap="${ClassName}Result">
+        <include refid="select${ClassName}Vo"/>
+        <where>
+#queryWhere("${className}ReqPageBo")
+        </where>
+    </select>
+#end
+#if($table.tree)
+    <select id="selectQueryList" resultMap="${ClassName}Result">
+        <include refid="select${ClassName}Vo"/>
+        <where>
+#queryWhere("${className}ReqBo")
+        </where>
+        ORDER BY ${pkColumn.columnName} ASC
+    </select>
+#end
+#if($table.sub)
+    <insert id="batch${subClassName}">
+        INSERT INTO ${subTableName} (
+#foreach ($column in $subTable.columns)
+            ${column.columnName}#if($foreach.count != $subTable.columns.size()),#end
+#end
+        ) VALUES
+        <foreach item="item" collection="list" separator=",">
+            (
+#foreach ($column in $subTable.columns)
+                #{item.${column.javaField}}#if($foreach.count != $subTable.columns.size()),#end
+#end
+            )
+        </foreach>
+    </insert>
+
+    <delete id="delete${subClassName}By${subTableFkClassName}s">
+        DELETE FROM ${subTableName}
+        WHERE ${subTableFkName} IN
+        <foreach item="${subTableFkclassName}" collection="array" open="(" separator="," close=")">
+            #{${subTableFkclassName}}
+        </foreach>
+    </delete>
+
+    <delete id="delete${subClassName}By${subTableFkClassName}">
+        DELETE FROM ${subTableName}
+        WHERE ${subTableFkName} = #{${subTableFkclassName}}
+    </delete>
+#end
+</mapper>
+

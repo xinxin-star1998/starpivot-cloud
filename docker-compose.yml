@@ -1,0 +1,86 @@
+services:
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: starpivot-nacos
+    environment:
+      MODE: standalone
+      JVM_XMS: 256m
+      JVM_XMX: 256m
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: starpivot
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: root
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    # 改为命名卷挂载，消除chown权限拒绝报错
+    volumes:
+      - nacos-data:/home/nacos/data
+      - nacos-logs:/home/nacos/logs
+    depends_on:
+      - mysql
+    networks:
+      starpivot-net:
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: starpivot-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: starpivot
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"
+    # 命名卷替代本地E盘目录绑定
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-time_zone='+8:00'
+      --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    networks:
+      starpivot-net:
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: starpivot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --requirepass root --appendonly yes
+    networks:
+      starpivot-net:
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: starpivot-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    networks:
+      starpivot-net:
+    restart: unless-stopped
+
+# 声明全部命名卷（关键新增区块）
+volumes:
+  mysql-data:
+  redis-data:
+  nacos-data:
+  nacos-logs:
+  rabbitmq-data:
+
+networks:
+  starpivot-net:
+    driver: bridge

@@ -1,0 +1,415 @@
+﻿<template>
+  <ElDialog
+    v-model="dialogVisible"
+    :title="dialogType === 'add' ? '新增${functionName}' : '编辑${functionName}'"
+    width="30%"
+    align-center
+  >
+    <ElForm ref="formRef" :model="formData" :rules="rules" label-width="100px">
+#foreach($column in $columns)
+#if($column.insert && !$column.pk)
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+#set($dictType=$column.dictType)
+      <ElFormItem label="${comment}" prop="${column.javaField}">
+#if("" != $treeParentCode && $column.javaField == $treeParentCode)
+        <ElTreeSelect
+          v-model="formData.${treeParentCode}"
+          :data="${businessName}TreeData"
+          :props="${businessName}TreeProps"
+          placeholder="请选择${comment}"
+          clearable
+          check-strictly
+          :render-after-expand="false"
+          :disabled="dialogType === 'edit' && formData.${pkColumn.javaField} === formData.${treeParentCode}"
+        />
+#elseif($column.htmlType == "input")
+        <ElInput v-model="formData.${column.javaField}" placeholder="请输入${comment}" />
+#elseif($column.htmlType == "textarea")
+        <ElInput type="textarea" v-model="formData.${column.javaField}" :rows="4" placeholder="请输入${comment}" />
+#elseif($column.htmlType == "select" && "" != $dictType)
+        <ElSelect v-model="formData.${column.javaField}" placeholder="请选择${comment}">
+          <!-- 字典类型：${dictType}，需要从字典服务获取选项 -->
+          <ElOption label="请选择字典生成" value="" />
+        </ElSelect>
+#elseif($column.htmlType == "select" && $dictType)
+        <ElSelect v-model="formData.${column.javaField}" placeholder="请选择${comment}">
+          <ElOption label="请选择字典生成" value="" />
+        </ElSelect>
+#elseif($column.htmlType == "radio" && "" != $dictType)
+        <ElRadioGroup v-model="formData.${column.javaField}">
+          <!-- 字典类型：${dictType}，需要从字典服务获取选项 -->
+          <ElRadio value="0">正常</ElRadio>
+          <ElRadio value="1">停用</ElRadio>
+        </ElRadioGroup>
+#elseif($column.htmlType == "radio" && $dictType)
+        <ElRadioGroup v-model="formData.${column.javaField}">
+          <ElRadio value="0">正常</ElRadio>
+          <ElRadio value="1">停用</ElRadio>
+        </ElRadioGroup>
+#elseif($column.htmlType == "checkbox" && "" != $dictType)
+        <ElCheckboxGroup v-model="formData.${column.javaField}">
+          <!-- 字典类型：${dictType}，需要从字典服务获取选项 -->
+          <ElCheckbox value="0">正常</ElCheckbox>
+          <ElCheckbox value="1">停用</ElCheckbox>
+        </ElCheckboxGroup>
+#elseif($column.htmlType == "datetime")
+        <ElDatePicker
+          v-model="formData.${column.javaField}"
+          type="date"
+          placeholder="请选择${comment}"
+          value-format="YYYY-MM-DD"
+          style="width: 100%"
+        />
+#elseif($column.htmlType == "imageUpload")
+        <ImageUpload v-model="formData.${column.javaField}" />
+#elseif($column.htmlType == "fileUpload")
+        <FileUpload v-model="formData.${column.javaField}" />
+#elseif($column.htmlType == "editor")
+        <Editor v-model="formData.${column.javaField}" :min-height="192" />
+#end
+      </ElFormItem>
+#end
+#end
+#if($table.sub)
+      <ElDivider content-position="center">${subTable.functionName}信息</ElDivider>
+      <ElRow :gutter="10" class="mb8">
+        <ElCol :span="1.5">
+          <ElButton type="primary" icon="Plus" @click="handleAdd${subClassName}">添加</ElButton>
+        </ElCol>
+        <ElCol :span="1.5">
+          <ElButton type="danger" icon="Delete" @click="handleDelete${subClassName}">删除</ElButton>
+        </ElCol>
+      </ElRow>
+      <ElTable :data="formData.${subclassName}List" :row-class-name="row${subClassName}Index" @selection-change="handle${subClassName}SelectionChange">
+        <ElTableColumn type="selection" width="50" align="center" />
+        <ElTableColumn label="序号" align="center" prop="index" width="50"/>
+#foreach($column in $subTable.columns)
+#set($javaField=$column.javaField)
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+#if($column.pk || $javaField == ${subTableFkclassName})
+#elseif($column.list && $column.htmlType == "input")
+        <ElTableColumn label="${comment}" prop="${javaField}" width="150">
+          <template #default="scope">
+            <ElInput v-model="scope.row.${javaField}" placeholder="请输入${comment}" />
+          </template>
+        </ElTableColumn>
+#elseif($column.list && $column.htmlType == "datetime")
+        <ElTableColumn label="${comment}" prop="${javaField}" width="240">
+          <template #default="scope">
+            <ElDatePicker clearable v-model="scope.row.${javaField}" type="date" value-format="YYYY-MM-DD" placeholder="请选择${comment}" style="width: 100%" />
+          </template>
+        </ElTableColumn>
+#elseif($column.list && ($column.htmlType == "select" || $column.htmlType == "radio") && "" != $column.dictType)
+        <ElTableColumn label="${comment}" prop="${javaField}" width="150">
+          <template #default="scope">
+            <ElSelect v-model="scope.row.${javaField}" placeholder="请选择${comment}">
+              <!-- 字典类型：${column.dictType}，需要从字典服务获取选项 -->
+              <ElOption label="请选择字典生成" value="" />
+            </ElSelect>
+          </template>
+        </ElTableColumn>
+#end
+#end
+      </ElTable>
+#end
+    </ElForm>
+    <template #footer>
+      <div class="dialog-footer">
+        <ElButton @click="dialogVisible = false">取消</ElButton>
+        <ElButton type="primary" @click="handleSubmit">提交</ElButton>
+      </div>
+    </template>
+  </ElDialog>
+</template>
+
+<script setup lang="ts">
+  import type {FormInstance, FormRules} from 'element-plus'
+  import {ElMessage} from 'element-plus'
+
+  import {fetchAdd${BusinessName}, fetchUpdate${BusinessName}, type ${subClassName}Sub} from '@/api/'
+
+  interface Props {
+    visible: boolean
+    type: string
+    ${businessName}Data?: Partial<${BusinessName}>
+  }
+
+  interface Emits {
+    (e: 'update:visible', value: boolean): void
+    (e: 'submit'): void
+  }
+
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+
+  // 对话框显示控制
+  const dialogVisible = computed({
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value)
+  })
+
+  const dialogType = computed(() => props.type)
+
+  // 表单实例
+  const formRef = ref<FormInstance>()
+
+#if($table.tree)
+  // ${functionName}树数据
+  const ${businessName}TreeData = ref<${BusinessName}[]>([])
+  // ${functionName}树配置
+  const ${businessName}TreeProps = {
+    value: '${treeCode}',
+    label: '${treeName}',
+    children: 'children'
+  }
+#end
+
+  // 表单数据
+  const formData = reactive({
+#foreach ($column in $columns)
+#if($column.insert && !$column.pk)
+#if($column.htmlType == "checkbox")
+    $column.javaField: [] as string[],
+#elseif($column.javaType == 'Integer' || $column.javaType == 'Long')
+    $column.javaField: 0,
+#else
+    $column.javaField: '',
+#end
+#end
+#end
+#if($table.sub)
+    ${subclassName}List: [] as ${subClassName}Sub[],
+#end
+  })
+
+#if($table.sub)
+  // 子表选中数据
+  const checked${subClassName} = ref<number[]>([])
+#end
+
+  // 表单验证规则
+  const rules: FormRules = {
+#foreach ($column in $columns)
+#if($column.required && $column.insert && !$column.pk)
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+    $column.javaField: [
+      { required: true, message: '${comment}不能为空', trigger: #if($column.htmlType == "select" || $column.htmlType == "radio")'change'#else'blur'#end }
+    ],
+#end
+#end
+  }
+
+#if($table.tree)
+  /**
+   * 加载${functionName}树数据
+   */
+  const load${BusinessName}Tree = async (): Promise<void> => {
+    try {
+      const res = await fetchGet${BusinessName}List({})
+      ${businessName}TreeData.value = Array.isArray(res) ? res : (res?.rows ?? res?.records ?? [])
+    } catch (error) {
+      console.error('获取${functionName}树数据失败:', error)
+    }
+  }
+#end
+
+  /**
+   * 初始化表单数据
+   * 根据对话框类型（新增/编辑）填充表单
+   */
+  const initFormData = async () => {
+#if($table.tree)
+    // 加载树数据
+    await load${BusinessName}Tree()
+#end
+    const isEdit = props.type === 'edit' && props.${businessName}Data
+
+    if (isEdit && props.${businessName}Data?.${pkColumn.javaField}) {
+      // 编辑模式：获取完整的${functionName}详情
+      try {
+        const detail = await fetchGet${BusinessName}ById(props.${businessName}Data.${pkColumn.javaField})
+        console.log('${functionName}详情数据:', detail)
+        if (detail) {
+          Object.assign(formData, {
+#foreach ($column in $columns)
+#if($column.insert && !$column.pk)
+#if($column.htmlType == "checkbox")
+            $column.javaField: detail.$column.javaField ? detail.${column.javaField}.split(',') : [],
+#else
+            $column.javaField: detail.$column.javaField || #if($column.javaType == 'Integer' || $column.javaType == 'Long')0#else''#end,
+#end
+#end
+#end
+#if($table.sub)
+            ${subclassName}List: detail.${subclassName}List || [],
+#end
+          })
+        }
+      } catch (error) {
+        console.error('获取${functionName}详情失败:', error)
+        ElMessage.error('获取${functionName}详情失败')
+        // 如果获取详情失败，使用列表数据作为回退
+        const row = props.${businessName}Data
+        Object.assign(formData, {
+#foreach ($column in $columns)
+#if($column.insert && !$column.pk)
+          $column.javaField: row.$column.javaField || #if($column.javaType == 'Integer' || $column.javaType == 'Long')0#else''#end,
+#end
+#end
+        })
+      }
+    } else {
+      // 新增模式：重置表单
+      Object.assign(formData, {
+#foreach ($column in $columns)
+#if($column.insert && !$column.pk)
+#if($column.htmlType == "checkbox")
+        $column.javaField: [],
+#elseif($column.javaType == 'Integer' || $column.javaType == 'Long')
+        $column.javaField: 0,
+#elseif("" != $treeParentCode && $column.javaField == $treeParentCode)
+        $column.javaField: 0, // 树形结构的父节点默认值
+#else
+        $column.javaField: '',
+#end
+#end
+#end
+#if($table.sub)
+        ${subclassName}List: [],
+#end
+      })
+#if($table.tree)
+      // 如果传入了父节点数据，设置父节点
+      if (props.${businessName}Data?.${treeParentCode} !== undefined) {
+        formData.${treeParentCode} = props.${businessName}Data.${treeParentCode}
+      }
+#end
+    }
+  }
+
+  /**
+   * 监听对话框状态变化
+   * 当对话框打开时初始化表单数据并清除验证状态
+   */
+  watch(
+    () => [props.visible, props.type, props.${businessName}Data],
+    async ([visible]) => {
+      if (visible) {
+        await initFormData()
+        nextTick(() => {
+          formRef.value?.clearValidate()
+        })
+      }
+    },
+    { immediate: true }
+  )
+
+  /**
+   * 提交表单
+   * 验证通过后触发提交事件
+   */
+  const handleSubmit = async () => {
+    if (!formRef.value) return
+
+    await formRef.value.validate(async (valid) => {
+      if (valid) {
+        try {
+          const submitData: any = {
+#foreach ($column in $columns)
+#if($column.insert && !$column.pk)
+#if($column.htmlType == "checkbox")
+            $column.javaField: formData.$column.javaField.join(','),
+#else
+            $column.javaField: formData.$column.javaField,
+#end
+#end
+#end
+#if($table.sub)
+            ${subclassName}List: formData.${subclassName}List,
+#end
+          }
+
+          if (dialogType.value === 'add') {
+            await fetchAdd${BusinessName}(submitData)
+          } else {
+            submitData.${pkColumn.javaField} = props.${businessName}Data?.${pkColumn.javaField}
+            await fetchUpdate${BusinessName}(submitData)
+          }
+          ElMessage.success(dialogType.value === 'add' ? '新增成功' : '更新成功')
+          dialogVisible.value = false
+          emit('submit')
+        } catch (error) {
+          console.error('提交失败:', error)
+          ElMessage.error(dialogType.value === 'add' ? '新增失败' : '更新失败')
+        }
+      }
+    })
+  }
+
+#if($table.sub)
+  /**
+   * ${subTable.functionName}序号
+   */
+  const row${subClassName}Index = ({ row, rowIndex }: any) => {
+    row.index = rowIndex + 1
+  }
+
+  /**
+   * ${subTable.functionName}添加按钮操作
+   */
+  const handleAdd${subClassName} = () => {
+    const obj: ${subClassName}Sub = {} as ${subClassName}Sub
+#foreach($column in $subTable.columns)
+#if($column.pk || $column.javaField == ${subTableFkclassName})
+#elseif($column.list && "" != $javaField)
+    obj.${column.javaField} = #if($column.javaType == 'Integer' || $column.javaType == 'Long')0#else''#end
+#end
+#end
+    formData.${subclassName}List.push(obj)
+  }
+
+  /**
+   * ${subTable.functionName}删除按钮操作
+   */
+  const handleDelete${subClassName} = () => {
+    if (checked${subClassName}.value.length === 0) {
+      ElMessage.warning('请先选择要删除的${subTable.functionName}数据')
+      return
+    }
+    const list = formData.${subclassName}List
+    const checked = checked${subClassName}.value
+    formData.${subclassName}List = list.filter((item: ${subClassName}Sub, index: number) => !checked.includes(index + 1))
+  }
+
+  /**
+   * 复选框选中数据
+   */
+  const handle${subClassName}SelectionChange = (selection: ${subClassName}Sub[]) => {
+    checked${subClassName}.value = selection.map((item: ${subClassName}Sub) => item.index!)
+  }
+#end
+</script>
+
+<style scoped lang="scss">
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+

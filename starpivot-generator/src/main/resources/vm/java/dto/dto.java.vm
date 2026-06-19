@@ -1,0 +1,67 @@
+﻿package ${dtoPackage};
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+#if($table.sub)
+import java.util.List;
+import ${dtoPackage}.${subClassName}DTO;
+#end
+#foreach ($column in $columns)
+#if($column.javaType == 'LocalDateTime' || $column.javaType == 'Date' || $column.javaField == 'createTime' || $column.javaField == 'updateTime')
+import java.time.LocalDateTime;
+#break
+#end
+#end
+
+/**
+ * ${functionName}DTO
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+@Data
+public class ${ClassName}DTO {
+
+    /**
+     * ${pkColumn.columnComment}
+     */
+    private ${pkColumn.javaType} ${pkColumn.javaField};
+
+#foreach ($column in $columns)
+#if(!$table.isSuperColumn($column.javaField) && $column.insert && !$column.pk)
+    /**
+     * $column.columnComment
+     */
+#if($column.required)
+#if($column.javaType == 'String')
+    @NotBlank(message = "$column.columnComment不能为空")
+#if($column.javaField.length() > 0)
+#set($maxLength = 255)
+#if($column.columnType && $column.columnType.indexOf("varchar") != -1)
+#set($maxLength = $column.columnType.replace("varchar(", "").replace(")", ""))
+#end
+    @Size(max = $maxLength, message = "$column.columnComment长度不能超过${maxLength}个字符")
+#end
+#elseif($column.javaType == 'Long' || $column.javaType == 'Integer')
+    @NotNull(message = "$column.columnComment不能为空")
+#end
+#end
+#if($column.javaType == 'LocalDateTime' || $column.javaType == 'Date' || $column.javaField == 'createTime' || $column.javaField == 'updateTime')
+    private LocalDateTime $column.javaField;
+#else
+    private $column.javaType $column.javaField;
+#end
+
+#end
+#end
+#if($table.sub)
+
+    /**
+     * ${subTable.functionName}列表
+     */
+    private List<${subClassName}DTO> ${subclassName}List;
+#end
+}
+

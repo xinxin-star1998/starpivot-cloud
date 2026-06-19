@@ -1,0 +1,59 @@
+﻿package ${voPackage};
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+#if($table.sub || $table.tree)
+import java.util.List;
+#end
+#if($table.sub)
+import ${voPackage}.${subClassName}VO;
+#end
+#foreach ($column in $columns)
+#if($column.javaType == 'LocalDateTime' || $column.javaType == 'Date' || $column.javaField == 'createTime' || $column.javaField == 'updateTime')
+import java.time.LocalDateTime;
+#break
+#end
+#end
+
+/**
+ * ${functionName}VO
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+@Data
+public class ${ClassName}VO {
+
+    /**
+     * ${pkColumn.columnComment}
+     */
+    private ${pkColumn.javaType} ${pkColumn.javaField};
+
+#foreach ($column in $columns)
+    #if(!$table.isSuperColumn($column.javaField) && !$column.pk)
+    /**
+     * $column.columnComment
+     */
+#if($column.javaType == 'LocalDateTime' || $column.javaType == 'Date' || $column.javaField == 'createTime' || $column.javaField == 'updateTime')
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime $column.javaField;
+#else
+    private $column.javaType $column.javaField;
+#end
+
+#end
+#end
+#if($table.sub)
+
+    /**
+     * ${subTable.functionName}列表
+     */
+    private List<${subClassName}VO> ${subclassName}List;
+#end
+#if($table.tree)
+
+    /** 子节点 */
+    private List<${ClassName}VO> children;
+#end
+}
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cn.org.starpivot</groupId>
+        <artifactId>starpivot-cloud</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>starpivot-api</artifactId>
+    <packaging>jar</packaging>
+    <name>starpivot-api</name>
+    <description>微服务 API 契约 - Feign 接口与跨服务 DTO</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>cn.org.starpivot</groupId>
+            <artifactId>starpivot-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>

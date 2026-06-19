@@ -1,0 +1,65 @@
+﻿import request from '@/utils/http'
+
+/** 适配分页响应为 Vue2 列表页期望的 { rows, total } */
+function adaptPage(res) {
+  return {
+    rows: (res && res.rows) || [],
+    total: (res && res.total) || 0
+  }
+}
+
+/** 适配详情/树形响应为 Vue2 页面期望的 { data } */
+function adaptData(res) {
+  return { data: res }
+}
+
+/**
+ * 查询${functionName}列表
+ */
+export function list${BusinessName}(query) {
+  return request.post({
+    url: '/api/${moduleName}/${businessName}/list',
+    data: query
+  }).then(#if($table.tree)adaptData#else adaptPage#end)
+}
+
+/**
+ * 查询${functionName}详细
+ */
+export function get${BusinessName}(${pkColumn.javaField}) {
+  return request.get({
+    url: `/api/${moduleName}/${businessName}/\${${pkColumn.javaField}}`
+  }).then(adaptData)
+}
+
+/**
+ * 新增${functionName}
+ */
+export function add${BusinessName}(data) {
+  return request.post({
+    url: '/api/${moduleName}/${businessName}',
+    data
+  })
+}
+
+/**
+ * 修改${functionName}
+ */
+export function update${BusinessName}(data) {
+  return request.put({
+    url: '/api/${moduleName}/${businessName}',
+    data
+  })
+}
+
+/**
+ * 删除${functionName}（支持单删和批量删除，请求体 ids）
+ */
+export function del${BusinessName}(${pkColumn.javaField}s) {
+  const ids = Array.isArray(${pkColumn.javaField}s) ? ${pkColumn.javaField}s : [${pkColumn.javaField}s]
+  return request.del({
+    url: '/api/${moduleName}/${businessName}/delete',
+    data: { ids }
+  })
+}
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.system.mapper.SysDictDataMapper">
+
+    <!-- 根据字典类型查询字典数据 -->
+    <select id="selectDictDataByType" resultType="cn.org.starpivot.system.domain.entity.SysDictData">
+        SELECT dict_code, dict_sort, dict_label, dict_value, dict_type,
+               css_class, list_class, is_default, status, create_time
+        FROM sys_dict_data
+        WHERE dict_type = #{dictType}
+          AND status = '0'
+        ORDER BY dict_sort ASC
+    </select>
+
+</mapper>

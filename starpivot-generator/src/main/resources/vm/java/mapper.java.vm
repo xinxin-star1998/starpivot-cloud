@@ -1,0 +1,76 @@
+﻿package ${mapperPackage};
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+#if($table.crud || $table.sub)
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import ${boPackage}.${ClassName}ReqPageBo;
+#end
+#if($table.tree)
+import java.util.List;
+import ${boPackage}.${ClassName}ReqBo;
+#end
+import ${entityPackage}.${ClassName};
+#if($table.sub)
+import ${entityPackage}.${subClassName};
+#end
+
+/**
+ * ${functionName}Mapper接口
+ * 
+ * @author ${author}
+ * @since ${datetime}
+ */
+@Mapper
+public interface ${ClassName}Mapper extends BaseMapper<${ClassName}>
+{
+#if($table.crud || $table.sub)
+    /**
+     * 分页查询${functionName}列表
+     * 
+     * @param page 分页参数
+     * @param ${className}ReqPageBo 查询条件
+     * @return 分页结果
+     */
+    IPage<${ClassName}> selectPageList(Page<${ClassName}> page, @Param("${className}ReqPageBo") ${ClassName}ReqPageBo ${className}ReqPageBo);
+#end
+#if($table.tree)
+    /**
+     * 条件查询${functionName}列表（树表，不分页）
+     *
+     * @param ${className}ReqBo 查询条件
+     * @return 列表
+     */
+    List<${ClassName}> selectQueryList(@Param("${className}ReqBo") ${ClassName}ReqBo ${className}ReqBo);
+#end
+#if($table.sub)
+
+    /**
+     * 批量删除${subTable.functionName}
+     * 
+     * @param ${pkColumn.javaField}s 需要删除的数据主键数组
+     * @return 影响行数
+     */
+    int delete${subClassName}By${subTableFkClassName}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
+    
+    /**
+     * 批量新增${subTable.functionName}
+     * 
+     * @param ${subclassName}List ${subTable.functionName}列表
+     * @return 影响行数
+     */
+    int batch${subClassName}(java.util.List<${subClassName}> ${subclassName}List);
+    
+
+    /**
+     * 通过${functionName}主键删除${subTable.functionName}信息
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return 影响行数
+     */
+    int delete${subClassName}By${subTableFkClassName}(${pkColumn.javaType} ${pkColumn.javaField});
+#end
+}
+

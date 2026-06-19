@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.system.mapper.SysRoleMapper">
+
+    <resultMap type="cn.org.starpivot.system.domain.entity.SysRole" id="SysRoleMap">
+        <result property="roleId" column="role_id" jdbcType="INTEGER"/>
+        <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+        <result property="roleKey" column="role_key" jdbcType="VARCHAR"/>
+        <result property="roleSort" column="role_sort" jdbcType="INTEGER"/>
+        <result property="dataScope" column="data_scope" jdbcType="VARCHAR"/>
+        <result property="menuCheckStrictly" column="menu_check_strictly" jdbcType="INTEGER"/>
+        <result property="deptCheckStrictly" column="dept_check_strictly" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="selectRolesByUserId" resultType="cn.org.starpivot.system.domain.entity.SysRole">
+        select r.* from sys_role r
+        inner join sys_user_role ur on r.role_id = ur.role_id
+        where ur.user_id = #{userId}
+    </select>
+    <select id="selectPageList" resultType="cn.org.starpivot.system.domain.entity.SysRole">
+        select r.* from sys_role r
+       <where>
+           1=1 and r.del_flag = '0'
+           <if test="param.roleName != null and param.roleName != ''">
+               and r.role_name like concat('%',#{param.roleName},'%')
+           </if>
+           <if test="param.roleKey != null and param.roleKey != ''">
+               and r.role_key like concat('%',#{param.roleKey},'%')
+           </if>
+           <if test="param.status != null and param.status != ''">
+               and r.status = #{param.status}
+           </if>
+           <!-- 濡傛灉浼犲叆浜嗗紑濮嬫椂闂达紝鍒欐煡璇㈠垱寤烘椂闂村ぇ浜庣瓑浜庡紑濮嬫椂闂寸殑璁板綍 -->
+           <if test="param.startTime != null">
+               and r.create_time &gt;= #{param.startTime}
+           </if>
+
+           <!-- 濡傛灉浼犲叆浜嗙粨鏉熸椂闂达紝鍒欐煡璇㈠垱寤烘椂闂村皬浜庣瓑浜庣粨鏉熸椂闂寸殑璁板綍 -->
+           <if test="param.endTime != null">
+               and r.create_time &lt;= #{param.endTime}
+           </if>
+       </where>
+        order by r.role_sort
+    </select>
+    <select id="selectRoleListByUserId" resultType="cn.org.starpivot.system.domain.entity.SysRole">
+        select r.* from sys_role r
+        inner join sys_user_role ur on r.role_id = ur.role_id
+        where ur.user_id = #{userId} and r.del_flag = '0' and r.status = '0'
+    </select>
+</mapper>
+
+

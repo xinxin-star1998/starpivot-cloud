@@ -1,0 +1,171 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: starpivot-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: starpivot-auth
+          uri: lb://starpivot-auth
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        - id: starpivot-auth-api
+          uri: lb://starpivot-auth
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=2
+        - id: starpivot-auth-v1
+          uri: lb://starpivot-auth
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=3
+        - id: starpivot-sys
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/sys/**
+        - id: starpivot-system
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/system/**
+          filters:
+            - StripPrefix=1
+        - id: starpivot-system-api
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/api/system/**
+          filters:
+            - StripPrefix=2
+        - id: starpivot-system-v1
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/api/v1/system/**
+          filters:
+            - StripPrefix=2
+        - id: starpivot-router
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/router/**
+        - id: starpivot-router-v1
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/api/v1/router/**
+          filters:
+            - StripPrefix=2
+        - id: starpivot-common-upload
+          uri: lb://starpivot-file
+          predicates:
+            - Path=/common/upload/**
+        - id: starpivot-avatar
+          uri: lb://starpivot-system
+          predicates:
+            - Path=/avatar/**
+        - id: starpivot-file
+          uri: lb://starpivot-file
+          predicates:
+            - Path=/file/**
+          filters:
+            - StripPrefix=1
+        - id: starpivot-tool-gen
+          uri: lb://starpivot-generator
+          predicates:
+            - Path=/tool/gen/**
+        - id: starpivot-tool-gen-api
+          uri: lb://starpivot-generator
+          predicates:
+            - Path=/api/tool/gen/**
+          filters:
+            - StripPrefix=1
+        - id: starpivot-tool-gen-v1
+          uri: lb://starpivot-generator
+          predicates:
+            - Path=/api/v1/tool/gen/**
+          filters:
+            - StripPrefix=2
+        - id: starpivot-monitor-api
+          uri: lb://starpivot-monitor
+          predicates:
+            - Path=/api/monitor/**
+          filters:
+            - StripPrefix=1
+        - id: starpivot-monitor-v1
+          uri: lb://starpivot-monitor
+          predicates:
+            - Path=/api/v1/monitor/**
+          filters:
+            - StripPrefix=2
+        - id: starpivot-druid-api
+          uri: lb://starpivot-monitor
+          predicates:
+            - Path=/api/druid/**
+          filters:
+            - StripPrefix=1
+        - id: starpivot-generator
+          uri: lb://starpivot-generator
+          predicates:
+            - Path=/generator/**
+          filters:
+            - StripPrefix=1
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+
+starpivot:
+  jwt:
+    secret: ${JWT_SECRET:Dj4G8272xJONkOqkn1pM8q1n+U5MPLrRUCjXun3/Yeo=}
+    expire: ${JWT_EXPIRE:7200000}
+  gateway:
+    whitelist:
+      - /auth/login
+      - /auth/refresh
+      - /auth/register
+      - /auth/logout
+      - /auth/captcha
+      - /auth/captcha/**
+      - /auth/register/enabled
+      - /api/v1/auth/login
+      - /api/v1/auth/refresh
+      - /api/v1/auth/register
+      - /api/v1/auth/captcha
+      - /api/v1/auth/captcha/**
+      - /api/v1/auth/register/enabled
+      - /**/actuator/**
+      - /**/doc.html
+      - /**/swagger-ui/**
+      - /**/v3/api-docs/**
+      - /**/webjars/**
+      - /router/dynamic-routes
+      - /api/v1/router/dynamic-routes
+      - /api/auth/login
+      - /api/auth/refresh
+      - /api/auth/register
+      - /api/auth/logout
+      - /api/auth/captcha
+      - /api/auth/captcha/**
+      - /api/auth/register/enabled
+      - /api/login
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
