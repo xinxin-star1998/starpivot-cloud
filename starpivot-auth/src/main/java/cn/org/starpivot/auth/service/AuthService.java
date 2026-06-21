@@ -50,6 +50,10 @@ public class AuthService {
     public LoginResponse login(LoginRequest request) {
         HttpServletRequest httpRequest = currentRequest();
         String ip = httpRequest != null ? LogUtils.getClientIp(httpRequest) : "";
+        String browser = httpRequest != null ? LogUtils.getBrowser(httpRequest) : "";
+        String os = httpRequest != null ? LogUtils.getOs(httpRequest) : "";
+        String loginLocation = LogUtils.getLoginLocation(ip);
+        
         try {
             SysUserAuthDto userDto = loadUserForLogin(request.getUsername());
 
@@ -69,7 +73,7 @@ public class AuthService {
                     .build();
 
             String token = JwtUtils.createToken(user, jwtProperties);
-            String refreshToken = refreshTokenService.createRefreshToken(userDto.getUserId());
+            String refreshToken = refreshTokenService.createRefreshToken(userDto.getUserId(), ip, browser, os, loginLocation);
             recordLoginLog(request.getUsername(), ip, httpRequest, "0", AppConstants.LOGIN_SUCCESS);
 
             return LoginResponse.builder()
@@ -175,7 +179,7 @@ public class AuthService {
                         .userId(userDto.getUserId())
                         .username(userDto.getUsername())
                         .nickName(userDto.getNickName() != null ? userDto.getNickName() : userDto.getUsername())
-                        .avatar("")
+                        .avatar(userDto.getAvatar() != null ? userDto.getAvatar() : "")
                         .email("")
                         .phoneNumber("")
                         .sex(0)

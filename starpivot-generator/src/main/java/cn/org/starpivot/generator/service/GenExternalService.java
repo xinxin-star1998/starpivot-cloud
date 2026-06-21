@@ -1,6 +1,6 @@
 package cn.org.starpivot.generator.service;
 
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.generator.domain.dto.external.*;
 import cn.org.starpivot.generator.domain.entity.GenTable;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;

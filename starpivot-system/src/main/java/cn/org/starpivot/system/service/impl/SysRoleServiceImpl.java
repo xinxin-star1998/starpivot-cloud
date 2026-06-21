@@ -1,7 +1,7 @@
 package cn.org.starpivot.system.service.impl;
 
-import cn.org.starpivot.common.domain.PageResponse;
 import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
@@ -13,12 +13,7 @@ import cn.org.starpivot.system.domain.dto.UserRoleDTO;
 import cn.org.starpivot.system.domain.entity.RoleMenu;
 import cn.org.starpivot.system.domain.entity.SysRole;
 import cn.org.starpivot.system.domain.entity.UserRole;
-import cn.org.starpivot.system.mapper.RoleDeptMapper;
-import cn.org.starpivot.system.mapper.RoleMenuMapper;
-import cn.org.starpivot.system.mapper.SysDeptMapper;
-import cn.org.starpivot.system.mapper.SysMenuMapper;
-import cn.org.starpivot.system.mapper.SysRoleMapper;
-import cn.org.starpivot.system.mapper.UserRoleMapper;
+import cn.org.starpivot.system.mapper.*;
 import cn.org.starpivot.system.service.SysRoleService;
 import cn.org.starpivot.system.service.UserPermissionCacheService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

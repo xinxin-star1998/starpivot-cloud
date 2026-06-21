@@ -25,7 +25,7 @@
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <!-- 鐢ㄦ埛鍙婂叾瑙掕壊鍏宠仈鏌ヨ鐨?ResultMap锛堜竴瀵瑰鍏崇郴锛?-->
+    <!-- 用户及其角色关联查询的ResultMap（一对多关系）-->
     <resultMap type="cn.org.starpivot.system.domain.entity.SysUser" id="UserWithRolesMap">
         <result property="userId" column="user_id" jdbcType="INTEGER"/>
         <result property="deptId" column="dept_id" jdbcType="INTEGER"/>
@@ -47,7 +47,7 @@
         <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
         <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
-        <!-- 瑙掕壊鍒楄〃锛堜竴瀵瑰鍏崇郴锛?-->
+        <!-- 角色列表（一对多关系）-->
         <collection property="roles" ofType="cn.org.starpivot.system.domain.entity.SysRole">
             <result property="roleId" column="role_id" jdbcType="INTEGER"/>
             <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
@@ -67,17 +67,17 @@
     </resultMap>
 
     <!--
-        缁熶竴鏁版嵁鏉冮檺杩囨护鐗囨銆?
-        浣跨敤 choose 缁撳悎 dataScope/sqlFilter/deptIds/userDeptId/userId 鍙傛暟锛岄伩鍏?SQL 娉ㄥ叆骞跺噺灏戦噸澶嶄唬鐮併€?
-        娉ㄦ剰锛歱aram 鍓嶇紑涓?SysUserMapper 涓?Service 浼犲叆鐨勫弬鏁扮粨鏋勪繚鎸佷竴鑷淬€?
+        统一数据范围处理片段。
+        使用 choose 结合 dataScope/sqlFilter/deptIds/userDeptId/userId 参数，避免SQL注入并减少重复代码。
+        注意：param 前缀为 SysUserMapper 中 Service 传入的参数结构保持一致。
     -->
     <sql id="dataScopeFilter">
-        <!-- 鏁版嵁鏉冮檺杩囨护锛氫娇鐢╟hoose鏍囩閬垮厤SQL娉ㄥ叆椋庨櫓 -->
+        <!-- 数据范围处理：使用choose标签避免SQL注入风险 -->
         <choose>
             <when test="param.dataScope != null and param.dataScope.sqlFilter == '1=1'">
-                <!-- 鍏ㄩ儴鏁版嵁锛屼笉闇€瑕侀澶栨潯浠?-->
+                <!-- 全部数据，不需要额外条件 -->
             </when>
-            <!-- 鏃犳暟鎹潈闄愶細MySQL 涓嶆敮鎸?IN ()锛岀敤涓嶅彲鑳芥垚绔嬬殑鏉′欢锛坉ept_id 閫氬父涓烘鏁?FK锛?-->
+            <!-- 无数据权限：MySQL 不支持 IN ()，用不可能成立的条件（dept_id 通常为正整数FK）-->
             <when test="param.dataScope != null and param.dataScope.sqlFilter == 'EMPTY_IN'">
                 AND u.dept_id = -1
             </when>
@@ -154,7 +154,7 @@
         ORDER BY r.create_time desc
     </select>
 
-    <!-- 鉁?浣跨敤 LEFT JOIN 鏇夸唬澶氭鏌ヨ锛屼竴娆℃€ц幏鍙栫敤鎴峰強鍏惰鑹蹭俊鎭?-->
+    <!-- 优化：使用 LEFT JOIN 避免多次查询，一次获取用户及其角色信息 -->
     <select id="selectUserWithRoles" resultMap="UserWithRolesMap">
         SELECT 
             u.user_id,
@@ -259,7 +259,7 @@
         where del_flag = '0' and status = '0' and user_id = #{userId}
     </select>
 
-    <!-- 鎸夋湀浠界粺璁℃柊澧炵敤鎴锋暟 -->
+    <!-- 按月统计新增用户数 -->
     <select id="countByMonthRange" resultType="java.util.HashMap">
         SELECT
             DATE_FORMAT(create_time, '%Y-%m') as yearMonth,
@@ -270,5 +270,32 @@
           AND create_time &lt; #{end}
         GROUP BY DATE_FORMAT(create_time, '%Y-%m')
         ORDER BY yearMonth
+    </select>
+    <select id="selectRoleKeysByUserId" resultType="java.lang.String">
+        SELECT r.role_key
+        FROM sys_role r
+                 INNER JOIN sys_user_role ur ON r.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND r.del_flag = '0'
+          AND r.status = '0'
+    </select>
+    <select id="selectMenusByUserId" resultType="cn.org.starpivot.system.domain.entity.SysMenu">
+        SELECT m.menu_id, m.menu_name, m.parent_id, m.order_num, m.path, m.component, m.query,
+               m.route_name, m.is_frame, m.is_cache, m.menu_type, m.visible, m.status, m.perms,
+               m.icon, m.create_by, m.create_time, m.update_by, m.update_time, m.remark
+        FROM sys_menu m
+                 INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
+                 INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          AND m.status = '0'
+        ORDER BY m.parent_id, m.order_num
+    </select>
+    <select id="selectAllActiveMenus" resultType="cn.org.starpivot.system.domain.entity.SysMenu">
+        SELECT m.menu_id, m.menu_name, m.parent_id, m.order_num, m.path, m.component, m.query,
+               m.route_name, m.is_frame, m.is_cache, m.menu_type, m.visible, m.status, m.perms,
+               m.icon, m.create_by, m.create_time, m.update_by, m.update_time, m.remark
+        FROM sys_menu m
+        WHERE m.status = '0'
+        ORDER BY m.parent_id, m.order_num
     </select>
 </mapper>

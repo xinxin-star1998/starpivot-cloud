@@ -1,6 +1,6 @@
 package cn.org.starpivot.system.service.impl;
 
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.system.domain.bo.LogininforReqBo;
 import cn.org.starpivot.system.domain.bo.LogininforVO;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
@@ -16,7 +16,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -65,6 +67,16 @@ public class SysLogininforServiceImpl extends ServiceImpl<SysLogininforMapper, S
         pageResponse.setPageSize(pageList.getSize());
         pageResponse.setPageCount(pageList.getPages());
         return pageResponse;
+    }
+
+    @Override
+    public List<Map<String, Object>> countByMonthRange(LocalDateTime start, LocalDateTime end) {
+        return getBaseMapper().countByMonthRange(start, end);
+    }
+
+    @Override
+    public List<Map<String, Object>> countByUserNames(List<String> userNames, LocalDateTime start) {
+        return getBaseMapper().countByUserNames(userNames, start);
     }
 
     private LogininforVO convertToVO(SysLogininfor logininfor) {

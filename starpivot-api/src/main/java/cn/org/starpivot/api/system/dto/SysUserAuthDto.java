@@ -27,4 +27,5 @@ public class SysUserAuthDto implements Serializable {
     private String nickName;
     private String status;
     private List<String> roles;
+    private String avatar;
 }

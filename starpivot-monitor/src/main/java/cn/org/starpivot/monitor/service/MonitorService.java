@@ -1,6 +1,5 @@
 package cn.org.starpivot.monitor.service;
 
-import cn.org.starpivot.common.domain.PageResponse;
 import cn.org.starpivot.monitor.domain.vo.DruidMonitorVO;
 
 import cn.org.starpivot.monitor.domain.vo.OnlineUserVO;

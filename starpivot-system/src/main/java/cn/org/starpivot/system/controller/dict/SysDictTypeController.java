@@ -1,16 +1,16 @@
 package cn.org.starpivot.system.controller.dict;
 
+import cn.org.starpivot.common.annotation.Log;
+import cn.org.starpivot.common.domain.DeleteRequest;
+import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.enums.BusinessType;
+import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.system.domain.bo.SysDictTypeVO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeDTO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeQueryDTO;
 import cn.org.starpivot.system.service.SysDictTypeService;
-import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
-import cn.org.starpivot.common.domain.DeleteRequest;
-import cn.org.starpivot.common.domain.PageResponse;
-import cn.org.starpivot.common.domain.Result;
-import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.common.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

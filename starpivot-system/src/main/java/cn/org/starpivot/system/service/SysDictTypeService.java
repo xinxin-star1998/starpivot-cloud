@@ -1,11 +1,11 @@
 package cn.org.starpivot.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.system.domain.bo.SysDictTypeVO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeDTO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeQueryDTO;
 import cn.org.starpivot.system.domain.entity.SysDictType;
-import cn.org.starpivot.common.domain.PageResponse;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 

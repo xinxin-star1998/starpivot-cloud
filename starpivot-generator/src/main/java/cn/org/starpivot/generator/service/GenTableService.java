@@ -1,10 +1,10 @@
 package cn.org.starpivot.generator.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.generator.domain.bo.GenTableVO;
 import cn.org.starpivot.generator.domain.dto.GenTableQueryDTO;
 import cn.org.starpivot.generator.domain.entity.GenTable;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 import java.util.Map;

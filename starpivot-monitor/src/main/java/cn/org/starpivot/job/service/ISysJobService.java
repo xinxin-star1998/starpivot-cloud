@@ -1,13 +1,13 @@
 package cn.org.starpivot.job.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.job.domain.bo.SysJobLogVO;
 import cn.org.starpivot.job.domain.bo.SysJobVO;
 import cn.org.starpivot.job.domain.dto.SysJobDTO;
 import cn.org.starpivot.job.domain.dto.SysJobLogQueryDTO;
 import cn.org.starpivot.job.domain.dto.SysJobQueryDTO;
 import cn.org.starpivot.job.domain.entity.SysJob;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 

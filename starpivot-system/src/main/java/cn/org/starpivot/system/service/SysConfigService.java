@@ -1,6 +1,6 @@
 package cn.org.starpivot.system.service;
 
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.system.domain.bo.SysConfigVO;
 import cn.org.starpivot.system.domain.dto.SysConfigDTO;
 import cn.org.starpivot.system.domain.dto.SysConfigQueryDTO;

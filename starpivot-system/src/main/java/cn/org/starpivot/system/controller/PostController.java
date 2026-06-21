@@ -1,12 +1,12 @@
 package cn.org.starpivot.system.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.system.domain.bo.PostBo;
 import cn.org.starpivot.system.domain.bo.PostVO;
 import cn.org.starpivot.system.domain.dto.PostDTO;

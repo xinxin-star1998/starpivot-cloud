@@ -104,6 +104,12 @@ spring:
           uri: lb://starpivot-generator
           predicates:
             - Path=/api/v1/tool/gen/**
+        - id: starpivot-monitor
+          uri: lb://starpivot-monitor
+          predicates:
+            - Path=/monitor/**
+          filters:
+            - PrefixPath=/api/v1
         - id: starpivot-monitor-api
           uri: lb://starpivot-monitor
           predicates:

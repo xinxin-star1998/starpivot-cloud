@@ -1,12 +1,16 @@
 package cn.org.starpivot.system.domain.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ConsoleDashboardVo {
 
     private List<CardItem> cardList;
@@ -18,6 +22,8 @@ public class ConsoleDashboardVo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CardItem {
         private String des;
         private String icon;
@@ -27,6 +33,8 @@ public class ConsoleDashboardVo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TrendData {
         private List<String> xAxisData;
         private List<Long> data;
@@ -34,6 +42,8 @@ public class ConsoleDashboardVo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TodoItem {
         private String username;
         private String date;
@@ -42,6 +52,8 @@ public class ConsoleDashboardVo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class DynamicItem {
         private String username;
         private String type;
@@ -50,6 +62,8 @@ public class ConsoleDashboardVo {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class NewUserItem {
         private String username;
         private String province;

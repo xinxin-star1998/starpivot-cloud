@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,18 +25,28 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 基于 cloud 版 RefreshToken（starpivot:refresh:{userId}）的在线用户查询与强退。
+ * 基于 cloud 版 RefreshToken（auth:refresh:{userId}）的在线用户查询与强退。
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CloudOnlineUserService {
 
-    static final String REFRESH_PREFIX = "starpivot:refresh:";
+    static final String REFRESH_PREFIX = "auth:refresh:";
+    
+    // Hash 字段名常量（与 RefreshTokenService 保持一致）
+    private static final String FIELD_IP = "ip";
+    private static final String FIELD_BROWSER = "browser";
+    private static final String FIELD_OS = "os";
+    private static final String FIELD_LOGIN_LOCATION = "loginLocation";
+    private static final String FIELD_LOGIN_TIME = "loginTime";
+    private static final String FIELD_LAST_ACCESS_TIME = "lastAccessTime";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final MonitorUserQueryService monitorUserQueryService;
     private final MonitorDeptQueryService monitorDeptQueryService;
+    
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public List<OnlineUserVO> getOnlineUserList(String userName, String ipaddr) {
         List<OnlineUserVO> result = new ArrayList<>();
@@ -77,25 +88,40 @@ public class CloudOnlineUserService {
                     .collect(Collectors.toMap(MonitorDept::getDeptId, MonitorDept::getDeptName, (a, b) -> a));
 
             for (Map.Entry<String, Long> entry : keyToUserId.entrySet()) {
+                String key = entry.getKey();
                 MonitorUser user = userMap.get(entry.getValue());
                 if (user == null) {
                     continue;
                 }
+                
+                // 从 Redis Hash 中获取客户端信息
+                Map<String, String> clientInfo = getClientInfoFromRedis(key);
+                
                 OnlineUserVO vo = new OnlineUserVO();
-                vo.setSessionId(entry.getKey());
+                vo.setSessionId(key);
                 vo.setUserId(user.getUserId());
                 vo.setUserName(user.getUserName());
                 vo.setNickName(user.getNickName());
                 if (user.getDeptId() != null) {
                     vo.setDeptName(deptNameMap.get(user.getDeptId()));
                 }
-                vo.setIpaddr("");
-                vo.setBrowser("");
-                vo.setOs("");
-                vo.setLoginLocation("");
-                vo.setLoginTime(LocalDateTime.now());
-                vo.setLastAccessTime(vo.getLoginTime());
+                vo.setIpaddr(clientInfo.getOrDefault(FIELD_IP, ""));
+                vo.setBrowser(clientInfo.getOrDefault(FIELD_BROWSER, ""));
+                vo.setOs(clientInfo.getOrDefault(FIELD_OS, ""));
+                vo.setLoginLocation(clientInfo.getOrDefault(FIELD_LOGIN_LOCATION, ""));
+                
+                // 解析登录时间和最后访问时间
+                String loginTimeStr = clientInfo.get(FIELD_LOGIN_TIME);
+                String lastAccessTimeStr = clientInfo.get(FIELD_LAST_ACCESS_TIME);
+                try {
+                    vo.setLoginTime(loginTimeStr != null ? LocalDateTime.parse(loginTimeStr, FORMATTER) : LocalDateTime.now());
+                    vo.setLastAccessTime(lastAccessTimeStr != null ? LocalDateTime.parse(lastAccessTimeStr, FORMATTER) : vo.getLoginTime());
+                } catch (Exception e) {
+                    vo.setLoginTime(LocalDateTime.now());
+                    vo.setLastAccessTime(vo.getLoginTime());
+                }
 
+                // 用户名过滤
                 if (normalizedUserName != null) {
                     String display = user.getUserName() != null ? user.getUserName() : "";
                     String nick = user.getNickName() != null ? user.getNickName() : "";
@@ -103,15 +129,55 @@ public class CloudOnlineUserService {
                         continue;
                     }
                 }
+                
+                // IP地址过滤
                 if (normalizedIpaddr != null && !normalizedIpaddr.isEmpty()) {
-                    continue;
+                    String userIp = vo.getIpaddr();
+                    if (userIp == null || userIp.isEmpty() || !userIp.contains(normalizedIpaddr)) {
+                        continue;
+                    }
                 }
+                
                 result.add(vo);
             }
         } catch (Exception e) {
             log.error("获取在线用户列表失败", e);
         }
         return result;
+    }
+    
+    /**
+     * 从 Redis Hash 中获取客户端信息
+     */
+    private Map<String, String> getClientInfoFromRedis(String key) {
+        Map<String, String> info = new HashMap<>();
+        try {
+            Map<Object, Object> hash = stringRedisTemplate.opsForHash().entries(key);
+            
+            if (hash.isEmpty()) {
+                // 兼容旧版本（字符串存储方式）
+                String token = stringRedisTemplate.opsForValue().get(key);
+                if (token != null) {
+                    // 旧版本只有token，返回空的客户端信息
+                    info.put(FIELD_IP, "");
+                    info.put(FIELD_BROWSER, "");
+                    info.put(FIELD_OS, "");
+                    info.put(FIELD_LOGIN_LOCATION, "");
+                    info.put(FIELD_LOGIN_TIME, "");
+                    info.put(FIELD_LAST_ACCESS_TIME, "");
+                }
+            } else {
+                info.put(FIELD_IP, (String) hash.get(FIELD_IP));
+                info.put(FIELD_BROWSER, (String) hash.get(FIELD_BROWSER));
+                info.put(FIELD_OS, (String) hash.get(FIELD_OS));
+                info.put(FIELD_LOGIN_LOCATION, (String) hash.get(FIELD_LOGIN_LOCATION));
+                info.put(FIELD_LOGIN_TIME, (String) hash.get(FIELD_LOGIN_TIME));
+                info.put(FIELD_LAST_ACCESS_TIME, (String) hash.get(FIELD_LAST_ACCESS_TIME));
+            }
+        } catch (Exception e) {
+            log.warn("获取客户端信息失败, key={}", key, e);
+        }
+        return info;
     }
 
     public boolean forceLogout(String sessionId) {

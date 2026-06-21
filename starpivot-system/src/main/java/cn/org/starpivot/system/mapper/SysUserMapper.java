@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,36 +33,9 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 
     Long selectDeptIdByUserId(@Param("userId") Long userId);
 
-    @Select("""
-            SELECT r.role_key
-            FROM sys_role r
-                     INNER JOIN sys_user_role ur ON r.role_id = ur.role_id
-            WHERE ur.user_id = #{userId}
-              AND r.del_flag = '0'
-              AND r.status = '0'
-            """)
     List<String> selectRoleKeysByUserId(@Param("userId") Long userId);
 
-    @Select("""
-            SELECT m.menu_id, m.menu_name, m.parent_id, m.order_num, m.path, m.component, m.query,
-                   m.route_name, m.is_frame, m.is_cache, m.menu_type, m.visible, m.status, m.perms,
-                   m.icon, m.create_by, m.create_time, m.update_by, m.update_time, m.remark
-            FROM sys_menu m
-                     INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
-                     INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id
-            WHERE ur.user_id = #{userId}
-              AND m.status = '0'
-            ORDER BY m.parent_id, m.order_num
-            """)
     List<SysMenu> selectMenusByUserId(@Param("userId") Long userId);
 
-    @Select("""
-            SELECT m.menu_id, m.menu_name, m.parent_id, m.order_num, m.path, m.component, m.query,
-                   m.route_name, m.is_frame, m.is_cache, m.menu_type, m.visible, m.status, m.perms,
-                   m.icon, m.create_by, m.create_time, m.update_by, m.update_time, m.remark
-            FROM sys_menu m
-            WHERE m.status = '0'
-            ORDER BY m.parent_id, m.order_num
-            """)
     List<SysMenu> selectAllActiveMenus();
 }

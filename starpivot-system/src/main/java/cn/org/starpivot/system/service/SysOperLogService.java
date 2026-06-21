@@ -1,6 +1,6 @@
 package cn.org.starpivot.system.service;
 
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.system.domain.bo.OperLogReqBo;
 import cn.org.starpivot.system.domain.bo.OperLogVO;
 import cn.org.starpivot.system.domain.entity.SysOperLog;

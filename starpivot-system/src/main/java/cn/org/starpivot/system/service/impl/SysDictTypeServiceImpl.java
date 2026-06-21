@@ -1,6 +1,10 @@
 package cn.org.starpivot.system.service.impl;
 
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.exception.ErrorCode;
+import cn.org.starpivot.common.security.utils.SecurityUtils;
+import cn.org.starpivot.common.util.AssertUtils;
 import cn.org.starpivot.system.domain.bo.SysDictTypeVO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeDTO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeQueryDTO;
@@ -9,10 +13,6 @@ import cn.org.starpivot.system.domain.entity.SysDictType;
 import cn.org.starpivot.system.mapper.SysDictDataMapper;
 import cn.org.starpivot.system.mapper.SysDictTypeMapper;
 import cn.org.starpivot.system.service.SysDictTypeService;
-import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.common.util.AssertUtils;
-import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.common.security.utils.SecurityUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

@@ -3,7 +3,6 @@
 import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.List;
 #if($table.crud || $table.sub)
-import cn.org.starpivot.common.domain.PageResponse;
 import ${boPackage}.${ClassName}ReqPageBo;
 #end
 #if($table.tree)

@@ -1,6 +1,6 @@
 package cn.org.starpivot.system.service;
 
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.system.domain.dto.RoleDTO;
 import cn.org.starpivot.system.domain.dto.RolePermissionAssignDTO;
 import cn.org.starpivot.system.domain.dto.RoleQueryDTO;

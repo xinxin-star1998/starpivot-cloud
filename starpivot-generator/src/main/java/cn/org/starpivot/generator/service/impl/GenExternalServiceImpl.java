@@ -1,7 +1,7 @@
 package cn.org.starpivot.generator.service.impl;
 
 import cn.org.starpivot.common.constants.GenConstants;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.generator.config.GenConfig;
 import cn.org.starpivot.generator.config.GenExternalProperties;

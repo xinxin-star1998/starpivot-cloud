@@ -1,12 +1,7 @@
 package cn.org.starpivot.generator.service.impl;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.org.starpivot.common.constants.GenConstants;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.generator.config.GenConfig;
 import cn.org.starpivot.generator.domain.bo.GenTableVO;
@@ -19,6 +14,11 @@ import cn.org.starpivot.generator.mapper.GenTableMapper;
 import cn.org.starpivot.generator.service.GenTableService;
 import cn.org.starpivot.generator.utils.GenUtils;
 import cn.org.starpivot.generator.utils.StringUtils;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,7 +3,7 @@ package cn.org.starpivot.system.service;
 import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.excel.ExcelImportResult;
 import cn.org.starpivot.system.domain.bo.UserReqBo;
 import cn.org.starpivot.system.domain.bo.UserVO;

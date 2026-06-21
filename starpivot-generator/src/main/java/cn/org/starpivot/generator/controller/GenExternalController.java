@@ -1,9 +1,9 @@
 package cn.org.starpivot.generator.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
-import cn.org.starpivot.common.domain.PageResponse;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.generator.domain.dto.external.*;
 import cn.org.starpivot.generator.domain.entity.GenTable;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;

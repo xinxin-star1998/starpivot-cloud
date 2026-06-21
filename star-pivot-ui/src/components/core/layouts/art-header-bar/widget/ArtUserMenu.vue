@@ -88,7 +88,11 @@
   /** 用户头像：优先顶层 avatar（本地更新后），否则 user.avatar，无则用默认图；展示由 ArtAvatarDisplay 内部处理 OSS 私有桶 presigned */
   const avatarUrl = computed(() => {
     const u = userInfo.value as any
-    const url = u?.avatar ?? u?.user?.avatar
+    // 优先使用顶层 avatar（更新后的新值），其次使用 user.avatar（登录时的旧值）
+    const topAvatar = u?.avatar
+    const userAvatar = u?.user?.avatar
+    // 如果顶层 avatar 存在且不为空，使用它；否则使用 user.avatar
+    const url = topAvatar && String(topAvatar).trim() ? topAvatar : userAvatar
     return url && String(url).trim() ? url : defaultAvatarImg
   })
 

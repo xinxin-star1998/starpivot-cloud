@@ -2,14 +2,14 @@ package cn.org.starpivot.system.controller;
 
 import cn.org.starpivot.common.annotation.Log;
 import cn.org.starpivot.common.annotation.NoResponseWrapper;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
-import cn.org.starpivot.common.domain.PageResponse;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.excel.ExcelImportOptions;
 import cn.org.starpivot.common.excel.ExcelImportResult;
 import cn.org.starpivot.common.excel.ExcelToolkit;
 import cn.org.starpivot.common.security.SecurityContextUtils;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.system.domain.bo.UserReqBo;
 import cn.org.starpivot.system.domain.bo.UserVO;
 import cn.org.starpivot.system.domain.dto.ResetPasswordDTO;

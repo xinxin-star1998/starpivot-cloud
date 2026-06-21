@@ -3,9 +3,9 @@ package cn.org.starpivot.system.service.impl;
 import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
-import cn.org.starpivot.common.domain.PageResponse;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.entity.DataScope;
+import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.excel.ExcelImportResult;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
@@ -74,6 +74,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 .nickName(user.getNickName())
                 .status(user.getStatus())
                 .roles(sysUserMapper.selectRoleKeysByUserId(user.getUserId()))
+                .avatar(user.getAvatar())
                 .build();
     }
 
