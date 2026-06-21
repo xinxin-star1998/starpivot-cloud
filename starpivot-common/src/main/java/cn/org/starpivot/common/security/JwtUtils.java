@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JWT 工具类，网关与鉴权服务共用
+ * 提供 JWT 令牌的创建、解析、验证等功能
  */
 public final class JwtUtils {
 
@@ -26,7 +27,17 @@ public final class JwtUtils {
     private JwtUtils() {
     }
 
+    /**
+     * 创建 JWT 令牌
+     *
+     * @param user       用户信息
+     * @param properties JWT 配置属性
+     * @return JWT 令牌字符串
+     */
     public static String createToken(LoginUser user, JwtProperties properties) {
+        validateUser(user);
+        validateProperties(properties);
+
         SecretKey key = getSigningKey(properties.getSecret());
         long expirationTime = System.currentTimeMillis() + properties.getExpire();
 
@@ -40,7 +51,17 @@ public final class JwtUtils {
                 .compact();
     }
 
+    /**
+     * 解析 JWT 令牌，提取声明信息
+     *
+     * @param token  JWT 令牌
+     * @param secret 签名密钥
+     * @return Claims 对象
+     * @throws JwtTokenException 如果令牌无效
+     */
     public static Claims parseToken(String token, String secret) {
+        validateTokenAndSecret(token, secret);
+
         try {
             return Jwts.parser()
                     .verifyWith(getSigningKey(secret))
@@ -48,19 +69,41 @@ public final class JwtUtils {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            throw e;
-        } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            throw new RuntimeException("Invalid JWT token", e);
+            throw new JwtTokenException(JwtTokenException.TokenError.EXPIRED, "Token has expired", e);
+        } catch (UnsupportedJwtException e) {
+            throw new JwtTokenException(JwtTokenException.TokenError.UNSUPPORTED, "Unsupported JWT token", e);
+        } catch (MalformedJwtException e) {
+            throw new JwtTokenException(JwtTokenException.TokenError.MALFORMED, "Malformed JWT token", e);
+        } catch (SignatureException e) {
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_SIGNATURE, "Invalid JWT signature", e);
+        } catch (IllegalArgumentException e) {
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_FORMAT, "Invalid token format", e);
         }
     }
 
+    /**
+     * 将 Claims 转换为 LoginUser 对象
+     *
+     * @param claims JWT 声明
+     * @return LoginUser 对象
+     */
     public static LoginUser toLoginUser(Claims claims) {
+        if (claims == null) {
+            throw new IllegalArgumentException("Claims cannot be null");
+        }
+
         Long userId = claims.get(SecurityConstants.CLAIM_USER_ID, Long.class);
         String username = claims.getSubject();
+
+        if (username == null || username.isEmpty()) {
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_CLAIMS, "Username claim is missing");
+        }
+
         List<String> roles = claims.get(SecurityConstants.CLAIM_ROLES, List.class);
         if (roles == null) {
             roles = Collections.emptyList();
         }
+
         return LoginUser.builder()
                 .userId(userId)
                 .username(username)
@@ -68,31 +111,136 @@ public final class JwtUtils {
                 .build();
     }
 
+    /**
+     * 检查令牌是否已过期
+     *
+     * @param token  JWT 令牌
+     * @param secret 签名密钥
+     * @return true-已过期，false-未过期
+     */
     public static boolean isExpired(String token, String secret) {
         try {
             parseToken(token, secret);
             return false;
+        } catch (JwtTokenException e) {
+            return JwtTokenException.TokenError.EXPIRED.equals(e.getError());
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    /**
+     * 从 Authorization 头中提取令牌
+     *
+     * @param authorizationHeader Authorization 头值
+     * @return JWT 令牌（不含 Bearer 前缀），如果无效返回 null
+     */
+    public static String resolveToken(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isEmpty()) {
+            return null;
+        }
+
+        if (!authorizationHeader.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+            return null;
+        }
+
+        String token = authorizationHeader.substring(SecurityConstants.TOKEN_PREFIX.length()).trim();
+        return token.isEmpty() ? null : token;
+    }
+
+    /**
+     * 验证令牌结构和签名（不检查过期）
+     *
+     * @param token  JWT 令牌
+     * @param secret 签名密钥
+     * @return true-有效，false-无效
+     */
+    public static boolean isValid(String token, String secret) {
+        try {
+            validateTokenAndSecret(token, secret);
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey(secret))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getSubject() != null;
         } catch (ExpiredJwtException e) {
             return true;
-        } catch (RuntimeException e) {
-            // Token is invalid, treat as expired
-            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
-    public static String resolveToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith(SecurityConstants.TOKEN_PREFIX)) {
-            return authorizationHeader.substring(SecurityConstants.TOKEN_PREFIX.length()).trim();
-        }
-        return null;
+    /**
+     * 获取令牌的过期时间
+     *
+     * @param token  JWT 令牌
+     * @param secret 签名密钥
+     * @return 过期时间
+     */
+    public static Date getExpirationDateFromToken(String token, String secret) {
+        Claims claims = parseToken(token, secret);
+        return claims.getExpiration();
     }
 
+    /**
+     * 从令牌中获取用户名
+     *
+     * @param token  JWT 令牌
+     * @param secret 签名密钥
+     * @return 用户名
+     */
+    public static String getUsernameFromToken(String token, String secret) {
+        Claims claims = parseToken(token, secret);
+        return claims.getSubject();
+    }
+
+    /**
+     * 检查令牌是否即将过期
+     *
+     * @param token          JWT 令牌
+     * @param secret         签名密钥
+     * @param gracePeriodMs  宽限期（毫秒）
+     * @return true-即将过期，false-未过期
+     */
+    public static boolean isAboutToExpire(String token, String secret, long gracePeriodMs) {
+        Date expiration = getExpirationDateFromToken(token, secret);
+        if (expiration == null) {
+            return false;
+        }
+        long currentTime = System.currentTimeMillis();
+        return (expiration.getTime() - currentTime) < gracePeriodMs;
+    }
+
+    /**
+     * 获取令牌的剩余有效期（秒）
+     *
+     * @param token  JWT 令牌
+     * @param secret 签名密钥
+     * @return 剩余秒数，无效返回 -1
+     */
+    public static long getRemainingSeconds(String token, String secret) {
+        try {
+            Date expiration = getExpirationDateFromToken(token, secret);
+            if (expiration == null) {
+                return -1;
+            }
+            long remaining = expiration.getTime() - System.currentTimeMillis();
+            return Math.max(0, remaining / 1000);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /**
+     * 获取签名密钥
+     */
     private static SecretKey getSigningKey(String secret) {
         if (secret == null || secret.isEmpty()) {
             throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
 
-        // Ensure secret key length is sufficient for HMAC algorithm
+        // 确保密钥长度足够安全（至少32字符用于HS256）
         if (secret.length() < 32) {
             throw new IllegalArgumentException("JWT secret must be at least 32 characters for secure signing");
         }
@@ -101,39 +249,82 @@ public final class JwtUtils {
     }
 
     /**
-     * Validates token structure and signature without checking expiration
+     * 验证用户信息
      */
-    public static boolean isValid(String token, String secret) {
-        try {
-            parseToken(token, secret);
-            return true;
-        } catch (Exception e) {
-            return false;
+    private static void validateUser(LoginUser user) {
+        if (user == null) {
+            throw new IllegalArgumentException("LoginUser cannot be null");
+        }
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
         }
     }
 
     /**
-     * Gets the expiration date of the token
+     * 验证配置属性
      */
-    public static Date getExpirationDateFromToken(String token, String secret) {
-        Claims claims = parseToken(token, secret);
-        return claims.getExpiration();
+    private static void validateProperties(JwtProperties properties) {
+        if (properties == null) {
+            throw new IllegalArgumentException("JwtProperties cannot be null");
+        }
+        if (properties.getSecret() == null || properties.getSecret().isEmpty()) {
+            throw new IllegalArgumentException("JWT secret cannot be null or empty");
+        }
+        if (properties.getExpire() <= 0) {
+            throw new IllegalArgumentException("JWT expiration must be positive");
+        }
     }
 
     /**
-     * Gets the username from the token
+     * 验证令牌和密钥
      */
-    public static String getUsernameFromToken(String token, String secret) {
-        Claims claims = parseToken(token, secret);
-        return claims.getSubject();
+    private static void validateTokenAndSecret(String token, String secret) {
+        if (token == null || token.isEmpty()) {
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_FORMAT, "Token cannot be null or empty");
+        }
+        if (secret == null || secret.isEmpty()) {
+            throw new IllegalArgumentException("Secret cannot be null or empty");
+        }
     }
 
     /**
-     * Checks if token is about to expire (within 5 minutes)
+     * JWT 令牌异常类
      */
-    public static boolean isAboutToExpire(String token, String secret, long gracePeriodMs) {
-        Date expiration = getExpirationDateFromToken(token, secret);
-        long currentTime = System.currentTimeMillis();
-        return expiration != null && (expiration.getTime() - currentTime) < gracePeriodMs;
+    public static class JwtTokenException extends RuntimeException {
+
+        private final TokenError error;
+
+        public enum TokenError {
+            EXPIRED("Token has expired"),
+            INVALID_SIGNATURE("Invalid token signature"),
+            MALFORMED("Malformed token structure"),
+            UNSUPPORTED("Unsupported token type"),
+            INVALID_FORMAT("Invalid token format"),
+            INVALID_CLAIMS("Invalid token claims");
+
+            private final String message;
+
+            TokenError(String message) {
+                this.message = message;
+            }
+
+            public String getMessage() {
+                return message;
+            }
+        }
+
+        public JwtTokenException(TokenError error, String message) {
+            super(message);
+            this.error = error;
+        }
+
+        public JwtTokenException(TokenError error, String message, Throwable cause) {
+            super(message, cause);
+            this.error = error;
+        }
+
+        public TokenError getError() {
+            return error;
+        }
     }
 }

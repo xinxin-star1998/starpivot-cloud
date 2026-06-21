@@ -4,7 +4,7 @@ import cn.org.starpivot.common.security.JwtProperties;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.LoginUser;
 import cn.org.starpivot.common.security.SecurityConstants;
-import cn.org.starpivot.system.mapper.SysMenuMapper;
+import cn.org.starpivot.system.service.AuthorityLoaderService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,11 +20,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 从网关透传 Header 或 Bearer Token 构建 SecurityContext，并加载菜单权限到 authorities。
@@ -34,7 +31,7 @@ import java.util.Set;
 public class GatewayAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProperties jwtProperties;
-    private final SysMenuMapper sysMenuMapper;
+    private final AuthorityLoaderService authorityLoaderService;
 
     @Override
     protected void doFilterInternal(
@@ -83,17 +80,7 @@ public class GatewayAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void setAuthentication(LoginUser user) {
-        Set<String> authoritySet = new LinkedHashSet<>();
-        if (user.getRoles() != null) {
-            authoritySet.addAll(user.getRoles());
-        }
-        List<String> permissions = sysMenuMapper.selectPermissionsByUserId(user.getUserId());
-        if (permissions != null) {
-            permissions.stream()
-                    .filter(StringUtils::hasText)
-                    .forEach(authoritySet::add);
-        }
-        List<SimpleGrantedAuthority> authorities = authoritySet.stream()
+        List<SimpleGrantedAuthority> authorities = authorityLoaderService.loadAuthorities(user).stream()
                 .map(SimpleGrantedAuthority::new)
                 .toList();
         var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);

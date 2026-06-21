@@ -57,6 +57,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private final DataScopeService dataScopeService;
     private final UserVOAssembler userVOAssembler;
     private final TransactionTemplate transactionTemplate;
+    private final SecurityUtils securityUtils;
 
     @Override
     public SysUserAuthDto getAuthByUsername(String username) {
@@ -134,8 +135,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUser.setStatus(StringUtils.hasText(userDTO.getStatus()) ? userDTO.getStatus() : AppConstants.Status.NORMAL);
         sysUser.setDelFlag(AppConstants.DelFlag.NORMAL);
         sysUser.setPassword(StringUtils.hasText(userDTO.getPassword())
-                ? SecurityUtils.encryptPassword(userDTO.getPassword())
-                : SecurityUtils.encryptPassword("Star123456"));
+                ? securityUtils.encryptPassword(userDTO.getPassword())
+                : securityUtils.encryptPassword("Star123456"));
         sysUser.setCreateBy(SecurityContextUtils.getUsername());
         sysUser.setCreateTime(LocalDateTime.now());
 
@@ -210,7 +211,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
             throw new BizException(ErrorCode.USER_NOT_FOUND, "用户不存在");
         }
-        user.setPassword(SecurityUtils.encryptPassword(password));
+        user.setPassword(securityUtils.encryptPassword(password));
         user.setPwdUpdateDate(LocalDateTime.now());
         user.setUpdateBy(SecurityContextUtils.getUsername());
         user.setUpdateTime(LocalDateTime.now());
@@ -227,13 +228,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
             throw new BizException(ErrorCode.USER_NOT_FOUND, "用户不存在");
         }
-        if (!SecurityUtils.matchesPassword(oldPassword, user.getPassword())) {
+        if (!securityUtils.matchesPassword(oldPassword, user.getPassword())) {
             throw new BizException(ErrorCode.USER_PASSWORD_ERROR, "旧密码不正确");
         }
-        if (SecurityUtils.matchesPassword(newPassword, user.getPassword())) {
+        if (securityUtils.matchesPassword(newPassword, user.getPassword())) {
             throw new BizException(ErrorCode.PARAM_INVALID, "新密码不能与旧密码相同");
         }
-        user.setPassword(SecurityUtils.encryptPassword(newPassword));
+        user.setPassword(securityUtils.encryptPassword(newPassword));
         user.setPwdUpdateDate(LocalDateTime.now());
         user.setUpdateBy(SecurityContextUtils.getUsername());
         user.setUpdateTime(LocalDateTime.now());

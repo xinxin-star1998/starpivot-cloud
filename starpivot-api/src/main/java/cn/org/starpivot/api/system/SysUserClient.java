@@ -19,12 +19,12 @@ import java.util.List;
 @FeignClient(name = "starpivot-system", contextId = "sysUserClient")
 public interface SysUserClient {
 
-    @GetMapping("/internal/user/username/{username}")
+    @GetMapping("/api/v1/internal/user/username/{username}")
     Result<SysUserAuthDto> getByUsername(@PathVariable("username") String username);
 
-    @GetMapping("/internal/user/{userId}/menus")
+    @GetMapping("/api/v1/internal/user/{userId}/menus")
     Result<List<SysMenuDto>> getUserMenus(@PathVariable("userId") Long userId);
 
-    @PostMapping("/internal/user/register")
+    @PostMapping("/api/v1/internal/user/register")
     Result<RegisterUserResponse> registerUser(@RequestBody RegisterUserRequest request);
 }

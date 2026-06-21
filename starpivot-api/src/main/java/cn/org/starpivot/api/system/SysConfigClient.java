@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient(name = "starpivot-system", contextId = "sysConfigClient")
 public interface SysConfigClient {
 
-    @GetMapping("/internal/config/register-enabled")
+    @GetMapping("/api/v1/internal/config/register-enabled")
     Result<Boolean> isRegisterEnabled();
 }

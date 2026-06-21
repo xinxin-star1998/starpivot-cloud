@@ -6,7 +6,7 @@ import request from '@/utils/http'
 export function fetchGetRoleList(params: Api.SystemManage.RoleSearchParams) {
   return request.post<Api.SystemManage.RoleList>({
     url: '/api/sys/role/list',
-    params
+    data: params
   })
 }
 

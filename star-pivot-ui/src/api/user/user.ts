@@ -12,7 +12,7 @@ import {
 export function fetchGetUserList(params: Api.SystemManage.UserSearchParams) {
   return request.post<Api.SystemManage.UserList>({
     url: '/api/sys/user/pageList',
-    params
+    data: params
   })
 }
 

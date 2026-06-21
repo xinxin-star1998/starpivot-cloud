@@ -1,5 +1,6 @@
 package cn.org.starpivot.monitor.filter;
 
+import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.security.JwtProperties;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.LoginUser;
@@ -83,7 +84,9 @@ public class MonitorAuthenticationFilter extends OncePerRequestFilter {
         if (user.getRoles() != null) {
             authoritySet.addAll(user.getRoles());
         }
-        List<String> permissions = authMenuMapper.selectPermissionsByUserId(user.getUserId());
+        List<String> permissions = isSuperUser(user)
+                ? authMenuMapper.selectAllPermissionStrings()
+                : authMenuMapper.selectPermissionsByUserId(user.getUserId());
         if (permissions != null) {
             permissions.stream()
                     .filter(StringUtils::hasText)
@@ -94,6 +97,14 @@ public class MonitorAuthenticationFilter extends OncePerRequestFilter {
                 .toList();
         var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private boolean isSuperUser(LoginUser user) {
+        if (user.getUserId() != null && AppConstants.ADMIN_USER_ID.equals(user.getUserId())) {
+            return true;
+        }
+        return user.getRoles() != null
+                && user.getRoles().stream().anyMatch(AppConstants.ADMIN_ROLE_KEY::equals);
     }
 
     private static List<String> parseCsv(String value) {

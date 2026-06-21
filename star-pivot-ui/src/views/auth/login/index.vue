@@ -363,7 +363,11 @@
   // 组件挂载时获取验证码并加载保存的登录信息
   onMounted(async () => {
     loadSavedLoginInfo()
-    registerEnabled.value = await isRegisterEnabled()
+    try {
+      registerEnabled.value = await isRegisterEnabled()
+    } catch {
+      registerEnabled.value = false
+    }
     refreshCaptcha()
   })
 

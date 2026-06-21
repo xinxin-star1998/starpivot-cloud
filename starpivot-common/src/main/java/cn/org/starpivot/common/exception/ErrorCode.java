@@ -73,4 +73,7 @@ public interface ErrorCode extends BaseErrorCode {
     int BUSINESS_ERROR = 90005;
     int REQUEST_TOO_FREQUENT = 90006;
     int REDIS_ERROR = 90007;
+
+    // ========== 通知公告模块 ==========
+    int NOTICE_NOT_FOUND = 100001;
 }

@@ -21,4 +21,13 @@ public interface AuthMenuMapper {
               AND m.perms <> ''
             """)
     List<String> selectPermissionsByUserId(@Param("userId") Long userId);
+
+    @Select("""
+            SELECT DISTINCT perms
+            FROM sys_menu
+            WHERE status = '0'
+              AND perms IS NOT NULL
+              AND perms <> ''
+            """)
+    List<String> selectAllPermissionStrings();
 }

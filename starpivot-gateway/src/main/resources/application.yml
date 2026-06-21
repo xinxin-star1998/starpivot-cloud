@@ -22,104 +22,113 @@ spring:
             - Path=/auth/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
         - id: starpivot-auth-api
           uri: lb://starpivot-auth
           predicates:
             - Path=/api/auth/**
           filters:
             - StripPrefix=2
+            - PrefixPath=/api/v1
         - id: starpivot-auth-v1
           uri: lb://starpivot-auth
           predicates:
             - Path=/api/v1/auth/**
-          filters:
-            - StripPrefix=3
         - id: starpivot-sys
           uri: lb://starpivot-system
           predicates:
             - Path=/sys/**
+          filters:
+            - PrefixPath=/api/v1
         - id: starpivot-system
           uri: lb://starpivot-system
           predicates:
             - Path=/system/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
         - id: starpivot-system-api
           uri: lb://starpivot-system
           predicates:
             - Path=/api/system/**
           filters:
             - StripPrefix=2
+            - PrefixPath=/api/v1
         - id: starpivot-system-v1
           uri: lb://starpivot-system
           predicates:
             - Path=/api/v1/system/**
-          filters:
-            - StripPrefix=2
         - id: starpivot-router
           uri: lb://starpivot-system
           predicates:
             - Path=/router/**
+          filters:
+            - PrefixPath=/api/v1
         - id: starpivot-router-v1
           uri: lb://starpivot-system
           predicates:
             - Path=/api/v1/router/**
-          filters:
-            - StripPrefix=2
         - id: starpivot-common-upload
           uri: lb://starpivot-file
           predicates:
             - Path=/common/upload/**
+          filters:
+            - PrefixPath=/api/v1
         - id: starpivot-avatar
           uri: lb://starpivot-system
           predicates:
             - Path=/avatar/**
+          filters:
+            - PrefixPath=/api/v1
         - id: starpivot-file
           uri: lb://starpivot-file
           predicates:
             - Path=/file/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
         - id: starpivot-tool-gen
           uri: lb://starpivot-generator
           predicates:
             - Path=/tool/gen/**
+          filters:
+            - PrefixPath=/api/v1
         - id: starpivot-tool-gen-api
           uri: lb://starpivot-generator
           predicates:
             - Path=/api/tool/gen/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
         - id: starpivot-tool-gen-v1
           uri: lb://starpivot-generator
           predicates:
             - Path=/api/v1/tool/gen/**
-          filters:
-            - StripPrefix=2
         - id: starpivot-monitor-api
           uri: lb://starpivot-monitor
           predicates:
             - Path=/api/monitor/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
         - id: starpivot-monitor-v1
           uri: lb://starpivot-monitor
           predicates:
             - Path=/api/v1/monitor/**
-          filters:
-            - StripPrefix=2
         - id: starpivot-druid-api
           uri: lb://starpivot-monitor
           predicates:
             - Path=/api/druid/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
         - id: starpivot-generator
           uri: lb://starpivot-generator
           predicates:
             - Path=/generator/**
           filters:
             - StripPrefix=1
+            - PrefixPath=/api/v1
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}

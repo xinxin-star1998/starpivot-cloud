@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "starpivot-system", contextId = "sysLoginLogClient")
 public interface SysLoginLogClient {
 
-    @PostMapping("/internal/logininfor")
+    @PostMapping("/api/v1/internal/logininfor")
     Result<Void> saveLoginLog(@RequestBody LoginLogDto loginLogDto);
 }

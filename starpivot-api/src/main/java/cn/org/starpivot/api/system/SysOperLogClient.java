@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 @FeignClient(name = "starpivot-system", contextId = "sysOperLogClient")
 public interface SysOperLogClient {
 
-    @DeleteMapping("/internal/operlog/clean")
+    @DeleteMapping("/api/v1/internal/operlog/clean")
     Result<Void> cleanAll();
 }

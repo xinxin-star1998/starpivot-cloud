@@ -1,5 +1,6 @@
 package cn.org.starpivot.common.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -10,13 +11,10 @@ import org.springframework.stereotype.Component;
  * 确保整个系统使用统一的密码编码策略
  */
 @Component
-public final class SecurityUtils {
+@RequiredArgsConstructor
+public class SecurityUtils {
 
     private static PasswordEncoder passwordEncoder;
-
-    public SecurityUtils(PasswordEncoder passwordEncoder) {
-        SecurityUtils.passwordEncoder = passwordEncoder;
-    }
 
     /**
      * 加密密码
@@ -33,7 +31,7 @@ public final class SecurityUtils {
      * @param encodedPassword 加密后的密码
      * @return 是否匹配
      */
-    public static boolean matchesPassword(String rawPassword, String encodedPassword) {
+    public boolean matchesPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }
