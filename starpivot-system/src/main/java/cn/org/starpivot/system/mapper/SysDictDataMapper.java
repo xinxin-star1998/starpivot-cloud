@@ -8,10 +8,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * 字典数据Mapper接口
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典数据 Mapper 接口。
+ * <p>提供按字典类型批量查询字典数据项的自定义 SQL。</p>
  */
 @Mapper
 public interface SysDictDataMapper extends BaseMapper<SysDictData> {

@@ -6,31 +6,17 @@ spring:
     name: starpivot-gateway
   config:
     import:
+      - optional:classpath:application-nacos.yml
       - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
       - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
   cloud:
-    nacos:
-      username: ${NACOS_USERNAME:nacos}
-      password: ${NACOS_PASSWORD:nacos}
-      discovery:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: ${NACOS_GROUP:DEFAULT_GROUP}
-      config:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: ${NACOS_GROUP:DEFAULT_GROUP}
-        file-extension: yaml
-        refresh-enabled: true
-        import-check:
-          enabled: false
     gateway:
       routes:
-        # 认证服务（前端 /auth/* 路径会改写为 Controller 实际路径）
+        # 认证服务：前端统一走 /api/v1/auth/*，网关改写为 Controller 实际路径
         - id: starpivot-auth
           uri: lb://starpivot-auth
           predicates:
-            - Path=/api/${starpivot.api.version}/auth/**,/api/${starpivot.api.version}/login,/api/${starpivot.api.version}/refresh,/api/${starpivot.api.version}/register,/api/${starpivot.api.version}/logout,/api/${starpivot.api.version}/user/**,/api/${starpivot.api.version}/captcha,/api/${starpivot.api.version}/captcha/**,/api/${starpivot.api.version}/register/**
+            - Path=/api/${starpivot.api.version}/auth/**
           filters:
             - RewritePath=/api/(?<version>v\d+)/auth/(?<segment>.*), /api/$\{version}/$\{segment}
         # 系统服务
@@ -61,18 +47,8 @@ spring:
 starpivot:
   api:
     version: ${API_VERSION:v1}
-  jwt:
-    secret: ${JWT_SECRET:dev-local-jwt-secret-must-be-at-least-32-chars}
-    expire: ${JWT_EXPIRE:7200000}
   gateway:
     whitelist:
-      - /api/${starpivot.api.version}/login
-      - /api/${starpivot.api.version}/refresh
-      - /api/${starpivot.api.version}/register
-      - /api/${starpivot.api.version}/logout
-      - /api/${starpivot.api.version}/captcha
-      - /api/${starpivot.api.version}/captcha/**
-      - /api/${starpivot.api.version}/register/enabled
       - /api/${starpivot.api.version}/auth/login
       - /api/${starpivot.api.version}/auth/refresh
       - /api/${starpivot.api.version}/auth/register
@@ -91,7 +67,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
 
 logging:
   level:

@@ -8,24 +8,9 @@ spring:
     name: starpivot-generator
   config:
     import:
+      - optional:classpath:application-nacos.yml
       - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
       - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
-  cloud:
-    nacos:
-      username: ${NACOS_USERNAME:nacos}
-      password: ${NACOS_PASSWORD:nacos}
-      discovery:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: ${NACOS_GROUP:DEFAULT_GROUP}
-      config:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: ${NACOS_GROUP:DEFAULT_GROUP}
-        file-extension: yaml
-        refresh-enabled: true
-        import-check:
-          enabled: false
   datasource:
     url: ${DB_URL:jdbc:mysql://127.0.0.1:3307/starpivot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
     username: ${DB_USERNAME:root}
@@ -33,7 +18,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 mybatis-plus:
-  mapper-locations: classpath*:mapper/**/*.xml
+  mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

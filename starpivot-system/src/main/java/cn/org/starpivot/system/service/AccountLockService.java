@@ -19,8 +19,16 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 账号锁定服务
- * 负责管理用户登录失败次数、账号锁定状态和解锁逻辑
+ * 账号锁定服务类。
+ * <p>
+ * 基于 Redis 管理用户登录失败次数、账号临时锁定状态及管理员解锁逻辑。
+ * 配置项：{@code starpivot.security.login.max-fail-count}、
+ * {@code starpivot.security.login.lock-duration}。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link Service} — Spring 服务组件</li>
+ * </ul>
  */
 @Slf4j
 @Service
@@ -167,13 +175,18 @@ public class AccountLockService {
         return maxFailCount;
     }
 
+    /**
+     * 账户解锁操作结果。
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UnlockResult implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
+        /** 是否解锁成功 */
         private boolean success;
+        /** 结果描述消息 */
         private String message;
     }
 }

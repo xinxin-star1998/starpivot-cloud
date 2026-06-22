@@ -14,7 +14,14 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * 禁止通过网关访问 /internal/** 内部接口，仅供 Feign 直连微服务
+ * 内部接口路径拦截全局过滤器（响应式）。
+ * <p>
+ * 禁止通过网关访问包含 {@code /internal/} 的路径；此类接口仅供 Feign 直连微服务，
+ * 不应暴露给外部客户端。运行于 WebFlux {@link GlobalFilter} 链，<strong>非</strong> Servlet 过滤器。
+ * <ul>
+ *   <li>{@link Component} — 注册为 Spring Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 注入 {@link ObjectMapper} 序列化 403 响应</li>
+ * </ul>
  */
 @Component
 @RequiredArgsConstructor
@@ -22,6 +29,13 @@ public class InternalPathBlockFilter implements GlobalFilter, Ordered {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * 若请求路径包含 {@code /internal/} 则返回 403 JSON，否则继续转发。
+     *
+     * @param exchange 当前请求的响应式上下文
+     * @param chain    网关过滤器链
+     * @return 拦截或继续路由的 {@link Mono}
+     */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
@@ -39,6 +53,11 @@ public class InternalPathBlockFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange);
     }
 
+    /**
+     * 过滤器顺序：与 {@link StripUserHeadersFilter} 同级，尽早拦截非法内部路径访问。
+     *
+     * @return {@link Ordered#HIGHEST_PRECEDENCE} + 50
+     */
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE + 50;

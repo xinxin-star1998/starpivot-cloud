@@ -23,10 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 通知公告Service业务层实现
- * 
- * @author admin
- * @date 2026-02-05
+ * 通知公告服务实现类。
+ * <p>实现 {@link ISysNoticeService}，提供通知公告的增删改查及分页查询。</p>
  */
 @Slf4j
 @Service

@@ -10,10 +10,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.List;
 
 /**
- * 字典数据服务接口
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典数据服务接口。
+ * <p>
+ * 提供字典数据项的增删改查及按类型批量查询能力。
+ * </p>
  */
 public interface SysDictDataService extends IService<SysDictData> {
 

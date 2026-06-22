@@ -45,6 +45,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+/**
+ * 系统用户服务实现类。
+ * <p>
+ * 实现 {@link SysUserService}，涵盖用户 CRUD、认证查询、角色/岗位关联、
+ * 数据权限过滤、密码管理及 Excel 导入导出等业务逻辑。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link Service} — Bean 名称 {@code sysUserService}，供 SpEL 引用</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ */
 @Slf4j
 @Service("sysUserService")
 @RequiredArgsConstructor
@@ -59,12 +71,25 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private final TransactionTemplate transactionTemplate;
     private final SecurityUtils securityUtils;
 
+    /**
+     * 根据用户名查询认证用用户信息（未删除用户）。
+     *
+     * @param username 登录用户名
+     * @return 认证 DTO，用户不存在时返回 {@code null}
+     */
     @Override
     public SysUserAuthDto getAuthByUsername(String username) {
         SysUser user = findActiveUserByUsername(username);
         return user == null ? null : toAuthDto(user);
     }
 
+    /**
+     * 校验用户名与明文密码，通过后返回认证信息。
+     *
+     * @param username    登录用户名
+     * @param rawPassword 明文密码
+     * @return 认证 DTO，用户不存在或密码错误时返回 {@code null}
+     */
     @Override
     public SysUserAuthDto verifyPassword(String username, String rawPassword) {
         SysUser user = findActiveUserByUsername(username);
@@ -77,12 +102,24 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return toAuthDto(user);
     }
 
+    /**
+     * 按用户名查询未逻辑删除的用户。
+     *
+     * @param username 登录用户名
+     * @return 用户实体，不存在时返回 {@code null}
+     */
     private SysUser findActiveUserByUsername(String username) {
         return sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
                 .eq(SysUser::getUserName, username)
                 .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL));
     }
 
+    /**
+     * 将 {@link SysUser} 转换为认证服务所需的 {@link SysUserAuthDto}。
+     *
+     * @param user 用户实体
+     * @return 含角色标识的认证 DTO
+     */
     private SysUserAuthDto toAuthDto(SysUser user) {
         return SysUserAuthDto.builder()
                 .userId(user.getUserId())
@@ -94,6 +131,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 .build();
     }
 
+    /**
+     * 获取用户可访问的菜单列表（含管理员与全部数据权限兜底）。
+     *
+     * @param userId 用户 ID
+     * @return 菜单列表
+     */
     @Override
     public List<SysMenu> getUserMenus(Long userId) {
         List<SysRole> roles = getRolesByUserId(userId);
@@ -107,6 +150,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return sysUserMapper.selectMenusByUserId(userId);
     }
 
+    /**
+     * 分页查询用户列表，按当前用户数据权限过滤。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param userReqBo 查询条件与分页参数
+     * @return {@link UserVO} 分页结果
+     */
     @Override
     @Transactional(readOnly = true)
     public PageResponse<UserVO> pageList(UserReqBo userReqBo) {
@@ -118,30 +168,66 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return toPageResponse(pageList, pageList.getCurrent(), pageList.getSize(), voList);
     }
 
+    /**
+     * 根据用户名查询用户（含已删除）。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param username 登录用户名
+     * @return 用户实体，不存在时返回 {@code null}
+     */
     @Override
     @Transactional(readOnly = true)
     public SysUser getUserByUsername(String username) {
         return sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, username));
     }
 
+    /**
+     * 查询用户关联的角色列表。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param userId 用户 ID
+     * @return 角色列表
+     */
     @Override
     @Transactional(readOnly = true)
     public List<SysRole> getRolesByUserId(Long userId) {
         return sysUserMapper.getRolesByUserId(userId);
     }
 
+    /**
+     * 查询用户及其角色信息（联表）。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param userId 用户 ID
+     * @return 含角色集合的用户实体
+     */
     @Override
     @Transactional(readOnly = true)
     public SysUser getUserWithRoles(Long userId) {
         return sysUserMapper.selectUserWithRoles(userId);
     }
 
+    /**
+     * 查询用户已授权的菜单列表。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param userId 用户 ID
+     * @return 菜单列表
+     */
     @Override
     @Transactional(readOnly = true)
     public List<SysMenu> getMenuByUserId(Long userId) {
         return sysUserMapper.getMenuByUserId(userId);
     }
 
+    /**
+     * 新增用户，可选分配角色与岗位；未传密码时使用默认密码。
+     * <p>{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param userDTO 用户信息（可含 roleIds、postIds）
+     * @return 是否保存成功
+     * @throws BizException 用户名已存在时由 {@link AssertUtils} 抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean addUser(UserDTO userDTO) {
@@ -167,6 +253,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return success;
     }
 
+    /**
+     * 根据用户 ID 查询用户视图对象。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param userId 用户 ID
+     * @return {@link UserVO}，用户不存在时返回 {@code null}
+     */
     @Override
     @Transactional(readOnly = true)
     public UserVO selectByUserId(Long userId) {
@@ -174,6 +267,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return user == null ? null : userVOAssembler.convertToVO(user);
     }
 
+    /**
+     * 更新用户信息；无完整更新权限时仅允许修改本人基本资料。
+     * <p>{@code @Transactional} 异常时回滚；角色变更时清除用户权限缓存。</p>
+     *
+     * @param userDTO 用户信息（含 userId，可含 roleIds、postIds）
+     * @return 是否更新成功
+     * @throws BizException 用户不存在、用户名冲突或无权修改时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateUser(UserDTO userDTO) {
@@ -214,6 +315,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return success;
     }
 
+    /**
+     * 判断当前用户是否可对目标用户执行完整更新（超管或具备更新权限）。
+     *
+     * @param targetUserId 目标用户 ID
+     * @return {@code true} 表示可完整更新
+     */
     private boolean canFullUpdateUser(Long targetUserId) {
         if (isCurrentUserSuperAdmin()) {
             return true;
@@ -221,6 +328,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return SecurityContextUtils.hasAuthority("system:user:update");
     }
 
+    /**
+     * 当前用户修改本人基本资料（昵称、邮箱、手机、性别、头像）。
+     *
+     * @param user    待更新的用户实体
+     * @param userDTO 含基本资料的 DTO
+     * @return 是否更新成功
+     * @throws BizException 非本人修改时抛出
+     */
     private boolean updateSelfProfile(SysUser user, UserDTO userDTO) {
         Long currentUserId = SecurityContextUtils.getUserId();
         if (currentUserId == null || !currentUserId.equals(userDTO.getUserId())) {
@@ -236,6 +351,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return this.updateById(user);
     }
 
+    /**
+     * 修改用户启用/停用状态。
+     * <p>{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param userId 用户 ID
+     * @param status 目标状态
+     * @return 是否更新成功
+     * @throws BizException 用户不存在时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean changeUserStatus(Long userId, String status) {
@@ -249,6 +373,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return this.updateById(user);
     }
 
+    /**
+     * 管理员重置用户密码。
+     *
+     * @param userId   用户 ID
+     * @param password 新明文密码
+     * @return 是否更新成功
+     * @throws BizException 用户不存在时抛出
+     */
     @Override
     public boolean resetUserPassword(Long userId, String password) {
         SysUser user = this.getById(userId);
@@ -266,6 +398,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return success;
     }
 
+    /**
+     * 用户修改自己的登录密码。
+     * <p>{@code @Transactional} 异常时回滚，成功后清除权限缓存。</p>
+     *
+     * @param userId      用户 ID
+     * @param oldPassword 旧明文密码
+     * @param newPassword 新明文密码
+     * @return 是否更新成功
+     * @throws BizException 用户不存在、旧密码错误或新旧密码相同时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateUserPassword(Long userId, String oldPassword, String newPassword) {
@@ -290,6 +432,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return success;
     }
 
+    /**
+     * 批量逻辑删除用户。
+     * <p>{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param userIds 待删除的用户 ID 列表
+     * @return 有有效删除时返回 {@code true}，入参为空返回 {@code false}
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteUserByIds(List<Long> userIds) {
@@ -304,16 +453,34 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 .set(SysUser::getUpdateTime, LocalDateTime.now()));
     }
 
+    /**
+     * 分页查询已分配指定角色的用户列表（含数据权限过滤）。
+     *
+     * @param assignUserReqBo 角色 ID 与分页参数
+     * @return 用户分页结果
+     */
     @Override
     public PageResponse<SysUser> getUserListByRoleId(AssignUserReqBo assignUserReqBo) {
         return queryPageWithDataScope(assignUserReqBo, sysUserMapper::getUserListByRoleId);
     }
 
+    /**
+     * 分页查询未分配指定角色的用户列表（含数据权限过滤）。
+     *
+     * @param assignUserReqBo 角色 ID 与分页参数
+     * @return 用户分页结果
+     */
     @Override
     public PageResponse<SysUser> unallocatedList(AssignUserReqBo assignUserReqBo) {
         return queryPageWithDataScope(assignUserReqBo, sysUserMapper::unallocatedList);
     }
 
+    /**
+     * 按查询条件导出用户 Excel 行数据（最多 5000 条）。
+     *
+     * @param userReqBo 查询条件
+     * @return Excel 行列表
+     */
     @Override
     public List<SysUserExcel> listForExport(UserReqBo userReqBo) {
         userReqBo.setPageNum(1);
@@ -340,6 +507,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return exportList;
     }
 
+    /**
+     * 从 Excel 行批量导入用户，支持逐行新增或按用户名更新。
+     *
+     * @param rows           Excel 行数据
+     * @param updateSupport  {@code true} 时存在同名用户则更新，否则仅新增
+     * @return 导入结果（成功/失败计数及错误信息）
+     * @throws BizException 导入数据为空时由 {@link AssertUtils} 抛出
+     */
     @Override
     public ExcelImportResult importFromExcel(List<SysUserExcel> rows, boolean updateSupport) {
         AssertUtils.notEmpty(rows, ErrorCode.USER_IMPORT_EMPTY);
@@ -362,6 +537,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return result;
     }
 
+    /**
+     * 判断当前登录用户是否为超级管理员。
+     *
+     * @return {@code true} 表示是超级管理员（用户 ID 为 1 或拥有 admin 角色）
+     */
     @Override
     public boolean isCurrentUserSuperAdmin() {
         Long currentUserId = SecurityContextUtils.getUserId();
@@ -375,6 +555,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return roles != null && roles.stream().anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()));
     }
 
+    /**
+     * 判断当前用户是否可修改目标用户信息。
+     *
+     * @param targetUserId 目标用户 ID
+     * @return {@code true} 表示超管或修改本人
+     */
     @Override
     public boolean canUpdateUser(Long targetUserId) {
         Long currentUserId = SecurityContextUtils.getUserId();
@@ -384,6 +570,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return isCurrentUserSuperAdmin() || currentUserId.equals(targetUserId);
     }
 
+    /**
+     * 校验是否允许删除指定用户（不可删除当前登录用户）。
+     *
+     * @param userIds 待删除的用户 ID 列表
+     * @return 不允许删除时返回错误提示，允许时返回 {@code null}
+     */
     @Override
     public String canDeleteUsers(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
@@ -398,6 +590,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return null;
     }
 
+    /**
+     * 校验是否允许重置目标用户密码（不可重置当前登录用户）。
+     *
+     * @param targetUserId 目标用户 ID
+     * @return 不允许时返回错误提示，允许时返回 {@code null}
+     */
     @Override
     public String canResetPassword(Long targetUserId) {
         Long currentUserId = SecurityContextUtils.getUserId();
@@ -407,11 +605,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return null;
     }
 
+    /**
+     * 按月份统计指定时间范围内的新增用户数。
+     *
+     * @param start 起始时间（含）
+     * @param end   结束时间（含）
+     * @return 每月统计行，含 yearMonth 与 count 字段
+     */
     @Override
     public List<Map<String, Object>> countByMonthRange(LocalDateTime start, LocalDateTime end) {
         return sysUserMapper.countByMonthRange(start, end);
     }
 
+    /**
+     * 构建含当前用户数据权限的 Mapper 查询参数。
+     *
+     * @return 含 dataScope、deptIds、userDeptId、userId 的参数 Map
+     */
     private Map<String, Object> buildDataScopeParam() {
         DataScope dataScope = dataScopeService.getCurrentUserDataScope();
         Map<String, Object> param = new HashMap<>();
@@ -422,6 +632,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return param;
     }
 
+    /**
+     * 带数据权限的分页查询通用入口。
+     *
+     * @param bo    角色分配查询条件
+     * @param query Mapper 分页查询函数
+     * @return 用户分页结果
+     */
     private PageResponse<SysUser> queryPageWithDataScope(AssignUserReqBo bo,
                                                          BiFunction<Page<SysUser>, Map<String, Object>, IPage<SysUser>> query) {
         Map<String, Object> param = buildDataScopeParam();
@@ -431,6 +648,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return toPageResponse(result, bo.getPageNum().longValue(), bo.getPageSize().longValue(), result.getRecords());
     }
 
+    /**
+     * 将 MyBatis-Plus 分页结果封装为 {@link PageResponse}。
+     *
+     * @param ipage    分页查询结果
+     * @param pageNum  当前页码
+     * @param pageSize 每页条数
+     * @param rows     当前页数据行
+     * @param <T>      行数据类型
+     * @return 统一分页响应
+     */
     private <T> PageResponse<T> toPageResponse(IPage<?> ipage, long pageNum, long pageSize, List<T> rows) {
         PageResponse<T> resp = new PageResponse<>();
         resp.setTotal(ipage.getTotal());
@@ -441,6 +668,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return resp;
     }
 
+    /**
+     * 将性别编码转换为导出用中文文本。
+     *
+     * @param sexCode 性别编码（{@code 0} 男，{@code 1} 女）
+     * @return 中文描述，未知时返回「未知」
+     */
     private String convertSexCodeToText(String sexCode) {
         if (!StringUtils.hasText(sexCode)) {
             return "未知";
@@ -452,6 +685,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         };
     }
 
+    /**
+     * 将 Excel 行解析为 {@link UserDTO}，并校验必填字段。
+     *
+     * @param row      Excel 行
+     * @param rowIndex 行号（用于错误提示）
+     * @return 用户 DTO
+     * @throws BizException 行数据为空或必填项缺失时抛出
+     */
     private UserDTO buildUserDTOFromExcel(SysUserExcel row, int rowIndex) {
         if (row == null) {
             throw new BizException(ErrorCode.USER_IMPORT_ROW_EMPTY, "第 " + rowIndex + " 行数据为空");
@@ -496,6 +737,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return userDTO;
     }
 
+    /**
+     * 批量插入用户与角色的关联关系。
+     *
+     * @param userId  用户 ID
+     * @param roleIds 角色 ID 列表
+     */
     private void insertUserRoles(Long userId, List<Long> roleIds) {
         List<UserRole> userRoles = new ArrayList<>(roleIds.size());
         for (Long roleId : roleIds) {
@@ -507,6 +754,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         userRoleMapper.insertBatchUserRoles(userRoles);
     }
 
+    /**
+     * 批量插入用户与岗位的关联关系。
+     *
+     * @param userId  用户 ID
+     * @param postIds 岗位 ID 列表
+     */
     private void insertUserPosts(Long userId, List<Long> postIds) {
         List<UserPost> userPosts = new ArrayList<>(postIds.size());
         for (Long postId : postIds) {
@@ -518,6 +771,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         userPostMapper.insertBatchUserPosts(userPosts);
     }
 
+    /**
+     * 导入单行用户：按 updateSupport 决定新增或更新，并累计导入结果。
+     *
+     * @param userDTO        解析后的用户 DTO
+     * @param updateSupport  是否支持按用户名更新
+     * @param rowIndex       行号（用于错误提示）
+     * @param result         导入结果累加器
+     */
     private void saveOrUpdateFromImport(UserDTO userDTO, boolean updateSupport, int rowIndex, ExcelImportResult result) {
         boolean success;
         if (updateSupport) {
@@ -539,6 +800,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
     }
 
+    /**
+     * 用户自助注册，分配默认角色。
+     * <p>{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param request 注册请求（用户名、密码）
+     * @return 注册成功后的用户摘要
+     * @throws BizException 用户名已存在或保存失败时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RegisterUserResponse registerUser(RegisterUserRequest request) {

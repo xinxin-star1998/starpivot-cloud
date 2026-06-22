@@ -18,6 +18,16 @@ import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 验证码业务服务类。
+ * <p>
+ * 基于 Kaptcha 生成图形验证码，将验证码文本存入 Redis，校验通过后颁发短期有效的验证码凭证（captchaProof）。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — 注册为 Spring 业务服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — Lombok 生成含 {@code final} 字段的构造器，注入 Kaptcha 与 Redis 模板</li>
+ * </ul>
+ */
 @Service
 @RequiredArgsConstructor
 public class CaptchaService {
@@ -28,6 +38,13 @@ public class CaptchaService {
     private final DefaultKaptcha captchaProducer;
     private final StringRedisTemplate redisTemplate;
 
+    /**
+     * 生成图形验证码并返回 Base64 图片及令牌。
+     *
+     * @param scene 业务场景标识，用于 Redis 键隔离
+     * @return 含 captchaToken 与 captchaImage 的响应
+     * @throws BusinessException 图片编码失败时抛出
+     */
     public CaptchaResponse generate(String scene) {
         String token = UUID.randomUUID().toString();
         String code = captchaProducer.createText();
@@ -50,6 +67,13 @@ public class CaptchaService {
         }
     }
 
+    /**
+     * 校验用户输入的验证码，成功后颁发 captchaProof 凭证。
+     *
+     * @param request 校验请求，含 captchaToken、code 及可选 scene
+     * @return 含 captchaProof 的响应
+     * @throws BusinessException 参数缺失、验证码错误或已过期时抛出 401
+     */
     public CaptchaVerifyResponse verify(CaptchaVerifyRequest request) {
         if (!StringUtils.hasText(request.getCaptchaToken()) || !StringUtils.hasText(request.getCode())) {
             throw new BusinessException(401, "验证码不能为空");

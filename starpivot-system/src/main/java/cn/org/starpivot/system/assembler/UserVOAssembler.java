@@ -12,6 +12,16 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 用户视图对象组装器。
+ * <p>
+ * 将 {@link SysUser} 实体转换为含部门名、角色名、岗位名及锁定状态的 {@link UserVO}，
+ * 批量转换时通过 Map 预加载关联数据以减少 N+1 查询。
+ * </p>
+ * <ul>
+ *   <li>{@link Component} — Spring 组件，供 {@link cn.org.starpivot.system.service.impl.SysUserServiceImpl} 注入</li>
+ * </ul>
+ */
 @Component
 public class UserVOAssembler {
 
@@ -28,6 +38,12 @@ public class UserVOAssembler {
     @Autowired(required = false)
     private AccountLockService accountLockService;
 
+    /**
+     * 批量将用户实体列表转换为视图对象列表。
+     *
+     * @param userList 用户实体列表
+     * @return 用户视图对象列表
+     */
     public List<UserVO> convertToVOList(List<SysUser> userList) {
         if (userList == null || userList.isEmpty()) {
             return new ArrayList<>();
@@ -58,6 +74,12 @@ public class UserVOAssembler {
         return voList;
     }
 
+    /**
+     * 将单个用户实体转换为视图对象（含部门、角色、岗位及锁定状态）。
+     *
+     * @param user 用户实体
+     * @return 用户视图对象
+     */
     public UserVO convertToVO(SysUser user) {
         UserVO vo = new UserVO();
         BeanUtils.copyProperties(user, vo);

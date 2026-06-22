@@ -74,6 +74,15 @@ services:
       starpivot-net:
     restart: unless-stopped
 
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    container_name: starpivot-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      starpivot-net:
+    restart: unless-stopped
+
 # 声明全部命名卷（关键新增区块）
 volumes:
   mysql-data:

@@ -19,11 +19,27 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Redis 序列化与 Spring Cache 配置类。
+ * <p>
+ * 统一 Key 为字符串、Value 为 JSON（含类型信息），并提供与 {@link CacheConstants} 对齐的
+ * {@link RedisCacheManager}，供 {@code @Cacheable} 等注解使用。
+ * <ul>
+ *   <li>{@link Configuration} — 声明 Redis 相关 {@link Bean}，由 Spring 容器加载</li>
+ * </ul>
+ *
+ * @see CacheConstants
+ */
 @Configuration
 public class RedisConfig {
 
     /**
-     * Redis 专用 ObjectMapper（含类型信息，不注册为 Spring Bean，避免污染 HTTP JSON 序列化）
+     * 创建 Redis 专用 {@link ObjectMapper}。
+     * <p>
+     * 启用默认类型信息（{@link ObjectMapper.DefaultTyping#NON_FINAL}）以便反序列化恢复具体类型；
+     * 不注册为 Spring Bean，避免污染 HTTP 接口的 JSON 序列化行为。
+     *
+     * @return 配置了可见性与多态类型的 ObjectMapper
      */
     private static ObjectMapper createRedisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
@@ -37,7 +53,10 @@ public class RedisConfig {
     }
 
     /**
-     * 自定义RedisTemplate，统一JSON序列化
+     * 注册通用 {@link RedisTemplate}，Key/HashKey 使用字符串序列化，Value 使用 JSON。
+     *
+     * @param factory Redis 连接工厂（由 Spring Boot 自动配置提供）
+     * @return 已完成序列化器配置的 RedisTemplate
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
@@ -58,8 +77,14 @@ public class RedisConfig {
     }
 
     /**
-     * 适配 @Cacheable 的缓存管理器。
-     * 缓存名与 {@link CacheConstants} 对齐，Redis 键形如 {@code sys_dict::status}。
+     * 注册适配 {@code @Cacheable} 的 {@link RedisCacheManager}。
+     * <p>
+     * 默认 TTL 取自 {@link CacheConstants#TTL_USER_PERMISSIONS}；
+     * 各缓存名通过 {@link CacheConstants#springCacheTtls()} 覆盖独立 TTL。
+     * Redis 键形如 {@code sys_dict::status}，且不缓存 null 值。
+     *
+     * @param factory Redis 连接工厂
+     * @return 含默认与按名 TTL 配置的缓存管理器
      */
     @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory factory) {

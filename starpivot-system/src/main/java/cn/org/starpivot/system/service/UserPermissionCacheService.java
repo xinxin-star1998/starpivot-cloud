@@ -10,6 +10,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+/**
+ * 用户权限缓存服务类。
+ * <p>
+ * 使用 Redis 缓存用户菜单权限字符串列表，减少重复数据库查询；
+ * 角色/菜单变更时需调用清除方法使缓存失效。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务组件</li>
+ * </ul>
+ */
 @Service
 @RequiredArgsConstructor
 public class UserPermissionCacheService {
@@ -18,6 +28,13 @@ public class UserPermissionCacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * 获取用户权限字符串列表，缓存未命中时通过 loader 加载并写入 Redis。
+     *
+     * @param userId 用户主键
+     * @param loader 缓存未命中时的数据库加载函数
+     * @return 权限标识列表
+     */
     @SuppressWarnings("unchecked")
     public List<String> getPermissionStrings(Long userId, Supplier<List<String>> loader) {
         if (userId == null) {
@@ -36,6 +53,11 @@ public class UserPermissionCacheService {
         return safeList;
     }
 
+    /**
+     * 清除指定用户的权限缓存。
+     *
+     * @param userId 用户主键
+     */
     public void clearUserPermissionCacheByUserId(Long userId) {
         if (userId == null) {
             return;
@@ -49,6 +71,9 @@ public class UserPermissionCacheService {
         clearAllUserPermissionCache();
     }
 
+    /**
+     * 清除全部用户权限缓存（按 Redis Key 模式批量删除）。
+     */
     public void clearAllUserPermissionCache() {
         Set<String> keys = redisTemplate.keys(CacheConstants.userPermissionPattern());
         if (keys != null && !keys.isEmpty()) {

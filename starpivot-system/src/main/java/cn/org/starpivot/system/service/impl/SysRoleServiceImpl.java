@@ -34,6 +34,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 角色管理服务实现类。
+ * <p>
+ * 实现 {@link SysRoleService}，含角色 CRUD、菜单/部门权限分配及用户授权；
+ * 变更时清除相关缓存。
+ * </p>
+ */
 @Service("sysRoleService")
 @RequiredArgsConstructor
 public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements SysRoleService {
@@ -46,6 +53,13 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     private final SysMenuMapper sysMenuMapper;
     private final UserPermissionCacheService userPermissionCacheService;
 
+    /**
+     * 分页查询角色列表。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param roleQueryDTO 查询条件与分页参数
+     * @return 角色分页结果
+     */
     @Override
     @Transactional(readOnly = true)
     public PageResponse<SysRole> selectRoleList(RoleQueryDTO roleQueryDTO) {
@@ -59,12 +73,25 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return pageResponse;
     }
 
+    /**
+     * 根据角色 ID 查询角色详情。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param roleId 角色 ID
+     * @return 角色实体，不存在时返回 {@code null}
+     */
     @Override
     @Transactional(readOnly = true)
     public SysRole selectRoleById(Long roleId) {
         return sysRoleMapper.selectById(roleId);
     }
 
+    /**
+     * 查询全部正常状态的角色列表（下拉选用）。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务；{@code @Cacheable} 缓存至 {@link CacheConstants#ROLE_LIST}。</p>
+     *
+     * @return 按排序号排列的角色列表
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
@@ -76,6 +103,14 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return this.list(wrapper);
     }
 
+    /**
+     * 新增角色，可选同时分配菜单权限。
+     * <p>{@code @CacheEvict} 清空角色列表缓存；{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param roleDTO 角色信息（可含 menuIds）
+     * @return 是否保存成功
+     * @throws BizException 角色权限字符串已存在时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
@@ -106,6 +141,14 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return success;
     }
 
+    /**
+     * 更新角色信息，可选重新分配菜单权限。
+     * <p>{@code @CacheEvict} 清空角色列表缓存；{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param roleDTO 角色信息（含 roleId，可含 menuIds）
+     * @return 是否更新成功
+     * @throws BizException 角色不存在、权限字符串冲突或修改超级管理员时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
@@ -148,6 +191,14 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return success;
     }
 
+    /**
+     * 批量逻辑删除角色。
+     * <p>{@code @CacheEvict} 清空角色列表缓存；{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param roleIds 待删除的角色 ID 列表
+     * @return 有有效删除时返回 {@code true}，入参为空或角色均不存在返回 {@code false}
+     * @throws BizException 删除超级管理员或已被用户使用的角色时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
@@ -192,6 +243,15 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return true;
     }
 
+    /**
+     * 修改角色启用/停用状态。
+     * <p>{@code @CacheEvict} 清空角色列表缓存。</p>
+     *
+     * @param roleId 角色 ID
+     * @param status 目标状态（{@code 0} 正常，{@code 1} 停用）
+     * @return 是否更新成功
+     * @throws BizException 角色不存在或停用超级管理员时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     public boolean changeRoleStatus(Long roleId, String status) {
@@ -213,6 +273,14 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return this.updateById(role);
     }
 
+    /**
+     * 查询角色可访问的部门 ID 列表（数据权限）。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。超级管理员返回全部部门。</p>
+     *
+     * @param roleId 角色 ID
+     * @return 部门 ID 列表
+     * @throws BizException 角色不存在、已删除或已禁用时抛出
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Long> selectDeptIdsByRoleId(Long roleId) {
@@ -230,6 +298,14 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return roleDeptMapper.selectDeptIdsByRoleId(roleId);
     }
 
+    /**
+     * 查询角色已分配的菜单 ID 列表。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。超级管理员返回全部菜单。</p>
+     *
+     * @param roleId 角色 ID
+     * @return 菜单 ID 列表
+     * @throws BizException 角色不存在、已删除或已禁用时抛出
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Long> getMenuIdsByRoleId(Long roleId) {
@@ -250,6 +326,13 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return menuIds != null ? menuIds : Collections.emptyList();
     }
 
+    /**
+     * 为角色批量授权用户。
+     * <p>{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param userRoleDTO 角色 ID 与用户 ID 列表
+     * @return 用户列表为空时返回 {@code true}，否则批量插入后返回 {@code true}
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean assignUser(UserRoleDTO userRoleDTO) {
@@ -267,11 +350,25 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return true;
     }
 
+    /**
+     * 取消单个用户的角色授权。
+     *
+     * @param userRole 含 roleId 与 userId 的关联对象
+     * @return 是否删除成功
+     */
     @Override
     public boolean cancelUser(UserRole userRole) {
         return userRoleMapper.deleteByRoleIdAndUserId(userRole.getRoleId(), userRole.getUserId());
     }
 
+    /**
+     * 分配角色数据权限（数据范围 + 自定义部门）。
+     * <p>{@code @Transactional} 异常时回滚，成功后清除全部用户权限缓存。</p>
+     *
+     * @param rolePermissionAssignDTO 角色 ID、数据范围及部门 ID 列表
+     * @return 是否分配成功
+     * @throws BizException 角色不存在时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean assignPermission(RolePermissionAssignDTO rolePermissionAssignDTO) {
@@ -299,6 +396,12 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return true;
     }
 
+    /**
+     * 批量保存角色与菜单的关联关系。
+     *
+     * @param roleId  角色 ID
+     * @param menuIds 菜单 ID 列表，为空时直接返回
+     */
     private void insertRoleMenus(Long roleId, List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {
             return;

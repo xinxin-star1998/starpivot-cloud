@@ -8,9 +8,20 @@ import org.apache.ibatis.annotations.Select;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * 监控模块用户查询 Mapper，只读访问 {@code sys_user}。
+ * <p>
+ * {@link Mapper}：注册为 MyBatis Mapper 接口。
+ */
 @Mapper
 public interface MonitorUserMapper {
 
+    /**
+     * 按用户 ID 集合批量查询未删除用户。
+     *
+     * @param userIds 用户 ID 集合
+     * @return 用户列表
+     */
     @Select("""
             <script>
             SELECT user_id AS userId, user_name AS userName, nick_name AS nickName, dept_id AS deptId
@@ -22,6 +33,12 @@ public interface MonitorUserMapper {
             """)
     List<MonitorUser> selectByUserIds(@Param("userIds") Collection<Long> userIds);
 
+    /**
+     * 按用户 ID 查询单个未删除用户。
+     *
+     * @param userId 用户 ID
+     * @return 用户信息，不存在时返回 {@code null}
+     */
     @Select("""
             SELECT user_id AS userId, user_name AS userName, nick_name AS nickName, dept_id AS deptId
             FROM sys_user WHERE user_id = #{userId} AND del_flag = '0'

@@ -16,9 +16,19 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
+/**
+ * 操作日志服务实现类。
+ * <p>实现 {@link SysOperLogService}，提供操作审计日志分页查询。</p>
+ */
 @Service
 public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOperLog> implements SysOperLogService {
 
+    /**
+     * 分页查询操作日志，支持按标题、业务类型、操作人、状态及操作时间范围筛选。
+     *
+     * @param operLogReqBo 查询条件与分页参数
+     * @return {@link OperLogVO} 分页结果
+     */
     @Override
     public PageResponse<OperLogVO> pageList(OperLogReqBo operLogReqBo) {
         LambdaQueryWrapper<SysOperLog> queryWrapper = new LambdaQueryWrapper<>();
@@ -56,6 +66,12 @@ public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOper
         return pageResponse;
     }
 
+    /**
+     * 将 {@link SysOperLog} 实体转换为 {@link OperLogVO}。
+     *
+     * @param operLog 操作日志实体
+     * @return 操作日志视图对象
+     */
     private OperLogVO convertToVO(SysOperLog operLog) {
         OperLogVO vo = new OperLogVO();
         BeanUtils.copyProperties(operLog, vo);

@@ -48,10 +48,12 @@ import java.util.stream.Collectors;
 import static cn.org.starpivot.common.util.LogUtils.truncateString;
 
 /**
- * 监控服务实现类
- *
- * @author xinxin
- * @since 2026-01-25
+ * {@link MonitorService} 默认实现，聚合服务器、Druid 连接池、在线用户及 Redis 缓存监控能力。
+ * <p>
+ * 服务器信息通过 OSHI 采集 CPU、内存、JVM、磁盘等运行时指标；
+ * 在线用户委托 {@link CloudOnlineUserService}；
+ * 缓存管理基于 {@link RedisTemplate} 的 SCAN 非阻塞扫描。
+ * </p>
  */
 @Slf4j
 @Service
@@ -107,6 +109,12 @@ public class MonitorServiceImpl implements MonitorService {
     private static final long REDIS_CAPABILITY_CACHE_MS = 60_000L;
     private final AtomicBoolean clusterScanWarningLogged = new AtomicBoolean(false);
 
+    /**
+     * 获取当前服务器运行时信息，包含 CPU、内存、JVM、系统及磁盘指标。
+     *
+     * @return {@link ServerInfoVO} 服务器监控数据
+     * @throws BizException 采集过程中发生异常时抛出
+     */
     @Override
     public ServerInfoVO getServerInfo() {
         ServerInfoVO serverInfo = new ServerInfoVO();
@@ -330,6 +338,14 @@ public class MonitorServiceImpl implements MonitorService {
         return diskInfo;
     }
 
+    /**
+     * 判断文件系统挂载点是否应纳入磁盘监控统计。
+     * <p>过滤虚拟文件系统与临时挂载，保留 Windows 盘符及 Linux 核心业务分区。</p>
+     *
+     * @param store 文件系统存储对象
+     * @param mount 挂载点路径
+     * @return {@code true} 表示应纳入统计
+     */
     private boolean isKeyPartition(OSFileStore store, String mount) {
         String fsType = Optional.ofNullable(store.getType()).orElse("" ).toLowerCase(Locale.ROOT);
         String name = Optional.ofNullable(store.getName()).orElse("" ).toLowerCase(Locale.ROOT);
@@ -371,20 +387,43 @@ public class MonitorServiceImpl implements MonitorService {
                 || name.startsWith("/dev/" );
     }
 
+    /**
+     * 将字节数转换为 GB 并保留两位小数。
+     *
+     * @param bytes 字节数
+     * @return GB 值，保留两位小数
+     */
     private Double toGb(long bytes) {
         double gb = bytes / 1024.0 / 1024.0 / 1024.0;
         return round2(gb);
     }
 
+    /**
+     * 将浮点数四舍五入保留两位小数。
+     *
+     * @param value 原始数值
+     * @return 保留两位小数的值
+     */
     private Double round2(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
+    /**
+     * 获取 Druid 连接池监控信息（不含慢 SQL 明细列表）。
+     *
+     * @return {@link DruidMonitorVO}，数据源非 Druid 或未配置时 {@code available=false}
+     */
     @Override
     public DruidMonitorVO getDruidMonitorInfo() {
         return getDruidMonitorInfo(false, null);
     }
 
+    /**
+     * 获取 Druid 连接池监控信息，并附带慢 SQL 明细列表。
+     *
+     * @param slowSqlThreshold 慢 SQL 阈值（毫秒），{@code null} 时使用默认值 5000
+     * @return {@link DruidMonitorVO}，包含 {@code slowSqlList}
+     */
     @Override
     public DruidMonitorVO getDruidMonitorInfoWithSlowSql(Long slowSqlThreshold) {
         return getDruidMonitorInfo(true, slowSqlThreshold);
@@ -523,6 +562,13 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 从 Map 中安全提取 Long 类型值，兼容 Number 与字符串形式。
+     *
+     * @param map 数据源 Map
+     * @param key 键名
+     * @return Long 值，不存在或无法转换时返回 {@code null}
+     */
     private Long getLongValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
         if (value == null) {
@@ -581,11 +627,24 @@ public class MonitorServiceImpl implements MonitorService {
         return keys;
     }
 
+    /**
+     * 获取在线用户列表，委托 {@link CloudOnlineUserService} 实现。
+     *
+     * @param userName 用户名或昵称关键字，为空时不过滤
+     * @param ipaddr   IP 地址关键字，为空时不过滤
+     * @return {@link OnlineUserVO} 列表
+     */
     @Override
     public List<OnlineUserVO> getOnlineUserList(String userName, String ipaddr) {
         return cloudOnlineUserService.getOnlineUserList(userName, ipaddr);
     }
 
+    /**
+     * 强制指定会话下线，委托 {@link CloudOnlineUserService#forceLogout(String)}。
+     *
+     * @param sessionId 会话 ID、完整 Redis 键或用户 ID
+     * @return 下线成功返回 {@code true}
+     */
     @Override
     public boolean forceLogout(String sessionId) {
         return cloudOnlineUserService.forceLogout(sessionId);
@@ -595,6 +654,12 @@ public class MonitorServiceImpl implements MonitorService {
 
 
 
+    /**
+     * 获取 Redis 缓存分组列表，合并预定义分组与 SCAN 发现的实际分组。
+     *
+     * @return {@link RedisCacheVO} 列表
+     * @throws BizException Redis 未配置或扫描失败时抛出
+     */
     @Override
     public List<RedisCacheVO> getCacheList() {
         if (redisTemplate == null) {
@@ -651,6 +716,13 @@ public class MonitorServiceImpl implements MonitorService {
         return key;
     }
 
+    /**
+     * 获取指定缓存分组下的所有键及其类型、TTL 与估算大小。
+     *
+     * @param cacheName 缓存分组名称
+     * @return {@link RedisCacheVO.CacheKeyInfo} 列表
+     * @throws BizException Redis 未配置或 {@code cacheName} 为空时抛出
+     */
     @Override
     public List<RedisCacheVO.CacheKeyInfo> getCacheKeys(String cacheName) {
         if (redisTemplate == null) {
@@ -712,6 +784,14 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 查看指定 Redis 键的缓存内容，按数据类型格式化输出。
+     *
+     * @param cacheName 缓存分组名称（仅用于展示）
+     * @param key       Redis 键名
+     * @return {@link RedisCacheVO.CacheContentInfo}，键不存在时 {@code type=none}
+     * @throws BizException Redis 未配置或 {@code key} 为空时抛出
+     */
     @Override
     public RedisCacheVO.CacheContentInfo getCacheContent(String cacheName, String key) {
         if (redisTemplate == null) {
@@ -1011,6 +1091,13 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 删除指定缓存分组下的全部键（含与分组名完全相同的键）。
+     *
+     * @param cacheName 缓存分组名称
+     * @return 实际删除的键数量
+     * @throws BizException Redis 未配置或 {@code cacheName} 为空时抛出
+     */
     @Override
     public long deleteCache(String cacheName) {
         if (redisTemplate == null) {
@@ -1043,6 +1130,14 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 删除指定 Redis 缓存键。
+     *
+     * @param cacheName 缓存分组名称（仅用于日志）
+     * @param key       待删除的 Redis 键名
+     * @return 删除成功返回 {@code true}
+     * @throws BizException Redis 未配置或 {@code key} 为空时抛出
+     */
     @Override
     public boolean deleteCacheKey(String cacheName, String key) {
         if (redisTemplate == null) {
@@ -1062,6 +1157,13 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 清空当前 Redis 数据库的全部缓存。
+     * <p>优先尝试 {@code FLUSHDB ASYNC}，不支持或失败时降级为同步 {@code FLUSHDB}。</p>
+     *
+     * @return 成功返回 {@code true}
+     * @throws BizException Redis 未配置或清空失败时抛出
+     */
     @Override
     public boolean clearAllCache() {
         if (redisTemplate == null) {
@@ -1098,6 +1200,11 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 获取 Redis 能力信息（版本、集群模式、异步 FLUSHDB 支持），带 60 秒缓存。
+     *
+     * @return {@link RedisCapabilities} 能力描述对象
+     */
     private RedisCapabilities getRedisCapabilities() {
         RedisCapabilities local = redisCapabilities;
         long now = System.currentTimeMillis();
@@ -1116,6 +1223,12 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    /**
+     * 刷新 Redis 能力缓存中的异步 FLUSHDB 支持标志。
+     * <p>在 {@code FLUSHDB ASYNC} 执行失败降级时调用，避免重复尝试异步清空。</p>
+     *
+     * @param supportAsyncFlush 是否支持异步 FLUSHDB
+     */
     private void refreshRedisCapabilities(boolean supportAsyncFlush) {
         RedisCapabilities current = getRedisCapabilities();
         redisCapabilities = new RedisCapabilities(
@@ -1126,6 +1239,12 @@ public class MonitorServiceImpl implements MonitorService {
         );
     }
 
+    /**
+     * 探测 Redis 版本、集群模式及 FLUSHDB ASYNC 支持情况。
+     * <p>通过 {@code INFO server} 与 {@code INFO cluster} 命令获取运行时信息。</p>
+     *
+     * @return 新探测的 {@link RedisCapabilities} 对象
+     */
     private RedisCapabilities detectRedisCapabilities() {
         String version = "unknown";
         boolean clusterMode = false;
@@ -1165,6 +1284,13 @@ public class MonitorServiceImpl implements MonitorService {
         return new RedisCapabilities(version, clusterMode, supportAsyncFlush, System.currentTimeMillis());
     }
 
+    /**
+     * 判断 Redis 版本主版本号是否不低于指定值。
+     *
+     * @param version Redis 版本字符串，如 {@code 7.0.5}
+     * @param major   最低主版本号
+     * @return 版本满足要求返回 {@code true}，未知或解析失败返回 {@code false}
+     */
     private boolean isVersionAtLeast(String version, int major) {
         if (version == null || version.isBlank() || "unknown".equals(version)) {
             return false;

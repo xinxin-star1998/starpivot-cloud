@@ -34,10 +34,10 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
- * 代码生成表服务实现类
- *
- * @author xinxin
- * @since 2025-01-17
+ * 代码生成表业务服务实现，提供表导入、同步、预览与 ZIP 下载等能力。
+ * <p>
+ * 实现 {@link GenTableService}，依赖 {@link GenTableMapper} 与 {@link GenTableColumnMapper} 持久化数据，
+ * 并通过 {@link GenTableCodegenHelper} 渲染模板代码。
  */
 @Slf4j
 @Service
@@ -48,6 +48,12 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     private GenTableColumnMapper genTableColumnMapper;
     @Autowired
     private GenConfig genConfig;
+    /**
+     * 分页查询已导入的代码生成表列表。
+     *
+     * @param queryDTO 分页与筛选条件
+     * @return 代码生成表 {@link GenTableVO} 分页结果
+     */
     @Override
     public PageResponse<GenTableVO> selectGenTablePage(GenTableQueryDTO queryDTO) {
         Page<GenTable> page = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
@@ -69,9 +75,10 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         return pageResponse;
     }
     /**
-     * 查询据库列表
-     * @param queryDTO 业务信息
-     * @return 数据库表集合
+     * 分页查询数据库中尚未导入的物理表列表。
+     *
+     * @param queryDTO 分页与筛选条件
+     * @return 数据库表 {@link GenTableVO} 分页结果
      */
     @Override
     public PageResponse<GenTableVO> selectDbTableList(GenTableQueryDTO queryDTO) {
@@ -92,9 +99,9 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     /**
-     * 删除业务对象
+     * 批量删除代码生成表及其关联列配置。
      *
-     * @param tableIds 需要删除的数据ID
+     * @param tableIds 待删除的生成表主键 ID 列表
      */
     @Override
     @Transactional
@@ -104,10 +111,11 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         genTableColumnMapper.deleteGenTableColumnByIds(tableIds);
     }
     /**
-     * 预览代码
+     * 预览指定表的生成代码（不落盘）。
      *
-     * @param tableId 表编号
-     * @return 预览数据列表
+     * @param tableId 生成表主键 ID
+     * @return 模板相对路径到生成内容的映射
+     * @throws BizException 生成表不存在时抛出
      */
     @Override
     public Map<String, String> previewCode(Long tableId)
@@ -118,10 +126,11 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         return GenTableCodegenHelper.renderPrepared(table);
     }
     /**
-     * 生成代码（下载方式）
+     * 按表名生成代码并打包为 ZIP 字节数组。
      *
-     * @param tableName 表名称
-     * @return 数据
+     * @param tableName 生成表名称
+     * @return ZIP 压缩包字节内容
+     * @throws BizException 表不存在或压缩失败时抛出
      */
     @Override
     public byte[] downloadCode(String tableName)
@@ -137,9 +146,12 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     /**
-     * 同步数据库
+     * 将数据库物理表结构同步至代码生成表列配置。
+     * <p>
+     * 新增列写入配置，已有列保留查询/表单相关选项，物理表已删除的列会从配置中移除。
      *
-     * @param tableName 表名称
+     * @param tableName 生成表名称
+     * @throws BizException 生成表不存在、列列表为空或原表不存在时抛出
      */
     @Override
     @Transactional
@@ -199,10 +211,11 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         }
     }
     /**
-     * 批量生成代码（下载方式）
+     * 批量按表名生成代码并合并为一个 ZIP 压缩包。
      *
-     * @param tableNames 表数组
-     * @return 数据
+     * @param tableNames 生成表名称数组
+     * @return ZIP 压缩包字节内容
+     * @throws BizException 压缩过程失败时抛出
      */
     @Override
     public byte[] downloadCode(String[] tableNames)
@@ -220,7 +233,12 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     /**
-     * 查询表信息并生成代码
+     * 查询单表元数据并将生成文件写入 ZIP 输出流。
+     *
+     * @param tableName 生成表名称
+     * @param zip ZIP 输出流
+     * @throws IOException 写入 ZIP 条目失败时抛出
+     * @throws BizException 生成表不存在时抛出
      */
     private void generatorCode(String tableName, ZipOutputStream zip) throws IOException
     {
@@ -234,9 +252,9 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         GenTableCodegenHelper.writeZipPrepared(table, zip);
     }
     /**
-     * 查询所有表信息
+     * 查询所有已导入的代码生成表。
      *
-     * @return 表信息集合
+     * @return 生成表实体列表
      */
     @Override
     public List<GenTable> selectGenTableAll()
@@ -244,10 +262,10 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         return genTableMapper.selectGenTableAll();
     }
     /**
-     * 查询业务信息
+     * 按主键查询代码生成表详情，并解析扩展选项 JSON。
      *
-     * @param id 业务ID
-     * @return 业务信息
+     * @param id 生成表主键 ID
+     * @return 含列配置与树表/菜单选项的 {@link GenTable}
      */
     @Override
     public GenTable selectGenTableById(Long id)
@@ -257,20 +275,20 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         return genTable;
     }
     /**
-     * 创建表
+     * 执行 DDL 语句在数据库中创建物理表。
      *
-     * @param sql 创建表语句
-     * @return 结果
+     * @param sql CREATE TABLE 等 DDL 语句
+     * @return {@code true} 表示执行成功（影响行数为 0）
      */
     @Override
     public boolean createTable(String sql) {
         return genTableMapper.createTable(sql) == 0;
     }
     /**
-     * 查询据库列表
+     * 按表名批量查询数据库物理表元数据。
      *
-     * @param tableNames 表名称组
-     * @return 数据库表集合
+     * @param tableNames 表名称数组
+     * @return 匹配的 {@link GenTable} 列表
      */
     @Override
     public List<GenTable> selectDbTableListByNames(String[] tableNames)
@@ -278,9 +296,11 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         return genTableMapper.selectDbTableListByNames(tableNames);
     }
     /**
-     * 导入表结构
+     * 将数据库物理表导入为代码生成表并初始化列配置。
      *
-     * @param tableList 导入表列表
+     * @param tableList 待导入的表元数据列表
+     * @param operName 操作人员名称，用于填充创建人字段
+     * @throws BizException 导入过程发生异常时抛出
      */
     @Override
     @Transactional
@@ -312,9 +332,9 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     /**
-     * 修改业务
+     * 更新代码生成表主表信息及其列配置。
      *
-     * @param genTable 业务信息
+     * @param genTable 含最新列配置的生成表实体
      */
     @Override
     @Transactional
@@ -333,9 +353,10 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     /**
-     * 修改保存参数校验
+     * 校验树表/主子表模板所需的扩展参数是否完整。
      *
-     * @param genTable 业务信息
+     * @param genTable 待保存的生成表实体
+     * @throws BizException 必填项缺失时抛出
      */
     @Override
     public void validateEdit(GenTable genTable)
@@ -370,7 +391,10 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         }
     }
     /**
-     * 转换为VO
+     * 将 {@link GenTable} 实体转换为列表展示用 {@link GenTableVO}。
+     *
+     * @param genTable 生成表实体
+     * @return 转换后的 VO 对象
      */
     private GenTableVO convertToVO(GenTable genTable) {
         GenTableVO vo = new GenTableVO();
@@ -378,9 +402,9 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         return vo;
     }
     /**
-     * 设置主键列信息
+     * 解析并设置生成表的主键列引用，供模板渲染使用。
      *
-     * @param table 业务表信息
+     * @param table 生成表实体
      */
     public void setPkColumn(GenTable table)
     {
@@ -388,9 +412,9 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     /**
-     * 设置主子表信息
+     * 加载并挂载主子表模板所需的关联子表实体。
      *
-     * @param table 业务表信息
+     * @param table 主表生成表实体
      */
     public void setSubTable(GenTable table)
     {
@@ -401,9 +425,9 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
         }
     }
     /**
-     * 设置代码生成其他选项值
+     * 从 options JSON 解析树表编码、父菜单等扩展配置并回填至实体字段。
      *
-     * @param genTable 设置后的生成对象
+     * @param genTable 含 options 字段的生成表实体
      */
     public void setTableFromOptions(GenTable genTable)
     {

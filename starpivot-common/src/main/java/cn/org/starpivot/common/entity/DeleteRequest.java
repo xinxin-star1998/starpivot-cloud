@@ -7,11 +7,16 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 用于删除请求
+ * 批量删除请求体，携带待删除记录的主键 ID 列表。
+ * <p>
+ * 供 Controller 接收前端多选删除参数，与单条 {@code DELETE /{id}} 接口互补。
+ * </p>
  */
 @Data
 public class DeleteRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /** 待删除记录的主键 ID 集合 */
     private List<Long> ids;
 }

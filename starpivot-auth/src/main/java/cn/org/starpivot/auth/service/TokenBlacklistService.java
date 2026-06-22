@@ -9,7 +9,16 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 令牌黑名单服务，用于处理注销和强制过期的令牌
+ * 令牌黑名单服务类。
+ * <p>
+ * 基于 Redis 维护已注销或强制失效的 JWT 访问令牌黑名单，
+ * 供 {@link AuthTokenBlacklistChecker} 及 {@link AuthService} 在鉴权时使用。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — Lombok 生成 {@code log} 日志字段</li>
+ *   <li>{@link Service} — 注册为 Spring 业务服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — Lombok 生成含 {@code final} 字段的构造器，注入 Redis 模板</li>
+ * </ul>
  */
 @Slf4j
 @Service
@@ -19,10 +28,10 @@ public class TokenBlacklistService {
     private final StringRedisTemplate redisTemplate;
 
     /**
-     * 将令牌加入黑名单
+     * 将访问令牌加入黑名单，TTL 与 JWT 剩余有效期一致。
      *
-     * @param token       令牌
-     * @param ttlMillis   有效时间（毫秒）
+     * @param token     JWT 访问令牌
+     * @param ttlMillis 黑名单条目存活时间（毫秒）
      */
     public void add(String token, long ttlMillis) {
         if (token == null || token.trim().isEmpty()) {
@@ -46,10 +55,10 @@ public class TokenBlacklistService {
     }
 
     /**
-     * 检查令牌是否在黑名单中
+     * 检查访问令牌是否在黑名单中。
      *
-     * @param token 令牌
-     * @return 是否在黑名单中
+     * @param token JWT 访问令牌
+     * @return 在黑名单中返回 {@code true}；Redis 异常时为安全起见也返回 {@code true}
      */
     public boolean isBlacklisted(String token) {
         if (token == null || token.trim().isEmpty()) {
@@ -74,9 +83,9 @@ public class TokenBlacklistService {
     }
 
     /**
-     * 移除令牌的黑名单状态（如果存在）
+     * 从黑名单中移除指定令牌。
      *
-     * @param token 令牌
+     * @param token JWT 访问令牌
      */
     public void remove(String token) {
         if (token == null || token.trim().isEmpty()) {
@@ -93,7 +102,10 @@ public class TokenBlacklistService {
     }
 
     /**
-     * 清理已过期的黑名单条目（通常由定时任务调用）
+     * 清理已过期的黑名单条目。
+     * <p>
+     * Redis 键已设置 TTL，过期后自动删除，此方法仅作占位与日志记录。
+     * </p>
      */
     public void cleanupExpiredEntries() {
         // 注意：在Redis中，过期键会自动删除，无需手动清理
@@ -101,10 +113,10 @@ public class TokenBlacklistService {
     }
 
     /**
-     * 对令牌进行安全处理，防止注入攻击
+     * 对令牌进行安全处理，移除非法字符以防 Redis 键注入。
      *
-     * @param token 原始令牌
-     * @return 安全处理后的令牌
+     * @param token 原始 JWT 令牌
+     * @return 净化后的令牌字符串
      */
     private String sanitizeToken(String token) {
         // 移除可能的恶意字符，只保留字母数字和标准JWT字符

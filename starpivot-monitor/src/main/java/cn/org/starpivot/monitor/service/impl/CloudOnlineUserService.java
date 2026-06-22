@@ -26,7 +26,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 基于 RefreshToken（{@link cn.org.starpivot.common.cache.CacheConstants#LOGIN_TOKENS}）的在线用户查询与强退。
+ * 基于 Redis RefreshToken 的在线用户查询与强制下线服务。
+ * <p>
+ * 扫描 {@link cn.org.starpivot.common.cache.CacheConstants#LOGIN_TOKENS} 前缀下的会话键，
+ * 关联 {@link MonitorUserQueryService}、{@link MonitorDeptQueryService} 补全用户与部门信息，
+ * 并支持按会话 ID 删除 RefreshToken 实现强退。
+ * </p>
  */
 @Slf4j
 @Service
@@ -49,6 +54,17 @@ public class CloudOnlineUserService {
     
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * 获取当前在线用户列表，支持按用户名与 IP 模糊过滤。
+     * <p>
+     * 从 Redis 扫描 RefreshToken 键，解析用户 ID 后批量查询用户与部门信息，
+     * 并从 Hash 字段读取 IP、浏览器、操作系统、登录地点及时间等客户端信息。
+     * </p>
+     *
+     * @param userName 用户名或昵称关键字，为空时不按用户名过滤
+     * @param ipaddr   IP 地址关键字，为空时不按 IP 过滤
+     * @return {@link OnlineUserVO} 列表，Redis 未配置或查询异常时返回空列表
+     */
     public List<OnlineUserVO> getOnlineUserList(String userName, String ipaddr) {
         List<OnlineUserVO> result = new ArrayList<>();
         if (stringRedisTemplate == null || monitorUserQueryService == null) {
@@ -148,7 +164,11 @@ public class CloudOnlineUserService {
     }
     
     /**
-     * 从 Redis Hash 中获取客户端信息
+     * 从 Redis 读取指定会话键的客户端信息。
+     * <p>优先读取 Hash 字段；若为空则兼容旧版字符串存储方式，返回空的客户端字段。</p>
+     *
+     * @param key RefreshToken 对应的 Redis 键
+     * @return 包含 IP、浏览器、操作系统、登录地点及时间等字段的映射，读取失败时返回部分空值
      */
     private Map<String, String> getClientInfoFromRedis(String key) {
         Map<String, String> info = new HashMap<>();
@@ -181,6 +201,15 @@ public class CloudOnlineUserService {
         return info;
     }
 
+    /**
+     * 强制指定会话下线，删除 Redis 中的 RefreshToken。
+     * <p>
+     * 支持完整 Redis 键、{@code REFRESH_PREFIX} 前缀键，以及纯数字用户 ID（自动补前缀）。
+     * </p>
+     *
+     * @param sessionId 会话 ID、完整 Redis 键或用户 ID
+     * @return 删除成功返回 {@code true}，参数无效或删除失败返回 {@code false}
+     */
     public boolean forceLogout(String sessionId) {
         if (!StringUtils.hasText(sessionId)) {
             return false;
@@ -202,6 +231,12 @@ public class CloudOnlineUserService {
         }
     }
 
+    /**
+     * 使用 SCAN 命令非阻塞扫描匹配模式的 Redis 键。
+     *
+     * @param pattern 键匹配模式，如 {@code login_tokens:refresh:*}
+     * @return 匹配的键集合，无匹配时返回空集合
+     */
     private Set<String> scanKeys(String pattern) {
         Set<String> keys = new HashSet<>();
         ScanOptions options = ScanOptions.scanOptions().match(pattern).count(100).build();

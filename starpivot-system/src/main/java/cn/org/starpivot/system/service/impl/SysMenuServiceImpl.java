@@ -35,6 +35,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * 菜单管理服务实现类。
+ * <p>
+ * 实现 {@link SysMenuService}，含菜单树维护、用户权限菜单过滤及缓存管理。
+ * </p>
+ */
 @Slf4j
 @Service("sysMenuService")
 @RequiredArgsConstructor
@@ -47,6 +53,12 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     private final RoleMenuMapper roleMenuMapper;
     private final UserPermissionCacheService userPermissionCacheService;
 
+    /**
+     * 查询全部正常状态菜单树（管理端）。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务；{@code @Cacheable} 缓存至 {@link CacheConstants#MENU_TREE}。</p>
+     *
+     * @return 菜单树列表
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
@@ -58,6 +70,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return buildMenuTree(allMenu, ROOT_PARENT_ID);
     }
 
+    /**
+     * 根据用户角色与数据权限获取前端路由菜单树。
+     * <p>管理员或全部数据权限用户返回全量菜单；否则按用户授权过滤，并合并按钮权限至父节点。</p>
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param userId 用户 ID
+     * @return 用户可见菜单树（不含按钮节点）
+     */
     @Override
     @Transactional(readOnly = true)
     public List<SysMenu> getUserMenuTree(Long userId) {
@@ -84,6 +104,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return buildUserMenuTree(allMenu, ROOT_PARENT_ID);
     }
 
+    /**
+     * 新增菜单。
+     * <p>{@code @Transactional} 异常时回滚；{@code @CacheEvict} 清空菜单树缓存，成功后清除用户权限缓存。</p>
+     *
+     * @param menuDTO 菜单信息
+     * @return 是否保存成功
+     * @throws BizException 同级菜单名称已存在时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
@@ -112,6 +140,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return result;
     }
 
+    /**
+     * 更新菜单信息。
+     * <p>{@code @Transactional} 异常时回滚；{@code @CacheEvict} 清空菜单树缓存，成功后清除用户权限缓存。</p>
+     *
+     * @param menuDTO 菜单信息（含 menuId）
+     * @return 是否更新成功
+     * @throws BizException 菜单不存在、父菜单非法或名称重复时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
@@ -141,6 +177,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return result;
     }
 
+    /**
+     * 批量删除菜单。
+     * <p>{@code @Transactional} 异常时回滚；{@code @CacheEvict} 清空菜单树缓存，成功后清除用户权限缓存。</p>
+     *
+     * @param menuIds 待删除的菜单 ID 列表
+     * @return 删除成功返回 {@code true}，入参为空返回 {@code false}
+     * @throws BizException 存在子菜单或已被角色引用时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
@@ -170,6 +214,12 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return result;
     }
 
+    /**
+     * 查询可作为父级的目录/菜单树，含虚拟顶级节点。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @return 带 label/value 的父级菜单树
+     */
     @Override
     @Transactional(readOnly = true)
     public List<SysMenu> getParent() {
@@ -192,6 +242,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return buildMenuTreeWithLabelValue(menuList, TOP_MENU_PARENT_ID);
     }
 
+    /**
+     * 校验同级菜单名称是否唯一。
+     *
+     * @param menuName 菜单名称
+     * @param parentId 父菜单 ID，{@code null} 视为根节点
+     * @param menuId   排除的菜单 ID（更新时传入），新增时传 {@code null}
+     * @return {@code true} 表示名称可用
+     */
     private boolean checkMenuNameUnique(String menuName, Long parentId, Long menuId) {
         LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysMenu::getMenuName, menuName)
@@ -202,6 +260,13 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return this.count(wrapper) == 0;
     }
 
+    /**
+     * 递归构建管理端菜单树，并设置 label/value 字段。
+     *
+     * @param allMenu  扁平菜单列表
+     * @param parentId 当前层父菜单 ID
+     * @return 子树节点列表
+     */
     private List<SysMenu> buildMenuTree(List<SysMenu> allMenu, long parentId) {
         if (allMenu == null || allMenu.isEmpty()) {
             return Collections.emptyList();
@@ -222,6 +287,13 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return tree;
     }
 
+    /**
+     * 递归构建用户端菜单树，过滤按钮类型节点。
+     *
+     * @param allMenu  用户可见的扁平菜单列表
+     * @param parentId 当前层父菜单 ID
+     * @return 子树节点列表（无子节点时不设置 children）
+     */
     private List<SysMenu> buildUserMenuTree(List<SysMenu> allMenu, long parentId) {
         if (allMenu == null || allMenu.isEmpty()) {
             return Collections.emptyList();
@@ -246,6 +318,13 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return tree;
     }
 
+    /**
+     * 递归构建带 label/value 的菜单树（用于父级选择器）。
+     *
+     * @param menuList 扁平菜单列表
+     * @param parentId 当前层父菜单 ID
+     * @return 子树节点列表
+     */
     private List<SysMenu> buildMenuTreeWithLabelValue(List<SysMenu> menuList, long parentId) {
         List<SysMenu> tree = new ArrayList<>();
 
@@ -265,6 +344,11 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return tree;
     }
 
+    /**
+     * 将子按钮节点的权限标识合并至父菜单的 {@code perms} 字段。
+     *
+     * @param allMenu 用户菜单扁平列表（原地修改）
+     */
     private void mergeButtonPermsToParent(List<SysMenu> allMenu) {
         if (allMenu == null || allMenu.isEmpty()) {
             return;

@@ -26,6 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 工作台仪表盘服务实现类。
+ * <p>
+ * 聚合用户数、登录趋势、操作日志等统计数据，结果经 Redis 短时缓存。
+ * </p>
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,6 +47,10 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
     private final SysOperLogService sysOperLogService;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * {@inheritDoc}
+     * <p>优先从 Redis 缓存读取，未命中时聚合各服务数据并缓存。</p>
+     */
     @Override
     public ConsoleDashboardVo getConsoleData() {
         ConsoleDashboardVo cached = (ConsoleDashboardVo) redisTemplate.opsForValue().get(CACHE_KEY);
@@ -60,6 +70,11 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return vo;
     }
 
+    /**
+     * 构建工作台顶部四张统计卡片（访问、在线、操作、新用户）及环比变化。
+     *
+     * @return 卡片列表
+     */
     private List<ConsoleDashboardVo.CardItem> buildCards() {
         LocalDate today = LocalDate.now();
         LocalDateTime todayStart = today.atStartOfDay();
@@ -92,6 +107,11 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return cards;
     }
 
+    /**
+     * 构建近 12 个月登录访问趋势图数据。
+     *
+     * @return 含 x 轴月份与对应访问量的趋势数据
+     */
     private ConsoleDashboardVo.TrendData buildVisitTrend() {
         List<String> xAxis = new ArrayList<>(12);
         List<Long> data = new ArrayList<>(12);
@@ -125,6 +145,11 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return trendData;
     }
 
+    /**
+     * 构建近 12 个月新增用户趋势图数据。
+     *
+     * @return 含 x 轴月份与对应用户数的趋势数据
+     */
     private ConsoleDashboardVo.TrendData buildUserTrend() {
         List<String> xAxis = new ArrayList<>(12);
         List<Long> data = new ArrayList<>(12);
@@ -158,6 +183,11 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return trendData;
     }
 
+    /**
+     * 构建最新注册用户列表（最多 6 条），含本月登录活跃度百分比。
+     *
+     * @return 新用户展示项列表
+     */
     private List<ConsoleDashboardVo.NewUserItem> buildNewUserList() {
         List<SysUser> users = sysUserService.lambdaQuery()
                 .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL)
@@ -193,6 +223,11 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return newUserList;
     }
 
+    /**
+     * 构建工作台待办事项列表（当前为系统内置示例数据）。
+     *
+     * @return 待办项列表
+     */
     private List<ConsoleDashboardVo.TodoItem> buildTodoList() {
         List<ConsoleDashboardVo.TodoItem> todoList = new ArrayList<>();
         todoList.add(ConsoleDashboardVo.TodoItem.builder()
@@ -202,6 +237,11 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return todoList;
     }
 
+    /**
+     * 构建最近操作动态列表（最多 8 条操作日志）。
+     *
+     * @return 动态展示项列表
+     */
     private List<ConsoleDashboardVo.DynamicItem> buildDynamicList() {
         List<SysOperLog> operLogs = sysOperLogService.lambdaQuery()
                 .orderByDesc(SysOperLog::getOperTime)
@@ -219,6 +259,13 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return dynamicList;
     }
 
+    /**
+     * 统计指定时间区间内的登录次数。
+     *
+     * @param start 起始时间（含）
+     * @param end   结束时间（不含）
+     * @return 登录记录数
+     */
     private long countLoginBetween(LocalDateTime start, LocalDateTime end) {
         return sysLogininforService.lambdaQuery()
                 .ge(SysLogininfor::getLoginTime, start)
@@ -226,6 +273,13 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
                 .count();
     }
 
+    /**
+     * 统计指定时间区间内的操作日志条数。
+     *
+     * @param start 起始时间（含）
+     * @param end   结束时间（不含）
+     * @return 操作日志数
+     */
     private long countOperBetween(LocalDateTime start, LocalDateTime end) {
         return sysOperLogService.lambdaQuery()
                 .ge(SysOperLog::getOperTime, start)
@@ -233,6 +287,13 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
                 .count();
     }
 
+    /**
+     * 统计指定时间区间内的新增用户数（未删除）。
+     *
+     * @param start 起始时间（含）
+     * @param end   结束时间（不含）
+     * @return 新增用户数
+     */
     private long countUserBetween(LocalDateTime start, LocalDateTime end) {
         return sysUserService.lambdaQuery()
                 .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL)
@@ -241,6 +302,13 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
                 .count();
     }
 
+    /**
+     * 计算环比变化百分比字符串。
+     *
+     * @param current  当前周期数值
+     * @param previous 对比周期数值
+     * @return 带正负号的百分比字符串（如 {@code +10%}）
+     */
     private String calcChange(long current, long previous) {
         if (previous <= 0) {
             return current > 0 ? "+100%" : "+0%";
@@ -252,6 +320,15 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return sign + ratio.toPlainString() + "%";
     }
 
+    /**
+     * 组装单张统计卡片。
+     *
+     * @param des    卡片描述
+     * @param icon   图标标识
+     * @param num    统计数值
+     * @param change 环比变化文本
+     * @return 卡片项
+     */
     private ConsoleDashboardVo.CardItem buildCard(String des, String icon, Long num, String change) {
         ConsoleDashboardVo.CardItem cardItem = new ConsoleDashboardVo.CardItem();
         cardItem.setDes(des);
@@ -261,6 +338,12 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return cardItem;
     }
 
+    /**
+     * 将操作日志业务类型编码转换为展示用动词。
+     *
+     * @param businessType 业务类型编码
+     * @return 中文动词（如「新增了」），未知时返回「执行了」
+     */
     private String resolveBusinessType(Integer businessType) {
         if (businessType == null) {
             return "执行了";
@@ -279,6 +362,12 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         };
     }
 
+    /**
+     * 将系统性别编码转换为前端展示用数值（{@code 0} 男，{@code 1} 女）。
+     *
+     * @param sex 性别编码（{@code 0} 男，其他视为女）
+     * @return 前端展示用性别值
+     */
     private Integer parseSex(String sex) {
         if ("0".equals(sex)) {
             return 1;
@@ -286,6 +375,12 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         return 0;
     }
 
+    /**
+     * 空值安全处理，空白字符串返回占位符。
+     *
+     * @param value 原始字符串
+     * @return 非空原值，否则返回 {@code "-"}
+     */
     private String safe(String value) {
         return StringUtils.hasText(value) ? value : "-";
     }

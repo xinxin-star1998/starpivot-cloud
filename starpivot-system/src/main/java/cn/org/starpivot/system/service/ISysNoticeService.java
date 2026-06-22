@@ -10,10 +10,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.List;
 
 /**
- * 通知公告Service接口
- * 
- * @author admin
- * @since 2026-02-05
+ * 通知公告服务接口。
+ * <p>
+ * 提供系统通知公告的增删改查及分页查询能力。
+ * 继承 {@link IService} 获得 MyBatis-Plus 基础持久化能力。
+ * </p>
  */
 public interface ISysNoticeService extends IService<SysNotice>
 {

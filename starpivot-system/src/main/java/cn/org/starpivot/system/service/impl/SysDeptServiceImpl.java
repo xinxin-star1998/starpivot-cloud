@@ -26,12 +26,24 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 部门管理服务实现类。
+ * <p>
+ * 实现 {@link SysDeptService}，含部门树构建、增删改及子部门/用户关联校验。
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
 public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> implements SysDeptService {
 
     private final SysUserMapper userMapper;
 
+    /**
+     * 查询部门树形结构。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务；{@code @Cacheable} 结果缓存至 {@link CacheConstants#DEPT_TREE}。</p>
+     *
+     * @return 按排序号排列的 {@link DeptVO} 树
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
@@ -40,6 +52,14 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return buildDeptTree(depts, 0L);
     }
 
+    /**
+     * 根据部门 ID 查询部门详情。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param deptId 部门 ID
+     * @return 部门视图对象
+     * @throws BizException 部门不存在或已删除时抛出
+     */
     @Override
     @Transactional(readOnly = true)
     public DeptVO selectDeptById(Long deptId) {
@@ -53,6 +73,14 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return vo;
     }
 
+    /**
+     * 新增部门，自动维护祖级列表与默认值。
+     * <p>{@code @CacheEvict} 清空部门树缓存；{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param deptDTO 部门信息
+     * @return 是否保存成功
+     * @throws BizException 同级部门名称已存在时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
@@ -86,6 +114,14 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return this.save(dept);
     }
 
+    /**
+     * 更新部门信息，父部门变更时级联更新子部门祖级列表。
+     * <p>{@code @CacheEvict} 清空部门树缓存；{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param deptDTO 部门信息（含 deptId）
+     * @return 是否更新成功
+     * @throws BizException 部门不存在、父部门非法或名称重复时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
@@ -122,6 +158,14 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return this.updateById(dept);
     }
 
+    /**
+     * 批量逻辑删除部门。
+     * <p>{@code @CacheEvict} 清空部门树缓存；{@code @Transactional} 异常时回滚。</p>
+     *
+     * @param deptIds 待删除的部门 ID 列表
+     * @return 有有效删除时返回 {@code true}，入参为空返回 {@code false}
+     * @throws BizException 存在子部门或关联用户时抛出
+     */
     @Override
     @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
@@ -151,6 +195,15 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return true;
     }
 
+    /**
+     * 校验同级部门名称是否唯一。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param deptName 部门名称
+     * @param parentId 父部门 ID，{@code null} 视为根节点
+     * @param deptId   排除的部门 ID（更新时传入），新增时传 {@code null}
+     * @return {@code true} 表示名称可用
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean checkDeptNameUnique(String deptName, Long parentId, Long deptId) {
@@ -164,6 +217,13 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return this.count(wrapper) == 0;
     }
 
+    /**
+     * 判断部门是否存在未删除的子部门。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param deptId 部门 ID
+     * @return {@code true} 表示存在子部门
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean hasChildDept(Long deptId) {
@@ -173,6 +233,13 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return this.count(wrapper) > 0;
     }
 
+    /**
+     * 判断部门下是否存在未删除的用户。
+     * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param deptId 部门 ID
+     * @return {@code true} 表示存在关联用户
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean hasUser(Long deptId) {
@@ -182,6 +249,13 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return userMapper.selectCount(wrapper) > 0;
     }
 
+    /**
+     * 递归构建部门树，并按 {@code orderNum} 排序。
+     *
+     * @param depts    扁平部门列表
+     * @param parentId 当前层父部门 ID
+     * @return 子树节点列表
+     */
     private List<DeptVO> buildDeptTree(List<SysDept> depts, Long parentId) {
         List<DeptVO> deptTree = new ArrayList<>();
 
@@ -206,6 +280,12 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         return deptTree;
     }
 
+    /**
+     * 递归更新子部门的祖级列表（父部门变更后调用）。
+     *
+     * @param deptId    当前部门 ID
+     * @param ancestors 新的祖级路径
+     */
     private void updateChildrenAncestors(Long deptId, String ancestors) {
         LambdaQueryWrapper<SysDept> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysDept::getParentId, deptId)

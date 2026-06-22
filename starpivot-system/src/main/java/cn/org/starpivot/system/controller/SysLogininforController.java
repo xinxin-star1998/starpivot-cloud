@@ -19,6 +19,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 登录日志管理控制器。
+ * <p>
+ * 提供用户登录审计日志的分页查询、详情查看、删除及清空接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /sys/logininfor}</li>
+ *   <li>{@link Tag} — OpenAPI 分组「登录日志管理」</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/sys/logininfor")
 @RequiredArgsConstructor
@@ -27,6 +38,12 @@ public class SysLogininforController {
 
     private final SysLogininforService sysLogininforService;
 
+    /**
+     * 分页查询登录日志。
+     *
+     * @param logininforReqBo 分页及筛选条件
+     * @return 登录日志视图分页结果
+     */
     @Log(title = "登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:query')")
     @PostMapping("/pageList")
@@ -34,6 +51,12 @@ public class SysLogininforController {
         return Result.success(sysLogininforService.pageList(logininforReqBo));
     }
 
+    /**
+     * 根据日志 ID 获取登录日志详情。
+     *
+     * @param infoId 登录日志主键
+     * @return 登录日志视图对象
+     */
     @Log(title = "登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:query')")
     @GetMapping("/{infoId}")
@@ -47,6 +70,12 @@ public class SysLogininforController {
         return Result.success(vo);
     }
 
+    /**
+     * 批量删除登录日志。
+     *
+     * @param deleteRequest 待删除日志 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除登录日志", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:logininfor:delete')")
     @DeleteMapping("/delete")
@@ -55,6 +84,11 @@ public class SysLogininforController {
         return success ? Result.success("删除成功") : Result.error("删除失败");
     }
 
+    /**
+     * 清空全部登录日志。
+     *
+     * @return 操作结果
+     */
     @Log(title = "清空登录日志", businessType = BusinessType.CLEAN)
     @PreAuthorize("hasAuthority('system:logininfor:delete')")
     @DeleteMapping("/clean")

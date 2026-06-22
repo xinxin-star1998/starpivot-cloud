@@ -15,20 +15,55 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 /**
- * 系统用户 Feign 客户端（直连 starpivot-system，不经网关）
+ * 系统用户 Feign 客户端接口。
+ * <p>
+ * 供 auth 等服务直连 {@code starpivot-system} 微服务（不经网关），
+ * 调用用户鉴权、菜单查询、注册等内部接口。
+ * <p>
+ * 注解说明：
+ * <ul>
+ *   <li>{@link FeignClient} — 声明 Feign 客户端，{@code name} 指定目标服务名，{@code contextId} 避免同服务多 Client Bean 冲突</li>
+ * </ul>
  */
-@FeignClient(name = "starpivot-system", contextId = "sysUserClient")
+@FeignClient(
+        name = "starpivot-system",
+        contextId = "sysUserClient",
+        path = "/api/${starpivot.api.version:v1}")
 public interface SysUserClient {
 
-    @GetMapping("/api/v1/internal/user/username/{username}")
+    /**
+     * 按用户名查询用户鉴权信息（不含密码）。
+     *
+     * @param username 用户名
+     * @return 用户鉴权 DTO，含角色、状态等
+     */
+    @GetMapping("/internal/user/username/{username}")
     Result<SysUserAuthDto> getByUsername(@PathVariable("username") String username);
 
-    @PostMapping("/api/v1/internal/user/verify-password")
+    /**
+     * 校验用户名与密码，成功时返回用户鉴权信息。
+     *
+     * @param request 含用户名与明文密码的校验请求
+     * @return 校验通过后的用户鉴权 DTO
+     */
+    @PostMapping("/internal/user/verify-password")
     Result<SysUserAuthDto> verifyPassword(@RequestBody VerifyPasswordRequest request);
 
-    @GetMapping("/api/v1/internal/user/{userId}/menus")
+    /**
+     * 查询指定用户的菜单/权限树。
+     *
+     * @param userId 用户 ID
+     * @return 菜单 DTO 列表
+     */
+    @GetMapping("/internal/user/{userId}/menus")
     Result<List<SysMenuDto>> getUserMenus(@PathVariable("userId") Long userId);
 
-    @PostMapping("/api/v1/internal/user/register")
+    /**
+     * 内部用户注册（由 auth 服务调用）。
+     *
+     * @param request 注册用户名与密码
+     * @return 注册成功后的用户基本信息
+     */
+    @PostMapping("/internal/user/register")
     Result<RegisterUserResponse> registerUser(@RequestBody RegisterUserRequest request);
 }

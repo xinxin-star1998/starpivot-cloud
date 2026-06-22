@@ -27,7 +27,20 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 网关认证过滤器，负责验证JWT令牌并传递用户信息给下游服务
+ * 网关 JWT 认证全局过滤器（响应式）。
+ * <p>
+ * 实现 {@link GlobalFilter}，运行于 Spring Cloud Gateway 的 WebFlux 上下文，
+ * 通过 {@link ServerWebExchange} 与 {@link Mono} 处理请求，<strong>非</strong> Servlet {@code FilterChain}。
+ * 校验 Bearer Token、Redis 黑名单，并将解析后的用户信息写入下游请求头。
+ * <ul>
+ *   <li>{@link Component} — 注册为 Spring Bean，自动加入网关过滤器链</li>
+ *   <li>{@link RequiredArgsConstructor} — Lombok 为 final 依赖生成构造器</li>
+ *   <li>{@link Slf4j} — 提供 {@code log} 记录 Token 校验异常</li>
+ * </ul>
+ *
+ * @see GatewayAuthProperties
+ * @see JwtUtils
+ * @see SecurityConstants
  */
 @Slf4j
 @Component
@@ -41,6 +54,13 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
+    /**
+     * 执行 JWT 鉴权：白名单放行，否则校验 Token 并注入用户 Header 后转发。
+     *
+     * @param exchange 当前请求的响应式上下文（含 {@link ServerHttpRequest} 与响应对象）
+     * @param chain    网关过滤器链，鉴权通过后调用 {@code chain.filter} 继续路由
+     * @return 完成或中断请求的 {@link Mono}，未授权时直接写入 JSON 响应
+     */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
@@ -89,7 +109,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 检查路径是否在白名单中
+     * 检查路径是否匹配 {@link GatewayAuthProperties#getWhitelist()} 中的 Ant 模式。
      */
     private boolean isWhitelisted(String path) {
         return gatewayAuthProperties.getWhitelist().stream()
@@ -97,7 +117,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 检查令牌是否在黑名单中
+     * 通过 {@link ReactiveStringRedisTemplate} 异步检查 Token 是否在 Redis 黑名单中。
      */
     private Mono<Boolean> isBlacklisted(String token) {
         try {
@@ -110,7 +130,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 返回未授权响应
+     * 写入 401 JSON 响应并结束请求（响应式写回 {@link DataBuffer}）。
      */
     private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -129,6 +149,11 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         }
     }
 
+    /**
+     * 过滤器顺序：在 {@link StripUserHeadersFilter} 之后、路由转发之前执行鉴权。
+     *
+     * @return {@link Ordered#HIGHEST_PRECEDENCE} + 100
+     */
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE + 100;

@@ -10,10 +10,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.List;
 
 /**
- * 字典类型服务接口
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典类型服务接口。
+ * <p>
+ * 提供字典类型的增删改查、唯一性校验及下拉列表查询。
+ * </p>
  */
 public interface SysDictTypeService extends IService<SysDictType> {
 
@@ -66,5 +66,6 @@ public interface SysDictTypeService extends IService<SysDictType> {
      */
     boolean checkDictTypeUnique(String dictType, Long dictId);
 
+    /** 查询全部字典类型（下拉选用）。 */
     List<SysDictTypeVO> selectList();
 }

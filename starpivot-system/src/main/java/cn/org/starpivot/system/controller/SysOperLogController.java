@@ -19,6 +19,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 操作日志管理控制器。
+ * <p>
+ * 提供系统操作审计日志的分页查询、详情查看、删除及清空接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /sys/operlog}</li>
+ *   <li>{@link Tag} — OpenAPI 分组「操作日志管理」</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/sys/operlog")
 @RequiredArgsConstructor
@@ -27,6 +38,12 @@ public class SysOperLogController {
 
     private final SysOperLogService sysOperLogService;
 
+    /**
+     * 分页查询操作日志。
+     *
+     * @param operLogReqBo 分页及筛选条件
+     * @return 操作日志视图分页结果
+     */
     @Log(title = "操作日志")
     @PreAuthorize("hasAuthority('system:operlog:query')")
     @PostMapping("/pageList")
@@ -34,6 +51,12 @@ public class SysOperLogController {
         return Result.success(sysOperLogService.pageList(operLogReqBo));
     }
 
+    /**
+     * 根据日志 ID 获取操作日志详情。
+     *
+     * @param operId 操作日志主键
+     * @return 操作日志视图对象
+     */
     @Log(title = "操作日志")
     @PreAuthorize("hasAuthority('system:operlog:query')")
     @GetMapping("/{operId}")
@@ -47,6 +70,12 @@ public class SysOperLogController {
         return Result.success(vo);
     }
 
+    /**
+     * 批量删除操作日志。
+     *
+     * @param deleteRequest 待删除日志 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除操作日志", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:operlog:delete')")
     @DeleteMapping("/delete")
@@ -55,6 +84,11 @@ public class SysOperLogController {
         return success ? Result.success("删除成功") : Result.error("删除失败");
     }
 
+    /**
+     * 清空全部操作日志。
+     *
+     * @return 操作结果
+     */
     @Log(title = "清空操作日志", businessType = BusinessType.CLEAN)
     @PreAuthorize("hasAuthority('system:operlog:delete')")
     @DeleteMapping("/clean")

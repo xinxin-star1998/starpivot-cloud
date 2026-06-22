@@ -21,6 +21,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 前端路由控制器。
+ * <p>
+ * 根据当前登录用户权限生成菜单树与 Vue Router 动态路由配置。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /router}</li>
+ *   <li>{@link Tag} — OpenAPI 分组「路由管理」</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/router")
 @RequiredArgsConstructor
@@ -29,6 +40,12 @@ public class RouterController {
 
     private final SysMenuService sysMenuService;
 
+    /**
+     * 获取当前用户的菜单树（原始 {@link SysMenu} 结构）。
+     *
+     * @param authentication Spring Security 认证对象
+     * @return 菜单树；未认证返回 401，用户不存在返回 404
+     */
     @Operation(summary = "获取用户菜单树")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/userMenuTree")
@@ -45,6 +62,12 @@ public class RouterController {
         return ResponseEntity.ok(Result.success(menuTree));
     }
 
+    /**
+     * 获取当前用户的 Vue 动态路由列表。
+     *
+     * @param authentication Spring Security 认证对象
+     * @return {@link RouterVo} 路由树，无菜单时返回空列表
+     */
     @Operation(summary = "获取动态路由")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/dynamic-routes")

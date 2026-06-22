@@ -8,10 +8,19 @@ import java.util.List;
 
 /**
  * 菜单权限查询（generator / monitor 等服务与 system 共用 sys_menu 表）。
+ * <p>
+ * 供 {@link MenuPermissionAuthorityResolver} 加载用户菜单 perms 作为 Spring Security authorities。
+ * </p>
  */
 @Mapper
 public interface AuthMenuMapper {
 
+    /**
+     * 查询指定用户通过角色关联的有效菜单权限标识。
+     *
+     * @param userId 用户 ID
+     * @return 去重后的 perms 列表
+     */
     @Select("""
             SELECT DISTINCT m.perms
             FROM sys_menu m
@@ -25,6 +34,11 @@ public interface AuthMenuMapper {
             """)
     List<String> selectPermissionsByUserId(@Param("userId") Long userId);
 
+    /**
+     * 查询系统中全部有效菜单权限标识（超级管理员使用）。
+     *
+     * @return 去重后的 perms 列表
+     */
     @Select("""
             SELECT DISTINCT perms
             FROM sys_menu

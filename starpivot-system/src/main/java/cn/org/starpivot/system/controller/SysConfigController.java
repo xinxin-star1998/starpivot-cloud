@@ -17,6 +17,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 系统参数配置控制器。
+ * <p>
+ * 管理系统运行时可调参数（如注册开关）的增删改查。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /config}</li>
+ *   <li>{@link Tag} — OpenAPI 分组「参数配置」</li>
+ * </ul>
+ */
 @RestController
 @RequestMapping("/config")
 @RequiredArgsConstructor
@@ -25,18 +36,36 @@ public class SysConfigController {
 
     private final SysConfigService sysConfigService;
 
+    /**
+     * 分页查询参数配置列表。
+     *
+     * @param queryDTO 查询条件
+     * @return 参数配置分页结果
+     */
     @PreAuthorize("hasAuthority('system:config:query')")
     @PostMapping("/list")
     public Result<PageResponse<SysConfigVO>> list(@RequestBody SysConfigQueryDTO queryDTO) {
         return Result.success(sysConfigService.selectSysConfigPage(queryDTO));
     }
 
+    /**
+     * 根据配置 ID 获取详情。
+     *
+     * @param configId 配置主键
+     * @return 参数配置视图对象
+     */
     @PreAuthorize("hasAuthority('system:config:query')")
     @GetMapping("/{configId}")
     public Result<SysConfigVO> getInfo(@PathVariable Long configId) {
         return Result.success(sysConfigService.selectSysConfigByConfigId(configId));
     }
 
+    /**
+     * 新增参数配置。
+     *
+     * @param sysConfigDTO 配置创建参数
+     * @return 操作结果
+     */
     @Log(title = "新增参数", businessType = BusinessType.INSERT)
     @PreAuthorize("hasAuthority('system:config:add')")
     @PostMapping
@@ -45,6 +74,12 @@ public class SysConfigController {
         return success ? Result.success("新增成功") : Result.error("新增失败");
     }
 
+    /**
+     * 修改参数配置。
+     *
+     * @param sysConfigDTO 配置更新参数
+     * @return 操作结果
+     */
     @Log(title = "修改参数", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('system:config:edit')")
     @PutMapping
@@ -53,6 +88,12 @@ public class SysConfigController {
         return success ? Result.success("修改成功") : Result.error("修改失败");
     }
 
+    /**
+     * 批量删除参数配置。
+     *
+     * @param deleteRequest 待删除配置 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除参数", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:config:delete')")
     @DeleteMapping("/delete")

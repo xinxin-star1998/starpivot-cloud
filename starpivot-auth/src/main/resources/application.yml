@@ -10,35 +10,9 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   config:
     import:
+      - optional:classpath:application-nacos.yml
       - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
       - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
-  cloud:
-    nacos:
-      username: ${NACOS_USERNAME:nacos}
-      password: ${NACOS_PASSWORD:nacos}
-      discovery:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: ${NACOS_GROUP:DEFAULT_GROUP}
-      config:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: ${NACOS_GROUP:DEFAULT_GROUP}
-        file-extension: yaml
-        refresh-enabled: true
-        import-check:
-          enabled: false
-
-spring.cloud.sentinel:
-  transport:
-    dashboard: ${SENTINEL_DASHBOARD:localhost:8080}
-  datasource:
-    ds1:
-      nacos:
-        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
-        dataId: ${spring.application.name}-sentinel
-        groupId: DEFAULT_GROUP
-        rule-type: flow
 
 management:
   health:

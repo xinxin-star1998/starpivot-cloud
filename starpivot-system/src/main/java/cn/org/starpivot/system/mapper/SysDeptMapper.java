@@ -6,8 +6,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
+/**
+ * 部门 Mapper 接口。
+ * <p>继承 {@link BaseMapper} 提供部门表基础 CRUD 及全量部门 ID 查询。</p>
+ */
 @Mapper
 public interface SysDeptMapper extends BaseMapper<SysDept> {
 
+    /** 查询全部部门 ID 列表。 */
     List<Long> selectAllDeptIds();
 }

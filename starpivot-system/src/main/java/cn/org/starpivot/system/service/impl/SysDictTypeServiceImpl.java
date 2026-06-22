@@ -28,10 +28,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 字典类型服务实现类
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典类型服务实现类。
+ * <p>实现 {@link SysDictTypeService}，含字典类型 CRUD 及下属数据存在性校验。</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -39,6 +37,12 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
     private final SysDictDataMapper sysDictDataMapper;
 
+    /**
+     * 分页查询字典类型列表，支持按名称、类型、状态筛选。
+     *
+     * @param queryDTO 查询条件与分页参数
+     * @return {@link SysDictTypeVO} 分页结果
+     */
     @Override
     public PageResponse<SysDictTypeVO> selectDictTypePage(SysDictTypeQueryDTO queryDTO) {
         PageResponse<SysDictTypeVO> pageResponse = new PageResponse<>();
@@ -66,6 +70,13 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         return pageResponse;
     }
 
+    /**
+     * 根据主键查询字典类型详情。
+     *
+     * @param dictId 字典类型主键
+     * @return 字典类型视图对象
+     * @throws cn.org.starpivot.common.exception.BizException 字典类型不存在时抛出
+     */
     @Override
     public SysDictTypeVO selectDictTypeById(Long dictId) {
         SysDictType dictType = this.getById(dictId);
@@ -73,6 +84,14 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         return convertToVO(dictType);
     }
 
+    /**
+     * 新增字典类型，校验类型标识唯一性。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)}，异常时回滚事务。</p>
+     *
+     * @param dictTypeDTO 字典类型信息
+     * @return 是否新增成功
+     * @throws BizException 字典类型已存在时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean insertDictType(SysDictTypeDTO dictTypeDTO) {
@@ -92,6 +111,14 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         return this.save(dictType);
     }
 
+    /**
+     * 修改字典类型；若类型标识变更，同步更新下属字典数据的类型字段。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)}，异常时回滚事务。</p>
+     *
+     * @param dictTypeDTO 字典类型信息
+     * @return 是否修改成功
+     * @throws BizException 字典类型不存在或类型标识已被使用时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateDictType(SysDictTypeDTO dictTypeDTO) {
@@ -121,6 +148,14 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         return this.updateById(dictType);
     }
 
+    /**
+     * 批量删除字典类型，存在下属字典数据时不允许删除。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)}，异常时回滚事务。</p>
+     *
+     * @param dictIds 待删除的字典类型主键列表
+     * @return 删除成功返回 {@code true}；列表为空返回 {@code false}
+     * @throws BizException 字典类型下存在字典数据时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteDictTypeByIds(List<Long> dictIds) {
@@ -145,6 +180,13 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         return true;
     }
 
+    /**
+     * 校验字典类型标识是否唯一。
+     *
+     * @param dictType 字典类型标识
+     * @param dictId   当前字典类型主键；新增时传 {@code null}，修改时用于排除自身
+     * @return 类型标识唯一返回 {@code true}
+     */
     @Override
     public boolean checkDictTypeUnique(String dictType, Long dictId) {
         LambdaQueryWrapper<SysDictType> wrapper = new LambdaQueryWrapper<>();
@@ -155,13 +197,21 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         return this.count(wrapper) == 0;
     }
 
+    /**
+     * 查询全部字典类型列表。
+     *
+     * @return {@link SysDictTypeVO} 列表
+     */
     @Override
     public List<SysDictTypeVO> selectList() {
         return this.list().stream().map(this::convertToVO).collect(Collectors.toList());
     }
 
     /**
-     * 转换为VO
+     * 将 {@link SysDictType} 实体转换为 {@link SysDictTypeVO}。
+     *
+     * @param dictType 字典类型实体
+     * @return 字典类型视图对象
      */
     private SysDictTypeVO convertToVO(SysDictType dictType) {
         SysDictTypeVO vo = new SysDictTypeVO();

@@ -1,0 +1,103 @@
+package cn.org.starpivot.gateway.filter;
+
+import cn.org.starpivot.common.observability.TraceIdConstants;
+import cn.org.starpivot.common.observability.TraceIdUtils;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+/**
+ * 网关 TraceId 传播全局过滤器（响应式）。
+ * <p>
+ * 优先使用 Micrometer Tracing 当前 Span 的 traceId；若无则透传客户端 Header 或由
+ * {@link TraceIdUtils} 生成。将 traceId 写入下游请求头与网关响应头，便于全链路日志关联。
+ * 运行于 WebFlux {@link GlobalFilter} 上下文，<strong>非</strong> Servlet 过滤器。
+ * <ul>
+ *   <li>{@link Component} — 注册为 Spring Bean</li>
+ * </ul>
+ *
+ * @see TraceIdConstants
+ * @see TraceIdUtils
+ */
+@Component
+public class TraceIdGatewayFilter implements GlobalFilter, Ordered {
+
+    private final ObjectProvider<Tracer> tracerProvider;
+
+    /**
+     * 构造过滤器，{@link Tracer} 通过 {@link ObjectProvider} 可选注入（未启用 Tracing 时为 null）。
+     *
+     * @param tracerProvider Micrometer Tracing 追踪器提供者
+     */
+    public TraceIdGatewayFilter(ObjectProvider<Tracer> tracerProvider) {
+        this.tracerProvider = tracerProvider;
+    }
+
+    /**
+     * 解析 traceId、写入请求/响应 Header 并继续过滤器链；完成后同步 Tracer 中的最新 traceId。
+     *
+     * @param exchange 当前请求的响应式上下文
+     * @param chain    网关过滤器链
+     * @return 完成路由的 {@link Mono}
+     */
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String traceId = resolveTraceId(exchange);
+
+        ServerHttpRequest mutated = exchange.getRequest().mutate()
+                .header(TraceIdConstants.TRACE_ID_HEADER, traceId)
+                .build();
+
+        exchange.getResponse().getHeaders().set(TraceIdConstants.TRACE_ID_HEADER, traceId);
+
+        return chain.filter(exchange.mutate().request(mutated).build())
+                .doOnSuccess(unused -> syncTraceIdFromTracer(exchange));
+    }
+
+    /**
+     * 请求完成后，若 Tracer 可用则用当前 Span 的 traceId 覆盖响应头。
+     */
+    private void syncTraceIdFromTracer(ServerWebExchange exchange) {
+        Tracer tracer = tracerProvider.getIfAvailable();
+        if (tracer == null) {
+            return;
+        }
+        Span current = tracer.currentSpan();
+        if (current != null) {
+            String traceId = current.context().traceId();
+            exchange.getResponse().getHeaders().set(TraceIdConstants.TRACE_ID_HEADER, traceId);
+        }
+    }
+
+    /**
+     * 解析 traceId：Tracer 当前 Span &gt; 请求 Header 透传 &gt; {@link TraceIdUtils#resolveOrCreate} 生成。
+     */
+    private String resolveTraceId(ServerWebExchange exchange) {
+        Tracer tracer = tracerProvider.getIfAvailable();
+        if (tracer != null) {
+            Span current = tracer.currentSpan();
+            if (current != null) {
+                return current.context().traceId();
+            }
+        }
+        return TraceIdUtils.resolveOrCreate(
+                exchange.getRequest().getHeaders().getFirst(TraceIdConstants.TRACE_ID_HEADER));
+    }
+
+    /**
+     * 过滤器顺序：接近链尾，在多数业务过滤器之后仍保证 traceId 写入下游。
+     *
+     * @return {@link Ordered#LOWEST_PRECEDENCE} - 10
+     */
+    @Override
+    public int getOrder() {
+        return Ordered.LOWEST_PRECEDENCE - 10;
+    }
+}

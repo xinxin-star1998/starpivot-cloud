@@ -18,6 +18,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * 数据权限范围服务类。
+ * <p>
+ * 根据当前登录用户的角色数据范围（全部/自定义/本部门/本部门及子部门/仅本人）
+ * 计算 MyBatis 查询可用的 SQL 过滤片段，供用户列表等接口的数据隔离。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link Service} — Spring 服务组件</li>
+ * </ul>
+ *
+ * @see cn.org.starpivot.common.entity.DataScope
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,6 +52,11 @@ public class DataScopeService {
     private final SysDeptMapper deptMapper;
     private final RoleDeptMapper roleDeptMapper;
 
+    /**
+     * 计算当前登录用户的数据权限范围。
+     *
+     * @return 含 SQL 过滤条件、部门 ID 集合及用户 ID 的 {@link DataScope} 对象
+     */
     public DataScope getCurrentUserDataScope() {
         Long userId = SecurityContextUtils.getUserId();
         if (userId == null) {

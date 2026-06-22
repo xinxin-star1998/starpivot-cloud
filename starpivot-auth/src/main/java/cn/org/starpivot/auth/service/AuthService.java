@@ -34,6 +34,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * 认证业务服务类。
+ * <p>
+ * 封装登录、注册、令牌刷新、登出及用户信息查询等核心认证逻辑，
+ * 通过 Feign 客户端调用 system 服务完成用户校验与日志记录。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — Lombok 生成 {@code log} 日志字段</li>
+ *   <li>{@link Service} — 注册为 Spring 业务服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — Lombok 生成含 {@code final} 字段的构造器，注入 Feign 客户端及依赖服务</li>
+ * </ul>
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,6 +58,13 @@ public class AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
 
+    /**
+     * 用户登录：校验凭据、签发 JWT 与刷新令牌，并记录登录日志。
+     *
+     * @param request 登录请求，含用户名与密码
+     * @return 登录响应，含访问令牌、刷新令牌及用户基本信息
+     * @throws BusinessException 凭据错误或用户已停用时抛出 401
+     */
     public LoginResponse login(LoginRequest request) {
         HttpServletRequest httpRequest = currentRequest();
         String ip = httpRequest != null ? LogUtils.getClientIp(httpRequest) : "";
@@ -87,6 +106,13 @@ public class AuthService {
         }
     }
 
+    /**
+     * 使用刷新令牌换取新的访问令牌与刷新令牌（令牌轮换）。
+     *
+     * @param request 刷新请求，含用户名与刷新令牌
+     * @return 新的登录响应
+     * @throws BusinessException 刷新令牌无效或已过期时抛出 401
+     */
     public LoginResponse refreshToken(RefreshRequest request) {
         SysUserAuthDto userDto = loadUserForLogin(request.getUsername());
         if (!refreshTokenService.validate(userDto.getUserId(), request.getRefreshToken())) {
@@ -111,6 +137,13 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * 用户自助注册，需系统配置已开启注册功能。
+     *
+     * @param request 注册请求，含用户名与密码
+     * @return 注册响应，含新用户 ID 及用户名
+     * @throws BusinessException 未开放注册或远程注册失败时抛出
+     */
     public RegisterResponse register(RegisterRequest request) {
         Result<Boolean> enabledResult = sysConfigClient.isRegisterEnabled();
         if (enabledResult == null || enabledResult.getData() == null || !enabledResult.getData()) {
@@ -131,11 +164,21 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * 查询系统是否已开启用户注册功能。
+     *
+     * @return 已开启返回 {@code true}，否则返回 {@code false}
+     */
     public boolean isRegisterEnabled() {
         Result<Boolean> result = sysConfigClient.isRegisterEnabled();
         return result != null && Boolean.TRUE.equals(result.getData());
     }
 
+    /**
+     * 退出登录：将访问令牌加入黑名单并撤销对应刷新令牌。
+     *
+     * @param token JWT 访问令牌，可为空（空则跳过处理）
+     */
     public void logout(String token) {
         if (token != null && !token.isBlank()) {
             tokenBlacklistService.add(token, jwtProperties.getExpire());
@@ -148,6 +191,13 @@ public class AuthService {
         }
     }
 
+    /**
+     * 根据访问令牌获取当前用户的详细信息、角色及菜单权限。
+     *
+     * @param token JWT 访问令牌
+     * @return 用户信息响应
+     * @throws BusinessException 令牌缺失、已失效或用户不存在时抛出 401
+     */
     public UserInfoResponse getUserInfo(String token) {
         if (token == null || token.isBlank()) {
             throw new BusinessException(401, "未授权，请先登录");

@@ -13,7 +13,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 为 SecurityContext 加载用户权限标识，超级管理员与菜单树逻辑保持一致。
+ * 权限标识加载服务类。
+ * <p>
+ * 为 Spring Security 的 {@link cn.org.starpivot.common.security.AuthorityResolver} 加载用户权限集合，
+ * 超级管理员返回全部菜单权限，普通用户按角色菜单关联查询；结果经 {@link UserPermissionCacheService} 缓存。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — 注册为 Spring 服务组件</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
  */
 @Service
 @RequiredArgsConstructor
@@ -23,6 +31,12 @@ public class AuthorityLoaderService {
     private final SysUserService sysUserService;
     private final UserPermissionCacheService userPermissionCacheService;
 
+    /**
+     * 加载用户的菜单权限字符串列表（不含角色标识）。
+     *
+     * @param user 当前登录用户
+     * @return 权限标识列表，如 {@code system:user:list}
+     */
     public List<String> loadPermissionStrings(LoginUser user) {
         if (user == null || user.getUserId() == null) {
             return List.of();
@@ -37,6 +51,12 @@ public class AuthorityLoaderService {
                 () -> loadPermissionsFromDb(user.getUserId()));
     }
 
+    /**
+     * 加载用户完整权限集合（角色 Key + 菜单权限标识）。
+     *
+     * @param user 当前登录用户
+     * @return 去重后的权限标识集合
+     */
     public Set<String> loadAuthorities(LoginUser user) {
         Set<String> authoritySet = new LinkedHashSet<>();
         if (user.getRoles() != null) {

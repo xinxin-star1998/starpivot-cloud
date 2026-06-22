@@ -21,10 +21,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 通知公告控制器
- * 
- * @author admin
- * @since 2026-02-05
+ * 通知公告控制器。
+ * <p>
+ * 提供系统通知公告的分页查询、详情查看及增删改 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /notice}</li>
+ *   <li>{@link Tag} — OpenAPI 分组「通知公告」</li>
+ * </ul>
+ *
+ * @see ISysNoticeService
  */
 @Slf4j
 @RestController

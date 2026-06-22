@@ -15,10 +15,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 用户信息表(SysUser)表实体类
- *
- * @author xinxin
- * @since 2025-12-28 17:28:23
+ * 系统用户实体类，对应数据库表 {@code sys_user}。
+ * <p>
+ * 存储用户账号、部门、联系方式、密码及状态等核心信息。
+ * </p>
+ * <ul>
+ *   <li>{@link TableName} — 映射表名 {@code sys_user}</li>
+ *   <li>{@link TableId} — 主键 {@code user_id}，自增策略</li>
+ *   <li>{@link TableLogic} — 逻辑删除标记（继承自 {@link BaseEntity}）</li>
+ *   <li>{@link TableField} — 头像字段自动填充</li>
+ * </ul>
  */
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_user")

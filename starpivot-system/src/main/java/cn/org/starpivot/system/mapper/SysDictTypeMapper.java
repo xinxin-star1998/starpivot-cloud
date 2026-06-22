@@ -5,10 +5,8 @@ import cn.org.starpivot.system.domain.entity.SysDictType;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 字典类型Mapper接口
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典类型 Mapper 接口。
+ * <p>继承 {@link BaseMapper} 提供字典类型表基础 CRUD。</p>
  */
 @Mapper
 public interface SysDictTypeMapper extends BaseMapper<SysDictType> {

@@ -1,0 +1,54 @@
+package cn.org.starpivot.common.config;
+
+import cn.org.starpivot.common.observability.TraceIdServletFilter;
+import io.micrometer.tracing.Tracer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+
+/**
+ * 可观测性 Spring Boot 自动配置类。
+ * <p>
+ * 在 Servlet 应用中注册 {@link TraceIdServletFilter}，将 traceId 写入 MDC 与响应头，
+ * 便于日志关联与全链路追踪。
+ * <ul>
+ *   <li>{@link AutoConfiguration} — 纳入 Spring Boot 自动配置导入列表，随 starter 自动加载</li>
+ *   <li>{@link ConditionalOnWebApplication}（{@code type = SERVLET}）— 仅在传统 Servlet Web 应用生效，
+ *       排除 Gateway 等 Reactive 应用</li>
+ *   <li>{@link ConditionalOnClass}（{@code jakarta.servlet.Filter}）— 类路径存在 Servlet API 时才加载，
+ *       避免非 Web 模块报错</li>
+ * </ul>
+ *
+ * @see TraceIdServletFilter
+ * @see cn.org.starpivot.common.observability.TraceIdConstants
+ */
+@AutoConfiguration
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnClass(name = "jakarta.servlet.Filter")
+public class ObservabilityAutoConfiguration {
+
+    /**
+     * 注册 TraceId Servlet 过滤器。
+     * <p>
+     * 匹配所有 URL（{@code /*}），顺序为 {@link Ordered#LOWEST_PRECEDENCE} - 10，
+     * 尽量靠后执行，以便 Micrometer Tracing 先创建 Span 后再同步 traceId。
+     *
+     * @param tracerProvider Micrometer {@link Tracer} 可选提供者；无 Tracing 依赖时为 empty
+     * @return 已配置 URL 模式、顺序与 Bean 名称的过滤器注册 Bean
+     */
+    @Bean
+    public FilterRegistrationBean<TraceIdServletFilter> traceIdServletFilterRegistration(
+            ObjectProvider<Tracer> tracerProvider) {
+        FilterRegistrationBean<TraceIdServletFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TraceIdServletFilter(tracerProvider));
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Ordered.LOWEST_PRECEDENCE - 10);
+        registration.setName("traceIdServletFilter");
+        return registration;
+    }
+}
+

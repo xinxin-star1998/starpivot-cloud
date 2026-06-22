@@ -12,7 +12,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 菜单信息 DTO（数据传输对象）
+ * 菜单信息 DTO（数据传输对象）。
+ * <p>
+ * 用于 Feign 跨服务传递菜单/权限树结构，支持树形嵌套。
+ * <p>
+ * 注解说明：
+ * <ul>
+ *   <li>{@link Data} — Lombok 自动生成 getter/setter 等方法</li>
+ *   <li>{@link Builder} — 支持建造者模式构建实例</li>
+ *   <li>{@link JsonFormat} — 指定日期字段 JSON 序列化格式</li>
+ * </ul>
  */
 @Data
 @Builder

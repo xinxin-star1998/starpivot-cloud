@@ -27,12 +27,23 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 岗位管理服务实现类。
+ * <p>实现 {@link PostService}，含岗位 CRUD 及与用户关联的删除校验。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements PostService {
 
     private final UserPostMapper userPostMapper;
 
+    /**
+     * 分页查询岗位列表，支持按编码、名称、状态筛选。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param queryDTO 查询条件与分页参数
+     * @return {@link PostVO} 分页结果
+     */
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PostVO> selectPostPage(PostQueryDTO queryDTO) {
@@ -52,6 +63,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         return pageResponse;
     }
 
+    /**
+     * 根据主键查询岗位详情。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param postId 岗位主键
+     * @return 岗位视图对象
+     * @throws cn.org.starpivot.common.exception.BizException 岗位不存在时抛出
+     */
     @Override
     @Transactional(readOnly = true)
     public PostVO selectPostById(Long postId) {
@@ -60,6 +79,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         return convertToVO(post);
     }
 
+    /**
+     * 新增岗位，校验岗位编码唯一性。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)}，异常时回滚事务。</p>
+     *
+     * @param postDTO 岗位信息
+     * @return 是否新增成功
+     * @throws BizException 岗位编码已存在时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean insertPost(PostDTO postDTO) {
@@ -75,6 +102,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         return this.save(post);
     }
 
+    /**
+     * 修改岗位信息，校验岗位编码唯一性。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)}，异常时回滚事务。</p>
+     *
+     * @param postDTO 岗位信息
+     * @return 是否修改成功
+     * @throws cn.org.starpivot.common.exception.BizException 岗位不存在或编码已被使用时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updatePost(PostDTO postDTO) {
@@ -89,6 +124,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         return this.updateById(post);
     }
 
+    /**
+     * 批量删除岗位，已分配用户的岗位不允许删除。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)}，异常时回滚事务。</p>
+     *
+     * @param postIds 待删除的岗位主键列表
+     * @return 删除成功返回 {@code true}；列表为空返回 {@code false}
+     * @throws BizException 岗位已被用户使用时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deletePostByIds(List<Long> postIds) {
@@ -110,6 +153,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         return true;
     }
 
+    /**
+     * 查询所有正常状态的岗位，供下拉选择使用。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @return {@link PostBo} 列表，按排序号升序
+     */
     @Override
     @Transactional(readOnly = true)
     public List<PostBo> selectPost() {
@@ -122,6 +171,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         }).toList();
     }
 
+    /**
+     * 查询全部岗位（含停用），返回完整视图对象列表。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @return {@link PostVO} 列表，按排序号升序
+     */
     @Override
     @Transactional(readOnly = true)
     public List<PostVO> all() {
@@ -129,6 +184,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
                 .stream().map(this::convertToVO).toList();
     }
 
+    /**
+     * 校验岗位编码是否唯一。
+     *
+     * @param postCode 岗位编码
+     * @param postId   当前岗位主键；新增时传 {@code null}，修改时用于排除自身
+     * @return 编码唯一返回 {@code true}
+     */
     private boolean checkPostCodeUnique(String postCode, Long postId) {
         LambdaQueryWrapper<SysPost> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysPost::getPostCode, postCode);
@@ -138,6 +200,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, SysPost> implements
         return this.count(wrapper) == 0;
     }
 
+    /**
+     * 将 {@link SysPost} 实体转换为 {@link PostVO}。
+     *
+     * @param post 岗位实体
+     * @return 岗位视图对象
+     */
     private PostVO convertToVO(SysPost post) {
         PostVO vo = new PostVO();
         BeanUtils.copyProperties(post, vo);

@@ -17,7 +17,16 @@ import java.util.UUID;
 import java.security.SecureRandom;
 
 /**
- * 刷新令牌服务
+ * 刷新令牌服务类。
+ * <p>
+ * 在 Redis 中按用户 ID 存储刷新令牌及客户端信息（IP、浏览器、操作系统等），
+ * 支持令牌校验、撤销、有效期延长及在线用户信息查询。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — Lombok 生成 {@code log} 日志字段</li>
+ *   <li>{@link Service} — 注册为 Spring 业务服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — Lombok 生成含 {@code final} 字段的构造器，注入 Redis 模板与 {@link JwtProperties}</li>
+ * </ul>
  */
 @Slf4j
 @Service
@@ -41,14 +50,15 @@ public class RefreshTokenService {
     private static final String FIELD_LAST_ACCESS_TIME = "lastAccessTime";
 
     /**
-     * 创建刷新令牌（带客户端信息）
+     * 创建刷新令牌并记录客户端登录信息。
      *
-     * @param userId 用户ID
-     * @param ip 用户IP地址
-     * @param browser 浏览器
-     * @param os 操作系统
-     * @param loginLocation 登录地点
-     * @return 刷新令牌
+     * @param userId        用户 ID
+     * @param ip            客户端 IP 地址
+     * @param browser       浏览器标识
+     * @param os            操作系统标识
+     * @param loginLocation 登录地理位置
+     * @return 新生成的刷新令牌字符串
+     * @throws IllegalArgumentException userId 为 null 时抛出
      */
     public String createRefreshToken(Long userId, String ip, String browser, String os, String loginLocation) {
         if (userId == null) {
@@ -77,21 +87,21 @@ public class RefreshTokenService {
     }
 
     /**
-     * 创建刷新令牌（兼容旧版本）
+     * 创建刷新令牌（不记录客户端信息，供令牌刷新场景使用）。
      *
-     * @param userId 用户ID
-     * @return 刷新令牌
+     * @param userId 用户 ID
+     * @return 新生成的刷新令牌字符串
      */
     public String createRefreshToken(Long userId) {
         return createRefreshToken(userId, null, null, null, null);
     }
 
     /**
-     * 验证刷新令牌
+     * 校验刷新令牌是否与 Redis 中存储的一致。
      *
-     * @param userId         用户ID
-     * @param refreshToken   刷新令牌
-     * @return 是否有效
+     * @param userId       用户 ID
+     * @param refreshToken 待校验的刷新令牌
+     * @return 有效返回 {@code true}，无效或不存在返回 {@code false}
      */
     public boolean validate(Long userId, String refreshToken) {
         if (userId == null || refreshToken == null || refreshToken.isBlank()) {
@@ -131,10 +141,10 @@ public class RefreshTokenService {
     }
 
     /**
-     * 获取在线用户的客户端信息
+     * 获取在线用户的客户端信息。
      *
-     * @param userId 用户ID
-     * @return 客户端信息Map，包含 ip, browser, os, loginLocation, loginTime, lastAccessTime
+     * @param userId 用户 ID
+     * @return 含 ip、browser、os、loginLocation、loginTime、lastAccessTime 等字段的 Map；不存在时返回 {@code null}
      */
     public Map<String, String> getOnlineUserInfo(Long userId) {
         if (userId == null) {
@@ -179,9 +189,9 @@ public class RefreshTokenService {
     }
 
     /**
-     * 撤销刷新令牌
+     * 撤销指定用户的刷新令牌（登出或令牌轮换时调用）。
      *
-     * @param userId 用户ID
+     * @param userId 用户 ID
      */
     public void revoke(Long userId) {
         if (userId != null) {
@@ -207,9 +217,9 @@ public class RefreshTokenService {
     }
 
     /**
-     * 生成安全的随机令牌
+     * 生成密码学安全的随机刷新令牌。
      *
-     * @return 安全令牌
+     * @return URL 安全的 Base64 编码令牌字符串
      */
     private String generateSecureToken() {
         byte[] randomBytes = new byte[32]; // 256 bits
@@ -219,10 +229,10 @@ public class RefreshTokenService {
     }
 
     /**
-     * 更新刷新令牌的有效期（延长令牌生命周期）
+     * 延长指定用户刷新令牌的 Redis 过期时间。
      *
-     * @param userId 用户ID
-     * @return 是否更新成功
+     * @param userId 用户 ID
+     * @return 延长成功返回 {@code true}，令牌不存在返回 {@code false}
      */
     public boolean extendTokenExpiry(Long userId) {
         if (userId == null) {
@@ -245,10 +255,10 @@ public class RefreshTokenService {
     }
 
     /**
-     * 检查令牌是否存在
+     * 检查指定用户是否存在有效的刷新令牌。
      *
-     * @param userId 用户ID
-     * @return 令牌是否存在
+     * @param userId 用户 ID
+     * @return 存在返回 {@code true}，否则返回 {@code false}
      */
     public boolean exists(Long userId) {
         if (userId == null) {

@@ -32,6 +32,19 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
+/**
+ * 操作日志切面类。
+ * <p>
+ * 拦截标注 {@link Log} 的控制器/服务方法，采集请求、响应、操作人及耗时信息，
+ * 并委托 {@link AsyncOperLogService} 异步持久化到 {@link SysOperLog}。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 生成日志记录器</li>
+ *   <li>{@link Aspect} — 声明 AOP 切面</li>
+ *   <li>{@link Component} — 注册为 Spring 组件</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ */
 @Slf4j
 @Aspect
 @Component
@@ -45,10 +58,24 @@ public class LogAspect {
     private final SysUserMapper sysUserMapper;
     private final ObjectMapper objectMapper;
 
+    /**
+     * 切点：匹配所有标注 {@link Log} 注解的方法。
+     */
     @Pointcut("@annotation(cn.org.starpivot.common.annotation.Log)")
     public void logPointcut() {
     }
 
+    /**
+     * 环绕通知：记录操作日志并在方法执行前后采集上下文信息。
+     * <p>
+     * 成功时 {@code status=0}，异常时 {@code status=1} 并记录错误信息；
+     * 无论成败均在 finally 中异步保存日志。
+     * </p>
+     *
+     * @param joinPoint 连接点，包含目标方法与入参
+     * @return 目标方法的返回值
+     * @throws Throwable 目标方法抛出的异常原样向上传播
+     */
     @Around("logPointcut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();

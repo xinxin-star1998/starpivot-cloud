@@ -9,10 +9,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 通知公告Mapper接口
- * 
- * @author admin
- * @since 2026-02-05
+ * 通知公告 Mapper 接口。
+ * <p>提供通知公告分页查询的自定义 SQL。</p>
  */
 @Mapper
 public interface SysNoticeMapper extends BaseMapper<SysNotice>

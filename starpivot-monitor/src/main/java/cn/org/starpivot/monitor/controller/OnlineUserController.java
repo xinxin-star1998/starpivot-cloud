@@ -16,6 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 在线用户监控与管理 REST 接口。
+ * <p>
+ * {@link RestController}：返回 JSON 响应；
+ * {@link RequestMapping}：统一前缀 {@code /monitor/online}；
+ * {@link RequiredArgsConstructor}：注入 {@link MonitorService}。
+ */
 @RestController
 @RequestMapping("/monitor/online")
 @RequiredArgsConstructor
@@ -23,6 +30,13 @@ public class OnlineUserController {
 
     private final MonitorService monitorService;
 
+    /**
+     * 按条件查询当前在线用户列表。
+     *
+     * @param userName 用户名（可选，模糊匹配）
+     * @param ipaddr   登录 IP（可选，模糊匹配）
+     * @return 在线用户列表
+     */
     @Log(title = "在线用户")
     @PreAuthorize("hasAuthority('monitor:online:query')")
     @GetMapping
@@ -32,6 +46,12 @@ public class OnlineUserController {
         return Result.success(monitorService.getOnlineUserList(userName, ipaddr));
     }
 
+    /**
+     * 强制指定会话下线。
+     *
+     * @param sessionId 会话标识
+     * @return 操作结果
+     */
     @Log(title = "强退在线用户", businessType = BusinessType.FORCE)
     @PreAuthorize("hasAuthority('monitor:online:force-logout')")
     @DeleteMapping("/{sessionId}")

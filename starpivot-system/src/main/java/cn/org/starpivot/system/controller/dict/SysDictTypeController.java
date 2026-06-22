@@ -27,10 +27,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 字典类型管理控制器
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典类型管理控制器。
+ * <p>
+ * 提供字典类型的增删改查及下拉列表查询 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /sys/dict/type}</li>
+ *   <li>{@link Tag} — OpenAPI 分组「字典类型管理」</li>
+ * </ul>
  */
 @Slf4j
 @RestController

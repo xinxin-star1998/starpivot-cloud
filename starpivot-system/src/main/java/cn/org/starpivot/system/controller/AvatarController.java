@@ -24,7 +24,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 头像管理控制器
+ * 头像管理控制器。
+ * <p>
+ * 提供用户头像上传、预签名 URL 获取及删除功能，含本人/管理员权限校验。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link RestController} — REST 控制器</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /avatar}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入存储与权限服务</li>
+ * </ul>
+ *
+ * @see FileStorageService
+ * @see PermissionService
  */
 @Slf4j
 @RestController
@@ -107,6 +119,18 @@ public class AvatarController {
         return null;
     }
 
+    /**
+     * 上传用户头像至对象存储。
+     * <p>
+     * 限制文件大小 5MB、仅允许图片类型；本人或超级管理员可修改目标用户头像。
+     * 标注 {@link Log} 记录操作审计。
+     * </p>
+     *
+     * @param file            头像图片文件
+     * @param userId          目标用户 ID
+     * @param usePresignedUrl 是否同时返回预签名访问 URL
+     * @return 头像访问地址及是否预签名标识
+     */
     @Log(title = "上传用户头像", businessType = BusinessType.UPDATE)
     @PostMapping("/upload")
     public Result<Map<String, String>> upload(
@@ -149,6 +173,12 @@ public class AvatarController {
         }
     }
 
+    /**
+     * 根据存储路径获取头像预签名访问 URL。
+     *
+     * @param filePath 对象存储中的头像路径
+     * @return 预签名 URL
+     */
     @GetMapping("/presigned-url")
     public Result<Map<String, String>> getPresignedUrl(@RequestParam("filePath") String filePath) {
         try {
@@ -170,6 +200,13 @@ public class AvatarController {
         }
     }
 
+    /**
+     * 删除指定用户的头像文件。
+     * <p>{@link PreAuthorize} 要求已认证；业务层校验本人或超级管理员权限。</p>
+     *
+     * @param userId 目标用户 ID
+     * @return 操作结果
+     */
     @Log(title = "删除用户头像", businessType = BusinessType.DELETE)
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/delete")

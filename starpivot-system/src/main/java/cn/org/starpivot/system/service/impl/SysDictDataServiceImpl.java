@@ -28,10 +28,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 字典数据服务实现类
- *
- * @author stardust
- * @since 2024-01-01
+ * 字典数据服务实现类。
+ * <p>实现 {@link SysDictDataService}，含字典数据 CRUD 及按类型缓存查询。</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -39,6 +37,13 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
     private final SysDictDataMapper sysDictDataMapper;
 
+    /**
+     * 分页查询字典数据列表，支持按标签、类型、状态筛选。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param queryDTO 查询条件与分页参数
+     * @return {@link SysDictDataVO} 分页结果
+     */
     @Override
     @Transactional(readOnly = true)
     public PageResponse<SysDictDataVO> selectDictDataPage(SysDictDataQueryDTO queryDTO) {
@@ -65,6 +70,14 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
         return pageResponse;
     }
 
+    /**
+     * 根据字典类型查询字典数据，结果按排序号升序。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务；
+     * 使用 {@code @Cacheable} 以 {@code dictType} 为键缓存查询结果。</p>
+     *
+     * @param dictType 字典类型
+     * @return {@link SysDictDataVO} 列表
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CacheConstants.SYS_DICT, key = "#dictType")
@@ -75,6 +88,14 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据主键查询字典数据详情。
+     * <p>使用 {@code @Transactional(readOnly = true)} 只读事务。</p>
+     *
+     * @param dictCode 字典数据主键
+     * @return 字典数据视图对象
+     * @throws cn.org.starpivot.common.exception.BizException 字典数据不存在时抛出
+     */
     @Override
     @Transactional(readOnly = true)
     public SysDictDataVO selectDictDataById(Long dictCode) {
@@ -83,6 +104,14 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
         return convertToVO(dictData);
     }
 
+    /**
+     * 新增字典数据。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)} 写事务；
+     * 使用 {@code @CacheEvict(allEntries = true)} 清除全部字典缓存。</p>
+     *
+     * @param dictDataDTO 字典数据信息
+     * @return 是否新增成功
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheConstants.SYS_DICT, allEntries = true)
@@ -101,6 +130,15 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
         return this.save(dictData);
     }
 
+    /**
+     * 修改字典数据。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)} 写事务；
+     * 使用 {@code @CacheEvict(allEntries = true)} 清除全部字典缓存。</p>
+     *
+     * @param dictDataDTO 字典数据信息
+     * @return 是否修改成功
+     * @throws cn.org.starpivot.common.exception.BizException 字典数据不存在时抛出
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheConstants.SYS_DICT, allEntries = true)
@@ -116,6 +154,14 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
         return this.updateById(dictData);
     }
 
+    /**
+     * 批量删除字典数据。
+     * <p>使用 {@code @Transactional(rollbackFor = Exception.class)} 写事务；
+     * 使用 {@code @CacheEvict(allEntries = true)} 清除全部字典缓存。</p>
+     *
+     * @param dictCodes 待删除的字典数据主键列表
+     * @return 删除成功返回 {@code true}；列表为空返回 {@code false}
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheConstants.SYS_DICT, allEntries = true)
@@ -127,7 +173,10 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
     }
 
     /**
-     * 转换为VO
+     * 将 {@link SysDictData} 实体转换为 {@link SysDictDataVO}。
+     *
+     * @param dictData 字典数据实体
+     * @return 字典数据视图对象
      */
     private SysDictDataVO convertToVO(SysDictData dictData) {
         SysDictDataVO vo = new SysDictDataVO();

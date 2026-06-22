@@ -2,9 +2,16 @@ package cn.org.starpivot.generator.external;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * PostgreSQL 外部库元数据 SQL 方言实现。
+ * <p>
+ * {@link Component}：注册为 Spring Bean，供 {@link ExternalMetadataDialectRegistry} 注入；
+ * 实现 {@link ExternalMetadataDialect}，基于 {@code information_schema} 查询表与列信息。
+ */
 @Component
 public class PostgreSqlMetadataDialect implements ExternalMetadataDialect {
 
+    /** {@inheritDoc} */
     @Override
     public String countTablesSql() {
         return """
@@ -15,6 +22,7 @@ public class PostgreSqlMetadataDialect implements ExternalMetadataDialect {
                 """;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String listTablesSql() {
         return """
@@ -26,6 +34,7 @@ public class PostgreSqlMetadataDialect implements ExternalMetadataDialect {
                 """;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String tableMetaSql() {
         return """
@@ -35,6 +44,7 @@ public class PostgreSqlMetadataDialect implements ExternalMetadataDialect {
                 """;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String columnsSql() {
         return """
@@ -67,21 +77,25 @@ public class PostgreSqlMetadataDialect implements ExternalMetadataDialect {
                 """;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean useOffsetFetch() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String orderByColumn() {
         return "create_time";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String tableNameFilterColumn() {
         return "table_name";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String tableCommentFilterColumn() {
         return "table_comment";
