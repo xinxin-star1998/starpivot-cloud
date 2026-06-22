@@ -32,3 +32,12 @@ management:
     web:
       exposure:
         include: health,info
+
+file-center:
+  upload:
+    max-size-by-media-type:
+      IMAGE: 10485760
+      VIDEO: 209715200
+      DOCUMENT: 52428800
+      AUDIO: 52428800
+      OTHER: 52428800

@@ -112,6 +112,11 @@ public class LocalFileStorageService implements FileStorageService {
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
     }
 
+    @Override
+    public void deleteObject(String objectName) throws Exception {
+        Files.deleteIfExists(resolveObjectPath(objectName));
+    }
+
     private Path resolveObjectPath(String objectName) {
         Path target = baseDir.resolve(normalizeObjectName(objectName)).normalize();
         if (!target.startsWith(baseDir)) {

@@ -3,6 +3,9 @@
 # 敏感项通过环境变量注入，勿在此填写真实密钥
 
 spring:
+  output:
+    ansi:
+      enabled: ${LOG_ANSI_ENABLED:always}
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
@@ -14,6 +17,8 @@ spring:
 starpivot:
   api:
     version: ${API_VERSION:v1}
+  mq:
+    enabled: ${MQ_ENABLED:false}
   jwt:
     secret: ${JWT_SECRET:dev-local-jwt-secret-must-be-at-least-32-chars}
     expire: ${JWT_EXPIRE:7200000}
@@ -50,4 +55,4 @@ logging:
     root: ${LOG_LEVEL_ROOT:INFO}
     cn.org.starpivot: ${LOG_LEVEL_STARPIVOT:DEBUG}
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{50} - %msg%n"
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){magenta} %clr([%X{traceId}]){blue} %clr(%-5level){highlight} %clr(%logger{50}){cyan} %clr(-){faint} %msg%n"

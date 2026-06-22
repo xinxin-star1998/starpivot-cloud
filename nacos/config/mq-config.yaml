@@ -1,0 +1,31 @@
+# RabbitMQ 配置（按需 import）
+# Nacos Data ID: mq-config.yaml  |  Group: DEFAULT_GROUP
+# 在 starpivot-auth.yaml / starpivot-system.yaml 中通过 optional import 引入
+
+starpivot:
+  mq:
+    enabled: ${MQ_ENABLED:true}
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:127.0.0.1}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:admin}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 10
+        retry:
+          enabled: true
+          initial-interval: 1000ms
+          max-attempts: 3
+          multiplier: 2.0
+
+management:
+  health:
+    rabbit:
+      enabled: true

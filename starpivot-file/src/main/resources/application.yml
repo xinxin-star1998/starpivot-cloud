@@ -31,3 +31,5 @@ mybatis-plus:
 starpivot:
   api:
     version: ${API_VERSION:v1}
+  security:
+    authority-strategy: menu-permission

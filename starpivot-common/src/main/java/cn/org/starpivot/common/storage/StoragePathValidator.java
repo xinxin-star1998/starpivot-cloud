@@ -8,7 +8,7 @@ import org.springframework.util.StringUtils;
 public final class StoragePathValidator {
 
     /** 允许通过 API 获取预签名 URL 的路径前缀 */
-    public static final String[] ALLOWED_PRESIGNED_PREFIXES = {"editor/", "goods/", "avatar/", "brand/"};
+    public static final String[] ALLOWED_PRESIGNED_PREFIXES = {"editor/", "goods/", "avatar/", "brand/", "file/"};
 
     private StoragePathValidator() {
     }

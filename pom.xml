@@ -13,6 +13,7 @@
         <module>starpivot-cloud-dependencies</module>
         <module>starpivot-common</module>
         <module>starpivot-api</module>
+        <module>starpivot-mq</module>
         <module>starpivot-gateway</module>
         <module>starpivot-auth</module>
         <module>starpivot-system</module>

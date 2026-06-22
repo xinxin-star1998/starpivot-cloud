@@ -1,5 +1,5 @@
 /** OSS 对象路径前缀（与后端 StoragePathValidator 保持一致） */
-export const OSS_OBJECT_PREFIXES = ['avatar/', 'goods/', 'editor/', 'brand/'] as const
+export const OSS_OBJECT_PREFIXES = ['avatar/', 'goods/', 'editor/', 'brand/', 'file/'] as const
 
 export function isHttpUrl(value?: string | null): value is string {
   return !!value && (value.startsWith('http://') || value.startsWith('https://'))

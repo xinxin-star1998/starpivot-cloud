@@ -26,6 +26,7 @@
       | 'more'
       | 'view'
       | 'sync'
+      | 'download'
       | 'generate'
       | 'execute'
       | 'pause'
@@ -57,6 +58,7 @@
     delete: { icon: 'ri:delete-bin-5-line', class: 'bg-error/12 text-error' },
     view: { icon: 'ri:eye-line', class: 'bg-info/12 text-info' },
     sync: { icon: 'ri:refresh-line', class: 'bg-info/12 text-info' },
+    download: { icon: 'ri:download-line', class: 'bg-info/12 text-info' },
     generate: { icon: 'ri:code-s-slash-line', class: 'bg-success/12 text-success' },
     execute: { icon: 'ri:play-circle-line', class: 'bg-success/12 text-success' },
     // 新增：暂停按钮（黄色系 + 暂停图标）

@@ -1,7 +1,6 @@
 package cn.org.starpivot.auth.service;
 
 import cn.org.starpivot.api.system.SysConfigClient;
-import cn.org.starpivot.api.system.SysLoginLogClient;
 import cn.org.starpivot.api.system.SysUserClient;
 import cn.org.starpivot.api.system.dto.LoginLogDto;
 import cn.org.starpivot.api.system.dto.RegisterUserRequest;
@@ -53,7 +52,7 @@ public class AuthService {
 
     private final SysUserClient sysUserClient;
     private final SysConfigClient sysConfigClient;
-    private final SysLoginLogClient sysLoginLogClient;
+    private final LoginLogRecordService loginLogRecordService;
     private final JwtProperties jwtProperties;
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
@@ -285,7 +284,7 @@ public class AuthService {
             dto.setOs(LogUtils.getOs(request));
             dto.setStatus(status);
             dto.setMsg(msg);
-            sysLoginLogClient.saveLoginLog(dto);
+            loginLogRecordService.record(dto);
         } catch (Exception ignored) {
         }
     }

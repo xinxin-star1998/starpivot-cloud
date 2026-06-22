@@ -321,5 +321,17 @@ public class OssUtil {
         putObjectRequest.setMetadata(metadata);
         ossClient.putObject(putObjectRequest);
     }
+
+    /**
+     * 按对象路径删除单个 OSS 对象。
+     *
+     * @param objectName 对象路径
+     */
+    public void deleteObject(String objectName) throws Exception {
+        if (!StringUtils.hasText(objectName) || objectName.contains("..") || objectName.startsWith("/")) {
+            throw new IllegalArgumentException("无效的对象路径");
+        }
+        ossClient.deleteObject(bucketName(), objectName);
+    }
 }
 

@@ -231,4 +231,13 @@ public interface FileStorageService {
      * @throws Exception 上传失败时抛出异常
      */
     void uploadFileInternal(MultipartFile file, String objectName) throws Exception;
+
+    /**
+     * 删除存储对象（Phase 2 物理清理预留，文件中心逻辑删除默认不调用）。
+     *
+     * @param objectName 对象路径
+     */
+    default void deleteObject(String objectName) throws Exception {
+        // 默认空实现，子类按需覆盖
+    }
 }

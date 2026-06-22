@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.file.mapper.SysFileMapper">
+
+    <sql id="fileColumns">
+        file_id, folder_id, category, media_type, file_name, file_ext, content_type,
+        file_size, object_name, file_hash, storage_provider, biz_type, biz_id,
+        del_flag, delete_by, delete_time, create_by, create_time, update_by, update_time, remark
+    </sql>
+
+    <select id="selectPageList" resultType="cn.org.starpivot.file.domain.entity.SysFile">
+        SELECT <include refid="fileColumns"/>
+        FROM sys_file
+        WHERE del_flag = '0'
+        <if test="query.folderId != null">
+            AND folder_id = #{query.folderId}
+        </if>
+        <if test="query.category != null and query.category != ''">
+            AND category = #{query.category}
+        </if>
+        <if test="query.mediaType != null and query.mediaType != ''">
+            AND media_type = #{query.mediaType}
+        </if>
+        <if test="query.fileName != null and query.fileName != ''">
+            AND file_name LIKE CONCAT('%', #{query.fileName}, '%')
+        </if>
+        <if test="query.createBy != null and query.createBy != ''">
+            AND create_by LIKE CONCAT('%', #{query.createBy}, '%')
+        </if>
+        <if test="query.beginTime != null">
+            AND create_time &gt;= #{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            AND create_time &lt;= #{query.endTime}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectRecyclePageList" resultType="cn.org.starpivot.file.domain.entity.SysFile">
+        SELECT <include refid="fileColumns"/>
+        FROM sys_file
+        WHERE del_flag = '2'
+        <if test="query.category != null and query.category != ''">
+            AND category = #{query.category}
+        </if>
+        <if test="query.fileName != null and query.fileName != ''">
+            AND file_name LIKE CONCAT('%', #{query.fileName}, '%')
+        </if>
+        <if test="query.deleteBy != null and query.deleteBy != ''">
+            AND delete_by LIKE CONCAT('%', #{query.deleteBy}, '%')
+        </if>
+        <if test="query.beginTime != null">
+            AND delete_time &gt;= #{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            AND delete_time &lt;= #{query.endTime}
+        </if>
+        ORDER BY delete_time DESC
+    </select>
+
+    <select id="countActiveByFolderId" resultType="long">
+        SELECT COUNT(1)
+        FROM sys_file
+        WHERE folder_id = #{folderId}
+          AND del_flag = '0'
+    </select>
+
+    <update id="restoreByIds">
+        UPDATE sys_file
+        SET del_flag = '0',
+            delete_by = NULL,
+            delete_time = NULL,
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE del_flag = '2'
+          AND file_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>
