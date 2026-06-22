@@ -1,5 +1,6 @@
 package cn.org.starpivot.common.config;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ public class RedisConfig {
      */
     private static ObjectMapper createRedisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         mapper.activateDefaultTyping(
                 LaissezFaireSubTypeValidator.instance,
@@ -46,10 +48,8 @@ public class RedisConfig {
         GenericJackson2JsonRedisSerializer jsonSerializer =
                 new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
 
-        // key序列化
         template.setKeySerializer(strSerializer);
         template.setHashKeySerializer(strSerializer);
-        // value序列化
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 
@@ -58,7 +58,8 @@ public class RedisConfig {
     }
 
     /**
-     * 适配@Cacheable注解的缓存管理器，统一JSON序列化，避免注解缓存乱码
+     * 适配 @Cacheable 的缓存管理器。
+     * 缓存名与 {@link CacheConstants} 对齐，Redis 键形如 {@code sys_dict::status}。
      */
     @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory factory) {
@@ -66,16 +67,15 @@ public class RedisConfig {
         GenericJackson2JsonRedisSerializer jsonSerializer =
                 new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
 
-        // 默认缓存配置：序列化规则 + 默认过期时间30分钟
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30))
+                .entryTtl(CacheConstants.TTL_USER_PERMISSIONS)
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(strSerializer))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
-                .disableCachingNullValues(); // 不缓存null，避免冗余存储
+                .disableCachingNullValues();
 
-        // 可单独指定不同cacheName的过期时间
         Map<String, RedisCacheConfiguration> customTtlMap = new HashMap<>();
-        customTtlMap.put("userInfo", defaultConfig.entryTtl(Duration.ofHours(2)));
+        CacheConstants.springCacheTtls().forEach((name, ttl) ->
+                customTtlMap.put(name, defaultConfig.entryTtl(ttl)));
 
         return RedisCacheManager.builder(factory)
                 .cacheDefaults(defaultConfig)

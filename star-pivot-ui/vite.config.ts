@@ -30,10 +30,11 @@ export default ({ mode }: { mode: string }) => {
           target: VITE_API_PROXY_URL,
           changeOrigin: true,
           rewrite: (path) => {
-            if (path.startsWith('/api/v1')) {
-              return path.replace(/^\/api\/v1/, '')
+            // 统一转发为 /api/{version}/...，与网关路由及后端 context-path 一致
+            if (/^\/api\/v\d+\//.test(path)) {
+              return path
             }
-            return path.replace(/^\/api/, '')
+            return path.replace(/^\/api\//, '/api/v1/')
           }
         }
       },

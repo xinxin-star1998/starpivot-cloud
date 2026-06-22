@@ -30,7 +30,7 @@ export interface NoticeSearchParams {
  */
 export function fetchGetNoticeList(params: NoticeSearchParams) {
   return request.post<Api.Common.PaginatedResponse<Notice>>({
-    url: '/api/system/notice/list',
+    url: '/api/notice/list',
     data: params
   })
 }
@@ -40,7 +40,7 @@ export function fetchGetNoticeList(params: NoticeSearchParams) {
  */
 export function fetchGetNoticeById(noticeId: number) {
   return request.get<Notice>({
-    url: `/api/system/notice/getNoticeInfo/${noticeId}`
+    url: `/api/notice/getNoticeInfo/${noticeId}`
   })
 }
 
@@ -49,7 +49,7 @@ export function fetchGetNoticeById(noticeId: number) {
  */
 export function fetchAddNotice(data: Notice) {
   return request.post({
-    url: '/api/system/notice',
+    url: '/api/notice',
     data
   })
 }
@@ -59,7 +59,7 @@ export function fetchAddNotice(data: Notice) {
  */
 export function fetchUpdateNotice(data: Notice) {
   return request.put({
-    url: '/api/system/notice',
+    url: '/api/notice',
     data
   })
 }
@@ -70,7 +70,7 @@ export function fetchUpdateNotice(data: Notice) {
  */
 export function fetchDeleteNotice(noticeIds: number[]) {
   return request.del({
-    url: '/api/system/notice/removeNotice',
+    url: '/api/notice/removeNotice',
     data: { ids: noticeIds }
   })
 }

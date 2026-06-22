@@ -8,6 +8,7 @@ import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.api.system.dto.SysMenuDto;
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
+import cn.org.starpivot.api.system.dto.VerifyPasswordRequest;
 import cn.org.starpivot.auth.domain.LoginRequest;
 import cn.org.starpivot.auth.domain.LoginResponse;
 import cn.org.starpivot.auth.domain.RefreshRequest;
@@ -24,7 +25,6 @@ import cn.org.starpivot.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -42,7 +42,6 @@ public class AuthService {
     private final SysUserClient sysUserClient;
     private final SysConfigClient sysConfigClient;
     private final SysLoginLogClient sysLoginLogClient;
-    private final PasswordEncoder passwordEncoder;
     private final JwtProperties jwtProperties;
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
@@ -55,14 +54,10 @@ public class AuthService {
         String loginLocation = LogUtils.getLoginLocation(ip);
         
         try {
-            SysUserAuthDto userDto = loadUserForLogin(request.getUsername());
+            SysUserAuthDto userDto = verifyUserCredentials(request.getUsername(), request.getPassword());
 
             if (!AppConstants.Status.NORMAL.equals(userDto.getStatus())) {
                 recordLoginLog(request.getUsername(), ip, httpRequest, "1", "用户已停用");
-                throw new BusinessException(401, "用户名或密码错误");
-            }
-            if (!passwordEncoder.matches(request.getPassword(), userDto.getPassword())) {
-                recordLoginLog(request.getUsername(), ip, httpRequest, "1", "密码错误");
                 throw new BusinessException(401, "用户名或密码错误");
             }
 
@@ -86,6 +81,7 @@ public class AuthService {
         } catch (BusinessException ex) {
             throw ex;
         } catch (Exception ex) {
+            log.error("登录失败, username={}", request.getUsername(), ex);
             recordLoginLog(request.getUsername(), ip, httpRequest, "1", "登录异常");
             throw new BusinessException(401, "用户名或密码错误");
         }
@@ -210,6 +206,20 @@ public class AuthService {
     private SysUserAuthDto loadUserForLogin(String username) {
         Result<SysUserAuthDto> result = sysUserClient.getByUsername(username);
         if (result == null || result.getData() == null || !result.isSuccess()) {
+            throw new BusinessException(401, "用户名或密码错误");
+        }
+        return result.getData();
+    }
+
+    private SysUserAuthDto verifyUserCredentials(String username, String password) {
+        VerifyPasswordRequest verifyRequest = new VerifyPasswordRequest();
+        verifyRequest.setUsername(username);
+        verifyRequest.setPassword(password);
+        Result<SysUserAuthDto> result = sysUserClient.verifyPassword(verifyRequest);
+        if (result == null || result.getData() == null || !result.isSuccess()) {
+            HttpServletRequest httpRequest = currentRequest();
+            String ip = httpRequest != null ? LogUtils.getClientIp(httpRequest) : "";
+            recordLoginLog(username, ip, httpRequest, "1", "密码错误");
             throw new BusinessException(401, "用户名或密码错误");
         }
         return result.getData();

@@ -56,7 +56,7 @@ public class RefreshTokenService {
         }
 
         String token = generateSecureToken();
-        Duration expiryDuration = Duration.ofMillis(jwtProperties.getRefreshExpire());
+        Duration expiryDuration = resolveRefreshDuration();
         String key = PREFIX + userId;
         String now = LocalDateTime.now().format(FORMATTER);
 
@@ -198,6 +198,14 @@ public class RefreshTokenService {
         }
     }
 
+    private Duration resolveRefreshDuration() {
+        long refreshExpireMs = jwtProperties.getRefreshExpire();
+        if (refreshExpireMs <= 0) {
+            refreshExpireMs = SecurityConstants.DEFAULT_REFRESH_TOKEN_TTL;
+        }
+        return Duration.ofMillis(refreshExpireMs);
+    }
+
     /**
      * 生成安全的随机令牌
      *
@@ -224,7 +232,7 @@ public class RefreshTokenService {
         try {
             String currentToken = stringRedisTemplate.opsForValue().get(PREFIX + userId);
             if (currentToken != null) {
-                Duration expiryDuration = Duration.ofMillis(jwtProperties.getRefreshExpire());
+                Duration expiryDuration = resolveRefreshDuration();
                 stringRedisTemplate.expire(PREFIX + userId, expiryDuration);
                 log.debug("Refresh token expiry extended for user ID: {}", userId);
                 return true;

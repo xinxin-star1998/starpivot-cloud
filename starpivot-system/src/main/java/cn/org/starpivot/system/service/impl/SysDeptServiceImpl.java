@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service.impl;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
@@ -33,7 +34,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "deptTree", key = "'all'")
+    @Cacheable(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
     public List<DeptVO> selectDeptTree() {
         List<SysDept> depts = this.list(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDelFlag, "0"));
         return buildDeptTree(depts, 0L);
@@ -53,7 +54,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "deptTree", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean insertDept(DeptDTO deptDTO) {
         if (!checkDeptNameUnique(deptDTO.getDeptName(), deptDTO.getParentId(), null)) {
@@ -86,7 +87,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "deptTree", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean updateDept(DeptDTO deptDTO) {
         SysDept dept = this.getById(deptDTO.getDeptId());
@@ -122,7 +123,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "deptTree", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteDeptByIds(List<Long> deptIds) {
         if (deptIds == null || deptIds.isEmpty()) {

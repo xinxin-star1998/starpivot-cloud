@@ -9,7 +9,7 @@ services:
       SPRING_DATASOURCE_PLATFORM: mysql
       MYSQL_SERVICE_HOST: mysql
       MYSQL_SERVICE_PORT: 3306
-      MYSQL_SERVICE_DB_NAME: starpivot
+      MYSQL_SERVICE_DB_NAME: star_pivot
       MYSQL_SERVICE_USER: root
       MYSQL_SERVICE_PASSWORD: root
     ports:
@@ -30,13 +30,14 @@ services:
     container_name: starpivot-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: starpivot
+      MYSQL_DATABASE: star_pivot
       TZ: Asia/Shanghai
     ports:
       - "3307:3306"
     # 命名卷替代本地E盘目录绑定
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d:ro
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci

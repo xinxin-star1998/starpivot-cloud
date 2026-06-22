@@ -4,176 +4,88 @@ server:
 spring:
   application:
     name: starpivot-gateway
+  config:
+    import:
+      - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
   cloud:
     nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
       discovery:
         server-addr: ${NACOS_SERVER:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        file-extension: yaml
+        refresh-enabled: true
+        import-check:
+          enabled: false
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       routes:
+        # 认证服务（前端 /auth/* 路径会改写为 Controller 实际路径）
         - id: starpivot-auth
           uri: lb://starpivot-auth
           predicates:
-            - Path=/auth/**
+            - Path=/api/${starpivot.api.version}/auth/**,/api/${starpivot.api.version}/login,/api/${starpivot.api.version}/refresh,/api/${starpivot.api.version}/register,/api/${starpivot.api.version}/logout,/api/${starpivot.api.version}/user/**,/api/${starpivot.api.version}/captcha,/api/${starpivot.api.version}/captcha/**,/api/${starpivot.api.version}/register/**
           filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
-        - id: starpivot-auth-api
-          uri: lb://starpivot-auth
-          predicates:
-            - Path=/api/auth/**
-          filters:
-            - StripPrefix=2
-            - PrefixPath=/api/v1
-        - id: starpivot-auth-v1
-          uri: lb://starpivot-auth
-          predicates:
-            - Path=/api/v1/auth/**
-        - id: starpivot-sys
-          uri: lb://starpivot-system
-          predicates:
-            - Path=/sys/**
-          filters:
-            - PrefixPath=/api/v1
+            - RewritePath=/api/(?<version>v\d+)/auth/(?<segment>.*), /api/$\{version}/$\{segment}
+        # 系统服务
         - id: starpivot-system
           uri: lb://starpivot-system
           predicates:
-            - Path=/system/**
-          filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
-        - id: starpivot-system-api
-          uri: lb://starpivot-system
-          predicates:
-            - Path=/api/system/**
-          filters:
-            - StripPrefix=2
-            - PrefixPath=/api/v1
-        - id: starpivot-system-v1
-          uri: lb://starpivot-system
-          predicates:
-            - Path=/api/v1/system/**
-        - id: starpivot-router
-          uri: lb://starpivot-system
-          predicates:
-            - Path=/router/**
-          filters:
-            - PrefixPath=/api/v1
-        - id: starpivot-router-v1
-          uri: lb://starpivot-system
-          predicates:
-            - Path=/api/v1/router/**
-        - id: starpivot-common-upload
-          uri: lb://starpivot-file
-          predicates:
-            - Path=/common/upload/**
-          filters:
-            - PrefixPath=/api/v1
-        - id: starpivot-avatar
-          uri: lb://starpivot-system
-          predicates:
-            - Path=/avatar/**
-          filters:
-            - PrefixPath=/api/v1
+            - Path=/api/${starpivot.api.version}/sys/**,/api/${starpivot.api.version}/router/**,/api/${starpivot.api.version}/avatar/**,/api/${starpivot.api.version}/notice/**,/api/${starpivot.api.version}/config/**,/api/${starpivot.api.version}/dashboard/**,/api/${starpivot.api.version}/health
+        # 文件服务
         - id: starpivot-file
           uri: lb://starpivot-file
           predicates:
-            - Path=/file/**
-          filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
-        - id: starpivot-tool-gen
-          uri: lb://starpivot-generator
-          predicates:
-            - Path=/tool/gen/**
-          filters:
-            - PrefixPath=/api/v1
-        - id: starpivot-tool-gen-api
-          uri: lb://starpivot-generator
-          predicates:
-            - Path=/api/tool/gen/**
-          filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
-        - id: starpivot-tool-gen-v1
-          uri: lb://starpivot-generator
-          predicates:
-            - Path=/api/v1/tool/gen/**
-        - id: starpivot-monitor
-          uri: lb://starpivot-monitor
-          predicates:
-            - Path=/monitor/**
-          filters:
-            - PrefixPath=/api/v1
-        - id: starpivot-monitor-api
-          uri: lb://starpivot-monitor
-          predicates:
-            - Path=/api/monitor/**
-          filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
-        - id: starpivot-monitor-v1
-          uri: lb://starpivot-monitor
-          predicates:
-            - Path=/api/v1/monitor/**
-        - id: starpivot-druid-api
-          uri: lb://starpivot-monitor
-          predicates:
-            - Path=/api/druid/**
-          filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
+            - Path=/api/${starpivot.api.version}/common/upload/**
+        # 代码生成
         - id: starpivot-generator
           uri: lb://starpivot-generator
           predicates:
-            - Path=/generator/**
-          filters:
-            - StripPrefix=1
-            - PrefixPath=/api/v1
+            - Path=/api/${starpivot.api.version}/tool/gen/**
+        # 监控
+        - id: starpivot-monitor
+          uri: lb://starpivot-monitor
+          predicates:
+            - Path=/api/${starpivot.api.version}/monitor/**
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
       port: ${REDIS_PORT:6379}
 
 starpivot:
+  api:
+    version: ${API_VERSION:v1}
   jwt:
-    secret: ${JWT_SECRET:Dj4G8272xJONkOqkn1pM8q1n+U5MPLrRUCjXun3/Yeo=}
+    secret: ${JWT_SECRET:dev-local-jwt-secret-must-be-at-least-32-chars}
     expire: ${JWT_EXPIRE:7200000}
   gateway:
     whitelist:
-      - /auth/login
-      - /auth/refresh
-      - /auth/register
-      - /auth/logout
-      - /auth/captcha
-      - /auth/captcha/**
-      - /auth/register/enabled
-      - /api/v1/auth/login
-      - /api/v1/auth/refresh
-      - /api/v1/auth/register
-      - /api/v1/auth/captcha
-      - /api/v1/auth/captcha/**
-      - /api/v1/auth/register/enabled
+      - /api/${starpivot.api.version}/login
+      - /api/${starpivot.api.version}/refresh
+      - /api/${starpivot.api.version}/register
+      - /api/${starpivot.api.version}/logout
+      - /api/${starpivot.api.version}/captcha
+      - /api/${starpivot.api.version}/captcha/**
+      - /api/${starpivot.api.version}/register/enabled
+      - /api/${starpivot.api.version}/auth/login
+      - /api/${starpivot.api.version}/auth/refresh
+      - /api/${starpivot.api.version}/auth/register
+      - /api/${starpivot.api.version}/auth/logout
+      - /api/${starpivot.api.version}/auth/captcha
+      - /api/${starpivot.api.version}/auth/captcha/**
+      - /api/${starpivot.api.version}/auth/register/enabled
+      - /api/${starpivot.api.version}/router/dynamic-routes
       - /**/actuator/**
       - /**/doc.html
       - /**/swagger-ui/**
       - /**/v3/api-docs/**
       - /**/webjars/**
-      - /router/dynamic-routes
-      - /api/v1/router/dynamic-routes
-      - /api/auth/login
-      - /api/auth/refresh
-      - /api/auth/register
-      - /api/auth/logout
-      - /api/auth/captcha
-      - /api/auth/captcha/**
-      - /api/auth/register/enabled
-      - /api/login
 
 management:
   endpoints:

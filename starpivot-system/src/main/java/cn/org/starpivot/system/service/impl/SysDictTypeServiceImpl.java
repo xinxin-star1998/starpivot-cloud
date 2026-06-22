@@ -3,7 +3,7 @@ package cn.org.starpivot.system.service.impl;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.common.security.utils.SecurityUtils;
+import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.util.AssertUtils;
 import cn.org.starpivot.system.domain.bo.SysDictTypeVO;
 import cn.org.starpivot.system.domain.dto.SysDictTypeDTO;
@@ -85,7 +85,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
         BeanUtils.copyProperties(dictTypeDTO, dictType);
         dictType.setStatus(StringUtils.hasText(dictTypeDTO.getStatus()) ? dictTypeDTO.getStatus() : "0");
 
-        String currentUser = SecurityUtils.getUsername();
+        String currentUser = SecurityContextUtils.getUsername();
         dictType.setCreateBy(currentUser);
         dictType.setCreateTime(LocalDateTime.now());
 
@@ -114,7 +114,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
         // 更新字典类型信息
         BeanUtils.copyProperties(dictTypeDTO, dictType, "dictId");
-        String currentUser = SecurityUtils.getUsername();
+        String currentUser = SecurityContextUtils.getUsername();
         dictType.setUpdateBy(currentUser);
         dictType.setUpdateTime(LocalDateTime.now());
 

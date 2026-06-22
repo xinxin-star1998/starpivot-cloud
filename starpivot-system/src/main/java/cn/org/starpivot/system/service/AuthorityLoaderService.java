@@ -21,16 +21,20 @@ public class AuthorityLoaderService {
 
     private final SysMenuMapper sysMenuMapper;
     private final SysUserService sysUserService;
+    private final UserPermissionCacheService userPermissionCacheService;
 
     public List<String> loadPermissionStrings(LoginUser user) {
         if (user == null || user.getUserId() == null) {
             return List.of();
         }
         if (isSuperUser(user)) {
-            return sysMenuMapper.selectAllPermissionStrings();
+            return userPermissionCacheService.getPermissionStrings(
+                    AppConstants.ADMIN_USER_ID,
+                    sysMenuMapper::selectAllPermissionStrings);
         }
-        List<String> permissions = sysMenuMapper.selectPermissionsByUserId(user.getUserId());
-        return permissions != null ? permissions : List.of();
+        return userPermissionCacheService.getPermissionStrings(
+                user.getUserId(),
+                () -> loadPermissionsFromDb(user.getUserId()));
     }
 
     public Set<String> loadAuthorities(LoginUser user) {
@@ -42,6 +46,11 @@ public class AuthorityLoaderService {
                 .filter(StringUtils::hasText)
                 .forEach(authoritySet::add);
         return authoritySet;
+    }
+
+    private List<String> loadPermissionsFromDb(Long userId) {
+        List<String> permissions = sysMenuMapper.selectPermissionsByUserId(userId);
+        return permissions != null ? permissions : List.of();
     }
 
     private boolean isSuperUser(LoginUser user) {

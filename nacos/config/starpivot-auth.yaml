@@ -1,0 +1,26 @@
+# starpivot-auth 专属配置
+# Nacos Data ID: starpivot-auth.yaml  |  Group: DEFAULT_GROUP
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:root}
+      database: ${REDIS_DATABASE:0}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  health:
+    redis:
+      enabled: true
+
+logging:
+  level:
+    cn.org.starpivot.auth: DEBUG

@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service.impl;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.security.SecurityContextUtils;
@@ -20,15 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig> implements SysConfigService {
-
-    private static final String CONFIG_CACHE_PREFIX = "sys_config:";
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -109,7 +107,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
         if (!StringUtils.hasText(configKey)) {
             return null;
         }
-        String cacheKey = CONFIG_CACHE_PREFIX + configKey;
+        String cacheKey = CacheConstants.sysConfigKey(configKey);
         String cached = stringRedisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
             return cached;
@@ -118,7 +116,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
         if (config == null || config.getConfigValue() == null) {
             return null;
         }
-        stringRedisTemplate.opsForValue().set(cacheKey, config.getConfigValue(), Duration.ofHours(2));
+        stringRedisTemplate.opsForValue().set(cacheKey, config.getConfigValue(), CacheConstants.TTL_SYS_CONFIG);
         return config.getConfigValue();
     }
 
@@ -135,7 +133,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 
     private void evictConfigCache(String configKey) {
         if (StringUtils.hasText(configKey)) {
-            stringRedisTemplate.delete(CONFIG_CACHE_PREFIX + configKey);
+            stringRedisTemplate.delete(CacheConstants.sysConfigKey(configKey));
         }
     }
 }

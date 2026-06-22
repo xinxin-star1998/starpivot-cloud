@@ -1,18 +1,21 @@
 package cn.org.starpivot.system;
 
+import cn.org.starpivot.common.config.InternalServiceProperties;
 import cn.org.starpivot.common.config.OssProperties;
 import cn.org.starpivot.common.security.JwtProperties;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication(scanBasePackages = "cn.org.starpivot")
 @EnableDiscoveryClient
 @EnableAsync
-@EnableConfigurationProperties({JwtProperties.class, OssProperties.class})
+@EnableCaching
+@EnableConfigurationProperties({JwtProperties.class, OssProperties.class, InternalServiceProperties.class})
 @MapperScan("cn.org.starpivot.system.mapper")
 public class StarPivotSystemApplication {
 

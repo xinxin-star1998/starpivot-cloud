@@ -3,6 +3,7 @@ package cn.org.starpivot.monitor.service.impl;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.stat.DruidStatManagerFacade;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.monitor.domain.vo.DruidMonitorVO;
@@ -105,50 +106,6 @@ public class MonitorServiceImpl implements MonitorService {
     private volatile RedisCapabilities redisCapabilities;
     private static final long REDIS_CAPABILITY_CACHE_MS = 60_000L;
     private final AtomicBoolean clusterScanWarningLogged = new AtomicBoolean(false);
-
-    // Redis 键前缀常量
-    private static final String REDIS_KEY_PREFIX_JWT_REFRESH_USER = "starpivot:refresh";
-    private static final String REDIS_KEY_PREFIX_JWT_LOGOUT = "auth:blacklist";
-    private static final String REDIS_KEY_PREFIX_ONLINE_USER = "online:user";
-    private static final String REDIS_KEY_PREFIX_SYS_CONFIG = "sys_config";
-    private static final String REDIS_KEY_PREFIX_SYS_DICT = "sys_dict";
-    private static final String REDIS_KEY_PREFIX_CAPTCHA = "auth:captcha";
-    private static final String REDIS_KEY_PREFIX_REPEAT_SUBMIT = "repeat_submit";
-    private static final String REDIS_KEY_PREFIX_RATE_LIMIT = "rate_limit";
-    private static final String REDIS_KEY_PREFIX_PWD_ERR_CNT = "pwd_err_cnt";
-
-    // Redis 缓存名称和键前缀映射（用于备注显示）
-    private static final Map<String, String> CACHE_REMARK_MAP = new HashMap<>();
-
-    /** Spring Cache 逻辑名 -> 备注（与 Redis key 前缀 cache:{name}:: 对应） */
-    private static final Map<String, String> SPRING_CACHE_REMARK = new HashMap<>();
-
-    static {
-        // 初始化缓存备注映射（用于显示友好的备注信息）
-        // 注意：这些键前缀应与 Redis 中实际使用的键保持一致
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_JWT_REFRESH_USER, "用户信息");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_JWT_LOGOUT, "登出黑名单");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_SYS_CONFIG, "配置信息");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_SYS_DICT, "数据字典");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_CAPTCHA, "验证码");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_REPEAT_SUBMIT, "防重提交");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_RATE_LIMIT, "限流处理");
-        CACHE_REMARK_MAP.put(REDIS_KEY_PREFIX_PWD_ERR_CNT, "密码错误次数");
-
-        SPRING_CACHE_REMARK.put("userPermissions", "用户权限缓存");
-        SPRING_CACHE_REMARK.put("menuTree", "菜单树缓存");
-        SPRING_CACHE_REMARK.put("dictData", "字典数据缓存");
-        SPRING_CACHE_REMARK.put("dictType", "字典类型缓存");
-        SPRING_CACHE_REMARK.put("deptTree", "部门树缓存");
-        SPRING_CACHE_REMARK.put("postList", "岗位列表缓存");
-        SPRING_CACHE_REMARK.put("mallCategoryTree", "商城分类整树缓存");
-        SPRING_CACHE_REMARK.put("mallCategoryChildren", "商城分类子节点缓存");
-        SPRING_CACHE_REMARK.put("roleList", "角色列表缓存");
-        SPRING_CACHE_REMARK.put("sysConfig", "系统配置缓存");
-        SPRING_CACHE_REMARK.put("captcha", "验证码缓存");
-        SPRING_CACHE_REMARK.put("loginFailCount", "登录失败次数");
-        SPRING_CACHE_REMARK.put("rateLimit", "接口限流");
-    }
 
     @Override
     public ServerInfoVO getServerInfo() {
@@ -645,31 +602,29 @@ public class MonitorServiceImpl implements MonitorService {
         }
 
         try {
-            // 扫描所有键，动态发现缓存组
-            Set<String> allKeys = scanKeys("*");
+            Map<String, RedisCacheVO> resultMap = new LinkedHashMap<>();
+            for (String groupName : CacheConstants.predefinedGroups()) {
+                RedisCacheVO vo = new RedisCacheVO();
+                vo.setCacheName(groupName);
+                vo.setRemark(CacheConstants.getRemark(groupName));
+                resultMap.put(groupName, vo);
+            }
 
-            // 按前缀分组
-            Map<String, Set<String>> cacheGroups = new HashMap<>();
+            Set<String> allKeys = scanKeys("*");
             for (String key : allKeys) {
                 String groupName = extractCacheGroupName(key);
-                if (groupName != null && !groupName.isEmpty()) {
-                    cacheGroups.computeIfAbsent(groupName, k -> new HashSet<>()).add(key);
+                if (groupName == null || groupName.isEmpty()) {
+                    continue;
                 }
+                resultMap.computeIfAbsent(groupName, name -> {
+                    RedisCacheVO vo = new RedisCacheVO();
+                    vo.setCacheName(name);
+                    vo.setRemark(CacheConstants.getRemark(name));
+                    return vo;
+                });
             }
 
-            // 构建缓存列表
-            List<RedisCacheVO> cacheList = new ArrayList<>();
-            for (Map.Entry<String, Set<String>> entry : cacheGroups.entrySet()) {
-                RedisCacheVO cacheVO = new RedisCacheVO();
-                cacheVO.setCacheName(entry.getKey());
-                cacheVO.setRemark(resolveCacheGroupRemark(entry.getKey()));
-                cacheList.add(cacheVO);
-            }
-
-            // 按缓存名称排序
-            cacheList.sort(Comparator.comparing(RedisCacheVO::getCacheName));
-
-            return cacheList;
+            return new ArrayList<>(resultMap.values());
         } catch (Exception e) {
             log.error("获取缓存列表失败", e);
             throw new BizException(ErrorCode.REDIS_ERROR, "获取缓存列表失败: " + e.getMessage());
@@ -678,9 +633,8 @@ public class MonitorServiceImpl implements MonitorService {
 
     /**
      * 将 Redis 键归为「缓存列表」中的一行（与 getCacheKeys、deleteCache 使用同一分组名）。
-     * <p>Spring Data Redis 默认使用双冒号分隔缓存名与业务键；工程里 {@code prefixCacheNameWith("cache:")}
-     * 后实际键形如 {@code cache:dictData::xxx}。若仅按首个单冒号分组，会把所有 Spring Cache 归为一行 {@code cache}，
-     * 删除时也难以与「仅删某一逻辑缓存」的预期对齐。</p>
+     * <p>Spring Data Redis 使用双冒号分隔缓存名与业务键，实际键形如 {@code sys_dict::status}。
+     * 若仅按首个单冒号分组，会把 {@code login_tokens:refresh:1} 正确归为 {@code login_tokens}。</p>
      */
     private String extractCacheGroupName(String key) {
         if (key == null || key.isEmpty()) {
@@ -695,18 +649,6 @@ public class MonitorServiceImpl implements MonitorService {
             return key.substring(0, colonIndex);
         }
         return key;
-    }
-
-    private String resolveCacheGroupRemark(String groupName) {
-        String mapped = CACHE_REMARK_MAP.get(groupName);
-        if (mapped != null) {
-            return mapped;
-        }
-        if (groupName.startsWith("cache:")) {
-            String logical = groupName.substring("cache:".length());
-            return SPRING_CACHE_REMARK.getOrDefault(logical, groupName + "（Spring Cache）");
-        }
-        return groupName;
     }
 
     @Override

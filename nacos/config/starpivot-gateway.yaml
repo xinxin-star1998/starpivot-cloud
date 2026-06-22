@@ -1,0 +1,19 @@
+# starpivot-gateway 专属配置
+# Nacos Data ID: starpivot-gateway.yaml  |  Group: DEFAULT_GROUP
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:root}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

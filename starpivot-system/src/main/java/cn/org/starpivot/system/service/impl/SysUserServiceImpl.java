@@ -61,16 +61,32 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public SysUserAuthDto getAuthByUsername(String username) {
-        SysUser user = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getUserName, username)
-                .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL));
-        if (user == null) {
+        SysUser user = findActiveUserByUsername(username);
+        return user == null ? null : toAuthDto(user);
+    }
+
+    @Override
+    public SysUserAuthDto verifyPassword(String username, String rawPassword) {
+        SysUser user = findActiveUserByUsername(username);
+        if (user == null || !StringUtils.hasText(rawPassword)) {
             return null;
         }
+        if (!securityUtils.matchesPassword(rawPassword, user.getPassword())) {
+            return null;
+        }
+        return toAuthDto(user);
+    }
+
+    private SysUser findActiveUserByUsername(String username) {
+        return sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getUserName, username)
+                .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL));
+    }
+
+    private SysUserAuthDto toAuthDto(SysUser user) {
         return SysUserAuthDto.builder()
                 .userId(user.getUserId())
                 .username(user.getUserName())
-                .password(user.getPassword())
                 .nickName(user.getNickName())
                 .status(user.getStatus())
                 .roles(sysUserMapper.selectRoleKeysByUserId(user.getUserId()))
@@ -165,6 +181,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
             throw new BizException(ErrorCode.USER_NOT_FOUND, "用户不存在");
         }
+
+        if (!canFullUpdateUser(userDTO.getUserId())) {
+            return updateSelfProfile(user, userDTO);
+        }
+
         SysUser existUser = getUserByUsername(userDTO.getUserName());
         if (existUser != null && !existUser.getUserId().equals(userDTO.getUserId())) {
             throw new BizException(ErrorCode.USER_USERNAME_USED, "用户名已被使用");
@@ -181,7 +202,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 if (!userDTO.getRoleIds().isEmpty()) {
                     insertUserRoles(userDTO.getUserId(), userDTO.getRoleIds());
                 }
-                userPermissionCacheService.clearUserPermissionCache(user.getUserName());
+                userPermissionCacheService.clearUserPermissionCacheByUserId(userDTO.getUserId());
             }
             if (userDTO.getPostIds() != null) {
                 userPostMapper.delete(new LambdaQueryWrapper<UserPost>().eq(UserPost::getUserId, userDTO.getUserId()));
@@ -191,6 +212,28 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             }
         }
         return success;
+    }
+
+    private boolean canFullUpdateUser(Long targetUserId) {
+        if (isCurrentUserSuperAdmin()) {
+            return true;
+        }
+        return SecurityContextUtils.hasAuthority("system:user:update");
+    }
+
+    private boolean updateSelfProfile(SysUser user, UserDTO userDTO) {
+        Long currentUserId = SecurityContextUtils.getUserId();
+        if (currentUserId == null || !currentUserId.equals(userDTO.getUserId())) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权修改该用户信息");
+        }
+        user.setNickName(userDTO.getNickName());
+        user.setEmail(userDTO.getEmail());
+        user.setPhonenumber(userDTO.getPhonenumber());
+        user.setSex(userDTO.getSex());
+        user.setAvatar(userDTO.getAvatar());
+        user.setUpdateBy(SecurityContextUtils.getUsername());
+        user.setUpdateTime(LocalDateTime.now());
+        return this.updateById(user);
     }
 
     @Override
@@ -218,12 +261,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         user.setUpdateTime(LocalDateTime.now());
         boolean success = this.updateById(user);
         if (success) {
-            userPermissionCacheService.clearUserPermissionCache(user.getUserName());
+            userPermissionCacheService.clearUserPermissionCacheByUserId(userId);
         }
         return success;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateUserPassword(Long userId, String oldPassword, String newPassword) {
         SysUser user = this.getById(userId);
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
@@ -241,7 +285,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         user.setUpdateTime(LocalDateTime.now());
         boolean success = this.updateById(user);
         if (success) {
-            userPermissionCacheService.clearUserPermissionCache(user.getUserName());
+            userPermissionCacheService.clearUserPermissionCacheByUserId(userId);
         }
         return success;
     }

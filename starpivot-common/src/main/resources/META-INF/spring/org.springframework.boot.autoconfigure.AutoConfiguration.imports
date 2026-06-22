@@ -1,0 +1,3 @@
+cn.org.starpivot.common.config.InternalServiceAutoConfiguration
+cn.org.starpivot.common.config.SecurityBeansConfiguration
+cn.org.starpivot.common.config.MicroserviceAuthenticationAutoConfiguration

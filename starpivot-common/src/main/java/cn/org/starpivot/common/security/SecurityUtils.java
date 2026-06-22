@@ -1,20 +1,22 @@
 package cn.org.starpivot.common.security;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
  * 安全工具类
- * 
+ *
  * 提供密码加密和验证功能，使用 Spring 容器中的 PasswordEncoder Bean
  * 确保整个系统使用统一的密码编码策略
  */
 @Component
-@RequiredArgsConstructor
 public class SecurityUtils {
 
     private static PasswordEncoder passwordEncoder;
+
+    public SecurityUtils(PasswordEncoder passwordEncoder) {
+        SecurityUtils.passwordEncoder = passwordEncoder;
+    }
 
     /**
      * 加密密码

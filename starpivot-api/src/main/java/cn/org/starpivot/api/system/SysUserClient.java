@@ -4,6 +4,7 @@ import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.api.system.dto.SysMenuDto;
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
+import cn.org.starpivot.api.system.dto.VerifyPasswordRequest;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,9 @@ public interface SysUserClient {
 
     @GetMapping("/api/v1/internal/user/username/{username}")
     Result<SysUserAuthDto> getByUsername(@PathVariable("username") String username);
+
+    @PostMapping("/api/v1/internal/user/verify-password")
+    Result<SysUserAuthDto> verifyPassword(@RequestBody VerifyPasswordRequest request);
 
     @GetMapping("/api/v1/internal/user/{userId}/menus")
     Result<List<SysMenuDto>> getUserMenus(@PathVariable("userId") Long userId);

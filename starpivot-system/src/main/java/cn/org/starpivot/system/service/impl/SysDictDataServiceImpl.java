@@ -2,7 +2,8 @@ package cn.org.starpivot.system.service.impl;
 
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.common.security.utils.SecurityUtils;
+import cn.org.starpivot.common.cache.CacheConstants;
+import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.util.AssertUtils;
 import cn.org.starpivot.system.domain.bo.SysDictDataVO;
 import cn.org.starpivot.system.domain.dto.SysDictDataDTO;
@@ -66,7 +67,7 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "dictData", key = "#dictType")
+    @Cacheable(cacheNames = CacheConstants.SYS_DICT, key = "#dictType")
     public List<SysDictDataVO> selectDictDataByType(String dictType) {
         List<SysDictData> dictDataList = sysDictDataMapper.selectDictDataByType(dictType);
         return dictDataList.stream()
@@ -84,7 +85,7 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = "dictData", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.SYS_DICT, allEntries = true)
     public boolean insertDictData(SysDictDataDTO dictDataDTO) {
         // 创建字典数据
         SysDictData dictData = new SysDictData();
@@ -93,7 +94,7 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
         dictData.setIsDefault(StringUtils.hasText(dictDataDTO.getIsDefault()) ? dictDataDTO.getIsDefault() : "N");
         dictData.setStatus(StringUtils.hasText(dictDataDTO.getStatus()) ? dictDataDTO.getStatus() : "0");
 
-        String currentUser = SecurityUtils.getUsername();
+        String currentUser = SecurityContextUtils.getUsername();
         dictData.setCreateBy(currentUser);
         dictData.setCreateTime(LocalDateTime.now());
 
@@ -102,13 +103,13 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = "dictData", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.SYS_DICT, allEntries = true)
     public boolean updateDictData(SysDictDataDTO dictDataDTO) {
         SysDictData dictData = this.getById(dictDataDTO.getDictCode());
         AssertUtils.notNull(dictData, ErrorCode.DICT_NOT_FOUND);
 
         BeanUtils.copyProperties(dictDataDTO, dictData, "dictCode");
-        String currentUser = SecurityUtils.getUsername();
+        String currentUser = SecurityContextUtils.getUsername();
         dictData.setUpdateBy(currentUser);
         dictData.setUpdateTime(LocalDateTime.now());
 
@@ -117,7 +118,7 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = "dictData", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.SYS_DICT, allEntries = true)
     public boolean deleteDictDataByIds(List<Long> dictCodes) {
         if (dictCodes == null || dictCodes.isEmpty()) {
             return false;

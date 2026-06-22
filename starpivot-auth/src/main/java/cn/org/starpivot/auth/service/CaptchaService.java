@@ -3,6 +3,7 @@ package cn.org.starpivot.auth.service;
 import cn.org.starpivot.auth.domain.CaptchaResponse;
 import cn.org.starpivot.auth.domain.CaptchaVerifyRequest;
 import cn.org.starpivot.auth.domain.CaptchaVerifyResponse;
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.exception.BusinessException;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class CaptchaService {
 
-    private static final String CAPTCHA_PREFIX = "auth:captcha:";
-    private static final String PROOF_PREFIX = "auth:captcha:proof:";
-    private static final long CAPTCHA_TTL_MINUTES = 5;
-    private static final long PROOF_TTL_MINUTES = 2;
+    private static final long CAPTCHA_TTL_MINUTES = CacheConstants.TTL_CAPTCHA.toMinutes();
+    private static final long PROOF_TTL_MINUTES = CacheConstants.TTL_CAPTCHA_PROOF.toMinutes();
 
     private final DefaultKaptcha captchaProducer;
     private final StringRedisTemplate redisTemplate;
@@ -66,11 +65,11 @@ public class CaptchaService {
         }
 
         String proof = UUID.randomUUID().toString();
-        redisTemplate.opsForValue().set(PROOF_PREFIX + proof, "1", PROOF_TTL_MINUTES, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(CacheConstants.captchaProofKey(proof), "1", PROOF_TTL_MINUTES, TimeUnit.MINUTES);
         return CaptchaVerifyResponse.builder().captchaProof(proof).build();
     }
 
     private String buildCaptchaKey(String scene, String token) {
-        return CAPTCHA_PREFIX + scene + ":" + token;
+        return CacheConstants.captchaKey(scene, token);
     }
 }

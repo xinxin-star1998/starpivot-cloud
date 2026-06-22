@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service.impl;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
@@ -48,7 +49,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "menuTree", key = "'all'")
+    @Cacheable(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
     public List<SysMenu> menuTree() {
         LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysMenu::getStatus, AppConstants.Status.NORMAL);
@@ -85,7 +86,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = "menuTree", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
     public boolean insertMenu(MenuDTO menuDTO) {
         if (!checkMenuNameUnique(menuDTO.getMenuName(), menuDTO.getParentId(), null)) {
             throw new BizException(ErrorCode.MENU_NAME_EXISTS, "菜单名称已存在");
@@ -113,7 +114,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = "menuTree", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
     public boolean updateMenu(MenuDTO menuDTO) {
         SysMenu menu = this.getById(menuDTO.getMenuId());
         if (menu == null) {
@@ -142,7 +143,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = "menuTree", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
     public boolean deleteMenuByIds(List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {
             return false;

@@ -1,28 +1,36 @@
 server:
   port: 9203
   servlet:
-    context-path: /api/v1
+    context-path: /api/${starpivot.api.version}
 
 spring:
   application:
     name: starpivot-generator
+  config:
+    import:
+      - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
   cloud:
     nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
       discovery:
         server-addr: ${NACOS_SERVER:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        file-extension: yaml
+        refresh-enabled: true
+        import-check:
+          enabled: false
   datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3307/starpivot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DB:star_pivot}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:root}
-  data:
-    redis:
-      host: ${REDIS_HOST:127.0.0.1}
-      port: ${REDIS_PORT:6379}
-      database: 0
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -36,34 +44,7 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 starpivot:
-  jwt:
-    secret: ${JWT_SECRET:Dj4G8272xJONkOqkn1pM8q1n+U5MPLrRUCjXun3/Yeo=}
-    expire: ${JWT_EXPIRE:7200000}
-
-gen:
-  author: admin
-  packageName: cn.org.starpivot.system
-  autoRemovePre: false
-  tablePrefix: sys_
-  external:
-    enabled: true
-    session-ttl-minutes: 30
-    connect-timeout-ms: 5000
-    query-timeout-seconds: 30
-    max-tables-per-download: 20
-    allowed-hosts: []
-    write-to-disk-enabled: true
-    default-output-root: ""
-    allowed-write-paths: []
-    template-dir: ""
-    backup-before-write: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-
-logging:
-  level:
-    cn.org.starpivot: debug
+  api:
+    version: ${API_VERSION:v1}
+  security:
+    authority-strategy: menu-permission

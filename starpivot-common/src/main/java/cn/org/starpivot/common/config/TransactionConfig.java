@@ -1,5 +1,6 @@
 package cn.org.starpivot.common.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -7,22 +8,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * 全局事务配置
- *
- * 统一配置 Spring 事务管理，启用声明式事务支持
- *
- * 配置说明：
- * - 启用声明式事务管理（默认使用代理模式）
- * - 支持 @Transactional 注解
- * - 默认回滚策略：仅对 RuntimeException 回滚
- *
- * 使用建议：
- * - 只读方法添加 @Transactional(readOnly = true) 以优化性能
- * - 需要回滚所有异常时使用 @Transactional(rollbackFor = Exception.class)
- * - Service 层方法默认不需要 @Transactional，框架自动管理
+ * 全局事务配置（仅在有数据源/事务管理器的服务中生效，如 system、file）。
  */
 @Configuration
 @EnableTransactionManagement
+@ConditionalOnBean(PlatformTransactionManager.class)
 public class TransactionConfig {
 
     /**

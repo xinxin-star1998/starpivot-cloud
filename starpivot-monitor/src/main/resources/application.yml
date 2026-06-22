@@ -1,52 +1,36 @@
 server:
   port: 9204
   servlet:
-    context-path: /api/v1
+    context-path: /api/${starpivot.api.version}
 
 spring:
   application:
     name: starpivot-monitor
+  config:
+    import:
+      - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
   cloud:
     nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
       discovery:
         server-addr: ${NACOS_SERVER:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        file-extension: yaml
+        refresh-enabled: true
+        import-check:
+          enabled: false
   datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3307/starpivot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DB:star_pivot}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:root}
-    druid:
-      stat-view-servlet:
-        enabled: true
-        url-pattern: /druid/*
-        login-username: ${DRUID_LOGIN:admin}
-        login-password: ${DRUID_LOGIN_PASSWORD:admin}
-        allow: ""
-      web-stat-filter:
-        enabled: true
-        url-pattern: /*
-        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
-      filter:
-        stat:
-          enabled: true
-          log-slow-sql: true
-          slow-sql-millis: 2000
-          merge-sql: true
-        wall:
-          enabled: true
-          config:
-            multi-statement-allow: true
-  data:
-    redis:
-      host: ${REDIS_HOST:127.0.0.1}
-      port: ${REDIS_PORT:6379}
-      database: 0
-  quartz:
-    job-store-type: memory
-    auto-startup: true
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -55,19 +39,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 starpivot:
-  jwt:
-    secret: ${JWT_SECRET:Dj4G8272xJONkOqkn1pM8q1n+U5MPLrRUCjXun3/Yeo=}
-    expire: ${JWT_EXPIRE:7200000}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: when-authorized
-
-logging:
-  level:
-    cn.org.starpivot: debug
+  api:
+    version: ${API_VERSION:v1}
+  security:
+    authority-strategy: menu-permission

@@ -23,6 +23,8 @@ public interface SysUserService extends IService<SysUser> {
 
     SysUserAuthDto getAuthByUsername(String username);
 
+    SysUserAuthDto verifyPassword(String username, String rawPassword);
+
     List<SysMenu> getUserMenus(Long userId);
 
     PageResponse<UserVO> pageList(UserReqBo userReqBo);

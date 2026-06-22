@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 登录鉴权所需的用户信息（含密码哈希，仅服务间调用）
+ * 登录鉴权所需的用户信息（不含密码，密码校验走 verify-password 内部接口）
  */
 @Data
 @Builder
@@ -23,7 +23,6 @@ public class SysUserAuthDto implements Serializable {
 
     private Long userId;
     private String username;
-    private String password;
     private String nickName;
     private String status;
     private List<String> roles;

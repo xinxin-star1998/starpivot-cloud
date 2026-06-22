@@ -30,7 +30,7 @@ export interface ConfigSearchParams {
  */
 export function fetchGetConfigList(params: ConfigSearchParams) {
   return request.post<Api.Common.PaginatedResponse<Config>>({
-    url: '/api/system/config/list',
+    url: '/api/config/list',
     data: params
   })
 }
@@ -40,7 +40,7 @@ export function fetchGetConfigList(params: ConfigSearchParams) {
  */
 export function fetchGetConfigById(configId: number) {
   return request.get<Config>({
-    url: `/api/system/config/${configId}`
+    url: `/api/config/${configId}`
   })
 }
 
@@ -49,7 +49,7 @@ export function fetchGetConfigById(configId: number) {
  */
 export function fetchAddConfig(data: Config) {
   return request.post({
-    url: '/api/system/config',
+    url: '/api/config',
     data
   })
 }
@@ -59,7 +59,7 @@ export function fetchAddConfig(data: Config) {
  */
 export function fetchUpdateConfig(data: Config) {
   return request.put({
-    url: '/api/system/config',
+    url: '/api/config',
     data
   })
 }
@@ -69,7 +69,7 @@ export function fetchUpdateConfig(data: Config) {
  */
 export function fetchDeleteConfig(configIds: number[]) {
   return request.del({
-    url: '/api/system/config/delete',
+    url: '/api/config/delete',
     data: { ids: configIds }
   })
 }
@@ -77,7 +77,7 @@ export function fetchDeleteConfig(configIds: number[]) {
 /** 导出参数配置 */
 export function fetchExportConfig(params: ConfigSearchParams) {
   return fetchExcelExport({
-    url: '/api/system/config/export',
+    url: '/api/config/export',
     data: params as Record<string, unknown>,
     filenameFallback: `sys_config_export_${Date.now()}.xlsx`,
     successMessage: false

@@ -1,5 +1,7 @@
 package cn.org.starpivot.common.security;
 
+import cn.org.starpivot.common.cache.CacheConstants;
+
 /**
  * 鉴权相关常量
  */
@@ -14,8 +16,11 @@ public final class SecurityConstants {
     public static final String USER_NAME_HEADER = "X-User-Name";
     public static final String ROLES_HEADER = "X-User-Roles";
     public static final String PERMISSIONS_HEADER = "X-User-Permissions";
-    public static final String TOKEN_BLACKLIST_PREFIX = "auth:blacklist:";
-    public static final String REFRESH_TOKEN_PREFIX = "auth:refresh:";
+    public static final String INTERNAL_TOKEN_HEADER = "X-Internal-Token";
+    /** @see CacheConstants#tokenBlacklistPrefix() */
+    public static final String TOKEN_BLACKLIST_PREFIX = CacheConstants.tokenBlacklistPrefix();
+    /** @see CacheConstants#loginRefreshPattern() 前缀部分 */
+    public static final String REFRESH_TOKEN_PREFIX = CacheConstants.LOGIN_TOKENS + ":" + CacheConstants.LOGIN_REFRESH + ":";
 
     public static final String CLAIM_USER_ID = "userId";
     public static final String CLAIM_ROLES = "roles";

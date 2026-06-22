@@ -1,6 +1,7 @@
 package cn.org.starpivot.system.controller.internal;
 
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
+import cn.org.starpivot.api.system.dto.VerifyPasswordRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.system.domain.entity.SysMenu;
 import cn.org.starpivot.system.service.SysUserService;
@@ -8,6 +9,8 @@ import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +32,18 @@ public class SysUserInternalController {
         SysUserAuthDto user = sysUserService.getAuthByUsername(username);
         if (user == null) {
             return Result.notFound("用户不存在");
+        }
+        return Result.success(user);
+    }
+
+    @PostMapping("/verify-password")
+    public Result<SysUserAuthDto> verifyPassword(@RequestBody VerifyPasswordRequest request) {
+        if (request == null || request.getUsername() == null || request.getPassword() == null) {
+            return Result.unauthorized("用户名或密码错误");
+        }
+        SysUserAuthDto user = sysUserService.verifyPassword(request.getUsername(), request.getPassword());
+        if (user == null) {
+            return Result.unauthorized("用户名或密码错误");
         }
         return Result.success(user);
     }

@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service.impl;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
 import cn.org.starpivot.system.domain.entity.SysOperLog;
@@ -32,8 +33,8 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
 
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("M月");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private static final String CACHE_KEY = "dashboard:console:data";
-    private static final long CACHE_EXPIRE_MINUTES = 5;
+    private static final String CACHE_KEY = CacheConstants.dashboardKey();
+    private static final long CACHE_EXPIRE_MINUTES = CacheConstants.TTL_DASHBOARD.toMinutes();
 
     private final SysUserService sysUserService;
     private final SysLogininforService sysLogininforService;

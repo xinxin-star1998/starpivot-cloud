@@ -10,6 +10,8 @@ import io.jsonwebtoken.security.SignatureException;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -240,12 +242,17 @@ public final class JwtUtils {
             throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
 
-        // 确保密钥长度足够安全（至少32字符用于HS256）
-        if (secret.length() < 32) {
-            throw new IllegalArgumentException("JWT secret must be at least 32 characters for secure signing");
-        }
-
-        return KEY_CACHE.computeIfAbsent(secret, s -> Keys.hmacShaKeyFor(s.getBytes(StandardCharsets.UTF_8)));
+        return KEY_CACHE.computeIfAbsent(secret, s -> {
+            byte[] keyBytes = s.getBytes(StandardCharsets.UTF_8);
+            if (keyBytes.length < 32) {
+                try {
+                    keyBytes = MessageDigest.getInstance("SHA-256").digest(keyBytes);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new IllegalStateException("SHA-256 not available", e);
+                }
+            }
+            return Keys.hmacShaKeyFor(keyBytes);
+        });
     }
 
     /**

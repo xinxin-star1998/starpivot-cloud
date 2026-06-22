@@ -2,6 +2,7 @@ package cn.org.starpivot.generator.external;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.generator.config.GenExternalProperties;
 import cn.org.starpivot.generator.domain.external.ExternalGenSession;
@@ -24,8 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class ExternalGenSessionStore {
 
-    private static final String KEY_PREFIX = "gen:external:session:";
-
     private final GenExternalProperties properties;
     private final ObjectMapper objectMapper;
 
@@ -34,13 +33,17 @@ public class ExternalGenSessionStore {
 
     private final Map<String, ExternalGenSession> localSessions = new ConcurrentHashMap<>();
 
+    private static String sessionKey(String sessionId) {
+        return CacheConstants.generatorSessionKey(sessionId);
+    }
+
     public void save(ExternalGenSession session) {
         session.setExpireAt(Instant.now().plus(Duration.ofMinutes(properties.getSessionTtlMinutes())));
         if (stringRedisTemplate != null) {
             try {
                 String json = objectMapper.writeValueAsString(session);
                 stringRedisTemplate.opsForValue().set(
-                        KEY_PREFIX + session.getSessionId(),
+                        sessionKey(session.getSessionId()),
                         json,
                         Duration.ofMinutes(properties.getSessionTtlMinutes()));
                 return;
@@ -72,7 +75,7 @@ public class ExternalGenSessionStore {
     public ExternalGenSession get(String sessionId) {
         if (stringRedisTemplate != null) {
             try {
-                String json = stringRedisTemplate.opsForValue().get(KEY_PREFIX + sessionId);
+                String json = stringRedisTemplate.opsForValue().get(sessionKey(sessionId));
                 if (json != null) {
                     return objectMapper.readValue(json, ExternalGenSession.class);
                 }
@@ -90,7 +93,7 @@ public class ExternalGenSessionStore {
 
     public void remove(String sessionId) {
         if (stringRedisTemplate != null) {
-            stringRedisTemplate.delete(KEY_PREFIX + sessionId);
+            stringRedisTemplate.delete(sessionKey(sessionId));
         }
         localSessions.remove(sessionId);
     }

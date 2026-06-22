@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service.impl;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
@@ -66,7 +67,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "roleList", key = "'all'")
+    @Cacheable(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
     public List<SysRole> selectAllRoles() {
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysRole::getDelFlag, AppConstants.DelFlag.NORMAL)
@@ -76,7 +77,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "roleList", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean insertRole(RoleDTO roleDTO) {
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
@@ -106,7 +107,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "roleList", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean updateRole(RoleDTO roleDTO) {
         SysRole role = this.getById(roleDTO.getRoleId());
@@ -148,7 +149,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "roleList", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRoleByIds(List<Long> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
@@ -192,7 +193,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     }
 
     @Override
-    @CacheEvict(cacheNames = "roleList", allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
     public boolean changeRoleStatus(Long roleId, String status) {
         SysRole role = this.getById(roleId);
         AssertUtils.notNull(role, ErrorCode.ROLE_NOT_FOUND);

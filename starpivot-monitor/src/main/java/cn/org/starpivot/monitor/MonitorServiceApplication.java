@@ -12,7 +12,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "cn.org.starpivot.api")
 @EnableConfigurationProperties(JwtProperties.class)
-@MapperScan({"cn.org.starpivot.monitor.mapper", "cn.org.starpivot.job.mapper", "cn.org.starpivot.monitor.security.mapper"})
+@MapperScan({"cn.org.starpivot.monitor.mapper", "cn.org.starpivot.job.mapper", "cn.org.starpivot.common.security.mapper"})
 public class MonitorServiceApplication {
 
     public static void main(String[] args) {

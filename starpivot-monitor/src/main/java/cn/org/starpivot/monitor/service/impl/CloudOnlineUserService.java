@@ -1,5 +1,6 @@
 package cn.org.starpivot.monitor.service.impl;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.monitor.domain.entity.MonitorDept;
 import cn.org.starpivot.monitor.domain.entity.MonitorUser;
 import cn.org.starpivot.monitor.domain.vo.OnlineUserVO;
@@ -25,14 +26,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 基于 cloud 版 RefreshToken（auth:refresh:{userId}）的在线用户查询与强退。
+ * 基于 RefreshToken（{@link cn.org.starpivot.common.cache.CacheConstants#LOGIN_TOKENS}）的在线用户查询与强退。
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CloudOnlineUserService {
 
-    static final String REFRESH_PREFIX = "auth:refresh:";
+    static final String REFRESH_PREFIX = CacheConstants.LOGIN_TOKENS + ":" + CacheConstants.LOGIN_REFRESH + ":";
     
     // Hash 字段名常量（与 RefreshTokenService 保持一致）
     private static final String FIELD_IP = "ip";

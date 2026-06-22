@@ -6,6 +6,6 @@ import type { ConsoleDashboardData } from '@/types/api/dashboard'
  */
 export function fetchGetConsoleDashboardData() {
   return request.get<ConsoleDashboardData>({
-    url: '/api/system/dashboard/console'
+    url: '/api/dashboard/console'
   })
 }

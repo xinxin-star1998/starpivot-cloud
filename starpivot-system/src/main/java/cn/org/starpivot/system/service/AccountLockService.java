@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.system.domain.entity.SysUser;
@@ -40,16 +41,6 @@ public class AccountLockService {
     @Value("${starpivot.security.login.lock-duration:15}")
     private int lockDuration;
 
-    /**
-     * Redis Key 前缀：登录失败次数
-     */
-    private static final String LOGIN_FAIL_COUNT_PREFIX = "login:fail:count:";
-
-    /**
-     * Redis Key 前缀：账号锁定时间
-     */
-    private static final String ACCOUNT_LOCK_PREFIX = "login:lock:";
-
     public AccountLockService(@Lazy SysUserService sysUserService, RedisTemplate<String, Object> redisTemplate) {
         this.sysUserService = sysUserService;
         this.redisTemplate = redisTemplate;
@@ -62,8 +53,8 @@ public class AccountLockService {
      * @return 是否被锁定
      */
     public boolean recordLoginFailure(String username) {
-        String failCountKey = LOGIN_FAIL_COUNT_PREFIX + username;
-        String lockKey = ACCOUNT_LOCK_PREFIX + username;
+        String failCountKey = CacheConstants.pwdErrCountKey(username);
+        String lockKey = CacheConstants.accountLockKey(username);
 
         // 检查是否已被锁定
         if (isAccountLocked(username)) {
@@ -95,7 +86,7 @@ public class AccountLockService {
      * @return true-已锁定，false-未锁定
      */
     public boolean isAccountLocked(String username) {
-        String lockKey = ACCOUNT_LOCK_PREFIX + username;
+        String lockKey = CacheConstants.accountLockKey(username);
         Boolean exists = redisTemplate.hasKey(lockKey);
         return Boolean.TRUE.equals(exists);
     }
@@ -107,7 +98,7 @@ public class AccountLockService {
      * @return 剩余秒数，未锁定返回0
      */
     public long getRemainingLockSeconds(String username) {
-        String lockKey = ACCOUNT_LOCK_PREFIX + username;
+        String lockKey = CacheConstants.accountLockKey(username);
         Long ttl = redisTemplate.getExpire(lockKey, TimeUnit.SECONDS);
         return ttl != null && ttl > 0 ? ttl : 0;
     }
@@ -118,7 +109,7 @@ public class AccountLockService {
      * @param username 用户名
      */
     public void resetLoginFailureCount(String username) {
-        String failCountKey = LOGIN_FAIL_COUNT_PREFIX + username;
+        String failCountKey = CacheConstants.pwdErrCountKey(username);
         redisTemplate.delete(failCountKey);
     }
 
@@ -143,8 +134,8 @@ public class AccountLockService {
      * @return 解锁结果
      */
     public UnlockResult unlockUserByUsername(String username) {
-        String lockKey = ACCOUNT_LOCK_PREFIX + username;
-        String failCountKey = LOGIN_FAIL_COUNT_PREFIX + username;
+        String lockKey = CacheConstants.accountLockKey(username);
+        String failCountKey = CacheConstants.pwdErrCountKey(username);
 
         Boolean isLocked = redisTemplate.hasKey(lockKey);
         if (Boolean.FALSE.equals(isLocked)) {
@@ -164,7 +155,7 @@ public class AccountLockService {
      * @return 失败次数
      */
     public int getLoginFailCount(String username) {
-        String failCountKey = LOGIN_FAIL_COUNT_PREFIX + username;
+        String failCountKey = CacheConstants.pwdErrCountKey(username);
         Object count = redisTemplate.opsForValue().get(failCountKey);
         return count != null ? Integer.parseInt(count.toString()) : 0;
     }

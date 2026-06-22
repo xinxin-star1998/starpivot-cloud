@@ -16,9 +16,9 @@ import jakarta.validation.constraints.Min;
 @ConfigurationProperties(prefix = "starpivot.jwt")
 public class JwtProperties {
 
-    /** HS256 密钥，至少 32 字符 */
-    @NotBlank(message = "JWT secret cannot be blank")
-    private String secret = "Dj4G8272xJONkOqkn1pM8q1n+U5MPLrRUCjXun3/Yeo=";
+    /** HS256 密钥，至少 32 字符，请通过环境变量 JWT_SECRET 注入 */
+    @NotBlank(message = "JWT secret cannot be blank, set environment variable JWT_SECRET")
+    private String secret;
 
     /** 访问令牌有效期（毫秒），默认 2 小时 */
     @NotNull(message = "Access token expiration cannot be null")
