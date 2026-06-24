@@ -10,7 +10,7 @@ export interface GoodsImageUploadVO {
   presignedUrl?: string
 }
 
-/** 上传商品图片 */
+/** 上传商品图片（走文件中心路径，兼容旧接口） */
 export function uploadGoodsImage(file: File, goodsId?: number) {
   const formData = new FormData()
   formData.append('file', file)

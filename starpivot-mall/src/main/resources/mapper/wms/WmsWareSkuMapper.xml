@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.wms.mapper.WmsWareSkuMapper">
+    
+    <resultMap type="cn.org.starpivot.mall.wms.entity.WmsWareSku" id="WmsWareSkuResult">
+        <result property="id"    column="id"    />
+        <result property="skuId"    column="sku_id"    />
+        <result property="wareId"    column="ware_id"    />
+        <result property="stock"    column="stock"    />
+        <result property="skuName"    column="sku_name"    />
+        <result property="stockLocked"    column="stock_locked"    />
+    </resultMap>
+
+    <sql id="selectWmsWareSkuVo">
+        select id, sku_id, ware_id, stock, sku_name, stock_locked from wms_ware_sku
+    </sql>
+
+    <select id="selectPageList" resultMap="WmsWareSkuResult">
+        <include refid="selectWmsWareSkuVo"/>
+        <where>
+            <if test="queryDTO.skuId != null and queryDTO.skuId != ''">
+                and sku_id = #{queryDTO.skuId}
+            </if>
+            <if test="queryDTO.wareId != null and queryDTO.wareId != ''">
+                and ware_id = #{queryDTO.wareId}
+            </if>
+            <if test="queryDTO.stock != null and queryDTO.stock != ''">
+                and stock = #{queryDTO.stock}
+            </if>
+            <if test="queryDTO.skuName != null  and queryDTO.skuName != ''">
+                and sku_name like concat('%',#{queryDTO.skuName}, '%')
+            </if>
+            <if test="queryDTO.stockLocked != null and queryDTO.stockLocked != ''">
+                and stock_locked = #{queryDTO.stockLocked}
+            </if>
+        </where>
+    </select>
+
+    <update id="addStock">
+        UPDATE wms_ware_sku SET stock = stock + #{skuNum}
+        WHERE sku_id = #{skuId} AND ware_id = #{wareId}
+    </update>
+
+    <update id="lockSkuStock">
+        UPDATE wms_ware_sku
+        SET stock = stock - #{skuNum}, stock_locked = stock_locked + #{skuNum}
+        WHERE sku_id = #{skuId} AND ware_id = #{wareId} AND stock >= #{skuNum}
+    </update>
+
+    <update id="unlockSkuStock">
+        UPDATE wms_ware_sku
+        SET stock = stock + #{skuNum}, stock_locked = stock_locked - #{skuNum}
+        WHERE sku_id = #{skuId} AND ware_id = #{wareId} AND stock_locked >= #{skuNum}
+    </update>
+
+    <update id="deductSkuStock">
+        UPDATE wms_ware_sku
+        SET stock_locked = stock_locked - #{skuNum}
+        WHERE sku_id = #{skuId} AND ware_id = #{wareId} AND stock_locked >= #{skuNum}
+    </update>
+
+    <select id="listWareIdHasStock" resultType="java.lang.Long">
+        SELECT ware_id FROM wms_ware_sku
+        WHERE sku_id = #{skuId} AND stock > 0
+        ORDER BY stock DESC
+    </select>
+</mapper>

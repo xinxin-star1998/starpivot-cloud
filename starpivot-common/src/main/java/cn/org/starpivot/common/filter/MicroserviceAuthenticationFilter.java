@@ -146,7 +146,8 @@ public class MicroserviceAuthenticationFilter extends OncePerRequestFilter {
         try {
             LoginUser user = JwtUtils.toLoginUser(JwtUtils.parseToken(token, jwtProperties.getSecret()));
             setAuthentication(user);
-        } catch (JwtException ignored) {
+        } catch (JwtException | JwtUtils.JwtTokenException ignored) {
+            // 无效/过期 Token 视为未登录，继续走 permitAll 等匿名可访问规则
             SecurityContextHolder.clearContext();
         }
     }

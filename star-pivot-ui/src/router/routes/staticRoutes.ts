@@ -42,12 +42,6 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     meta: { title: '403', isHideTab: true }
   },
   {
-    path: '/:pathMatch(.*)*',
-    name: 'Exception404',
-    component: () => import('@views/exception/404/index.vue'),
-    meta: { title: '404', isHideTab: true }
-  },
-  {
     path: '/500',
     name: 'Exception500',
     component: () => import('@views/exception/500/index.vue'),
@@ -79,5 +73,54 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         meta: { title: 'iframe' }
       }
     ]
+  },
+  {
+    path: '/portal',
+    component: () => import('@views/portal/layout/index.vue'),
+    meta: { isFullPage: true, isHideTab: true },
+    children: [
+      {
+        path: '',
+        name: 'PortalHome',
+        component: () => import('@views/portal/home/index.vue'),
+        meta: { title: '商城首页', isHideTab: true }
+      },
+      {
+        path: 'product/:id',
+        name: 'PortalProductDetail',
+        component: () => import('@views/portal/product/detail.vue'),
+        meta: { title: '商品详情', isHideTab: true }
+      },
+      {
+        path: 'cart',
+        name: 'PortalCart',
+        component: () => import('@views/portal/cart/index.vue'),
+        meta: { title: '购物车', isHideTab: true }
+      },
+      {
+        path: 'checkout',
+        name: 'PortalCheckout',
+        component: () => import('@views/portal/checkout/index.vue'),
+        meta: { title: '确认订单', isHideTab: true }
+      },
+      {
+        path: 'orders',
+        name: 'PortalOrders',
+        component: () => import('@views/portal/orders/index.vue'),
+        meta: { title: '我的订单', isHideTab: true }
+      },
+      {
+        path: 'login',
+        name: 'PortalLogin',
+        component: () => import('@views/portal/auth/login.vue'),
+        meta: { title: '会员登录', isHideTab: true }
+      }
+    ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'Exception404',
+    component: () => import('@views/exception/404/index.vue'),
+    meta: { title: '404', isHideTab: true }
   }
 ]

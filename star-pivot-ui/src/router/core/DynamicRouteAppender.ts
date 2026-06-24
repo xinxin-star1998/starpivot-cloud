@@ -57,6 +57,9 @@ export class DynamicRouteAppender {
     // 追加商城 SPU 发布/编辑向导页
     this.appendMallProductSpuRoutes(menuList, routeIndex)
 
+    // 追加 C 端商城入口（后台菜单跳转 /portal）
+    this.appendMallPortalEntryRoute(menuList, routeIndex)
+
     // 追加 Druid 监控 iframe 路由
     this.appendDruidIframeRoute(menuList, routeIndex)
 
@@ -344,11 +347,11 @@ export class DynamicRouteAppender {
       mallRoot.children.push({
         path: 'product/add',
         name: 'MallProductAdd',
-        component: '/mall/product/modules/addSpu',
+        component: '/mall/pms/product/modules/addSpu',
         meta: {
           title: '发布商品',
           isHide: true,
-          parentPath: '/mall/product/index',
+          parentPath: '/mall/pms/product/index',
           keepAlive: false
         },
         menuType: 'C',
@@ -362,11 +365,11 @@ export class DynamicRouteAppender {
       mallRoot.children.push({
         path: 'product/edit/:id',
         name: 'MallProductEdit',
-        component: '/mall/product/modules/addSpu',
+        component: '/mall/pms/product/modules/addSpu',
         meta: {
           title: '编辑商品',
           isHide: true,
-          parentPath: '/mall/product/index',
+          parentPath: '/mall/pms/product/index',
           keepAlive: false
         },
         menuType: 'C',
@@ -375,6 +378,45 @@ export class DynamicRouteAppender {
       })
       safeLog('[DynamicRouteAppender] 已在 /mall 下追加 SPU 编辑向导路由')
     }
+  }
+
+  /**
+   * 追加「C 端商城」入口（数据库可不存菜单，前端动态挂载到商城根目录下）
+   * 点击后在新标签页打开 /portal
+   */
+  static appendMallPortalEntryRoute(menuList: AppRouteRecord[], routeIndex: RouteIndex): void {
+    if (routeIndex.names.has('MallPortal') || routeIndex.paths.has('/portal')) {
+      return
+    }
+
+    const mallRoot = this.findRouteNode(
+      menuList,
+      (r) => r.path === '/mall' || r.name === 'MallSystem'
+    )
+    if (!mallRoot) {
+      safeWarn('[DynamicRouteAppender] 未找到商城根菜单 /mall，跳过 C 端入口')
+      return
+    }
+
+    if (!mallRoot.children) {
+      mallRoot.children = []
+    }
+
+    mallRoot.children.unshift({
+      path: '/portal',
+      name: 'MallPortal',
+      meta: {
+        title: 'C端商城',
+        icon: 'ep:shopping-bag',
+        link: '/portal',
+        orderNum: 0
+      },
+      menuType: 'C',
+      status: '0',
+      orderNum: 0
+    })
+
+    safeLog('[DynamicRouteAppender] 已在 /mall 下追加 C 端商城入口')
   }
 
   /** 在菜单树中查找节点 */

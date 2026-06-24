@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper">
+
+    <select id="selectPageList" resultType="cn.org.starpivot.mall.pms.domain.vo.SkuVo">
+        SELECT
+            s.sku_id AS skuId,
+            s.spu_id AS spuId,
+            s.sku_name AS skuName,
+            s.sku_desc AS skuDesc,
+            s.catalog_id AS catalogId,
+            s.brand_id AS brandId,
+            s.sku_default_img AS skuDefaultImg,
+            s.sku_title AS skuTitle,
+            s.sku_subtitle AS skuSubtitle,
+            s.price AS price,
+            s.sale_count AS saleCount,
+            p.spu_name AS spuName,
+            p.publish_status AS spuPublishStatus,
+            (
+                SELECT GROUP_CONCAT(
+                    CONCAT(IFNULL(sa.attr_name, ''), ':', IFNULL(sa.attr_value, ''))
+                    ORDER BY sa.attr_sort SEPARATOR ' '
+                )
+                FROM pms_sku_sale_attr_value sa
+                WHERE sa.sku_id = s.sku_id
+            ) AS saleAttrText
+        FROM pms_sku_info s
+        INNER JOIN pms_spu_info p ON s.spu_id = p.id
+        <where>
+            <if test="req.spuPublishStatus != null">
+                AND p.publish_status = #{req.spuPublishStatus}
+            </if>
+            <if test="req.skuName != null and req.skuName != ''">
+                AND s.sku_name LIKE CONCAT('%', #{req.skuName}, '%')
+            </if>
+            <if test="req.spuName != null and req.spuName != ''">
+                AND p.spu_name LIKE CONCAT('%', #{req.spuName}, '%')
+            </if>
+            <if test="req.spuId != null">
+                AND s.spu_id = #{req.spuId}
+            </if>
+            <if test="req.catalogId != null">
+                AND s.catalog_id = #{req.catalogId}
+            </if>
+            <if test="req.brandId != null">
+                AND s.brand_id = #{req.brandId}
+            </if>
+        </where>
+        ORDER BY s.sku_id DESC
+    </select>
+</mapper>

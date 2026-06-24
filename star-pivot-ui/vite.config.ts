@@ -13,10 +13,41 @@ import tailwindcss from '@tailwindcss/vite'
 export default ({ mode }: { mode: string }) => {
   const root = process.cwd()
   const env = loadEnv(mode, root)
-  const { VITE_VERSION, VITE_PORT, VITE_BASE_URL, VITE_API_URL, VITE_API_PROXY_URL } = env
+  const { VITE_VERSION, VITE_PORT, VITE_BASE_URL, VITE_API_URL, VITE_API_PROXY_URL, VITE_MALL_PROXY_URL } = env
 
   console.log(`🚀 API_URL = ${VITE_API_URL}`)
   console.log(`🚀 VERSION = ${VITE_VERSION}`)
+
+  /** 开发代理：/api/xxx → /api/v1/xxx，与后端 context-path 一致 */
+  const apiVersionRewrite = (path: string) => {
+    if (/^\/api\/v\d+\//.test(path)) {
+      return path
+    }
+    return path.replace(/^\/api\//, '/api/v1/')
+  }
+
+  const devProxy: Record<string, import('vite').ProxyOptions> = {}
+
+  // 商城 API 可直连 starpivot-mall（网关未重启 / 无 mall 路由时启用）
+  if (VITE_MALL_PROXY_URL) {
+    devProxy['/api/mall'] = {
+      target: VITE_MALL_PROXY_URL,
+      changeOrigin: true,
+      rewrite: apiVersionRewrite
+    }
+    devProxy['/api/portal'] = {
+      target: VITE_MALL_PROXY_URL,
+      changeOrigin: true,
+      rewrite: apiVersionRewrite
+    }
+    console.log(`🚀 MALL_PROXY = ${VITE_MALL_PROXY_URL}`)
+  }
+
+  devProxy['/api'] = {
+    target: VITE_API_PROXY_URL,
+    changeOrigin: true,
+    rewrite: apiVersionRewrite
+  }
 
   return defineConfig({
     define: {
@@ -25,19 +56,7 @@ export default ({ mode }: { mode: string }) => {
     base: VITE_BASE_URL,
     server: {
       port: Number(VITE_PORT),
-      proxy: {
-        '/api': {
-          target: VITE_API_PROXY_URL,
-          changeOrigin: true,
-          rewrite: (path) => {
-            // 统一转发为 /api/{version}/...，与网关路由及后端 context-path 一致
-            if (/^\/api\/v\d+\//.test(path)) {
-              return path
-            }
-            return path.replace(/^\/api\//, '/api/v1/')
-          }
-        }
-      },
+      proxy: devProxy,
       host: true
     },
     // 路径别名

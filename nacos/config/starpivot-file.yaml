@@ -3,7 +3,7 @@
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/star_pivot?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -22,8 +22,8 @@ spring:
 oss:
   enabled: ${OSS_ENABLED:true}
   endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
-  access-key-id: ${OSS_ACCESS_KEY_ID:}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+  access-key-id: ${OSS_ACCESS_KEY_ID:LTAI5tG8uSJeTeuRYEY4x3nG}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:UdbPwjfPHoobovEhJ9hsZ3c9sdWqGR}
   url-prefix: ${OSS_URL_PREFIX:}
   bucket-name: ${OSS_BUCKET_NAME:star-pivot}
 

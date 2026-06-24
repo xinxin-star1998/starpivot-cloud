@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.wms.mapper.AddressMapper">
+
+    <resultMap type="cn.org.starpivot.mall.wms.entity.Address" id="AddressResult">
+        <result property="id" column="id" />
+        <result property="code" column="code" />
+        <result property="parentCode" column="parent_code" />
+        <result property="name" column="name" />
+        <result property="level" column="level" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <sql id="selectAddressVo">
+        select id, code, parent_code, name, level, create_time, update_time from address
+    </sql>
+
+    <sql id="addressFilter">
+        <if test="queryDTO != null">
+            <if test="queryDTO.code != null and queryDTO.code != ''">
+                and code = #{queryDTO.code}
+            </if>
+            <if test="queryDTO.parentCode != null and queryDTO.parentCode != ''">
+                and parent_code = #{queryDTO.parentCode}
+            </if>
+            <if test="queryDTO.name != null and queryDTO.name != ''">
+                and name like concat('%', #{queryDTO.name}, '%')
+            </if>
+            <if test="queryDTO.level != null">
+                and level = #{queryDTO.level}
+            </if>
+        </if>
+    </sql>
+
+    <select id="selectByParentCode" resultMap="AddressResult">
+        <include refid="selectAddressVo"/>
+        <where>
+            <choose>
+                <when test="parentCode == '0' or parentCode == '00'">
+                    and (parent_code = '0' or parent_code = '00' or parent_code = '' or parent_code is null)
+                </when>
+                <otherwise>
+                    and parent_code = #{parentCode}
+                </otherwise>
+            </choose>
+        </where>
+        order by level asc, code asc
+    </select>
+
+    <select id="searchList" resultMap="AddressResult">
+        <include refid="selectAddressVo"/>
+        <where>
+            <include refid="addressFilter"/>
+        </where>
+        order by level asc, code asc
+        limit 200
+    </select>
+
+    <select id="selectPageList" resultMap="AddressResult">
+        <include refid="selectAddressVo"/>
+        <where>
+            <include refid="addressFilter"/>
+        </where>
+        order by level asc, code asc
+    </select>
+
+    <select id="selectList" resultMap="AddressResult">
+        <include refid="selectAddressVo"/>
+        <where>
+            <include refid="addressFilter"/>
+        </where>
+        order by level asc, code asc
+    </select>
+</mapper>

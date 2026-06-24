@@ -119,6 +119,21 @@ export const useMenuStore = defineStore(
     }
 
     /**
+     * 判断当前用户是否拥有指定权限（全局菜单权限，不依赖当前路由）
+     */
+    const hasPerm = (perm: string): boolean => {
+      if (!perm) return false
+      return getAllPerms(rawMenuList.value).includes(perm)
+    }
+
+    /**
+     * 是否拥有任一权限
+     */
+    const hasAnyPerm = (perms: string[]): boolean => {
+      return perms.some((perm) => hasPerm(perm))
+    }
+
+    /**
      * 获取首页路径
      * @returns 首页路径字符串
      */
@@ -213,6 +228,8 @@ export const useMenuStore = defineStore(
       setRawMenuList,
       getRawMenuList,
       getPermsByPrefix,
+      hasPerm,
+      hasAnyPerm,
       getHomePath,
       setHomePath,
       addRemoveRouteFns,

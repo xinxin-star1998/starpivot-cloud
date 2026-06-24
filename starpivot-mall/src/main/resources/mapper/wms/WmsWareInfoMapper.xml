@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.wms.mapper.WmsWareInfoMapper">
+
+    <resultMap type="cn.org.starpivot.mall.wms.entity.WmsWareInfo" id="WmsWareInfoResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="address"    column="address"    />
+        <result property="areacode"    column="areacode"    />
+    </resultMap>
+
+    <sql id="selectWmsWareInfoVo">
+        select id, name, address, areacode from wms_ware_info
+    </sql>
+    <select id="selectPageList" resultMap="WmsWareInfoResult">
+        <include refid="selectWmsWareInfoVo"/>
+        <where>
+            <if test="queryDTO.name != null  and queryDTO.name != ''">
+                and name like concat('%',#{queryDTO.name}, '%')
+            </if>
+            <if test="queryDTO.address != null  and queryDTO.address != ''">
+                and address like concat('%',#{queryDTO.address}, '%')
+            </if>
+            <if test="queryDTO.areacode != null  and queryDTO.areacode != ''">
+                and areacode = #{queryDTO.areacode}
+            </if>
+        </where>
+        order by id desc
+    </select>
+</mapper>

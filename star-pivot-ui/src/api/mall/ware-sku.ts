@@ -70,6 +70,6 @@ export function fetchUpdateSku(data: WareSku) {
 export function fetchDeleteSku(ids: number[]) {
   return request.del({
     url: '/api/mall/ware-sku/delete',
-    params: { ids: ids }
+    data: { ids }
   })
 }

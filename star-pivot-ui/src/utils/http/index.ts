@@ -16,6 +16,7 @@
 
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { useUserStore } from '@/store/modules/user'
+import { usePortalMemberStore } from '@/store/modules/portal-member'
 import { ApiStatus } from './status'
 import { handleError, HttpError, showError, showSuccess } from './error'
 import { $t } from '@/locales'
@@ -42,6 +43,25 @@ function isAuthEntryRequest(url?: string): boolean {
     '/auth/refresh'
   ]
   return authEntryPaths.some((path) => url.includes(path))
+}
+
+function isPortalApiRequest(url?: string): boolean {
+  return !!url && url.includes('/portal/')
+}
+
+function isPortalAuthEntryRequest(url?: string): boolean {
+  if (!url) return false
+  return url.includes('/portal/member/register') || url.includes('/portal/member/login')
+}
+
+/** C 端公开接口：无需会员 Token（与网关白名单 / MallSecurityConfig permitAll 对齐） */
+function isPortalPublicRequest(url?: string): boolean {
+  if (!url) return false
+  return (
+    url.includes('/portal/home') ||
+    url.includes('/portal/product/') ||
+    url.includes('/portal/region/')
+  )
 }
 
 /** 401防抖状态 */
@@ -191,12 +211,21 @@ axiosInstance.interceptors.request.use(
     if (typeof request.url === 'string') {
       request.url = normalizeRequestUrl(request.url)
     }
+    const requestUrl = typeof request.url === 'string' ? request.url : ''
     const userStore = useUserStore()
-    const token = userStore.accessToken
-    if (token) {
+    const portalStore = usePortalMemberStore()
+    const portalToken = portalStore.token
+    const adminToken = userStore.accessToken
+
+    if (isPortalApiRequest(request.url) && portalToken && !isPortalPublicRequest(request.url)) {
       request.headers.set(
         'Authorization',
-        token.startsWith('Bearer ') ? token : `Bearer ${token}`
+        portalToken.startsWith('Bearer ') ? portalToken : `Bearer ${portalToken}`
+      )
+    } else if (!isPortalApiRequest(request.url) && adminToken) {
+      request.headers.set(
+        'Authorization',
+        adminToken.startsWith('Bearer ') ? adminToken : `Bearer ${adminToken}`
       )
     }
 
@@ -238,7 +267,12 @@ axiosInstance.interceptors.response.use(
     if (code === ApiStatus.unauthorized) {
       const originalRequest = response.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-      if (isAuthEntryRequest(originalRequest.url)) {
+      if (isAuthEntryRequest(originalRequest.url) || isPortalAuthEntryRequest(originalRequest.url)) {
+        throw createHttpError(messageText, code)
+      }
+
+      if (isPortalApiRequest(originalRequest.url)) {
+        usePortalMemberStore().logOut()
         throw createHttpError(messageText, code)
       }
 
@@ -266,7 +300,18 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    // HTTP 状态码为 401 且未重试过，尝试刷新令牌
+    // C 端商城：会员 Token 无刷新机制，401 时清除会员态，不走后台 refresh
+    if (
+      error.response?.status === ApiStatus.unauthorized &&
+      originalRequest &&
+      isPortalApiRequest(originalRequest.url) &&
+      !isPortalAuthEntryRequest(originalRequest.url)
+    ) {
+      usePortalMemberStore().logOut()
+      return Promise.reject(handleError(error))
+    }
+
+    // HTTP 状态码为 401 且未重试过，尝试刷新令牌（仅后台管理端）
     if (
       error.response?.status === ApiStatus.unauthorized &&
       originalRequest &&

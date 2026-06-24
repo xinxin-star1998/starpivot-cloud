@@ -124,8 +124,8 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             return redisTemplate.hasKey(SecurityConstants.TOKEN_BLACKLIST_PREFIX + token);
         } catch (Exception e) {
             log.error("Error checking token blacklist status", e);
-            // 发生错误时，默认认为不在黑名单中，以避免阻止合法请求
-            return Mono.just(false);
+            // Redis 不可用时拒绝放行，避免已登出 Token 仍可通过网关
+            return Mono.just(true);
         }
     }
 

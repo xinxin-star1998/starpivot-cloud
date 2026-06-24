@@ -20,7 +20,7 @@ import cn.org.starpivot.file.domain.entity.SysFileFolder;
 import cn.org.starpivot.file.mapper.SysFileFolderMapper;
 import cn.org.starpivot.file.mapper.SysFileMapper;
 import cn.org.starpivot.file.service.ISysFileService;
-import cn.org.starpivot.file.support.FileCenterUploadHelper;
+import cn.org.starpivot.common.storage.FileCenterUploadHelper;
 import cn.org.starpivot.file.support.FileMediaTypeResolver;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -69,7 +69,8 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 
         UploadResult uploadResult;
         try {
-            uploadResult = fileCenterUploadHelper.upload(file, category, folderId);
+            uploadResult = fileCenterUploadHelper.upload(
+                    file, category.getObjectPathSegment(), folderId);
         } catch (Exception e) {
             throw new BizException(ErrorCode.SYSTEM_ERROR, "文件上传失败: " + e.getMessage());
         }

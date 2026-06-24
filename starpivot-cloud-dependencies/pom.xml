@@ -307,6 +307,11 @@
                 <artifactId>starpivot-monitor</artifactId>
                 <version>${star-pivot.version}</version>
             </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

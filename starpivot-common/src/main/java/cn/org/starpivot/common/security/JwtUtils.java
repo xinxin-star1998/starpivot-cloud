@@ -94,7 +94,7 @@ public final class JwtUtils {
             throw new IllegalArgumentException("Claims cannot be null");
         }
 
-        Long userId = claims.get(SecurityConstants.CLAIM_USER_ID, Long.class);
+        Long userId = parseUserId(claims.get(SecurityConstants.CLAIM_USER_ID));
         String username = claims.getSubject();
 
         if (username == null || username.isEmpty()) {
@@ -292,6 +292,29 @@ public final class JwtUtils {
         if (secret == null || secret.isEmpty()) {
             throw new IllegalArgumentException("Secret cannot be null or empty");
         }
+    }
+
+    private static Long parseUserId(Object claim) {
+        if (claim == null) {
+            return null;
+        }
+        if (claim instanceof Long value) {
+            return value;
+        }
+        if (claim instanceof Integer value) {
+            return value.longValue();
+        }
+        if (claim instanceof Number value) {
+            return value.longValue();
+        }
+        if (claim instanceof String text && !text.isBlank()) {
+            try {
+                return Long.parseLong(text.trim());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 
     /**

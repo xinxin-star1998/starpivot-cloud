@@ -44,6 +44,11 @@ spring:
           uri: lb://starpivot-monitor
           predicates:
             - Path=/api/${starpivot.api.version}/monitor/**
+        # 商城服务（B 端 /mall + C 端 /portal）
+        - id: starpivot-mall
+          uri: lb://starpivot-mall
+          predicates:
+            - Path=/api/${starpivot.api.version}/mall/**,/api/${starpivot.api.version}/portal/**
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
@@ -62,6 +67,12 @@ starpivot:
       - /api/${starpivot.api.version}/auth/captcha/**
       - /api/${starpivot.api.version}/auth/register/enabled
       - /api/${starpivot.api.version}/router/dynamic-routes
+      # C 端商城公开接口（与 MallSecurityConfig permitAll 对齐）
+      - /api/${starpivot.api.version}/portal/home/**
+      - /api/${starpivot.api.version}/portal/product/**
+      - /api/${starpivot.api.version}/portal/region/**
+      - /api/${starpivot.api.version}/portal/member/register
+      - /api/${starpivot.api.version}/portal/member/login
       - /**/actuator/**
       - /**/doc.html
       - /**/swagger-ui/**

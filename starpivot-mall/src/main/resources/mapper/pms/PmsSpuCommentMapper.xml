@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.pms.mapper.PmsSpuCommentMapper">
+
+    <select id="selectPageList" resultType="cn.org.starpivot.mall.pms.entity.PmsSpuComment">
+        SELECT
+            id,
+            sku_id,
+            spu_id,
+            spu_name,
+            member_nick_name,
+            star,
+            member_ip,
+            create_time,
+            show_status,
+            spu_attributes,
+            likes_count,
+            reply_count,
+            resources,
+            content,
+            member_icon,
+            comment_type
+        FROM pms_spu_comment
+        <where>
+            <if test="req.spuId != null">
+                AND spu_id = #{req.spuId}
+            </if>
+            <if test="req.skuId != null">
+                AND sku_id = #{req.skuId}
+            </if>
+            <if test="req.memberNickName != null and req.memberNickName != ''">
+                AND member_nick_name LIKE CONCAT('%', #{req.memberNickName}, '%')
+            </if>
+            <if test="req.showStatus != null">
+                AND show_status = #{req.showStatus}
+            </if>
+            <if test="req.star != null">
+                AND star = #{req.star}
+            </if>
+        </where>
+        ORDER BY create_time DESC, id DESC
+    </select>
+</mapper>

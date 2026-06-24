@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.wms.mapper.WmsPurchaseMapper">
+
+    <resultMap type="cn.org.starpivot.mall.wms.entity.WmsPurchase" id="WmsPurchaseResult">
+        <result property="id" column="id"/>
+        <result property="assigneeId" column="assignee_id"/>
+        <result property="assigneeName" column="assignee_name"/>
+        <result property="phone" column="phone"/>
+        <result property="priority" column="priority"/>
+        <result property="status" column="status"/>
+        <result property="wareId" column="ware_id"/>
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPurchaseVo">
+        select id, assignee_id, assignee_name, phone, priority, status, ware_id, amount, create_time, update_time
+        from wms_purchase
+    </sql>
+
+    <select id="selectPageList" resultMap="WmsPurchaseResult">
+        <include refid="selectPurchaseVo"/>
+        <where>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+            <if test="query.assigneeName != null and query.assigneeName != ''">
+                and assignee_name like concat('%', #{query.assigneeName}, '%')
+            </if>
+            <if test="query.wareId != null">
+                and ware_id = #{query.wareId}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectUnreceivePage" resultMap="WmsPurchaseResult">
+        <include refid="selectPurchaseVo"/>
+        <where>
+            status in (0, 1)
+            <if test="query.assigneeName != null and query.assigneeName != ''">
+                and assignee_name like concat('%', #{query.assigneeName}, '%')
+            </if>
+            <if test="query.wareId != null">
+                and ware_id = #{query.wareId}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+</mapper>

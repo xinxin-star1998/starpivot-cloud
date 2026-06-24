@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.wms.mapper.WmsWareOrderTaskMapper">
+
+    <resultMap type="cn.org.starpivot.mall.wms.entity.WmsWareOrderTask" id="WmsWareOrderTaskResult">
+        <result property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="orderSn" column="order_sn"/>
+        <result property="consignee" column="consignee"/>
+        <result property="consigneeTel" column="consignee_tel"/>
+        <result property="deliveryAddress" column="delivery_address"/>
+        <result property="orderComment" column="order_comment"/>
+        <result property="paymentWay" column="payment_way"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="orderBody" column="order_body"/>
+        <result property="trackingNo" column="tracking_no"/>
+        <result property="createTime" column="create_time"/>
+        <result property="wareId" column="ware_id"/>
+        <result property="taskComment" column="task_comment"/>
+    </resultMap>
+
+    <sql id="selectWareOrderTaskVo">
+        select id, order_id, order_sn, consignee, consignee_tel, delivery_address, order_comment,
+               payment_way, task_status, order_body, tracking_no, create_time, ware_id, task_comment
+        from wms_ware_order_task
+    </sql>
+
+    <select id="selectPageList" resultMap="WmsWareOrderTaskResult">
+        <include refid="selectWareOrderTaskVo"/>
+        <where>
+            <if test="query.orderSn != null and query.orderSn != ''">
+                and order_sn like concat('%', #{query.orderSn}, '%')
+            </if>
+            <if test="query.taskStatus != null">
+                and task_status = #{query.taskStatus}
+            </if>
+            <if test="query.wareId != null">
+                and ware_id = #{query.wareId}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+</mapper>
