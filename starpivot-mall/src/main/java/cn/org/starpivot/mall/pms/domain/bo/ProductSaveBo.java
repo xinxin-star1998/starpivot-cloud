@@ -125,4 +125,7 @@ public class ProductSaveBo {
      * skus
      */
     private List<Skus> skus;
+
+    /** 默认入库仓库（发布商品时 SKU 初始库存写入该仓库） */
+    private Long defaultWareId;
 }

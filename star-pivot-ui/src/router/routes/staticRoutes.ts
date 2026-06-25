@@ -110,6 +110,12 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         meta: { title: '我的订单', isHideTab: true }
       },
       {
+        path: 'coupons',
+        name: 'PortalCoupons',
+        component: () => import('@views/portal/coupons/index.vue'),
+        meta: { title: '优惠券', isHideTab: true }
+      },
+      {
         path: 'login',
         name: 'PortalLogin',
         component: () => import('@views/portal/auth/login.vue'),

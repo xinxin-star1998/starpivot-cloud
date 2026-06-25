@@ -73,6 +73,7 @@ starpivot:
       - /api/${starpivot.api.version}/portal/region/**
       - /api/${starpivot.api.version}/portal/member/register
       - /api/${starpivot.api.version}/portal/member/login
+      - /api/${starpivot.api.version}/portal/pay/alipay/notify
       - /**/actuator/**
       - /**/doc.html
       - /**/swagger-ui/**

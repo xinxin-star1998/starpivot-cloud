@@ -25,19 +25,53 @@
     </section>
 
     <section class="panel">
+      <h3>优惠券</h3>
+      <div v-if="checkoutCoupons.length" class="coupon-row">
+        <ElSelect
+          v-model="selectedCouponHistoryId"
+          clearable
+          placeholder="选择优惠券（可不选）"
+          style="width: 100%"
+          @change="onCouponChange"
+        >
+          <ElOption
+            v-for="c in checkoutCoupons"
+            :key="c.historyId"
+            :disabled="!c.usable"
+            :label="couponOptionLabel(c)"
+            :value="c.historyId"
+          />
+        </ElSelect>
+        <p v-if="pendingCouponHint" class="coupon-hint">{{ pendingCouponHint }}</p>
+      </div>
+      <p v-else class="coupon-empty">暂无可用优惠券</p>
+    </section>
+
+    <section class="panel">
       <h3>商品清单</h3>
       <div v-for="item in checkoutItems" :key="item.skuId" class="checkout-item">
         <span class="checkout-item__name">{{ item.skuTitle }}</span>
         <span class="checkout-item__qty">x{{ item.quantity }}</span>
-        <span class="checkout-item__price">¥{{ formatPrice((item.price || 0) * (item.quantity || 0)) }}</span>
+        <span class="checkout-item__price"
+          >¥{{ formatPrice((item.price || 0) * (item.quantity || 0)) }}</span
+        >
       </div>
       <div class="checkout-total">
-        应付：<strong>¥{{ formatPrice(totalAmount) }}</strong>
+        <p v-if="couponDiscount > 0" class="checkout-discount"
+          >优惠券：-¥{{ formatPrice(couponDiscount) }}</p
+        >
+        应付：<strong>¥{{ formatPrice(payAmount) }}</strong>
       </div>
     </section>
 
     <div class="submit-bar">
-      <ElButton type="danger" size="large" :loading="submitting" :disabled="!canSubmit" @click="handleSubmit">
+      <ElButton
+        type="danger"
+        size="large"
+        :loading="submitting"
+        :disabled="!canSubmit"
+        @click="handleSubmit"
+      >
         提交订单
       </ElButton>
     </div>
@@ -56,12 +90,22 @@
           </ElSelect>
         </ElFormItem>
         <ElFormItem label="城市" prop="city">
-          <ElSelect v-model="regionCodes[1]" placeholder="市" :disabled="!cities.length" @change="onCityChange">
+          <ElSelect
+            v-model="regionCodes[1]"
+            placeholder="市"
+            :disabled="!cities.length"
+            @change="onCityChange"
+          >
             <ElOption v-for="c in cities" :key="c.code" :label="c.name" :value="c.code!" />
           </ElSelect>
         </ElFormItem>
         <ElFormItem label="区/县" prop="region">
-          <ElSelect v-model="regionCodes[2]" placeholder="区/县" :disabled="!districts.length" @change="onDistrictChange">
+          <ElSelect
+            v-model="regionCodes[2]"
+            placeholder="区/县"
+            :disabled="!districts.length"
+            @change="onDistrictChange"
+          >
             <ElOption v-for="d in districts" :key="d.code" :label="d.name" :value="d.code!" />
           </ElSelect>
         </ElFormItem>
@@ -78,12 +122,23 @@
       </template>
     </ElDialog>
 
-    <ElDialog v-model="payDialogVisible" title="订单提交成功" width="400px" :close-on-click-modal="false">
+    <ElDialog
+      v-model="payDialogVisible"
+      title="订单提交成功"
+      width="400px"
+      :close-on-click-modal="false"
+    >
       <p>订单号：{{ lastOrderSn }}</p>
-      <p>请完成支付（开发环境可使用 Mock 支付）</p>
+      <p v-if="alipayEnabled">请使用支付宝完成支付</p>
+      <p v-else>请完成支付（开发环境可使用 Mock 支付）</p>
       <template #footer>
         <ElButton @click="router.push('/portal')">返回首页</ElButton>
-        <ElButton type="primary" :loading="paying" @click="handleMockPay">Mock 支付</ElButton>
+        <ElButton v-if="alipayEnabled" :loading="paying" type="primary" @click="handleAlipayPay">
+          支付宝支付
+        </ElButton>
+        <ElButton v-else :loading="paying" type="primary" @click="handleMockPay"
+          >Mock 支付</ElButton
+        >
       </template>
     </ElDialog>
   </div>
@@ -91,17 +146,22 @@
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchPortalAddressList,
-    fetchPortalAddressSave
-  } from '@/api/portal/address'
+  import { ElMessage } from 'element-plus'
+  import { fetchPortalAddressList, fetchPortalAddressSave } from '@/api/portal/address'
   import { fetchPortalCart } from '@/api/portal/cart'
+  import { fetchPortalCouponCheckout } from '@/api/portal/coupon'
   import { fetchPortalOrderMockPay, fetchPortalOrderSubmit } from '@/api/portal/order'
+  import { fetchPortalAlipayEnabled, fetchPortalAlipayPay } from '@/api/portal/pay'
   import { fetchPortalRegionChildren } from '@/api/portal/region'
-  import type { PortalAddress, PortalCartItem, PortalRegion } from '@/api/portal/types'
+  import type {
+    PortalAddress,
+    PortalCartItem,
+    PortalCheckoutCoupon,
+    PortalRegion
+  } from '@/api/portal/types'
   import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
   import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
-  import { ElMessage } from 'element-plus'
+  import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
 
   defineOptions({ name: 'PortalCheckout' })
 
@@ -120,6 +180,9 @@
   const payDialogVisible = ref(false)
   const lastOrderId = ref<number>()
   const lastOrderSn = ref('')
+  const alipayEnabled = ref(false)
+  const checkoutCoupons = ref<PortalCheckoutCoupon[]>([])
+  const selectedCouponHistoryId = ref<number>()
 
   const formRef = ref<FormInstance>()
   const addressForm = reactive({
@@ -148,11 +211,73 @@
   const totalAmount = computed(() =>
     checkoutItems.value.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
   )
+
+  const selectedCoupon = computed(() =>
+    checkoutCoupons.value.find((c) => c.historyId === selectedCouponHistoryId.value)
+  )
+
+  const pendingCouponHint = computed(() => {
+    const pending = checkoutCoupons.value.find((c) => !c.usable && c.unusableReason)
+    return pending?.unusableReason || ''
+  })
+
+  const couponOptionLabel = (coupon: PortalCheckoutCoupon) => {
+    const base = `${coupon.couponName} -¥${formatPrice(coupon.amount)}（满${formatPrice(coupon.minPoint || 0)}可用）`
+    if (coupon.usable) return base
+    return `${base} · ${coupon.unusableReason || '不可用'}`
+  }
+
+  const couponDiscount = computed(() => {
+    const coupon = selectedCoupon.value
+    if (!coupon || !coupon.usable) return 0
+    const min = coupon.minPoint || 0
+    if (totalAmount.value < min) return 0
+    return Math.min(coupon.amount || 0, totalAmount.value)
+  })
+
+  const payAmount = computed(() => Math.max(totalAmount.value - couponDiscount.value, 0))
   const canSubmit = computed(
     () => !!selectedAddressId.value && checkoutItems.value.length > 0 && !submitting.value
   )
 
   const formatPrice = (p: number) => p.toFixed(2)
+
+  async function loadCoupons() {
+    if (!checkoutItems.value.length) {
+      checkoutCoupons.value = []
+      selectedCouponHistoryId.value = undefined
+      return
+    }
+    checkoutCoupons.value = await fetchPortalCouponCheckout({
+      useCart: false,
+      items: checkoutItems.value
+        .filter((i) => i.skuId != null)
+        .map((i) => ({
+          skuId: Number(i.skuId),
+          quantity: i.quantity || 1
+        }))
+    })
+    if (
+      selectedCouponHistoryId.value &&
+      !checkoutCoupons.value.some((c) => c.historyId === selectedCouponHistoryId.value && c.usable)
+    ) {
+      selectedCouponHistoryId.value = undefined
+    }
+  }
+
+  function onCouponChange() {
+    const coupon = selectedCoupon.value
+    if (!coupon) return
+    if (!coupon.usable) {
+      ElMessage.warning(coupon.unusableReason || '当前优惠券不可使用')
+      selectedCouponHistoryId.value = undefined
+      return
+    }
+    if (couponDiscount.value <= 0) {
+      ElMessage.warning('当前订单不满足该优惠券使用条件')
+      selectedCouponHistoryId.value = undefined
+    }
+  }
 
   async function loadData() {
     const [addrList, cart] = await Promise.all([fetchPortalAddressList(), fetchPortalCart()])
@@ -161,6 +286,7 @@
     checkoutItems.value = checked
     const defaultAddr = addrList.find((a) => a.defaultStatus === 1) || addrList[0]
     selectedAddressId.value = defaultAddr?.id
+    await loadCoupons()
   }
 
   async function loadProvinces() {
@@ -210,7 +336,8 @@
     try {
       const result = await fetchPortalOrderSubmit({
         addressId: selectedAddressId.value,
-        useCart: true
+        useCart: true,
+        couponHistoryId: selectedCouponHistoryId.value
       })
       lastOrderId.value = result.orderId
       lastOrderSn.value = result.orderSn
@@ -218,6 +345,22 @@
       notifyPortalCartChanged()
     } finally {
       submitting.value = false
+    }
+  }
+
+  async function handleAlipayPay() {
+    if (!lastOrderId.value) return
+    paying.value = true
+    try {
+      const result = await fetchPortalAlipayPay(lastOrderId.value)
+      payDialogVisible.value = false
+      submitAlipayPayForm(result.payForm)
+      ElMessage.info('正在跳转支付宝，支付完成后可在「我的订单」查看状态')
+      router.push('/portal/orders')
+    } catch (err) {
+      ElMessage.error(err instanceof Error ? err.message : '支付宝下单失败')
+    } finally {
+      paying.value = false
     }
   }
 
@@ -245,6 +388,7 @@
     }
     try {
       await loadData()
+      alipayEnabled.value = await fetchPortalAlipayEnabled()
       if (!checkoutItems.value.length && route.query.direct !== '1') {
         ElMessage.warning('请先勾选要结算的商品')
         router.replace('/portal/cart')
@@ -333,10 +477,32 @@
     padding-top: 16px;
     font-size: 16px;
 
+    .checkout-discount {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: #67c23a;
+    }
+
     strong {
       color: #e1251b;
       font-size: 22px;
     }
+  }
+
+  .coupon-row {
+    max-width: 480px;
+  }
+
+  .coupon-hint {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: #e6a23c;
+  }
+
+  .coupon-empty {
+    margin: 0;
+    font-size: 14px;
+    color: #999;
   }
 
   .submit-bar {

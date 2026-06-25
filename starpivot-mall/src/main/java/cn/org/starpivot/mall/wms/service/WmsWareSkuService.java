@@ -1,11 +1,12 @@
 package cn.org.starpivot.mall.wms.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuDTO;
+import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuInboundDTO;
 import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuQueryDTO;
-import cn.org.starpivot.mall.wms.entity.WmsWareSku;
 import cn.org.starpivot.mall.wms.domain.vo.WmsWareSkuVO;
+import cn.org.starpivot.mall.wms.entity.WmsWareSku;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * Wareskuservice服务接口。
@@ -60,4 +61,9 @@ public interface WmsWareSkuService extends IService<WmsWareSku>
      * 新增记录。
      */
     void addStock(Long skuId, Long wareId, Integer skuNum);
+
+    /**
+     * 快速入库（累加库存）。
+     */
+    void inboundStock(WmsWareSkuInboundDTO dto);
 }

@@ -18,6 +18,7 @@ export interface SpuWizardBaseForm {
   images: string[]
   /** 仅向导页展示（对应 pms_spu_bounds，不落库） */
   bounds: { buyBounds: number; growBounds: number }
+  defaultWareId?: number
 }
 
 export interface SpuWizardBaseAttrCell {
@@ -46,6 +47,8 @@ export interface SpuWizardSkuRow {
   discount: number
   fullPrice: number
   reducePrice: number
+  initialStock: number
+  stockWarning: number
 }
 
 export function collectBaseAttrs(cells: SpuWizardBaseAttrCell[][]): MallProductBaseAttr[] {
@@ -94,6 +97,7 @@ export function buildSpuSavePayload(
   }
   if (base.brandId != null) payload.brandId = base.brandId
   else payload.brandId = null
+  if (!isEdit && base.defaultWareId != null) payload.defaultWareId = base.defaultWareId
   if (isEdit && base.id != null) payload.id = base.id
   return payload
 }
@@ -110,6 +114,8 @@ function toSkuPayload(row: SpuWizardSkuRow): MallProductSku {
     fullCount: row.fullCount,
     discount: row.discount,
     fullPrice: row.fullPrice,
-    reducePrice: row.reducePrice
+    reducePrice: row.reducePrice,
+    initialStock: row.initialStock > 0 ? row.initialStock : undefined,
+    stockWarning: row.stockWarning > 0 ? row.stockWarning : undefined
   }
 }

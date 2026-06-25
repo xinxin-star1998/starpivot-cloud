@@ -36,5 +36,14 @@ starpivot:
     # 开发联调 Mock 支付，生产请设 MALL_MOCK_PAY_ENABLED=false
     mock-pay-enabled: ${MALL_MOCK_PAY_ENABLED:true}
     stock-lock-scan-ms: ${MALL_STOCK_LOCK_SCAN_MS:60000}
+    order-lifecycle-scan-ms: ${MALL_ORDER_LIFECYCLE_SCAN_MS:300000}
+    alipay:
+      enabled: ${MALL_ALIPAY_ENABLED:false}
+      app-id: ${MALL_ALIPAY_APP_ID:}
+      private-key: ${MALL_ALIPAY_PRIVATE_KEY:}
+      alipay-public-key: ${MALL_ALIPAY_PUBLIC_KEY:}
+      gateway-url: ${MALL_ALIPAY_GATEWAY_URL:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
+      notify-url: ${MALL_ALIPAY_NOTIFY_URL:http://127.0.0.1:8080/api/v1/portal/pay/alipay/notify}
+      return-url: ${MALL_ALIPAY_RETURN_URL:http://127.0.0.1:5173/portal/orders}
   security:
     authority-strategy: menu-permission

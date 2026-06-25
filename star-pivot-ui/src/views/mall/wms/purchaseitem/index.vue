@@ -7,7 +7,12 @@
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
         <template #left>
           <ElSpace wrap>
-            <ElButton v-auth="'mall:purchase:item'" type="primary" @click="dialogVisible = true" v-ripple>
+            <ElButton
+              v-auth="'mall:purchase:item'"
+              type="primary"
+              @click="dialogVisible = true"
+              v-ripple
+            >
               新增需求
             </ElButton>
             <ElButton
@@ -116,11 +121,17 @@
       },
       columnsFactory: () => [
         { type: 'selection' },
-        { prop: 'id', label: 'ID', width: 80 },
         { prop: 'skuId', label: 'SKU ID', width: 100 },
+        {
+          prop: 'skuName',
+          label: 'SKU 名称',
+          minWidth: 160,
+          showOverflowTooltip: true,
+          formatter: (row) => row.skuName || '-'
+        },
         { prop: 'skuNum', label: '数量', width: 80 },
         { prop: 'skuPrice', label: '单价', width: 100 },
-        { prop: 'wareId', label: '仓库', width: 80 },
+        { prop: 'wareId', label: '仓库', width: 100 },
         { prop: 'purchaseId', label: '采购单', width: 90 },
         {
           prop: 'status',
@@ -177,7 +188,9 @@
       ElMessage.warning('请选择新建状态的需求')
       return
     }
-    await ElMessageBox.confirm(`确定删除 ${ids.length} 条采购需求？`, '批量删除', { type: 'warning' })
+    await ElMessageBox.confirm(`确定删除 ${ids.length} 条采购需求？`, '批量删除', {
+      type: 'warning'
+    })
     await fetchPurchaseDetailRemove(ids)
     selectedRows.value = []
     refreshData()

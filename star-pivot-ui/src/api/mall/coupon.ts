@@ -39,6 +39,10 @@ export interface CouponVo {
 
 export interface CouponListParams extends Api.Common.CommonSearchParams {
   couponName?: string
+  publish?: number
+  useType?: number
+  validityStart?: string
+  validityEnd?: string
 }
 
 export interface CouponSavePayload {
@@ -100,6 +104,19 @@ export function fetchCouponRemove(ids: number[]) {
     showSuccessMessage: true
   })
 }
+
+export function fetchCouponPublishStatus(id: number, publish: 0 | 1) {
+  return request.put<void>({
+    url: '/api/mall/coupon/publish-status',
+    data: { id, publish },
+    showSuccessMessage: true
+  })
+}
+
+export const COUPON_PUBLISH_OPTIONS = [
+  { label: '未发布', value: 0 },
+  { label: '已发布', value: 1 }
+]
 
 export const COUPON_USE_TYPE_OPTIONS = [
   { label: '全场通用', value: 0 },

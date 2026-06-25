@@ -17,6 +17,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * C端-订单控制器。
  * <p>
@@ -107,5 +109,20 @@ public class PortalOrderController {
     public Result<?> mockPay(@PathVariable("id") Long id) {
         portalOrderService.mockPay(PortalMemberContext.requireMemberId(), id);
         return Result.success("支付成功");
+    }
+
+    @Operation(summary = "确认收货")
+    @PutMapping("/{id}/receive")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<?> confirmReceive(@PathVariable("id") Long id) {
+        portalOrderService.confirmReceive(PortalMemberContext.requireMemberId(), id);
+        return Result.success("确认收货成功");
+    }
+
+    @Operation(summary = "申请退货")
+    @PostMapping("/return")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<List<Long>> applyReturn(@Valid @RequestBody cn.org.starpivot.mall.portal.domain.bo.PortalOrderReturnApplyBo bo) {
+        return Result.success(portalOrderService.applyReturn(PortalMemberContext.requireMemberId(), bo));
     }
 }

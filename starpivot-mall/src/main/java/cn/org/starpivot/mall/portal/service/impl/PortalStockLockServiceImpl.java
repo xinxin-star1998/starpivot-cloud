@@ -2,12 +2,20 @@ package cn.org.starpivot.mall.portal.service.impl;
 
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
+import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
+import cn.org.starpivot.mall.oms.entity.OmsOrderOperateHistory;
+import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
+import cn.org.starpivot.mall.oms.mapper.OmsOrderOperateHistoryMapper;
 import cn.org.starpivot.mall.oms.service.OmsOrderSettingService;
 import cn.org.starpivot.mall.portal.PortalConstants;
+import cn.org.starpivot.mall.portal.service.PortalAvailableStockService;
+import cn.org.starpivot.mall.portal.service.PortalCouponService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
+import cn.org.starpivot.mall.wms.domain.dto.WmsStockDeductionLine;
 import cn.org.starpivot.mall.wms.entity.WmsWareSku;
 import cn.org.starpivot.mall.wms.mapper.WmsWareSkuMapper;
+import cn.org.starpivot.mall.wms.service.WmsStockWarningService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,6 +31,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -49,7 +58,12 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
     private final StringRedisTemplate stringRedisTemplate;
     private final WmsWareSkuMapper wmsWareSkuMapper;
     private final OmsOrderMapper omsOrderMapper;
+    private final OmsOrderItemMapper omsOrderItemMapper;
+    private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
     private final OmsOrderSettingService omsOrderSettingService;
+    private final WmsStockWarningService wmsStockWarningService;
+    private final PortalAvailableStockService portalAvailableStockService;
+    private final PortalCouponService portalCouponService;
     private final ObjectMapper objectMapper;
 
     private final DefaultRedisScript<Long> reserveScript = loadScript("lua/portal_stock_reserve.lua");
@@ -57,20 +71,7 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
 
     @Override
     public Map<Long, Integer> getAvailableStockMap(Collection<Long> skuIds) {
-        if (CollectionUtils.isEmpty(skuIds)) {
-            return Map.of();
-        }
-        Map<Long, Integer> wmsAvailable = loadWmsAvailableMap(skuIds);
-        Map<Long, Integer> result = new LinkedHashMap<>();
-        for (Long skuId : skuIds) {
-            if (skuId == null) {
-                continue;
-            }
-            int wmsStock = wmsAvailable.getOrDefault(skuId, 0);
-            int reserved = getReservedQty(skuId);
-            result.put(skuId, Math.max(0, wmsStock - reserved));
-        }
-        return result;
+        return portalAvailableStockService.getAvailableStockMap(skuIds);
     }
 
     @Override
@@ -83,7 +84,7 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
             return;
         }
 
-        Map<Long, Integer> wmsAvailable = loadWmsAvailableMap(skuQuantities.keySet());
+        Map<Long, Integer> wmsAvailable = portalAvailableStockService.getWmsAvailableMap(skuQuantities.keySet());
         List<Long> lockedSkuIds = new ArrayList<>();
         Map<String, Integer> payload = new LinkedHashMap<>();
 
@@ -142,16 +143,110 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
     }
 
     @Override
-    public void confirmForOrder(String orderSn) {
+    public List<WmsStockDeductionLine> confirmForOrder(String orderSn) {
         if (!StringUtils.hasText(orderSn)) {
-            return;
+            return List.of();
         }
+        Map<Long, String> skuNameMap = loadSkuNameMap(orderSn);
+        Map<Long, Integer> toDeduct = resolveDeductQuantities(orderSn);
+        List<WmsStockDeductionLine> deductions = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : toDeduct.entrySet()) {
+            deductions.addAll(deductSkuFromWms(
+                    entry.getKey(),
+                    skuNameMap.get(entry.getKey()),
+                    safeQty(entry.getValue())));
+        }
+        Map<Long, Integer> locked = readLockPayload(orderSn);
+        for (Map.Entry<Long, Integer> entry : locked.entrySet()) {
+            releaseReserve(entry.getKey(), safeQty(entry.getValue()));
+        }
+        stringRedisTemplate.delete(PortalConstants.stockLockOrderKey(orderSn));
+        stringRedisTemplate.delete(PortalConstants.stockLockConfirmedKey(orderSn));
         cleanupSchedule(orderSn);
-        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(PortalConstants.stockLockOrderKey(orderSn)))) {
-            stringRedisTemplate
-                    .opsForValue()
-                    .set(PortalConstants.stockLockConfirmedKey(orderSn), "1", Duration.ofDays(7));
+        return deductions;
+    }
+
+    private Map<Long, String> loadSkuNameMap(String orderSn) {
+        OmsOrder order = omsOrderMapper.selectOne(
+                Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
+        if (order == null || order.getId() == null) {
+            return Map.of();
         }
+        List<OmsOrderItem> items = omsOrderItemMapper.selectList(
+                Wrappers.<OmsOrderItem>lambdaQuery().eq(OmsOrderItem::getOrderId, order.getId()));
+        Map<Long, String> skuNameMap = new LinkedHashMap<>();
+        for (OmsOrderItem item : items) {
+            if (item.getSkuId() != null && StringUtils.hasText(item.getSkuName())) {
+                skuNameMap.putIfAbsent(item.getSkuId(), item.getSkuName());
+            }
+        }
+        return skuNameMap;
+    }
+
+    private Map<Long, Integer> resolveDeductQuantities(String orderSn) {
+        Map<Long, Integer> locked = readLockPayload(orderSn);
+        if (!locked.isEmpty()) {
+            return locked;
+        }
+        OmsOrder order = omsOrderMapper.selectOne(
+                Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
+        if (order == null || order.getId() == null) {
+            return Map.of();
+        }
+        List<OmsOrderItem> items = omsOrderItemMapper.selectList(
+                Wrappers.<OmsOrderItem>lambdaQuery().eq(OmsOrderItem::getOrderId, order.getId()));
+        Map<Long, Integer> qtyBySku = new LinkedHashMap<>();
+        for (OmsOrderItem item : items) {
+            if (item.getSkuId() == null) {
+                continue;
+            }
+            int qty = safeQty(item.getSkuQuantity());
+            if (qty <= 0) {
+                continue;
+            }
+            qtyBySku.merge(item.getSkuId(), qty, Integer::sum);
+        }
+        return qtyBySku;
+    }
+
+    private List<WmsStockDeductionLine> deductSkuFromWms(Long skuId, String skuName, int qty) {
+        if (skuId == null || qty <= 0) {
+            return List.of();
+        }
+        List<WmsStockDeductionLine> lines = new ArrayList<>();
+        int remaining = qty;
+        while (remaining > 0) {
+            List<WmsWareSku> stocks = wmsWareSkuMapper.selectList(
+                    Wrappers.<WmsWareSku>lambdaQuery()
+                            .eq(WmsWareSku::getSkuId, skuId)
+                            .orderByDesc(WmsWareSku::getStock));
+            boolean deducted = false;
+            for (WmsWareSku wareSku : stocks) {
+                if (wareSku.getWareId() == null) {
+                    continue;
+                }
+                int available = Math.max(0, safeInt(wareSku.getStock()) - safeInt(wareSku.getStockLocked()));
+                if (available <= 0) {
+                    continue;
+                }
+                int take = Math.min(remaining, available);
+                if (wmsWareSkuMapper.deductAvailableStock(skuId, wareSku.getWareId(), take) > 0) {
+                    wmsStockWarningService.checkAndCreatePurchaseDemand(skuId, wareSku.getWareId());
+                    lines.add(new WmsStockDeductionLine(
+                            skuId,
+                            StringUtils.hasText(skuName) ? skuName : wareSku.getSkuName(),
+                            wareSku.getWareId(),
+                            take));
+                    remaining -= take;
+                    deducted = true;
+                    break;
+                }
+            }
+            if (!deducted) {
+                throw new BizException("SKU[" + skuId + "]库存扣减失败，请检查仓库库存");
+            }
+        }
+        return lines;
     }
 
     @Override
@@ -197,8 +292,21 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
             return;
         }
         order.setStatus(PortalConstants.ORDER_STATUS_CLOSED);
+        order.setModifyTime(LocalDateTime.now());
         omsOrderMapper.updateById(order);
+        portalCouponService.releaseByOrder(order.getId());
+        saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_CLOSED, "system", "超时未支付自动关闭");
         log.info("Closed unpaid order due to stock lock timeout: {}", orderSn);
+    }
+
+    private void saveOperateHistory(Long orderId, Integer status, String operator, String note) {
+        OmsOrderOperateHistory history = new OmsOrderOperateHistory();
+        history.setOrderId(orderId);
+        history.setOperateMan(operator);
+        history.setCreateTime(LocalDateTime.now());
+        history.setOrderStatus(status);
+        history.setNote(note);
+        omsOrderOperateHistoryMapper.insert(history);
     }
 
     private void rollbackReserve(String orderSn, List<Long> lockedSkuIds, Map<Long, Integer> skuQuantities) {
@@ -224,35 +332,6 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
         }
         stringRedisTemplate.execute(
                 releaseScript, List.of(PortalConstants.stockReservedKey(skuId)), String.valueOf(qty));
-    }
-
-    private int getReservedQty(Long skuId) {
-        String value = stringRedisTemplate.opsForValue().get(PortalConstants.stockReservedKey(skuId));
-        if (!StringUtils.hasText(value)) {
-            return 0;
-        }
-        try {
-            return Math.max(0, Integer.parseInt(value));
-        } catch (NumberFormatException ex) {
-            return 0;
-        }
-    }
-
-    private Map<Long, Integer> loadWmsAvailableMap(Collection<Long> skuIds) {
-        if (CollectionUtils.isEmpty(skuIds)) {
-            return Map.of();
-        }
-        List<WmsWareSku> stocks = wmsWareSkuMapper.selectList(
-                Wrappers.<WmsWareSku>lambdaQuery().in(WmsWareSku::getSkuId, skuIds));
-        Map<Long, Integer> stockMap = new LinkedHashMap<>();
-        for (WmsWareSku wareSku : stocks) {
-            if (wareSku.getSkuId() == null) {
-                continue;
-            }
-            int available = Math.max(0, safeInt(wareSku.getStock()) - safeInt(wareSku.getStockLocked()));
-            stockMap.merge(wareSku.getSkuId(), available, Integer::sum);
-        }
-        return stockMap;
     }
 
     private Map<Long, Integer> readLockPayload(String orderSn) {

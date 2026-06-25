@@ -9,6 +9,7 @@ export interface PurchaseVo {
   priority?: number
   status?: number
   wareId?: number
+  wareName?: string
   amount?: number
   createTime?: string
   updateTime?: string
@@ -20,6 +21,7 @@ export interface PurchaseDetailVo {
   id?: number
   purchaseId?: number
   skuId?: number
+  skuName?: string
   skuNum?: number
   skuPrice?: number
   wareId?: number

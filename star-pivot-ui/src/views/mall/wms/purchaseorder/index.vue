@@ -8,7 +8,7 @@
         <template #left>
           <ElSpace wrap>
             <ElButton
-              v-auth="'mall:purchase:list'"
+              v-auth="'mall:purchase:edit'"
               type="primary"
               :disabled="selectedRows.length === 0"
               @click="handleReceive"
@@ -61,6 +61,8 @@
 
   const { hasAuth } = useAuth()
 
+  const formatTime = (t?: string) => (t ? t.replace('T', ' ').slice(0, 19) : '-')
+
   const searchForm = ref({
     assigneeName: undefined as string | undefined,
     status: undefined as number | undefined,
@@ -95,23 +97,46 @@
       columnsFactory: () => [
         { type: 'selection' },
         { prop: 'id', label: 'ID', width: 80 },
-        { prop: 'assigneeName', label: '采购人', minWidth: 100, showOverflowTooltip: true },
-        { prop: 'phone', label: '电话', width: 120 },
-        { prop: 'wareId', label: '仓库', width: 80 },
-        { prop: 'amount', label: '金额', width: 100 },
+        {
+          prop: 'assigneeName',
+          label: '采购人',
+          minWidth: 100,
+          showOverflowTooltip: true,
+          formatter: (row) => row.assigneeName || '-'
+        },
+        { prop: 'phone', label: '电话', width: 120, formatter: (row) => row.phone || '-' },
+        {
+          prop: 'wareName',
+          label: '仓库',
+          minWidth: 120,
+          showOverflowTooltip: true,
+          formatter: (row) => row.wareName || (row.wareId != null ? `仓库#${row.wareId}` : '-')
+        },
+        {
+          prop: 'amount',
+          label: '金额',
+          width: 120,
+          formatter: (row) => (row.amount != null && row.amount !== '' ? row.amount : '-')
+        },
         {
           prop: 'status',
           label: '状态',
           width: 100,
           formatter: (row) => {
-            const type =
-              row.status === 3 ? 'success' : row.status === 4 ? 'danger' : 'info'
-            return h(ElTag, { type, size: 'small' }, () =>
-              PURCHASE_STATUS_MAP[row.status ?? 0] ?? row.status
+            const type = row.status === 3 ? 'success' : row.status === 4 ? 'danger' : 'info'
+            return h(
+              ElTag,
+              { type, size: 'small' },
+              () => PURCHASE_STATUS_MAP[row.status ?? 0] ?? row.status
             )
           }
         },
-        { prop: 'createTime', label: '创建时间', minWidth: 160 },
+        {
+          prop: 'createTime',
+          label: '创建时间',
+          minWidth: 160,
+          formatter: (row) => formatTime(row.createTime)
+        },
         {
           prop: 'operation',
           label: '操作',
@@ -128,7 +153,7 @@
                 )
               )
             }
-            if (hasAuth('mall:purchase:list') && row.status === 2) {
+            if (hasAuth('mall:purchase:edit') && row.status === 2) {
               actions.push(
                 h(
                   ElButton,

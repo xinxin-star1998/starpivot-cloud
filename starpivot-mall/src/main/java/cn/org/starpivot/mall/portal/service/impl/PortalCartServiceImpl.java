@@ -15,8 +15,9 @@ import cn.org.starpivot.mall.portal.domain.bo.PortalCartUpdateBo;
 import cn.org.starpivot.mall.portal.domain.model.PortalCartEntry;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCartItemVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCartVo;
+import cn.org.starpivot.mall.portal.service.PortalAvailableStockService;
 import cn.org.starpivot.mall.portal.service.PortalCartService;
-import cn.org.starpivot.mall.portal.service.PortalStockLockService;
+import cn.org.starpivot.mall.portal.service.PortalOrderPriceService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,7 +58,8 @@ public class PortalCartServiceImpl implements PortalCartService {
     private final PmsSkuInfoMapper pmsSkuInfoMapper;
     private final PmsSpuInfoMapper pmsSpuInfoMapper;
     private final PmsSkuSaleAttrValueMapper pmsSkuSaleAttrValueMapper;
-    private final PortalStockLockService portalStockLockService;
+    private final PortalAvailableStockService portalAvailableStockService;
+    private final PortalOrderPriceService portalOrderPriceService;
 
     @Override
     @Transactional(readOnly = true)
@@ -185,7 +187,7 @@ public class PortalCartServiceImpl implements PortalCartService {
         item.setValid(onSale);
         item.setSpuId(sku.getSpuId());
         item.setSkuTitle(StringUtils.hasText(sku.getSkuTitle()) ? sku.getSkuTitle() : sku.getSkuName());
-        item.setPrice(sku.getPrice());
+        item.setPrice(portalOrderPriceService.resolveUnitPrice(entry.getSkuId(), sku));
         item.setSkuAttr(attrMap.get(entry.getSkuId()));
         item.setStock(stockMap.getOrDefault(entry.getSkuId(), 0));
         if (StringUtils.hasText(sku.getSkuDefaultImg())) {
@@ -239,7 +241,7 @@ public class PortalCartServiceImpl implements PortalCartService {
     }
 
     private Map<Long, Integer> loadStockMap(List<Long> skuIds) {
-        return portalStockLockService.getAvailableStockMap(skuIds);
+        return portalAvailableStockService.getAvailableStockMap(skuIds);
     }
 
     private Map<String, PortalCartEntry> loadCartMap(Long memberId) {

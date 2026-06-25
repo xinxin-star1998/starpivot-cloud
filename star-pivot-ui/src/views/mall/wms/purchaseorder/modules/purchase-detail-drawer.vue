@@ -9,12 +9,15 @@
         <ElDescriptionsItem label="状态">
           {{ PURCHASE_STATUS_MAP[detail.status ?? 0] ?? detail.status }}
         </ElDescriptionsItem>
-        <ElDescriptionsItem label="仓库">{{ detail.wareId ?? '-' }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="仓库">
+          {{ detail.wareName || (detail.wareId != null ? `仓库#${detail.wareId}` : '-') }}
+        </ElDescriptionsItem>
         <ElDescriptionsItem label="金额">{{ detail.amount ?? '-' }}</ElDescriptionsItem>
       </ElDescriptions>
       <ElTable :data="detail.details || []" border size="small">
         <ElTableColumn prop="id" label="明细ID" width="80" />
         <ElTableColumn prop="skuId" label="SKU" width="80" />
+        <ElTableColumn label="SKU 名称" min-width="140" prop="skuName" show-overflow-tooltip />
         <ElTableColumn prop="skuNum" label="数量" width="70" />
         <ElTableColumn prop="skuPrice" label="单价" width="80" />
         <ElTableColumn prop="wareId" label="仓库" width="70" />

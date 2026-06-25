@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.sms.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -55,10 +56,12 @@ public class CouponVo {
     /**
      * start时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime startTime;
     /**
      * end时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime endTime;
     /**
      * 类型
@@ -83,10 +86,12 @@ public class CouponVo {
     /**
      * enableStart时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime enableStartTime;
     /**
      * enableEnd时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime enableEndTime;
     /**
      * code

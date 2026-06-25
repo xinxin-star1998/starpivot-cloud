@@ -3,35 +3,36 @@ package cn.org.starpivot.mall.wms.service.impl;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
+import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.mall.pms.entity.PmsSkuInfo;
 import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseDetailReqBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseDetailSaveBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseDoneBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseItemDoneBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseMergeBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseReqBo;
+import cn.org.starpivot.mall.wms.domain.bo.*;
 import cn.org.starpivot.mall.wms.domain.vo.PurchaseDetailVo;
 import cn.org.starpivot.mall.wms.domain.vo.PurchaseVo;
 import cn.org.starpivot.mall.wms.entity.WmsPurchase;
 import cn.org.starpivot.mall.wms.entity.WmsPurchaseDetail;
+import cn.org.starpivot.mall.wms.entity.WmsWareInfo;
 import cn.org.starpivot.mall.wms.enums.WmsPurchaseDetailStatusEnum;
 import cn.org.starpivot.mall.wms.enums.WmsPurchaseStatusEnum;
 import cn.org.starpivot.mall.wms.mapper.WmsPurchaseDetailMapper;
 import cn.org.starpivot.mall.wms.mapper.WmsPurchaseMapper;
+import cn.org.starpivot.mall.wms.mapper.WmsWareInfoMapper;
 import cn.org.starpivot.mall.wms.service.WmsPurchaseService;
 import cn.org.starpivot.mall.wms.service.WmsWareSkuService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 采购单服务实现类。
@@ -53,6 +54,7 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
     private final WmsPurchaseDetailMapper purchaseDetailMapper;
     private final WmsWareSkuService wmsWareSkuService;
     private final PmsSkuInfoMapper pmsSkuInfoMapper;
+    private final WmsWareInfoMapper wmsWareInfoMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,9 +79,13 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
             throw new BizException("采购单不存在");
         }
         PurchaseVo vo = toPurchaseVo(purchase);
-        vo.setDetails(purchaseDetailMapper.listByPurchaseId(id).stream()
-                .map(this::toDetailVo)
+        ensurePurchaseSummary(vo);
+        List<WmsPurchaseDetail> details = purchaseDetailMapper.listByPurchaseId(id);
+        Map<Long, String> skuNameMap = loadSkuNameMap(details);
+        vo.setDetails(details.stream()
+                .map(detail -> toDetailVo(detail, skuNameMap))
                 .collect(Collectors.toList()));
+        enrichWareNames(Collections.singletonList(vo));
         return vo;
     }
 
@@ -118,9 +124,12 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
             return detail;
         }).collect(Collectors.toList());
 
+        validateMergeWareId(finalPurchaseId, updates);
+
         for (WmsPurchaseDetail detail : updates) {
             purchaseDetailMapper.updateById(detail);
         }
+        syncPurchaseSummary(finalPurchaseId);
     }
 
     @Override
@@ -135,11 +144,15 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
         }
 
         LocalDateTime now = LocalDateTime.now();
+        Long assigneeId = SecurityContextUtils.getUserId();
+        String assigneeName = SecurityContextUtils.getUsername();
         for (WmsPurchase purchase : purchases) {
             if (!WmsPurchaseStatusEnum.canReceive(purchase.getStatus())) {
                 throw new BizException("采购单[" + purchase.getId() + "]状态不可领取");
             }
             purchase.setStatus(WmsPurchaseStatusEnum.RECEIVED.getCode());
+            purchase.setAssigneeId(assigneeId);
+            purchase.setAssigneeName(assigneeName);
             purchase.setUpdateTime(now);
         }
         updateBatchById(purchases);
@@ -197,9 +210,14 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
         Page<WmsPurchaseDetail> page = new Page<>(reqBo.getPageNum(), reqBo.getPageSize());
         IPage<WmsPurchaseDetail> detailPage = purchaseDetailMapper.selectPageList(page, reqBo);
 
+        List<WmsPurchaseDetail> records = detailPage.getRecords();
+        Map<Long, String> skuNameMap = loadSkuNameMap(records);
+
         PageResponse<PurchaseDetailVo> response = new PageResponse<>();
         response.setTotal(detailPage.getTotal());
-        response.setRows(detailPage.getRecords().stream().map(this::toDetailVo).collect(Collectors.toList()));
+        response.setRows(records.stream()
+                .map(detail -> toDetailVo(detail, skuNameMap))
+                .collect(Collectors.toList()));
         response.setPageNum(detailPage.getCurrent());
         response.setPageSize(detailPage.getSize());
         response.setPageCount(detailPage.getPages());
@@ -244,7 +262,10 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
     private PageResponse<PurchaseVo> toPurchasePage(IPage<WmsPurchase> purchasePage) {
         PageResponse<PurchaseVo> response = new PageResponse<>();
         response.setTotal(purchasePage.getTotal());
-        response.setRows(purchasePage.getRecords().stream().map(this::toPurchaseVo).collect(Collectors.toList()));
+        List<PurchaseVo> rows = purchasePage.getRecords().stream().map(this::toPurchaseVo).collect(Collectors.toList());
+        rows.forEach(this::ensurePurchaseSummary);
+        enrichWareNames(rows);
+        response.setRows(rows);
         response.setPageNum(purchasePage.getCurrent());
         response.setPageSize(purchasePage.getSize());
         response.setPageCount(purchasePage.getPages());
@@ -257,9 +278,116 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
         return vo;
     }
 
-    private PurchaseDetailVo toDetailVo(WmsPurchaseDetail detail) {
+    private void validateMergeWareId(Long purchaseId, List<WmsPurchaseDetail> mergingDetails) {
+        Set<Long> wareIds = mergingDetails.stream()
+                .map(WmsPurchaseDetail::getWareId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (wareIds.size() > 1) {
+            throw new BizException("所选采购需求仓库不一致，无法合并");
+        }
+        WmsPurchase existing = baseMapper.selectById(purchaseId);
+        if (existing != null && existing.getWareId() != null && !wareIds.isEmpty()
+                && !wareIds.contains(existing.getWareId())) {
+            throw new BizException("采购需求仓库与目标采购单仓库不一致");
+        }
+    }
+
+    private void ensurePurchaseSummary(PurchaseVo vo) {
+        if (vo == null || vo.getId() == null) {
+            return;
+        }
+        if (vo.getAmount() != null && vo.getWareId() != null) {
+            return;
+        }
+        syncPurchaseSummary(vo.getId());
+        WmsPurchase refreshed = baseMapper.selectById(vo.getId());
+        if (refreshed != null) {
+            vo.setAmount(refreshed.getAmount());
+            vo.setWareId(refreshed.getWareId());
+        }
+    }
+
+    private void syncPurchaseSummary(Long purchaseId) {
+        if (purchaseId == null) {
+            return;
+        }
+        List<WmsPurchaseDetail> details = purchaseDetailMapper.listByPurchaseId(purchaseId);
+        if (CollectionUtils.isEmpty(details)) {
+            return;
+        }
+        BigDecimal amount = BigDecimal.ZERO;
+        Long wareId = null;
+        for (WmsPurchaseDetail detail : details) {
+            if (detail.getSkuPrice() != null && detail.getSkuNum() != null) {
+                amount = amount.add(detail.getSkuPrice().multiply(BigDecimal.valueOf(detail.getSkuNum())));
+            }
+            if (wareId == null && detail.getWareId() != null) {
+                wareId = detail.getWareId();
+            }
+        }
+        WmsPurchase update = new WmsPurchase();
+        update.setId(purchaseId);
+        update.setAmount(amount);
+        update.setWareId(wareId);
+        update.setUpdateTime(LocalDateTime.now());
+        baseMapper.updateById(update);
+    }
+
+    private void enrichWareNames(List<PurchaseVo> rows) {
+        if (CollectionUtils.isEmpty(rows)) {
+            return;
+        }
+        List<Long> wareIds = rows.stream()
+                .map(PurchaseVo::getWareId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(wareIds)) {
+            return;
+        }
+        Map<Long, String> wareNameMap = wmsWareInfoMapper.selectBatchIds(wareIds).stream()
+                .collect(Collectors.toMap(WmsWareInfo::getId, WmsWareInfo::getName, (a, b) -> a));
+        for (PurchaseVo row : rows) {
+            if (row.getWareId() != null) {
+                row.setWareName(wareNameMap.get(row.getWareId()));
+            }
+        }
+    }
+
+    private Map<Long, String> loadSkuNameMap(List<WmsPurchaseDetail> records) {
+        if (CollectionUtils.isEmpty(records)) {
+            return Collections.emptyMap();
+        }
+        List<Long> skuIds = records.stream()
+                .map(WmsPurchaseDetail::getSkuId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(skuIds)) {
+            return Collections.emptyMap();
+        }
+        return pmsSkuInfoMapper.selectBatchIds(skuIds).stream()
+                .collect(Collectors.toMap(PmsSkuInfo::getSkuId, this::resolveSkuDisplayName, (a, b) -> a));
+    }
+
+    private String resolveSkuDisplayName(PmsSkuInfo sku) {
+        if (sku == null) {
+            return null;
+        }
+        if (StringUtils.hasText(sku.getSkuName())) {
+            return sku.getSkuName();
+        }
+        if (StringUtils.hasText(sku.getSkuTitle())) {
+            return sku.getSkuTitle();
+        }
+        return null;
+    }
+
+    private PurchaseDetailVo toDetailVo(WmsPurchaseDetail detail, Map<Long, String> skuNameMap) {
         PurchaseDetailVo vo = new PurchaseDetailVo();
         BeanUtils.copyProperties(detail, vo);
+        vo.setSkuName(skuNameMap.get(detail.getSkuId()));
         return vo;
     }
 }

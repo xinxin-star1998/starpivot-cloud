@@ -11,8 +11,11 @@
     <template v-if="portalStore.isLogin">
       <p class="user-panel__name">{{ displayName }}</p>
       <div class="user-panel__actions">
-        <ElButton type="danger" size="small" @click="router.push('/portal/orders')">我的订单</ElButton>
+        <ElButton type="danger" size="small" @click="router.push('/portal/orders')"
+          >我的订单</ElButton
+        >
         <ElButton size="small" @click="router.push('/portal/cart')">购物车</ElButton>
+        <ElButton size="small" @click="router.push('/portal/coupons')">领券中心</ElButton>
       </div>
     </template>
     <template v-else>
@@ -22,7 +25,7 @@
       </ElButton>
     </template>
 
-    <div class="user-panel__coupons">
+    <div class="user-panel__coupons" @click="router.push('/portal/coupons')">
       <div v-for="item in couponHints" :key="item.label" class="coupon-item">
         <span class="coupon-item__amount">{{ item.amount }}</span>
         <span class="coupon-item__label">{{ item.label }}</span>
@@ -145,6 +148,7 @@
     gap: 6px;
     width: 100%;
     margin: 12px 0;
+    cursor: pointer;
   }
 
   .coupon-item {

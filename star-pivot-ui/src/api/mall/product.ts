@@ -51,6 +51,8 @@ export interface MallProductSku {
   fullPrice?: number
   reducePrice?: number
   priceStatus?: number
+  initialStock?: number
+  stockWarning?: number
 }
 
 export interface MallProductListParams extends Api.Common.CommonSearchParams {
@@ -72,6 +74,8 @@ export interface MallProductSavePayload {
   images?: string[]
   baseAttrs?: MallProductBaseAttr[]
   skus?: MallProductSku[]
+  /** 发布时默认入库仓库（仅新增商品时与 initialStock 配合） */
+  defaultWareId?: number
 }
 
 export function fetchMallProductList(params: MallProductListParams) {

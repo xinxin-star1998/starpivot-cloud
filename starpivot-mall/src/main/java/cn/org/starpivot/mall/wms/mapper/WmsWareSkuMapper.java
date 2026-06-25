@@ -1,10 +1,10 @@
 package cn.org.starpivot.mall.wms.mapper;
 
+import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuQueryDTO;
+import cn.org.starpivot.mall.wms.entity.WmsWareSku;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuQueryDTO;
-import cn.org.starpivot.mall.wms.entity.WmsWareSku;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -34,5 +34,10 @@ public interface WmsWareSkuMapper extends BaseMapper<WmsWareSku>
 
     int deductSkuStock(@Param("skuId") Long skuId, @Param("wareId") Long wareId, @Param("skuNum") Integer skuNum);
 
+    /** 直接扣减可售库存（支付成功出库，不经过锁定阶段） */
+    int deductAvailableStock(@Param("skuId") Long skuId, @Param("wareId") Long wareId, @Param("skuNum") Integer skuNum);
+
     java.util.List<Long> listWareIdHasStock(@Param("skuId") Long skuId);
+
+    int sumAvailableStock(@Param("skuId") Long skuId);
 }

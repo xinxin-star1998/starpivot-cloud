@@ -80,4 +80,9 @@ public class PmsSkuInfo {
      */
     private Long saleCount;
 
+    /**
+     * 库存预警阈值（可售库存低于此值时自动生成采购需求）
+     */
+    private Integer stockWarning;
+
 }

@@ -7,8 +7,8 @@ import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.org.starpivot.mall.wms.domain.bo.WareOrderTaskReqBo;
+import cn.org.starpivot.mall.wms.domain.dto.WmsStockDeductionLine;
 import cn.org.starpivot.mall.wms.domain.vo.WareOrderTaskDetailVo;
 import cn.org.starpivot.mall.wms.domain.vo.WareOrderTaskVo;
 import cn.org.starpivot.mall.wms.entity.WmsWareOrderTask;
@@ -18,17 +18,23 @@ import cn.org.starpivot.mall.wms.enums.WmsTaskStatusEnum;
 import cn.org.starpivot.mall.wms.mapper.WmsWareOrderTaskDetailMapper;
 import cn.org.starpivot.mall.wms.mapper.WmsWareOrderTaskMapper;
 import cn.org.starpivot.mall.wms.mapper.WmsWareSkuMapper;
+import cn.org.starpivot.mall.wms.service.WmsStockWarningService;
 import cn.org.starpivot.mall.wms.service.WmsWareOrderTaskService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 仓库工单服务实现类。
@@ -52,6 +58,7 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
     private final WmsWareSkuMapper wmsWareSkuMapper;
     private final OmsOrderMapper omsOrderMapper;
     private final OmsOrderItemMapper omsOrderItemMapper;
+    private final WmsStockWarningService wmsStockWarningService;
 
     private static final int ORDER_STATUS_WAIT_DELIVER = 1;
 
@@ -91,6 +98,7 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
     @Transactional(rollbackFor = Exception.class)
     public void lockStock(Long taskId) {
         WmsWareOrderTask task = requireTask(taskId);
+        ensureNotAutoFinished(task);
         if (!Integer.valueOf(WmsTaskStatusEnum.NEW.getCode()).equals(task.getTaskStatus())
                 && !Integer.valueOf(WmsTaskStatusEnum.PROCESSING.getCode()).equals(task.getTaskStatus())) {
             throw new BizException("当前工作单状态不可锁定库存");
@@ -120,6 +128,7 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
     @Transactional(rollbackFor = Exception.class)
     public void deductStock(Long taskId) {
         WmsWareOrderTask task = requireTask(taskId);
+        ensureNotAutoFinished(task);
         List<WmsWareOrderTaskDetail> details = taskDetailMapper.listByTaskId(taskId);
 
         for (WmsWareOrderTaskDetail detail : details) {
@@ -132,6 +141,7 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
             }
             detail.setLockStatus(WmsTaskLockStatusEnum.DEDUCTED.getCode());
             taskDetailMapper.updateById(detail);
+            wmsStockWarningService.checkAndCreatePurchaseDemand(detail.getSkuId(), detail.getWareId());
         }
 
         task.setTaskStatus(WmsTaskStatusEnum.FINISHED.getCode());
@@ -142,6 +152,7 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
     @Transactional(rollbackFor = Exception.class)
     public void unlockStock(Long taskId) {
         WmsWareOrderTask task = requireTask(taskId);
+        ensureNotAutoFinished(task);
         List<WmsWareOrderTaskDetail> details = taskDetailMapper.listByTaskId(taskId);
 
         for (WmsWareOrderTaskDetail detail : details) {
@@ -176,20 +187,11 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
         long exists = baseMapper.selectCount(
                 new LambdaQueryWrapper<WmsWareOrderTask>().eq(WmsWareOrderTask::getOrderId, orderId));
         if (exists > 0) {
-            throw new BizException("该订单已存在库存工作单");
+            throw new BizException("该订单已存在库存工作单（支付成功订单已自动生成出库记录）");
         }
 
-        WmsWareOrderTask task = new WmsWareOrderTask();
-        task.setOrderId(orderId);
-        task.setOrderSn(order.getOrderSn());
-        task.setConsignee(order.getReceiverName());
-        task.setConsigneeTel(order.getReceiverPhone());
-        task.setDeliveryAddress(buildAddress(order));
-        task.setOrderComment(order.getNote());
-        task.setPaymentWay(order.getPayType());
+        WmsWareOrderTask task = buildTaskFromOrder(order);
         task.setTaskStatus(WmsTaskStatusEnum.NEW.getCode());
-        task.setOrderBody("订单商品出库");
-        task.setCreateTime(LocalDateTime.now());
         baseMapper.insert(task);
 
         List<OmsOrderItem> items = omsOrderItemMapper.selectList(
@@ -208,6 +210,90 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
         return task.getId();
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createFinishedRecordForPaidOrder(Long orderId, List<WmsStockDeductionLine> deductions) {
+        if (orderId == null) {
+            return null;
+        }
+        WmsWareOrderTask existing = baseMapper.selectOne(
+                new LambdaQueryWrapper<WmsWareOrderTask>()
+                        .eq(WmsWareOrderTask::getOrderId, orderId)
+                        .last("LIMIT 1"));
+        if (existing != null) {
+            return existing.getId();
+        }
+
+        OmsOrder order = omsOrderMapper.selectById(orderId);
+        if (order == null || Integer.valueOf(1).equals(order.getDeleteStatus())) {
+            return null;
+        }
+
+        WmsWareOrderTask task = buildTaskFromOrder(order);
+        task.setTaskStatus(WmsTaskStatusEnum.FINISHED.getCode());
+        task.setTaskComment("支付成功自动生成（库存已扣减，仅作发货记录）");
+        task.setWareId(resolveTaskWareId(deductions));
+        baseMapper.insert(task);
+
+        if (!CollectionUtils.isEmpty(deductions)) {
+            for (WmsStockDeductionLine line : deductions) {
+                insertFinishedDetail(task.getId(), line);
+            }
+        } else {
+            List<OmsOrderItem> items = omsOrderItemMapper.selectList(
+                    new LambdaQueryWrapper<OmsOrderItem>().eq(OmsOrderItem::getOrderId, orderId));
+            for (OmsOrderItem item : items) {
+                WmsWareOrderTaskDetail detail = new WmsWareOrderTaskDetail();
+                detail.setTaskId(task.getId());
+                detail.setSkuId(item.getSkuId());
+                detail.setSkuName(item.getSkuName());
+                detail.setSkuNum(item.getSkuQuantity());
+                detail.setLockStatus(WmsTaskLockStatusEnum.DEDUCTED.getCode());
+                taskDetailMapper.insert(detail);
+            }
+        }
+        return task.getId();
+    }
+
+    private WmsWareOrderTask buildTaskFromOrder(OmsOrder order) {
+        WmsWareOrderTask task = new WmsWareOrderTask();
+        task.setOrderId(order.getId());
+        task.setOrderSn(order.getOrderSn());
+        task.setConsignee(order.getReceiverName());
+        task.setConsigneeTel(order.getReceiverPhone());
+        task.setDeliveryAddress(buildAddress(order));
+        task.setOrderComment(order.getNote());
+        task.setPaymentWay(order.getPayType());
+        task.setOrderBody("订单商品出库");
+        task.setCreateTime(LocalDateTime.now());
+        return task;
+    }
+
+    private Long resolveTaskWareId(List<WmsStockDeductionLine> deductions) {
+        if (CollectionUtils.isEmpty(deductions)) {
+            return null;
+        }
+        Set<Long> wareIds = deductions.stream()
+                .map(WmsStockDeductionLine::getWareId)
+                .filter(id -> id != null)
+                .collect(Collectors.toCollection(HashSet::new));
+        return wareIds.size() == 1 ? wareIds.iterator().next() : null;
+    }
+
+    private void insertFinishedDetail(Long taskId, WmsStockDeductionLine line) {
+        if (line == null || line.getSkuId() == null || line.getQuantity() == null || line.getQuantity() <= 0) {
+            return;
+        }
+        WmsWareOrderTaskDetail detail = new WmsWareOrderTaskDetail();
+        detail.setTaskId(taskId);
+        detail.setSkuId(line.getSkuId());
+        detail.setSkuName(line.getSkuName());
+        detail.setSkuNum(line.getQuantity());
+        detail.setWareId(line.getWareId());
+        detail.setLockStatus(WmsTaskLockStatusEnum.DEDUCTED.getCode());
+        taskDetailMapper.insert(detail);
+    }
+
     private String buildAddress(OmsOrder order) {
         StringBuilder sb = new StringBuilder();
         if (order.getReceiverProvince() != null) {
@@ -223,6 +309,12 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
             sb.append(order.getReceiverDetailAddress());
         }
         return sb.toString();
+    }
+
+    private void ensureNotAutoFinished(WmsWareOrderTask task) {
+        if (Integer.valueOf(WmsTaskStatusEnum.FINISHED.getCode()).equals(task.getTaskStatus())) {
+            throw new BizException("工作单已完成（支付时已扣减库存），不可重复锁定/扣减");
+        }
     }
 
     private WmsWareOrderTask requireTask(Long taskId) {

@@ -1,274 +1,1 @@
-<template>
-  <ElDialog
-    v-model="dialogVisible"
-    :title="type === 'add' ? '新增优惠券' : '编辑优惠券'"
-    width="720px"
-    align-center
-    destroy-on-close
-  >
-    <ElForm ref="formRef" :model="formData" :rules="rules" label-width="110px">
-      <ElFormItem label="名称" prop="couponName">
-        <ElInput v-model="formData.couponName" maxlength="128" />
-      </ElFormItem>
-      <ElRow :gutter="16">
-        <ElCol :span="12">
-          <ElFormItem label="面额">
-            <ElInputNumber
-              v-model="formData.amount"
-              :min="0"
-              :precision="2"
-              controls-position="right"
-              style="width: 100%"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :span="12">
-          <ElFormItem label="使用门槛">
-            <ElInputNumber
-              v-model="formData.minPoint"
-              :min="0"
-              :precision="2"
-              controls-position="right"
-              style="width: 100%"
-            />
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-      <ElRow :gutter="16">
-        <ElCol :span="12">
-          <ElFormItem label="券类型">
-            <ElSelect v-model="formData.couponType" placeholder="类型" style="width: 100%">
-              <ElOption
-                v-for="opt in COUPON_TYPE_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </ElSelect>
-          </ElFormItem>
-        </ElCol>
-        <ElCol :span="12">
-          <ElFormItem label="适用类型">
-            <ElSelect v-model="formData.useType" placeholder="适用范围" style="width: 100%">
-              <ElOption
-                v-for="opt in COUPON_USE_TYPE_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </ElSelect>
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-      <ElFormItem label="有效期">
-        <ElDatePicker
-          v-model="useDateRange"
-          type="datetimerange"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          start-placeholder="使用开始"
-          end-placeholder="使用结束"
-          style="width: 100%"
-        />
-      </ElFormItem>
-      <ElFormItem label="领取时间">
-        <ElDatePicker
-          v-model="enableDateRange"
-          type="datetimerange"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          start-placeholder="领取开始"
-          end-placeholder="领取结束"
-          style="width: 100%"
-        />
-      </ElFormItem>
-      <ElRow :gutter="16">
-        <ElCol :span="12">
-          <ElFormItem label="发行数量">
-            <ElInputNumber v-model="formData.publishCount" :min="0" controls-position="right" style="width: 100%" />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :span="12">
-          <ElFormItem label="每人限领">
-            <ElInputNumber v-model="formData.perLimit" :min="0" controls-position="right" style="width: 100%" />
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-      <ElFormItem label="发布状态">
-        <ElRadioGroup v-model="formData.publish">
-          <ElRadio :value="1">已发布</ElRadio>
-          <ElRadio :value="0">未发布</ElRadio>
-        </ElRadioGroup>
-      </ElFormItem>
-      <ElFormItem label="备注">
-        <ElInput v-model="formData.note" type="textarea" :rows="2" />
-      </ElFormItem>
-
-      <ElFormItem v-if="formData.useType === 2" label="关联商品">
-        <div class="relation-list">
-          <div v-for="(item, index) in formData.spuList" :key="index" class="relation-row">
-            <ElInputNumber v-model="item.spuId" :min="1" controls-position="right" placeholder="SPU ID" />
-            <ElInput v-model="item.spuName" placeholder="名称（可选）" />
-            <ElButton type="danger" link @click="removeSpu(index)">移除</ElButton>
-          </div>
-          <ElButton type="primary" link @click="addSpu">+ 添加 SPU</ElButton>
-        </div>
-      </ElFormItem>
-
-      <ElFormItem v-if="formData.useType === 1" label="关联分类">
-        <div class="relation-list">
-          <div v-for="(item, index) in formData.categoryList" :key="index" class="relation-row">
-            <ElInputNumber
-              v-model="item.categoryId"
-              :min="1"
-              controls-position="right"
-              placeholder="分类 ID"
-            />
-            <ElInput v-model="item.categoryName" placeholder="名称（可选）" />
-            <ElButton type="danger" link @click="removeCategory(index)">移除</ElButton>
-          </div>
-          <ElButton type="primary" link @click="addCategory">+ 添加分类</ElButton>
-        </div>
-      </ElFormItem>
-    </ElForm>
-    <template #footer>
-      <ElButton @click="dialogVisible = false">取消</ElButton>
-      <ElButton type="primary" :loading="submitting" @click="handleSubmit">提交</ElButton>
-    </template>
-  </ElDialog>
-</template>
-
-<script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    COUPON_TYPE_OPTIONS,
-    COUPON_USE_TYPE_OPTIONS,
-    fetchCouponAdd,
-    fetchCouponById,
-    fetchCouponUpdate,
-    type CouponSavePayload
-  } from '@/api/mall/coupon'
-  import type { DialogType } from '@/types'
-
-  interface Props {
-    visible: boolean
-    type: DialogType
-    couponId?: number
-  }
-
-  const props = defineProps<Props>()
-  const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
-
-  const dialogVisible = computed({
-    get: () => props.visible,
-    set: (v) => emit('update:visible', v)
-  })
-
-  const formRef = ref<FormInstance>()
-  const submitting = ref(false)
-  const useDateRange = ref<[string, string] | null>(null)
-  const enableDateRange = ref<[string, string] | null>(null)
-
-  const defaultForm = (): CouponSavePayload => ({
-    couponName: '',
-    useType: 0,
-    couponType: 0,
-    publish: 0,
-    spuList: [],
-    categoryList: []
-  })
-
-  const formData = ref<CouponSavePayload>(defaultForm())
-
-  const rules: FormRules = {
-    couponName: [{ required: true, message: '请输入优惠券名称', trigger: 'blur' }]
-  }
-
-  watch(
-    () => props.visible,
-    async (visible) => {
-      if (!visible) return
-      formData.value = defaultForm()
-      useDateRange.value = null
-      enableDateRange.value = null
-      if (props.type === 'edit' && props.couponId) {
-        const detail = await fetchCouponById(props.couponId)
-        formData.value = {
-          id: detail.id,
-          couponName: detail.couponName || '',
-          couponType: detail.couponType,
-          amount: detail.amount,
-          minPoint: detail.minPoint,
-          perLimit: detail.perLimit,
-          useType: detail.useType,
-          note: detail.note,
-          publishCount: detail.publishCount,
-          publish: detail.publish,
-          startTime: detail.startTime,
-          endTime: detail.endTime,
-          enableStartTime: detail.enableStartTime,
-          enableEndTime: detail.enableEndTime,
-          spuList: (detail.spuList || []).map((s) => ({ spuId: s.spuId, spuName: s.spuName })),
-          categoryList: (detail.categoryList || []).map((c) => ({
-            categoryId: c.categoryId,
-            categoryName: c.categoryName
-          }))
-        }
-        if (detail.startTime && detail.endTime) {
-          useDateRange.value = [detail.startTime, detail.endTime]
-        }
-        if (detail.enableStartTime && detail.enableEndTime) {
-          enableDateRange.value = [detail.enableStartTime, detail.enableEndTime]
-        }
-      }
-    }
-  )
-
-  const addSpu = () => {
-    formData.value.spuList = formData.value.spuList || []
-    formData.value.spuList.push({})
-  }
-  const removeSpu = (index: number) => formData.value.spuList?.splice(index, 1)
-
-  const addCategory = () => {
-    formData.value.categoryList = formData.value.categoryList || []
-    formData.value.categoryList.push({})
-  }
-  const removeCategory = (index: number) => formData.value.categoryList?.splice(index, 1)
-
-  const handleSubmit = async () => {
-    await formRef.value?.validate()
-    submitting.value = true
-    try {
-      const payload: CouponSavePayload = {
-        ...formData.value,
-        startTime: useDateRange.value?.[0],
-        endTime: useDateRange.value?.[1],
-        enableStartTime: enableDateRange.value?.[0],
-        enableEndTime: enableDateRange.value?.[1],
-        spuList: formData.value.useType === 2
-          ? (formData.value.spuList || []).filter((s) => s.spuId)
-          : [],
-        categoryList: formData.value.useType === 1
-          ? (formData.value.categoryList || []).filter((c) => c.categoryId)
-          : []
-      }
-      if (props.type === 'add') await fetchCouponAdd(payload)
-      else await fetchCouponUpdate(payload)
-      dialogVisible.value = false
-      emit('success')
-    } finally {
-      submitting.value = false
-    }
-  }
-</script>
-
-<style scoped lang="scss">
-  .relation-list {
-    width: 100%;
-  }
-  .relation-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    align-items: center;
-  }
-</style>
+<template>  <ElDialog    v-model="dialogVisible"    :title="type === 'add' ? '新增优惠券' : '编辑优惠券'"    width="720px"    align-center    destroy-on-close  >    <ElAlert      v-if="isKeyFieldsLocked"      :closable="false"      class="publish-lock-alert"      show-icon      title="该优惠券已发布，面额、门槛及适用范围不可修改"      type="warning"    />    <ElForm ref="formRef" :model="formData" :rules="rules" label-width="110px">      <ElFormItem label="名称" prop="couponName">        <ElInput v-model="formData.couponName" maxlength="128" placeholder="如：满 5999 减 1000" />      </ElFormItem>      <ElFormItem label="券图片">        <MallImageUpload          v-model="formData.couponImg"          :max-size-mb="5"          picker-title="选择优惠券图片"        />      </ElFormItem>      <ElRow :gutter="16">        <ElCol :span="12">          <ElFormItem label="面额" prop="amount">            <ElInputNumber              v-model="formData.amount"              :disabled="isKeyFieldsLocked"              :precision="2"              :min="0.01"              controls-position="right"              style="width: 100%"            />          </ElFormItem>        </ElCol>        <ElCol :span="12">          <ElFormItem label="使用门槛" prop="minPoint">            <ElInputNumber              v-model="formData.minPoint"              :disabled="isKeyFieldsLocked"              :precision="2"              :min="0.01"              controls-position="right"              style="width: 100%"            />          </ElFormItem>        </ElCol>      </ElRow>      <ElRow :gutter="16">        <ElCol :span="12">          <ElFormItem label="券类型" prop="couponType">            <ElSelect v-model="formData.couponType" placeholder="类型" style="width: 100%">              <ElOption                v-for="opt in COUPON_TYPE_OPTIONS"                :key="opt.value"                :label="opt.label"                :value="opt.value"              />            </ElSelect>          </ElFormItem>        </ElCol>        <ElCol :span="12">          <ElFormItem label="适用类型" prop="useType">            <ElSelect              v-model="formData.useType"              :disabled="isKeyFieldsLocked"              placeholder="适用范围"              style="width: 100%"            >              <ElOption                v-for="opt in COUPON_USE_TYPE_OPTIONS"                :key="opt.value"                :label="opt.label"                :value="opt.value"              />            </ElSelect>          </ElFormItem>        </ElCol>      </ElRow>      <ElFormItem v-if="formData.couponType === 1" label="会员等级" prop="memberLevel">        <ElSelect v-model="formData.memberLevel" placeholder="选择会员等级" style="width: 100%">          <ElOption v-for="lv in levelOptions" :key="lv.id" :label="lv.name" :value="lv.id!" />        </ElSelect>      </ElFormItem>      <ElFormItem label="有效期" prop="useDateRange">        <ElDatePicker          v-model="useDateRange"          type="datetimerange"          value-format="YYYY-MM-DD HH:mm:ss"          start-placeholder="使用开始"          end-placeholder="使用结束"          style="width: 100%"        />      </ElFormItem>      <ElFormItem label="领取时间" prop="enableDateRange">        <ElDatePicker          v-model="enableDateRange"          type="datetimerange"          value-format="YYYY-MM-DD HH:mm:ss"          start-placeholder="领取开始"          end-placeholder="领取结束"          style="width: 100%"        />      </ElFormItem>      <ElRow :gutter="16">        <ElCol :span="12">          <ElFormItem label="发行数量" prop="publishCount">            <ElInputNumber              v-model="formData.publishCount"              :min="minPublishCount"              controls-position="right"              style="width: 100%"            />          </ElFormItem>        </ElCol>        <ElCol :span="12">          <ElFormItem label="每人限领" prop="perLimit">            <ElInputNumber              v-model="formData.perLimit"              :min="1"              controls-position="right"              style="width: 100%"            />          </ElFormItem>        </ElCol>      </ElRow>      <ElFormItem label="发布状态">        <ElRadioGroup v-model="formData.publish">          <ElRadio :value="1">已发布</ElRadio>          <ElRadio :value="0">未发布</ElRadio>        </ElRadioGroup>      </ElFormItem>      <ElFormItem label="备注">        <ElInput v-model="formData.note" type="textarea" :rows="2" />      </ElFormItem>      <ElFormItem v-if="formData.useType === 2" label="关联商品" prop="spuList">        <div class="relation-list">          <ElTable            v-if="formData.spuList?.length"            :data="formData.spuList"            border            class="relation-table"            max-height="240px"            size="small"            stripe          >            <ElTableColumn label="ID" prop="spuId" width="80" />            <ElTableColumn label="商品名称" min-width="200" prop="spuName" show-overflow-tooltip>              <template #default="{ row }">                {{ row.spuName || '-' }}              </template>            </ElTableColumn>            <ElTableColumn v-if="!isKeyFieldsLocked" fixed="right" label="操作" width="72">              <template #default="{ $index }">                <ElButton link type="danger" @click="removeSpu($index)">移除</ElButton>              </template>            </ElTableColumn>          </ElTable>          <p v-else class="relation-empty">暂未选择商品</p>          <ElButton v-if="!isKeyFieldsLocked" link type="primary" @click="spuPickerVisible = true">            + 选择商品          </ElButton>        </div>      </ElFormItem>      <ElFormItem v-if="formData.useType === 1" label="关联分类" prop="categoryList">        <div class="relation-list">          <ElTable            v-if="formData.categoryList?.length"            :data="formData.categoryList"            border            class="relation-table"            max-height="240px"            size="small"            stripe          >            <ElTableColumn label="ID" prop="categoryId" width="80" />            <ElTableColumn              label="分类名称"              min-width="200"              prop="categoryName"              show-overflow-tooltip            >              <template #default="{ row }">                {{ row.categoryName || '-' }}              </template>            </ElTableColumn>            <ElTableColumn v-if="!isKeyFieldsLocked" fixed="right" label="操作" width="72">              <template #default="{ $index }">                <ElButton link type="danger" @click="removeCategory($index)">移除</ElButton>              </template>            </ElTableColumn>          </ElTable>          <p v-else class="relation-empty">暂未选择分类</p>          <div v-if="!isKeyFieldsLocked" class="category-picker-row">            <ElCascader              v-model="categoryPickerPath"              :options="categoryOptions"              :props="categoryCascaderProps"              :show-all-levels="true"              class="category-cascader"              clearable              filterable              placeholder="选择三级分类后点击添加"            />            <ElButton              :disabled="!categoryPickerPath?.length"              link              type="primary"              @click="addCategoryFromPicker"            >              + 添加分类            </ElButton>          </div>        </div>      </ElFormItem>    </ElForm>    <template #footer>      <ElButton @click="dialogVisible = false">取消</ElButton>      <ElButton type="primary" :loading="submitting" @click="handleSubmit">提交</ElButton>    </template>  </ElDialog>  <MallSpuPickerDialog    v-model:visible="spuPickerVisible"    :exclude-ids="selectedSpuIds"    @confirm="handleSpuPickerConfirm"  /></template><script setup lang="ts">  import type { FormInstance, FormRules } from 'element-plus'  import { ElMessage } from 'element-plus'  import {    COUPON_TYPE_OPTIONS,    COUPON_USE_TYPE_OPTIONS,    type CouponSavePayload,    fetchCouponAdd,    fetchCouponById,    fetchCouponUpdate  } from '@/api/mall/coupon'  import { fetchMemberLevelList, type MemberLevelVo } from '@/api/mall/member-level'  import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'  import MallSpuPickerDialog, {    type MallSpuPickerItem  } from '@/components/mall/mall-spu-picker-dialog.vue'  import {    filterVisibleCategoryTree,    findCategoryNode,    mapCategoryCascaderOptions  } from '@/utils/mall/category-tree'  import type { DialogType } from '@/types'  interface Props {    visible: boolean    type: DialogType    couponId?: number  }  const props = defineProps<Props>()  const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()  const dialogVisible = computed({    get: () => props.visible,    set: (v) => emit('update:visible', v)  })  const formRef = ref<FormInstance>()  const submitting = ref(false)  const originPublished = ref(false)  const originReceiveCount = ref(0)  const useDateRange = ref<[string, string] | null>(null)  const enableDateRange = ref<[string, string] | null>(null)  const spuPickerVisible = ref(false)  const categoryPickerPath = ref<number[]>([])  const categoryOptions = ref<MallCategoryTreeNode[]>([])  const levelOptions = ref<MemberLevelVo[]>([])  const isKeyFieldsLocked = computed(() => props.type === 'edit' && originPublished.value)  const minPublishCount = computed(() =>    Math.max(1, originReceiveCount.value > 0 ? originReceiveCount.value : 1)  )  const categoryCascaderProps = {    value: 'catId',    label: 'name',    children: 'children',    leaf: 'leaf',    emitPath: true,    expandTrigger: 'click' as const,    checkStrictly: false  }  const selectedSpuIds = computed(() =>    (formData.value.spuList || [])      .map((item) => item.spuId)      .filter((id): id is number => id != null && Number.isFinite(Number(id)))      .map((id) => Number(id))  )  const selectedCategoryIds = computed(() =>    (formData.value.categoryList || [])      .map((item) => item.categoryId)      .filter((id): id is number => id != null && Number.isFinite(Number(id)))      .map((id) => Number(id))  )  const defaultForm = (): CouponSavePayload => ({    couponName: '',    useType: 0,    couponType: 0,    publish: 0,    perLimit: 1,    publishCount: 1,    spuList: [],    categoryList: []  })  const formData = ref<CouponSavePayload>(defaultForm())  const validateDateRange = (    range: [string, string] | null,    label: string  ): Error | void => {    if (!range || range.length !== 2 || !range[0] || !range[1]) {      return new Error(`请选择${label}`)    }    if (new Date(range[1]).getTime() <= new Date(range[0]).getTime()) {      return new Error(`${label}结束时间必须晚于开始时间`)    }  }  const rules: FormRules = {    couponName: [{ required: true, message: '请输入优惠券名称', trigger: 'blur' }],    amount: [{ required: true, message: '请输入面额', trigger: 'blur' }],    minPoint: [      { required: true, message: '请输入使用门槛', trigger: 'blur' },      {        validator: (_rule, value, callback) => {          const amount = formData.value.amount          if (value != null && amount != null && Number(value) < Number(amount)) {            callback(new Error('使用门槛不能小于面额'))            return          }          callback()        },        trigger: 'blur'      }    ],    couponType: [{ required: true, message: '请选择券类型', trigger: 'change' }],    useType: [{ required: true, message: '请选择适用范围', trigger: 'change' }],    memberLevel: [      {        validator: (_rule, value, callback) => {          if (formData.value.couponType === 1 && (value == null || value === '')) {            callback(new Error('会员赠券必须选择会员等级'))            return          }          callback()        },        trigger: 'change'      }    ],    useDateRange: [      {        validator: (_rule, _value, callback) => {          const err = validateDateRange(useDateRange.value, '有效期')          callback(err ? err.message : undefined)        },        trigger: 'change'      }    ],    enableDateRange: [      {        validator: (_rule, _value, callback) => {          const err = validateDateRange(enableDateRange.value, '领取时间')          callback(err ? err.message : undefined)        },        trigger: 'change'      }    ],    publishCount: [{ required: true, message: '请输入发行数量', trigger: 'blur' }],    perLimit: [{ required: true, message: '请输入每人限领', trigger: 'blur' }],    spuList: [      {        validator: (_rule, _value, callback) => {          if (formData.value.useType === 2 && !formData.value.spuList?.length) {            callback(new Error('指定商品时必须至少选择一个商品'))            return          }          callback()        },        trigger: 'change'      }    ],    categoryList: [      {        validator: (_rule, _value, callback) => {          if (formData.value.useType === 1 && !formData.value.categoryList?.length) {            callback(new Error('指定分类时必须至少选择一个分类'))            return          }          callback()        },        trigger: 'change'      }    ]  }  const loadLevelOptions = async () => {    try {      levelOptions.value = await fetchMemberLevelList()    } catch {      levelOptions.value = []    }  }  const loadCategoryOptions = async () => {    try {      const tree = await fetchMallCategoryTree()      categoryOptions.value = mapCategoryCascaderOptions(filterVisibleCategoryTree(tree || []), {        boundCatIds: selectedCategoryIds.value      })    } catch {      categoryOptions.value = []    }  }  watch(    () => props.visible,    async (visible) => {      if (!visible) return      formData.value = defaultForm()      useDateRange.value = null      enableDateRange.value = null      categoryPickerPath.value = []      originPublished.value = false      originReceiveCount.value = 0      await loadLevelOptions()      if (props.type === 'edit' && props.couponId) {        const detail = await fetchCouponById(props.couponId)        originPublished.value = detail.publish === 1        originReceiveCount.value = detail.receiveCount ?? 0        formData.value = {          id: detail.id,          couponName: detail.couponName || '',          couponType: detail.couponType,          couponImg: detail.couponImg,          amount: detail.amount,          minPoint: detail.minPoint,          perLimit: detail.perLimit,          useType: detail.useType,          note: detail.note,          publishCount: detail.publishCount,          publish: detail.publish,          memberLevel: detail.memberLevel,          startTime: detail.startTime,          endTime: detail.endTime,          enableStartTime: detail.enableStartTime,          enableEndTime: detail.enableEndTime,          spuList: (detail.spuList || []).map((s) => ({ spuId: s.spuId, spuName: s.spuName })),          categoryList: (detail.categoryList || []).map((c) => ({            categoryId: c.categoryId,            categoryName: c.categoryName          }))        }        if (detail.startTime && detail.endTime) {          useDateRange.value = [detail.startTime, detail.endTime]        }        if (detail.enableStartTime && detail.enableEndTime) {          enableDateRange.value = [detail.enableStartTime, detail.enableEndTime]        }      }      if (formData.value.useType === 1) {        await loadCategoryOptions()      }    }  )  watch(    () => formData.value.useType,    async (useType) => {      if (useType === 1) {        await loadCategoryOptions()      }    }  )  watch(    () => formData.value.couponType,    (couponType) => {      if (couponType !== 1) {        formData.value.memberLevel = undefined      }    }  )  const handleSpuPickerConfirm = (items: MallSpuPickerItem[]) => {    formData.value.spuList = formData.value.spuList || []    for (const item of items) {      if (selectedSpuIds.value.includes(item.spuId)) continue      formData.value.spuList.push({        spuId: item.spuId,        spuName: item.spuName      })    }    formRef.value?.validateField('spuList')  }  const removeSpu = (index: number) => {    formData.value.spuList?.splice(index, 1)    formRef.value?.validateField('spuList')  }  const addCategoryFromPicker = () => {    const path = categoryPickerPath.value    if (!path?.length) {      ElMessage.warning('请选择三级分类')      return    }    const categoryId = Number(path[path.length - 1])    if (!Number.isFinite(categoryId)) {      ElMessage.warning('请选择有效的三级分类')      return    }    const node = findCategoryNode(categoryOptions.value, categoryId)    if (!node || Number(node.catLevel) !== 3) {      ElMessage.warning('请选择三级分类，不能选择一级或二级')      return    }    if (selectedCategoryIds.value.includes(categoryId)) {      ElMessage.warning('该分类已添加，请勿重复选择')      return    }    formData.value.categoryList = formData.value.categoryList || []    formData.value.categoryList.push({      categoryId,      categoryName: node.name    })    categoryPickerPath.value = []    loadCategoryOptions()    formRef.value?.validateField('categoryList')  }  const removeCategory = (index: number) => {    formData.value.categoryList?.splice(index, 1)    loadCategoryOptions()    formRef.value?.validateField('categoryList')  }  const handleSubmit = async () => {    await formRef.value?.validate()    submitting.value = true    try {      const payload: CouponSavePayload = {        ...formData.value,        startTime: useDateRange.value?.[0],        endTime: useDateRange.value?.[1],        enableStartTime: enableDateRange.value?.[0],        enableEndTime: enableDateRange.value?.[1],        spuList:          formData.value.useType === 2 ? (formData.value.spuList || []).filter((s) => s.spuId) : [],        categoryList:          formData.value.useType === 1            ? (formData.value.categoryList || []).filter((c) => c.categoryId)            : []      }      if (payload.couponType !== 1) {        payload.memberLevel = undefined      }      if (props.type === 'add') await fetchCouponAdd(payload)      else await fetchCouponUpdate(payload)      dialogVisible.value = false      emit('success')    } finally {      submitting.value = false    }  }</script><style scoped lang="scss">  .publish-lock-alert {    margin-bottom: 16px;  }  .relation-list {    width: 100%;  }  .relation-table {    width: 100%;    margin-bottom: 8px;  }  .relation-empty {    margin: 0 0 8px;    font-size: 13px;    color: var(--art-gray-500);  }  .category-picker-row {    display: flex;    gap: 8px;    align-items: center;  }  .category-cascader {    flex: 1;  }</style>

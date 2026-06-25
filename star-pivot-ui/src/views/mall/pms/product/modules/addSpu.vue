@@ -212,6 +212,19 @@
 
     <!-- 步骤 3：SKU -->
     <ElCard v-show="step === 3" shadow="never" class="wizard-panel wizard-panel--sku">
+      <div v-if="!isEdit" class="sku-ware-bar">
+        <span class="sku-ware-bar__label">默认入库仓库</span>
+        <ElSelect
+          v-model="baseForm.defaultWareId"
+          clearable
+          filterable
+          placeholder="选填：发布时写入初始库存"
+          style="width: 280px"
+        >
+          <ElOption v-for="w in wareOptions" :key="w.id" :label="w.name" :value="w.id!" />
+        </ElSelect>
+        <span class="sku-ware-bar__hint">填写各 SKU「初始库存」后，保存时将自动入库</span>
+      </div>
       <div
         ref="skuTableScrollRef"
         class="sku-table-scroll"
@@ -259,6 +272,26 @@
                 :precision="2"
                 controls-position="right"
                 class="sku-cell-num"
+              />
+            </template>
+          </ElTableColumn>
+          <ElTableColumn v-if="!isEdit" align="center" label="初始库存" width="120">
+            <template #default="{ row }">
+              <ElInputNumber
+                v-model="row.initialStock"
+                :min="0"
+                class="sku-cell-num"
+                controls-position="right"
+              />
+            </template>
+          </ElTableColumn>
+          <ElTableColumn align="center" label="库存预警" width="120">
+            <template #default="{ row }">
+              <ElInputNumber
+                v-model="row.stockWarning"
+                :min="0"
+                class="sku-cell-num"
+                controls-position="right"
               />
             </template>
           </ElTableColumn>
@@ -422,6 +455,7 @@
   } from '@/utils/mall/spu-wizard-payload'
   import SpuImageUpload from './spu-image-upload.vue'
   import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { fetchWmsWareInfoList, type WmsWareInfoVo } from '@/api/mall/wareinfo'
 
   defineOptions({ name: 'MallProductAddSpu' })
 
@@ -453,6 +487,7 @@
   const categoryTreeFull = ref<MallCategoryTreeNode[]>([])
   const catalogPath = ref<number[]>([])
   const brandOptions = ref<MallBrandVo[]>([])
+  const wareOptions = ref<WmsWareInfoVo[]>([])
 
   const cascaderProps = {
     value: 'catId',
@@ -473,7 +508,8 @@
     publishStatus: 0,
     decript: [] as string[],
     images: [] as string[],
-    bounds: { buyBounds: 0, growBounds: 0 }
+    bounds: { buyBounds: 0, growBounds: 0 },
+    defaultWareId: undefined as number | undefined
   })
 
   const baseRules: FormRules = {
@@ -569,6 +605,15 @@
       brandOptions.value = pageRows<MallBrandVo>(res)
     } catch {
       brandOptions.value = []
+    }
+  }
+
+  const loadWarehouses = async () => {
+    try {
+      const res = await fetchWmsWareInfoList({ pageNum: 1, pageSize: 200 })
+      wareOptions.value = res.rows || []
+    } catch {
+      wareOptions.value = []
     }
   }
 
@@ -696,7 +741,9 @@
         fullCount: 0,
         discount: 0,
         fullPrice: 0,
-        reducePrice: 0
+        reducePrice: 0,
+        initialStock: 0,
+        stockWarning: 0
       }
     ]
     step.value = 3
@@ -747,7 +794,9 @@
         fullCount: 0,
         discount: 0,
         fullPrice: 0,
-        reducePrice: 0
+        reducePrice: 0,
+        initialStock: 0,
+        stockWarning: 0
       })
     })
     step.value = 3
@@ -851,7 +900,8 @@
       publishStatus: 0,
       decript: [],
       images: [],
-      bounds: { buyBounds: 0, growBounds: 0 }
+      bounds: { buyBounds: 0, growBounds: 0 },
+      defaultWareId: undefined
     })
     catalogPath.value = []
     attrGroups.value = []
@@ -956,7 +1006,9 @@
         fullCount: sku.fullCount ?? 0,
         discount: Number(sku.discount ?? 0),
         fullPrice: Number(sku.fullPrice ?? 0),
-        reducePrice: Number(sku.reducePrice ?? 0)
+        reducePrice: Number(sku.reducePrice ?? 0),
+        initialStock: 0,
+        stockWarning: sku.stockWarning ?? 0
       }
     })
   }
@@ -990,7 +1042,7 @@
   }
 
   onMounted(async () => {
-    await Promise.all([loadCategoryOptions(), loadBrands()])
+    await Promise.all([loadCategoryOptions(), loadBrands(), loadWarehouses()])
     if (isEdit.value) {
       await loadProductForEdit()
     } else {
@@ -1061,6 +1113,27 @@
   .wizard-panel--sku {
     :deep(.el-card__body) {
       padding-top: 8px;
+    }
+  }
+
+  .sku-ware-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: var(--el-fill-color-light);
+    border-radius: 8px;
+
+    &__label {
+      font-size: 13px;
+      color: var(--el-text-color-regular);
+    }
+
+    &__hint {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
     }
   }
 

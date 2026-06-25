@@ -1,5 +1,3 @@
-import request from '@/utils/http'
-
 /** C 端会员 */
 export interface PortalMember {
   id?: number
@@ -133,6 +131,7 @@ export interface PortalProductDetail extends PortalProductListItem {
     skuTitle?: string
     skuSubtitle?: string
     images?: Array<{ imgUrl: string; defaultImg: number }>
+    availableStock?: number
   }>
 }
 
@@ -243,6 +242,50 @@ export interface PortalOrderSubmitPayload {
   items?: Array<{ skuId: number; quantity: number }>
   note?: string
   payType?: number
+  couponHistoryId?: number
+}
+
+export interface PortalMemberCoupon {
+  historyId: number
+  couponId: number
+  couponName: string
+  amount: number
+  minPoint?: number
+  useType?: number
+  endTime?: string
+}
+
+export interface PortalCheckoutCoupon extends PortalMemberCoupon {
+  startTime?: string
+  usable?: boolean
+  unusableReason?: string
+}
+
+export interface PortalClaimableCoupon {
+  couponId: number
+  couponName: string
+  amount: number
+  minPoint?: number
+  useType?: number
+  startTime?: string
+  endTime?: string
+  enableEndTime?: string
+  perLimit?: number
+  receivedCount?: number
+  canReceive?: boolean
+}
+
+export interface PortalMyCoupon {
+  historyId: number
+  couponId: number
+  couponName: string
+  amount: number
+  minPoint?: number
+  useType?: number
+  status?: number
+  endTime?: string
+  createTime?: string
+  useTime?: string
 }
 
 export interface PortalOrderSubmitResult {

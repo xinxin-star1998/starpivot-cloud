@@ -49,4 +49,16 @@
         </where>
         ORDER BY s.sku_id DESC
     </select>
+
+    <update id="incrementSaleCount">
+        UPDATE pms_sku_info
+        SET sale_count = IFNULL(sale_count, 0) + #{quantity}
+        WHERE sku_id = #{skuId}
+    </update>
+
+    <update id="decrementSaleCount">
+        UPDATE pms_sku_info
+        SET sale_count = GREATEST(IFNULL(sale_count, 0) - #{quantity}, 0)
+        WHERE sku_id = #{skuId}
+    </update>
 </mapper>

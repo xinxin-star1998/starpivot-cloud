@@ -67,6 +67,13 @@ export function fetchReturnAudit(data: ReturnAuditPayload) {
   })
 }
 
+export function fetchReturnComplete(id: number) {
+  return request.put<void>({
+    url: `/api/mall/order-return/${id}/complete`,
+    showSuccessMessage: true
+  })
+}
+
 /** 退货状态：0待处理 1退货中 2已完成 3已拒绝 */
 export const RETURN_STATUS_MAP: Record<number, string> = {
   0: '待处理',

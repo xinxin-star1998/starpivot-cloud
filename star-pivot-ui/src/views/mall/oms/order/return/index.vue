@@ -17,14 +17,18 @@
     </ElCard>
 
     <ReturnDetailDrawer v-model:visible="detailVisible" :return-id="currentReturnId" />
-    <AuditDialog v-model:visible="auditVisible" :return-id="currentReturnId" @submit="refreshData" />
+    <AuditDialog
+      v-model:visible="auditVisible"
+      :return-id="currentReturnId"
+      @submit="refreshData"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
   import { h } from 'vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchReturnList, RETURN_STATUS_MAP, type ReturnVo } from '@/api/mall/order-return'
+  import { fetchReturnComplete, fetchReturnList, RETURN_STATUS_MAP } from '@/api/mall/order-return'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ReturnSearch from './modules/return-search.vue'
@@ -75,7 +79,8 @@
           prop: 'returnAmount',
           label: '退款金额',
           width: 100,
-          formatter: (row) => (row.returnAmount != null ? `¥${Number(row.returnAmount).toFixed(2)}` : '-')
+          formatter: (row) =>
+            row.returnAmount != null ? `¥${Number(row.returnAmount).toFixed(2)}` : '-'
         },
         {
           prop: 'status',
@@ -83,9 +88,17 @@
           width: 100,
           formatter: (row) => {
             const type =
-              row.status === 2 ? 'success' : row.status === 3 ? 'danger' : row.status === 1 ? 'warning' : 'info'
-            return h(ElTag, { type, size: 'small' }, () =>
-              RETURN_STATUS_MAP[row.status ?? 0] ?? row.status
+              row.status === 2
+                ? 'success'
+                : row.status === 3
+                  ? 'danger'
+                  : row.status === 1
+                    ? 'warning'
+                    : 'info'
+            return h(
+              ElTag,
+              { type, size: 'small' },
+              () => RETURN_STATUS_MAP[row.status ?? 0] ?? row.status
             )
           }
         },
@@ -115,6 +128,15 @@
                 )
               )
             }
+            if (hasAuth('mall:return:audit') && row.status === 1) {
+              actions.push(
+                h(
+                  ElButton,
+                  { link: true, type: 'warning', onClick: () => handleComplete(row.id!) },
+                  () => '完成退货'
+                )
+              )
+            }
             return actions.length ? h(ElSpace, null, () => actions) : ''
           }
         }
@@ -135,5 +157,10 @@
   function openAudit(id?: number) {
     currentReturnId.value = id
     auditVisible.value = true
+  }
+
+  async function handleComplete(id: number) {
+    await fetchReturnComplete(id)
+    refreshData()
   }
 </script>

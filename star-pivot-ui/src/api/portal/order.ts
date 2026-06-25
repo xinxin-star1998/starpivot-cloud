@@ -41,3 +41,27 @@ export function fetchPortalOrderMockPay(id: number) {
     showSuccessMessage: true
   })
 }
+
+export function fetchPortalOrderConfirmReceive(id: number) {
+  return request.put<void>({
+    url: `/api/portal/order/${id}/receive`,
+    showSuccessMessage: true
+  })
+}
+
+export interface PortalOrderReturnApplyPayload {
+  orderId: number
+  skuId?: number
+  quantity?: number
+  items?: Array<{ skuId: number; quantity: number }>
+  reason: string
+  description?: string
+}
+
+export function fetchPortalOrderReturnApply(data: PortalOrderReturnApplyPayload) {
+  return request.post<number[]>({
+    url: '/api/portal/order/return',
+    data,
+    showSuccessMessage: true
+  })
+}

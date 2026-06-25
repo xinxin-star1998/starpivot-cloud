@@ -12,12 +12,19 @@
           购物车
           <ElBadge v-if="cartCount > 0" :value="cartCount" class="cart-badge" />
         </RouterLink>
-        <RouterLink to="/portal/orders" class="nav-link" active-class="is-active">我的订单</RouterLink>
+        <RouterLink to="/portal/orders" class="nav-link" active-class="is-active"
+          >我的订单</RouterLink
+        >
+        <RouterLink active-class="is-active" class="nav-link" to="/portal/coupons"
+          >优惠券</RouterLink
+        >
       </nav>
 
       <div class="portal-header__actions">
         <template v-if="portalStore.isLogin">
-          <span class="username">{{ portalStore.member?.nickname || portalStore.member?.username }}</span>
+          <span class="username">{{
+            portalStore.member?.nickname || portalStore.member?.username
+          }}</span>
           <ElButton link type="primary" @click="handleLogout">退出</ElButton>
         </template>
         <ElButton v-else type="primary" plain @click="router.push('/portal/login')">登录</ElButton>

@@ -1,7 +1,7 @@
 package cn.org.starpivot.mall.sms.domain.bo;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -29,6 +29,7 @@ public class CouponSaveBo {
     /**
      * 优惠券类型
      */
+    @NotNull(message = "券类型不能为空")
     private Integer couponType;
 
     /**
@@ -60,29 +61,46 @@ public class CouponSaveBo {
      * num
      */
     private Integer num;
+
     /**
      * 金额
      */
+    @NotNull(message = "面额不能为空")
+    @DecimalMin(value = "0.01", message = "面额必须大于 0")
     private BigDecimal amount;
+
     /**
      * per Limit
      */
+    @NotNull(message = "每人限领不能为空")
+    @Min(value = 1, message = "每人限领至少为 1")
     private Integer perLimit;
+
     /**
      * min Point
      */
+    @NotNull(message = "使用门槛不能为空")
+    @DecimalMin(value = "0.01", message = "使用门槛必须大于 0")
     private BigDecimal minPoint;
+
     /**
      * start时间
      */
+    @NotNull(message = "使用开始时间不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime startTime;
+
     /**
      * end时间
      */
+    @NotNull(message = "使用结束时间不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime endTime;
+
     /**
      * 类型
      */
+    @NotNull(message = "适用范围不能为空")
     private Integer useType;
 
     /**
@@ -100,6 +118,8 @@ public class CouponSaveBo {
     /**
      * publish数量
      */
+    @NotNull(message = "发行数量不能为空")
+    @Min(value = 1, message = "发行数量至少为 1")
     private Integer publishCount;
     /**
      * use数量
@@ -112,10 +132,15 @@ public class CouponSaveBo {
     /**
      * enableStart时间
      */
+    @NotNull(message = "领取开始时间不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime enableStartTime;
+
     /**
      * enableEnd时间
      */
+    @NotNull(message = "领取结束时间不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime enableEndTime;
 
     /**
@@ -137,6 +162,7 @@ public class CouponSaveBo {
     /**
      * publish
      */
+    @NotNull(message = "发布状态不能为空")
     private Integer publish;
 
     /** useType=2 时关联 SPU */

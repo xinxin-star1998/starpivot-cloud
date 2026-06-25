@@ -10,6 +10,15 @@ export interface WareSku {
   stock?: number
   skuName?: string
   stockLocked?: number
+  wareName?: string
+  availableStock?: number
+  stockWarning?: number
+}
+
+export interface WareSkuInboundPayload {
+  skuId: number
+  wareId: number
+  skuNum: number
 }
 
 /**
@@ -41,6 +50,17 @@ export function fetchGetSkuList(params: SkuSearchParams) {
 export function fetchGetSkuById(id: number) {
   return request.get<WareSku>({
     url: `/api/mall/ware-sku/${id}`
+  })
+}
+
+/**
+ * 快速入库（累加库存）
+ */
+export function fetchInboundSku(data: WareSkuInboundPayload) {
+  return request.post({
+    url: '/api/mall/ware-sku/inbound',
+    data,
+    showSuccessMessage: true
   })
 }
 

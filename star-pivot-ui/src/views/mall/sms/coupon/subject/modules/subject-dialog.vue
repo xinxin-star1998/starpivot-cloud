@@ -33,25 +33,40 @@
       </ElFormItem>
       <ElFormItem label="关联商品">
         <div class="spu-list">
-          <div v-for="(item, index) in formData.spuList" :key="index" class="spu-row">
-            <ElInputNumber
-              v-model="item.spuId"
-              :min="1"
-              controls-position="right"
-              placeholder="SPU ID"
-              class="spu-id"
-            />
-            <ElInput v-model="item.name" placeholder="展示名" class="spu-name" />
-            <ElInputNumber
-              v-model="item.sort"
-              :min="0"
-              controls-position="right"
-              placeholder="排序"
-              class="spu-sort"
-            />
-            <ElButton type="danger" link @click="removeSpu(index)">移除</ElButton>
-          </div>
-          <ElButton type="primary" link @click="addSpu">+ 添加商品</ElButton>
+          <ElTable
+            v-if="formData.spuList?.length"
+            :data="formData.spuList"
+            border
+            class="spu-table"
+            max-height="280px"
+            size="small"
+            stripe
+          >
+            <ElTableColumn label="ID" prop="spuId" width="72" />
+            <ElTableColumn label="展示名" min-width="160">
+              <template #default="{ row }">
+                <ElInput v-model="row.name" placeholder="展示名" size="small" />
+              </template>
+            </ElTableColumn>
+            <ElTableColumn label="排序" width="100">
+              <template #default="{ row }">
+                <ElInputNumber
+                  v-model="row.sort"
+                  :min="0"
+                  controls-position="right"
+                  size="small"
+                  style="width: 100%"
+                />
+              </template>
+            </ElTableColumn>
+            <ElTableColumn fixed="right" label="操作" width="72">
+              <template #default="{ $index }">
+                <ElButton link type="danger" @click="removeSpu($index)">移除</ElButton>
+              </template>
+            </ElTableColumn>
+          </ElTable>
+          <p v-else class="spu-empty">暂未选择商品</p>
+          <ElButton link type="primary" @click="spuPickerVisible = true">+ 选择商品</ElButton>
         </div>
       </ElFormItem>
     </ElForm>
@@ -60,6 +75,12 @@
       <ElButton type="primary" :loading="submitting" @click="handleSubmit">提交</ElButton>
     </template>
   </ElDialog>
+
+  <MallSpuPickerDialog
+    v-model:visible="spuPickerVisible"
+    :exclude-ids="selectedSpuIds"
+    @confirm="handleSpuPickerConfirm"
+  />
 </template>
 
 <script setup lang="ts">
@@ -72,6 +93,9 @@
   } from '@/api/mall/subject'
   import type { DialogType } from '@/types'
   import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+  import MallSpuPickerDialog, {
+    type MallSpuPickerItem
+  } from '@/components/mall/mall-spu-picker-dialog.vue'
 
   interface Props {
     visible: boolean
@@ -89,6 +113,14 @@
 
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
+  const spuPickerVisible = ref(false)
+
+  const selectedSpuIds = computed(() =>
+    (formData.value.spuList || [])
+      .map((item) => item.spuId)
+      .filter((id): id is number => id != null && Number.isFinite(Number(id)))
+      .map((id) => Number(id))
+  )
 
   const defaultForm = (): HomeSubjectSavePayload => ({
     name: '',
@@ -133,9 +165,18 @@
     }
   )
 
-  const addSpu = () => {
+  const handleSpuPickerConfirm = (items: MallSpuPickerItem[]) => {
     formData.value.spuList = formData.value.spuList || []
-    formData.value.spuList.push({ spuId: undefined, name: '', sort: 0 })
+    let nextSort = formData.value.spuList.reduce((max, item) => Math.max(max, item.sort ?? 0), 0)
+    for (const item of items) {
+      if (selectedSpuIds.value.includes(item.spuId)) continue
+      nextSort += 1
+      formData.value.spuList.push({
+        spuId: item.spuId,
+        name: item.spuName || '',
+        sort: nextSort
+      })
+    }
   }
 
   const removeSpu = (index: number) => {
@@ -167,19 +208,15 @@
   .spu-list {
     width: 100%;
   }
-  .spu-row {
-    display: flex;
-    gap: 8px;
+
+  .spu-table {
+    width: 100%;
     margin-bottom: 8px;
-    align-items: center;
   }
-  .spu-id {
-    width: 140px;
-  }
-  .spu-name {
-    flex: 1;
-  }
-  .spu-sort {
-    width: 100px;
+
+  .spu-empty {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--art-gray-500);
   }
 </style>

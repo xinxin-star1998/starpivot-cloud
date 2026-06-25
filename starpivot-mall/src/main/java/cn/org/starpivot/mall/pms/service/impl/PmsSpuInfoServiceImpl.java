@@ -10,6 +10,7 @@ import cn.org.starpivot.mall.pms.domain.vo.*;
 import cn.org.starpivot.mall.pms.entity.*;
 import cn.org.starpivot.mall.pms.mapper.*;
 import cn.org.starpivot.mall.pms.service.PmsSpuInfoService;
+import cn.org.starpivot.mall.wms.service.WmsWareSkuService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -51,6 +52,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
     private final PmsSkuSaleAttrValueMapper pmsSkuSaleAttrValueMapper;
     private final PmsSpuCommentMapper pmsSpuCommentMapper;
     private final PmsCommentReplayMapper pmsCommentReplayMapper;
+    private final WmsWareSkuService wmsWareSkuService;
 
     @Override
     @Transactional(readOnly = true)
@@ -104,7 +106,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
         pmsSpuInfoMapper.insert(entity);
-        saveSpuRelations(entity.getId(), bo);
+        saveSpuRelations(entity.getId(), bo, true);
     }
 
     @Override
@@ -121,7 +123,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         existing.setUpdateTime(LocalDateTime.now());
         pmsSpuInfoMapper.updateById(existing);
         removeSpuRelations(bo.getId());
-        saveSpuRelations(bo.getId(), bo);
+        saveSpuRelations(bo.getId(), bo, false);
     }
 
     /**
@@ -261,6 +263,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         vo.setSkuTitle(sku.getSkuTitle());
         vo.setSkuSubtitle(sku.getSkuSubtitle());
         vo.setPrice(sku.getPrice());
+        vo.setStockWarning(sku.getStockWarning() == null ? 0 : sku.getStockWarning());
 
         List<PmsSkuSaleAttrValue> saleAttrs =
                 saleAttrMap.getOrDefault(sku.getSkuId(), Collections.emptyList());
@@ -302,11 +305,11 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
     }
 
     /** 步骤 2～5：在 pms_spu_info 已落库后写入关联表（pms_spu_bounds 仅前端展示，不落库） */
-    private void saveSpuRelations(Long spuId, ProductSaveBo bo) {
+    private void saveSpuRelations(Long spuId, ProductSaveBo bo, boolean initStock) {
         saveSpuInfoDesc(spuId, bo);
         saveSpuImages(spuId, bo);
         saveProductAttrValues(spuId, bo);
-        saveAllSkus(spuId, bo);
+        saveAllSkus(spuId, bo, initStock);
     }
 
     /** 2. pms_spu_info_desc */
@@ -365,7 +368,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
     }
 
     /** 5. 所有 SKU 及子表 */
-    private void saveAllSkus(Long spuId, ProductSaveBo bo) {
+    private void saveAllSkus(Long spuId, ProductSaveBo bo, boolean initStock) {
         if (CollectionUtils.isEmpty(bo.getSkus())) {
             return;
         }
@@ -373,14 +376,14 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
             if (skuBo == null || !StringUtils.hasText(skuBo.getSkuName())) {
                 continue;
             }
-            saveSku(spuId, bo, skuBo);
+            saveSku(spuId, bo, skuBo, initStock);
         }
     }
 
     /**
      * 单条 SKU：先 pms_sku_info，再 pms_sku_sale_attr_value、pms_sku_images。
      */
-    private void saveSku(Long spuId, ProductSaveBo bo, Skus skuBo) {
+    private void saveSku(Long spuId, ProductSaveBo bo, Skus skuBo, boolean initStock) {
         PmsSkuInfo sku = new PmsSkuInfo();
         sku.setSpuId(spuId);
         sku.setSkuName(skuBo.getSkuName());
@@ -390,11 +393,16 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         sku.setBrandId(bo.getBrandId());
         sku.setPrice(skuBo.getPrice() != null ? skuBo.getPrice() : BigDecimal.ZERO);
         sku.setSaleCount(0L);
+        sku.setStockWarning(skuBo.getStockWarning() != null && skuBo.getStockWarning() > 0 ? skuBo.getStockWarning() : null);
         sku.setSkuDefaultImg(resolveSkuDefaultImg(skuBo));
         pmsSkuInfoMapper.insert(sku);
 
         saveSkuSaleAttrValues(sku.getSkuId(), skuBo);
         saveSkuImages(sku.getSkuId(), skuBo);
+
+        if (initStock && skuBo.getInitialStock() != null && skuBo.getInitialStock() > 0 && bo.getDefaultWareId() != null) {
+            wmsWareSkuService.addStock(sku.getSkuId(), bo.getDefaultWareId(), skuBo.getInitialStock());
+        }
     }
 
     private String resolveSkuDefaultImg(Skus skuBo) {

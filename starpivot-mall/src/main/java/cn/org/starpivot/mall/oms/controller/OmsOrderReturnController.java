@@ -81,4 +81,13 @@ public class OmsOrderReturnController {
         omsOrderReturnApplyService.audit(bo);
         return Result.success("审核成功");
     }
+
+    @Log(title = "完成退货", businessType = BusinessType.UPDATE)
+    @Operation(summary = "完成退货（入库+退款记录）")
+    @PutMapping("/{id}/complete")
+    @PreAuthorize("hasAuthority('mall:return:audit')")
+    public Result<?> complete(@PathVariable("id") Long id) {
+        omsOrderReturnApplyService.completeReturn(id);
+        return Result.success("退货已完成");
+    }
 }

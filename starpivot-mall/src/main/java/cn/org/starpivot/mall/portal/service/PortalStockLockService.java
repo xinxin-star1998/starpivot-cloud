@@ -1,6 +1,9 @@
 package cn.org.starpivot.mall.portal.service;
 
+import cn.org.starpivot.mall.wms.domain.dto.WmsStockDeductionLine;
+
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,9 +31,9 @@ public interface PortalStockLockService {
     void releaseForOrder(String orderSn);
 
     /**
-     * 支付成功后确认锁定，移出超时调度（预扣保留至发货/关单）。
+     * 支付成功后扣减 WMS 实物库存、释放 Redis 预扣，并返回扣减明细。
      */
-    void confirmForOrder(String orderSn);
+    List<WmsStockDeductionLine> confirmForOrder(String orderSn);
 
     /**
      * 扫描并释放已超时的待付款订单库存锁。

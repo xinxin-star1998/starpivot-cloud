@@ -1,9 +1,10 @@
 package cn.org.starpivot.mall.wms.domain.vo;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.Data;
 
 /**
  * 采购单视图对象。
@@ -52,6 +53,11 @@ public class PurchaseVo {
      * Ware ID
      */
     private Long wareId;
+
+    /**
+     * 仓库名称（关联 wms_ware_info）
+     */
+    private String wareName;
 
     /**
      * 金额

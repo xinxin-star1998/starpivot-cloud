@@ -1,72 +1,45 @@
 package cn.org.starpivot.mall.sms.service.impl;
 
 import cn.org.starpivot.common.entity.PageResponse;
-
 import cn.org.starpivot.common.exception.BizException;
-
 import cn.org.starpivot.common.exception.ErrorCode;
-
 import cn.org.starpivot.mall.pms.entity.PmsCategory;
-
 import cn.org.starpivot.mall.pms.entity.PmsSpuInfo;
-
 import cn.org.starpivot.mall.pms.mapper.PmsCategoryMapper;
-
 import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
-
 import cn.org.starpivot.mall.sms.domain.bo.CouponCategoryBo;
-
 import cn.org.starpivot.mall.sms.domain.bo.CouponReqBo;
-
 import cn.org.starpivot.mall.sms.domain.bo.CouponSaveBo;
-
 import cn.org.starpivot.mall.sms.domain.bo.CouponSpuBo;
-
 import cn.org.starpivot.mall.sms.domain.vo.CouponCategoryVo;
-
 import cn.org.starpivot.mall.sms.domain.vo.CouponSpuVo;
-
 import cn.org.starpivot.mall.sms.domain.vo.CouponVo;
-
 import cn.org.starpivot.mall.sms.entity.SmsCoupon;
-
+import cn.org.starpivot.mall.sms.entity.SmsCouponHistory;
 import cn.org.starpivot.mall.sms.entity.SmsCouponSpuCategoryRelation;
-
 import cn.org.starpivot.mall.sms.entity.SmsCouponSpuRelation;
-
+import cn.org.starpivot.mall.sms.mapper.SmsCouponHistoryMapper;
 import cn.org.starpivot.mall.sms.mapper.SmsCouponMapper;
-
 import cn.org.starpivot.mall.sms.mapper.SmsCouponSpuCategoryRelationMapper;
-
 import cn.org.starpivot.mall.sms.mapper.SmsCouponSpuRelationMapper;
-
 import cn.org.starpivot.mall.sms.service.SmsCouponService;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-
 import com.baomidou.mybatisplus.core.metadata.IPage;
-
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import java.util.Collections;
-
-import java.util.List;
-
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.BeanUtils;
-
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.util.CollectionUtils;
-
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 优惠券服务实现类。
@@ -87,11 +60,19 @@ import org.springframework.util.StringUtils;
 
 public class SmsCouponServiceImpl implements SmsCouponService {
 
+    private static final int USE_TYPE_ALL = 0;
+
     private static final int USE_TYPE_CATEGORY = 1;
 
     private static final int USE_TYPE_SPU = 2;
 
+    private static final int COUPON_TYPE_MEMBER = 1;
+
+    private static final int PUBLISHED = 1;
+
     private final SmsCouponMapper smsCouponMapper;
+
+    private final SmsCouponHistoryMapper smsCouponHistoryMapper;
 
     private final SmsCouponSpuRelationMapper smsCouponSpuRelationMapper;
 
@@ -114,6 +95,26 @@ public class SmsCouponServiceImpl implements SmsCouponService {
         if (StringUtils.hasText(reqBo.getCouponName())) {
 
             wrapper.like(SmsCoupon::getCouponName, reqBo.getCouponName());
+
+        }
+
+        if (reqBo.getPublish() != null) {
+
+            wrapper.eq(SmsCoupon::getPublish, reqBo.getPublish());
+
+        }
+
+        if (reqBo.getUseType() != null) {
+
+            wrapper.eq(SmsCoupon::getUseType, reqBo.getUseType());
+
+        }
+
+        if (reqBo.getValidityStart() != null && reqBo.getValidityEnd() != null) {
+
+            wrapper.le(SmsCoupon::getStartTime, reqBo.getValidityEnd());
+
+            wrapper.ge(SmsCoupon::getEndTime, reqBo.getValidityStart());
 
         }
 
@@ -173,11 +174,17 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     public void add(CouponSaveBo bo) {
 
+        validateSaveBo(bo, null);
+
         SmsCoupon entity = new SmsCoupon();
 
         BeanUtils.copyProperties(bo, entity);
 
         entity.setId(null);
+
+        entity.setReceiveCount(0);
+
+        entity.setUseCount(0);
 
         smsCouponMapper.insert(entity);
 
@@ -205,9 +212,17 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
         }
 
+        validateSaveBo(bo, existing);
+
+        validatePublishedImmutableFields(existing, bo);
+
         SmsCoupon entity = new SmsCoupon();
 
         BeanUtils.copyProperties(bo, entity);
+
+        entity.setReceiveCount(existing.getReceiveCount());
+
+        entity.setUseCount(existing.getUseCount());
 
         smsCouponMapper.updateById(entity);
 
@@ -231,11 +246,293 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
         for (Long id : ids) {
 
+            SmsCoupon existing = smsCouponMapper.selectById(id);
+
+            if (existing == null) {
+
+                continue;
+
+            }
+
+            int received = existing.getReceiveCount() == null ? 0 : existing.getReceiveCount();
+
+            if (received > 0) {
+
+                throw new BizException("优惠券「" + existing.getCouponName() + "」已有用户领取，不能删除");
+
+            }
+
+            Long historyCount = smsCouponHistoryMapper.selectCount(
+
+                    Wrappers.<SmsCouponHistory>lambdaQuery().eq(SmsCouponHistory::getCouponId, id));
+
+            if (historyCount != null && historyCount > 0) {
+
+                throw new BizException("优惠券「" + existing.getCouponName() + "」已有领取记录，不能删除");
+
+            }
+
             removeRelations(id);
 
         }
 
         smsCouponMapper.delete(Wrappers.<SmsCoupon>lambdaQuery().in(SmsCoupon::getId, ids));
+
+    }
+
+    @Override
+
+    @Transactional(rollbackFor = Exception.class)
+
+    public void updatePublishStatus(Long id, Integer publish) {
+
+        if (id == null || publish == null) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "参数不能为空");
+
+        }
+
+        if (publish != 0 && publish != PUBLISHED) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "发布状态无效");
+
+        }
+
+        SmsCoupon existing = smsCouponMapper.selectById(id);
+
+        if (existing == null) {
+
+            throw new BizException("优惠券不存在");
+
+        }
+
+        if (Objects.equals(existing.getPublish(), publish)) {
+
+            return;
+
+        }
+
+        if (publish == PUBLISHED) {
+
+            validateSaveBo(toSaveBo(existing), existing);
+
+        }
+
+        SmsCoupon patch = new SmsCoupon();
+
+        patch.setId(id);
+
+        patch.setPublish(publish);
+
+        smsCouponMapper.updateById(patch);
+
+    }
+
+    private CouponSaveBo toSaveBo(SmsCoupon entity) {
+
+        CouponSaveBo bo = new CouponSaveBo();
+
+        BeanUtils.copyProperties(entity, bo);
+
+        bo.setId(entity.getId());
+
+        if (entity.getUseType() != null && entity.getUseType() == USE_TYPE_SPU) {
+
+            bo.setSpuList(loadSpuList(entity.getId()).stream().map(vo -> {
+
+                CouponSpuBo spuBo = new CouponSpuBo();
+
+                spuBo.setSpuId(vo.getSpuId());
+
+                spuBo.setSpuName(vo.getSpuName());
+
+                return spuBo;
+
+            }).collect(Collectors.toList()));
+
+        } else if (entity.getUseType() != null && entity.getUseType() == USE_TYPE_CATEGORY) {
+
+            bo.setCategoryList(loadCategoryList(entity.getId()).stream().map(vo -> {
+
+                CouponCategoryBo categoryBo = new CouponCategoryBo();
+
+                categoryBo.setCategoryId(vo.getCategoryId());
+
+                categoryBo.setCategoryName(vo.getCategoryName());
+
+                return categoryBo;
+
+            }).collect(Collectors.toList()));
+
+        }
+
+        return bo;
+
+    }
+
+    private void validateSaveBo(CouponSaveBo bo, SmsCoupon existing) {
+
+        if (bo.getMinPoint().compareTo(bo.getAmount()) < 0) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "使用门槛不能小于面额");
+
+        }
+
+        if (!bo.getEndTime().isAfter(bo.getStartTime())) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "使用结束时间必须晚于开始时间");
+
+        }
+
+        if (!bo.getEnableEndTime().isAfter(bo.getEnableStartTime())) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "领取结束时间必须晚于开始时间");
+
+        }
+
+        if (bo.getCouponType() != null && bo.getCouponType() == COUPON_TYPE_MEMBER && bo.getMemberLevel() == null) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "会员赠券必须选择会员等级");
+
+        }
+
+        if (bo.getUseType() == USE_TYPE_CATEGORY) {
+
+            if (CollectionUtils.isEmpty(bo.getCategoryList())) {
+
+                throw new BizException(ErrorCode.PARAM_INVALID, "指定分类时必须至少选择一个分类");
+
+            }
+
+        } else if (bo.getUseType() == USE_TYPE_SPU) {
+
+            if (CollectionUtils.isEmpty(bo.getSpuList())) {
+
+                throw new BizException(ErrorCode.PARAM_INVALID, "指定商品时必须至少选择一个商品");
+
+            }
+
+        }
+
+        if (existing != null && bo.getPublishCount() != null && existing.getReceiveCount() != null
+
+                && bo.getPublishCount() < existing.getReceiveCount()) {
+
+            throw new BizException(ErrorCode.PARAM_INVALID, "发行数量不能小于已领取数量");
+
+        }
+
+    }
+
+    private void validatePublishedImmutableFields(SmsCoupon existing, CouponSaveBo bo) {
+
+        if (existing.getPublish() == null || existing.getPublish() != PUBLISHED) {
+
+            return;
+
+        }
+
+        if (!decimalEquals(existing.getAmount(), bo.getAmount())) {
+
+            throw new BizException("已发布优惠券不允许修改面额");
+
+        }
+
+        if (!decimalEquals(existing.getMinPoint(), bo.getMinPoint())) {
+
+            throw new BizException("已发布优惠券不允许修改使用门槛");
+
+        }
+
+        if (!Objects.equals(existing.getUseType(), bo.getUseType())) {
+
+            throw new BizException("已发布优惠券不允许修改适用范围");
+
+        }
+
+        if (isScopeChanged(existing.getId(), existing.getUseType(), bo)) {
+
+            throw new BizException("已发布优惠券不允许修改关联商品或分类");
+
+        }
+
+    }
+
+    private boolean decimalEquals(BigDecimal left, BigDecimal right) {
+
+        if (left == null && right == null) {
+
+            return true;
+
+        }
+
+        if (left == null || right == null) {
+
+            return false;
+
+        }
+
+        return left.compareTo(right) == 0;
+
+    }
+
+    private boolean isScopeChanged(Long couponId, Integer useType, CouponSaveBo bo) {
+
+        if (useType == null || useType == USE_TYPE_ALL) {
+
+            return false;
+
+        }
+
+        if (useType == USE_TYPE_SPU) {
+
+            Set<Long> oldIds = loadSpuList(couponId).stream()
+
+                    .map(CouponSpuVo::getSpuId)
+
+                    .filter(Objects::nonNull)
+
+                    .collect(Collectors.toSet());
+
+            Set<Long> newIds = CollectionUtils.isEmpty(bo.getSpuList()) ? Collections.emptySet()
+
+                    : bo.getSpuList().stream()
+
+                            .map(CouponSpuBo::getSpuId)
+
+                            .filter(Objects::nonNull)
+
+                            .collect(Collectors.toSet());
+
+            return !oldIds.equals(newIds);
+
+        }
+
+        if (useType == USE_TYPE_CATEGORY) {
+
+            Set<Long> oldIds = loadCategoryList(couponId).stream()
+
+                    .map(CouponCategoryVo::getCategoryId)
+
+                    .filter(Objects::nonNull)
+
+                    .collect(Collectors.toSet());
+
+            Set<Long> newIds = CollectionUtils.isEmpty(bo.getCategoryList()) ? Collections.emptySet()
+
+                    : bo.getCategoryList().stream()
+
+                            .map(CouponCategoryBo::getCategoryId)
+
+                            .filter(Objects::nonNull)
+
+                            .collect(Collectors.toSet());
+
+            return !oldIds.equals(newIds);
+
+        }
+
+        return false;
 
     }
 

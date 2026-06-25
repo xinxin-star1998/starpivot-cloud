@@ -30,4 +30,7 @@ public interface OmsOrderReturnApplyService extends IService<OmsOrderReturnApply
      * audit。
      */
     void audit(ReturnAuditBo bo);
+
+    /** 完成退货：入库、退款记录、关闭订单 */
+    void completeReturn(Long id);
 }

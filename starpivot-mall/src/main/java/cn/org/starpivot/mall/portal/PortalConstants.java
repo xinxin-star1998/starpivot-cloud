@@ -23,6 +23,12 @@ public final class PortalConstants {
     /** 订单状态：待发货 */
     public static final int ORDER_STATUS_WAIT_DELIVER = 1;
 
+    /** 订单状态：已发货 */
+    public static final int ORDER_STATUS_DELIVERED = 2;
+
+    /** 订单状态：已完成 */
+    public static final int ORDER_STATUS_COMPLETED = 3;
+
     /** 订单状态：已关闭 */
     public static final int ORDER_STATUS_CLOSED = 4;
 

@@ -1,11 +1,26 @@
 <template>
-  <ElDialog v-model="dialogVisible" title="新增采购需求" width="480px" align-center destroy-on-close>
+  <ElDialog
+    v-model="dialogVisible"
+    align-center
+    destroy-on-close
+    title="新增采购需求"
+    width="520px"
+  >
     <ElForm ref="formRef" :model="formData" :rules="rules" label-width="100px">
-      <ElFormItem label="SKU ID" prop="skuId">
-        <ElInputNumber v-model="formData.skuId" :min="1" controls-position="right" class="w-full" />
-      </ElFormItem>
+      <StockSkuWareSelect
+        v-model:sku-id="formData.skuId"
+        v-model:ware-id="formData.wareId"
+        sku-prop="skuId"
+        ware-prop="wareId"
+        @sku-selected="onSkuSelected"
+      />
       <ElFormItem label="采购数量" prop="skuNum">
-        <ElInputNumber v-model="formData.skuNum" :min="1" controls-position="right" class="w-full" />
+        <ElInputNumber
+          v-model="formData.skuNum"
+          :min="1"
+          controls-position="right"
+          class="w-full"
+        />
       </ElFormItem>
       <ElFormItem label="采购单价" prop="skuPrice">
         <ElInputNumber
@@ -15,9 +30,6 @@
           controls-position="right"
           class="w-full"
         />
-      </ElFormItem>
-      <ElFormItem label="仓库 ID" prop="wareId">
-        <ElInputNumber v-model="formData.wareId" :min="1" controls-position="right" class="w-full" />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -30,6 +42,8 @@
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
   import { fetchPurchaseDetailAdd } from '@/api/mall/purchase'
+  import type { MallSkuVo } from '@/api/mall/sku'
+  import StockSkuWareSelect from '@/views/mall/wms/modules/stock-sku-ware-select.vue'
 
   interface Props {
     visible: boolean
@@ -57,8 +71,14 @@
   })
 
   const rules: FormRules = {
-    skuId: [{ required: true, message: '请输入 SKU ID', trigger: 'blur' }],
+    skuId: [{ required: true, message: '请选择 SKU', trigger: 'change' }],
     skuNum: [{ required: true, message: '请输入采购数量', trigger: 'blur' }]
+  }
+
+  function onSkuSelected(sku?: MallSkuVo) {
+    if (sku?.price != null && formData.skuPrice == null) {
+      formData.skuPrice = Number(sku.price)
+    }
   }
 
   watch(

@@ -45,4 +45,13 @@ public class WmsWareSkuVO {
      */
     private Long stockLocked;
 
+    /** 仓库名称 */
+    private String wareName;
+
+    /** 可售库存 = stock - stockLocked */
+    private Integer availableStock;
+
+    /** SKU 库存预警阈值 */
+    private Integer stockWarning;
+
 }

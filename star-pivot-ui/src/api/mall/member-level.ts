@@ -39,7 +39,7 @@ export async function fetchMemberLevelPage(params: Api.Common.CommonSearchParams
     rows,
     total: rows.length,
     pageNum: params.pageNum ?? 1,
-    pageSize: params.pageSize ?? rows.length || 10,
+    pageSize: params.pageSize ?? (rows.length || 10),
     pageCount: 1
   }
 }

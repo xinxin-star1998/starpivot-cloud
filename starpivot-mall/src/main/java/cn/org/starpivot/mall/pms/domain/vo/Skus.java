@@ -80,4 +80,13 @@ public class Skus {
    */
   private List<MemberPrice> memberPrice;
 
+  /** 发布时初始入库数量（仅新增商品时生效） */
+  private Integer initialStock;
+
+  /** 库存预警阈值 */
+  private Integer stockWarning;
+
+  /** C 端可售库存（WMS 可售 - Redis 预扣） */
+  private Integer availableStock;
+
 }

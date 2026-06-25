@@ -39,7 +39,8 @@ public class MallSecurityConfig {
                                 "/portal/product/**",
                                 "/portal/region/**",
                                 "/portal/member/register",
-                                "/portal/member/login"
+                                "/portal/member/login",
+                                "/portal/pay/alipay/notify"
                         ).permitAll()
                         .anyRequest().authenticated());
         return http.build();

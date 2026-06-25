@@ -7,6 +7,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
+import cn.org.starpivot.mall.sms.domain.bo.CouponPublishBo;
 import cn.org.starpivot.mall.sms.domain.bo.CouponReqBo;
 import cn.org.starpivot.mall.sms.domain.bo.CouponSaveBo;
 import cn.org.starpivot.mall.sms.domain.vo.CouponVo;
@@ -100,6 +101,21 @@ public class SmsCouponController {
     public Result<?> update(@Valid @RequestBody CouponSaveBo bo) {
         smsCouponService.update(bo);
         return Result.success("修改成功");
+    }
+
+    /**
+     * 更新优惠券发布状态。
+     *
+     * @param bo 发布状态参数
+     * @return 操作结果
+     */
+    @Log(title = "优惠券发布状态", businessType = BusinessType.UPDATE)
+    @Operation(summary = "更新优惠券发布状态")
+    @PutMapping("/publish-status")
+    @PreAuthorize("hasAuthority('mall:coupon:edit')")
+    public Result<?> updatePublishStatus(@Valid @RequestBody CouponPublishBo bo) {
+        smsCouponService.updatePublishStatus(bo.getId(), bo.getPublish());
+        return Result.success(bo.getPublish() == 1 ? "发布成功" : "下架成功");
     }
 
     /**

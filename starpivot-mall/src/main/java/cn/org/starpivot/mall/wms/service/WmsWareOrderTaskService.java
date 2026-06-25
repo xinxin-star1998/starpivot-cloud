@@ -2,9 +2,12 @@ package cn.org.starpivot.mall.wms.service;
 
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.wms.domain.bo.WareOrderTaskReqBo;
+import cn.org.starpivot.mall.wms.domain.dto.WmsStockDeductionLine;
 import cn.org.starpivot.mall.wms.domain.vo.WareOrderTaskVo;
 import cn.org.starpivot.mall.wms.entity.WmsWareOrderTask;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * Wareordertaskservice服务接口。
@@ -44,4 +47,9 @@ public interface WmsWareOrderTaskService extends IService<WmsWareOrderTask> {
      * createFromOrder。
      */
     Long createFromOrder(Long orderId);
+
+    /**
+     * 支付成功后自动生成已完成工作单（库存已在支付时扣减，仅作发货记录）。
+     */
+    Long createFinishedRecordForPaidOrder(Long orderId, List<WmsStockDeductionLine> deductions);
 }

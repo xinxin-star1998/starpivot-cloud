@@ -9,11 +9,11 @@ import cn.org.starpivot.mall.oms.domain.vo.OmsOrderItemVo;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
 import cn.org.starpivot.mall.oms.entity.OmsOrderOperateHistory;
-import cn.org.starpivot.mall.oms.entity.OmsPaymentInfo;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderOperateHistoryMapper;
-import cn.org.starpivot.mall.oms.mapper.OmsPaymentInfoMapper;
+import cn.org.starpivot.mall.oms.service.impl.OmsOrderLifecycleService;
+import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.pms.entity.PmsBrand;
 import cn.org.starpivot.mall.pms.entity.PmsSkuInfo;
 import cn.org.starpivot.mall.pms.entity.PmsSkuSaleAttrValue;
@@ -23,16 +23,11 @@ import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSkuSaleAttrValueMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
 import cn.org.starpivot.mall.portal.PortalConstants;
-import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
-import cn.org.starpivot.mall.portal.domain.bo.PortalOrderQueryBo;
-import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
+import cn.org.starpivot.mall.portal.domain.bo.*;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCartVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderVo;
-import cn.org.starpivot.mall.portal.service.PortalAddressService;
-import cn.org.starpivot.mall.portal.service.PortalCartService;
-import cn.org.starpivot.mall.portal.service.PortalOrderService;
-import cn.org.starpivot.mall.portal.service.PortalStockLockService;
+import cn.org.starpivot.mall.portal.service.*;
 import cn.org.starpivot.mall.ums.entity.UmsMember;
 import cn.org.starpivot.mall.ums.entity.UmsMemberReceiveAddress;
 import cn.org.starpivot.mall.ums.mapper.UmsMemberMapper;
@@ -75,7 +70,6 @@ public class PortalOrderServiceImpl implements PortalOrderService {
     private final OmsOrderMapper omsOrderMapper;
     private final OmsOrderItemMapper omsOrderItemMapper;
     private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
-    private final OmsPaymentInfoMapper omsPaymentInfoMapper;
     private final UmsMemberMapper umsMemberMapper;
     private final UmsMemberReceiveAddressMapper addressMapper;
     private final PmsSkuInfoMapper pmsSkuInfoMapper;
@@ -86,6 +80,11 @@ public class PortalOrderServiceImpl implements PortalOrderService {
     private final PortalAddressService portalAddressService;
     private final MallSecurityProperties mallSecurityProperties;
     private final PortalStockLockService portalStockLockService;
+    private final PortalOrderPayService portalOrderPayService;
+    private final PortalOrderPriceService portalOrderPriceService;
+    private final OmsOrderLifecycleService omsOrderLifecycleService;
+    private final PortalOrderReturnService portalOrderReturnService;
+    private final PortalCouponService portalCouponService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -103,25 +102,40 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         List<OmsOrderItem> itemEntities = new ArrayList<>();
         Map<Long, Integer> qtyBySku = aggregateQuantityBySku(orderItems);
         Map<Long, SkuBase> skuBaseMap = loadSkuBaseMap(orderItems);
+        Map<Long, BigDecimal> unitPriceMap = portalOrderPriceService.resolveUnitPriceMap(
+                skuBaseMap.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().sku(), (a, b) -> a)));
 
         for (PortalOrderItemBo itemBo : orderItems) {
             SkuBase base = skuBaseMap.get(itemBo.getSkuId());
             if (base == null) {
                 throw new BizException("SKU不存在：" + itemBo.getSkuId());
             }
-            SkuSnapshot snapshot = toSnapshot(base, itemBo.getQuantity());
+            BigDecimal unitPrice = unitPriceMap.getOrDefault(itemBo.getSkuId(), base.sku().getPrice());
+            SkuSnapshot snapshot = toSnapshot(base, itemBo.getQuantity(), unitPrice);
             totalAmount = totalAmount.add(snapshot.lineAmount());
             itemEntities.add(buildOrderItem(orderSn, itemBo.getQuantity(), snapshot));
         }
 
+        PortalCouponTrialBo couponTrial = new PortalCouponTrialBo();
+        couponTrial.setUseCart(false);
+        couponTrial.setItems(orderItems);
+        BigDecimal couponAmount = portalCouponService.calculateDiscount(
+                memberId, bo.getCouponHistoryId(), couponTrial);
+        Long couponId = portalCouponService.resolveCouponId(bo.getCouponHistoryId());
+        BigDecimal payAmount = totalAmount.subtract(couponAmount).max(BigDecimal.ZERO);
+
         portalStockLockService.lockForOrder(orderSn, qtyBySku);
+        Long createdOrderId = null;
         try {
-            OmsOrder order = buildOrder(member, address, bo, orderSn, now, totalAmount);
+            OmsOrder order = buildOrder(member, address, bo, orderSn, now, totalAmount, payAmount, couponAmount, couponId);
             omsOrderMapper.insert(order);
+            createdOrderId = order.getId();
             for (OmsOrderItem item : itemEntities) {
                 item.setOrderId(order.getId());
                 omsOrderItemMapper.insert(item);
             }
+            portalCouponService.lockToOrder(bo.getCouponHistoryId(), memberId, order.getId(), orderSn);
             saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_UNPAID, member.getUsername(), "提交订单");
 
             if (Boolean.TRUE.equals(bo.getUseCart())) {
@@ -136,6 +150,9 @@ public class PortalOrderServiceImpl implements PortalOrderService {
             return vo;
         } catch (RuntimeException ex) {
             portalStockLockService.releaseForOrder(orderSn);
+            if (createdOrderId != null) {
+                portalCouponService.releaseByOrder(createdOrderId);
+            }
             throw ex;
         }
     }
@@ -196,6 +213,7 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         order.setModifyTime(LocalDateTime.now());
         omsOrderMapper.updateById(order);
         portalStockLockService.releaseForOrder(order.getOrderSn());
+        portalCouponService.releaseByOrder(orderId);
         saveOperateHistory(orderId, PortalConstants.ORDER_STATUS_CLOSED, order.getMemberUsername(), "会员取消订单");
     }
 
@@ -209,25 +227,24 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         if (!Integer.valueOf(PortalConstants.ORDER_STATUS_UNPAID).equals(order.getStatus())) {
             throw new BizException("仅待付款订单可支付");
         }
-        LocalDateTime now = LocalDateTime.now();
-        order.setStatus(PortalConstants.ORDER_STATUS_WAIT_DELIVER);
-        order.setPaymentTime(now);
-        order.setModifyTime(now);
-        omsOrderMapper.updateById(order);
+        portalOrderPayService.confirmPaid(
+                order,
+                "MOCK" + System.currentTimeMillis(),
+                PortalConstants.PAYMENT_STATUS_SUCCESS,
+                null);
+    }
 
-        OmsPaymentInfo payment = new OmsPaymentInfo();
-        payment.setOrderId(order.getId());
-        payment.setOrderSn(order.getOrderSn());
-        payment.setTotalAmount(order.getPayAmount());
-        payment.setSubject("商城订单-" + order.getOrderSn());
-        payment.setPaymentStatus(PortalConstants.PAYMENT_STATUS_SUCCESS);
-        payment.setAlipayTradeNo("MOCK" + System.currentTimeMillis());
-        payment.setCreateTime(now);
-        payment.setConfirmTime(now);
-        omsPaymentInfoMapper.insert(payment);
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmReceive(Long memberId, Long orderId) {
+        OmsOrder order = requireMemberOrder(memberId, orderId);
+        omsOrderLifecycleService.confirmReceive(order.getId(), order.getMemberUsername());
+    }
 
-        portalStockLockService.confirmForOrder(order.getOrderSn());
-        saveOperateHistory(orderId, PortalConstants.ORDER_STATUS_WAIT_DELIVER, order.getMemberUsername(), "Mock支付成功");
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<Long> applyReturn(Long memberId, PortalOrderReturnApplyBo bo) {
+        return portalOrderReturnService.applyReturn(memberId, bo);
     }
 
     private List<PortalOrderItemBo> resolveOrderItems(Long memberId, PortalOrderSubmitBo bo) {
@@ -360,9 +377,9 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         return result;
     }
 
-    private SkuSnapshot toSnapshot(SkuBase base, int quantity) {
-        BigDecimal lineAmount = base.sku().getPrice().multiply(BigDecimal.valueOf(quantity));
-        return new SkuSnapshot(base.sku(), base.spu(), base.brandName(), base.attrs(), lineAmount);
+    private SkuSnapshot toSnapshot(SkuBase base, int quantity, BigDecimal unitPrice) {
+        BigDecimal lineAmount = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        return new SkuSnapshot(base.sku(), base.spu(), base.brandName(), base.attrs(), lineAmount, unitPrice);
     }
 
     private OmsOrder buildOrder(
@@ -371,7 +388,10 @@ public class PortalOrderServiceImpl implements PortalOrderService {
             PortalOrderSubmitBo bo,
             String orderSn,
             LocalDateTime now,
-            BigDecimal totalAmount) {
+            BigDecimal totalAmount,
+            BigDecimal payAmount,
+            BigDecimal couponAmount,
+            Long couponId) {
         OmsOrder order = new OmsOrder();
         order.setMemberId(member.getId());
         order.setMemberUsername(member.getUsername());
@@ -384,11 +404,12 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         order.setSourceType(0);
         order.setPayType(bo.getPayType() == null ? 1 : bo.getPayType());
         order.setTotalAmount(totalAmount);
-        order.setPayAmount(totalAmount);
+        order.setPayAmount(payAmount);
         order.setFreightAmount(BigDecimal.ZERO);
         order.setPromotionAmount(BigDecimal.ZERO);
         order.setIntegrationAmount(BigDecimal.ZERO);
-        order.setCouponAmount(BigDecimal.ZERO);
+        order.setCouponAmount(couponAmount == null ? BigDecimal.ZERO : couponAmount);
+        order.setCouponId(couponId);
         order.setDiscountAmount(BigDecimal.ZERO);
         order.setNote(bo.getNote());
         order.setReceiverName(address.getName());
@@ -412,7 +433,7 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         item.setSkuName(StringUtils.hasText(snapshot.sku().getSkuTitle())
                 ? snapshot.sku().getSkuTitle()
                 : snapshot.sku().getSkuName());
-        item.setSkuPrice(snapshot.sku().getPrice());
+        item.setSkuPrice(snapshot.unitPrice() != null ? snapshot.unitPrice() : snapshot.sku().getPrice());
         item.setSkuQuantity(quantity);
         item.setSkuAttrsVals(snapshot.attrs());
         item.setPromotionAmount(BigDecimal.ZERO);
@@ -466,6 +487,11 @@ public class PortalOrderServiceImpl implements PortalOrderService {
     private record SkuBase(PmsSkuInfo sku, PmsSpuInfo spu, String brandName, String attrs) {}
 
     private record SkuSnapshot(
-            PmsSkuInfo sku, PmsSpuInfo spu, String brandName, String attrs, BigDecimal lineAmount) {
+            PmsSkuInfo sku,
+            PmsSpuInfo spu,
+            String brandName,
+            String attrs,
+            BigDecimal lineAmount,
+            BigDecimal unitPrice) {
     }
 }

@@ -6,6 +6,7 @@ import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
 import cn.org.starpivot.mall.pms.domain.bo.ProductReqBo;
 import cn.org.starpivot.mall.pms.domain.vo.ProductVo;
+import cn.org.starpivot.mall.pms.domain.vo.Skus;
 import cn.org.starpivot.mall.pms.entity.PmsBrand;
 import cn.org.starpivot.mall.pms.entity.PmsSkuInfo;
 import cn.org.starpivot.mall.pms.entity.PmsSpuImages;
@@ -20,6 +21,7 @@ import cn.org.starpivot.mall.portal.domain.bo.PortalProductSearchBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductDetailVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductListVo;
 import cn.org.starpivot.mall.portal.service.PortalProductService;
+import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -54,6 +56,7 @@ public class PortalProductServiceImpl implements PortalProductService {
     private final PmsSpuImagesMapper pmsSpuImagesMapper;
     private final PmsBrandMapper pmsBrandMapper;
     private final PmsSpuInfoService pmsSpuInfoService;
+    private final PortalStockLockService portalStockLockService;
 
     @Override
     @Transactional(readOnly = true)
@@ -101,7 +104,25 @@ public class PortalProductServiceImpl implements PortalProductService {
                 vo.setBrandName(brand.getName());
             }
         }
+        fillSkuAvailableStock(vo.getSkus());
         return vo;
+    }
+
+    private void fillSkuAvailableStock(List<Skus> skus) {
+        if (CollectionUtils.isEmpty(skus)) {
+            return;
+        }
+        List<Long> skuIds = skus.stream().map(Skus::getSkuId).filter(Objects::nonNull).distinct().toList();
+        if (skuIds.isEmpty()) {
+            return;
+        }
+        Map<Long, Integer> stockMap = portalStockLockService.getAvailableStockMap(skuIds);
+        for (Skus sku : skus) {
+            if (sku.getSkuId() == null) {
+                continue;
+            }
+            sku.setAvailableStock(stockMap.getOrDefault(sku.getSkuId(), 0));
+        }
     }
 
     private PortalProductListVo fromProductVo(ProductVo productVo) {

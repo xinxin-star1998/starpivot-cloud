@@ -1,9 +1,10 @@
 package cn.org.starpivot.mall.wms.controller;
 
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.entity.PageResponse;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuDTO;
+import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuInboundDTO;
 import cn.org.starpivot.mall.wms.domain.dto.WmsWareSkuQueryDTO;
 import cn.org.starpivot.mall.wms.domain.vo.WmsWareSkuVO;
 import cn.org.starpivot.mall.wms.service.WmsWareSkuService;
@@ -81,6 +82,16 @@ public class WmsWareSkuController
     {
         boolean success = wmsWareSkuService.insertWmsWareSku(wmsWareSkuDTO);
         return success ? Result.success("新增商品库存成功") : Result.error("新增商品库存失败");
+    }
+
+    /**
+     * 快速入库（累加库存）
+     */
+    @PreAuthorize("hasAuthority('mall:sku:add')")
+    @PostMapping("/inbound")
+    public Result<?> inbound(@Valid @RequestBody WmsWareSkuInboundDTO inboundDTO) {
+        wmsWareSkuService.inboundStock(inboundDTO);
+        return Result.success("入库成功");
     }
 
     /**

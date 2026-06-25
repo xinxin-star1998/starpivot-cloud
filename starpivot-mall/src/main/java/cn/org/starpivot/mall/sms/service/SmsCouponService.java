@@ -4,6 +4,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.sms.domain.bo.CouponReqBo;
 import cn.org.starpivot.mall.sms.domain.bo.CouponSaveBo;
 import cn.org.starpivot.mall.sms.domain.vo.CouponVo;
+
 import java.util.List;
 
 /**
@@ -39,4 +40,9 @@ public interface SmsCouponService {
      * 批量删除。
      */
     void removeByIds(List<Long> ids);
+
+    /**
+     * 更新发布状态（上架/下架）。
+     */
+    void updatePublishStatus(Long id, Integer publish);
 }

@@ -1828,6 +1828,7 @@ CREATE TABLE `pms_sku_info`  (
   `sku_subtitle` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '副标题',
   `price` decimal(18, 4) NULL DEFAULT NULL COMMENT '价格',
   `sale_count` bigint(20) NULL DEFAULT NULL COMMENT '销量',
+  `stock_warning` int NULL DEFAULT NULL COMMENT '库存预警阈值',
   PRIMARY KEY (`sku_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'sku信息' ROW_FORMAT = Dynamic;
 

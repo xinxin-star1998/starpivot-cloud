@@ -85,8 +85,8 @@
           <p><strong>收货信息</strong></p>
           <p>{{ detailOrder.receiverName }} {{ detailOrder.receiverPhone }}</p>
           <p>
-            {{ detailOrder.receiverProvince }}{{ detailOrder.receiverCity }}{{ detailOrder.receiverRegion
-            }}{{ detailOrder.receiverDetailAddress }}
+            {{ detailOrder.receiverProvince }}{{ detailOrder.receiverCity
+            }}{{ detailOrder.receiverRegion }}{{ detailOrder.receiverDetailAddress }}
           </p>
         </div>
         <div class="detail-block">
@@ -101,29 +101,42 @@
           实付：<strong>¥{{ formatPrice(detailOrder.payAmount) }}</strong>
         </div>
         <div v-if="detailOrder.status === 0" class="detail-actions">
-          <ElButton type="danger" @click="handlePay(detailOrder.id!)">Mock 支付</ElButton>
+          <ElButton type="danger" @click="handlePay(detailOrder.id!)">
+            {{ alipayEnabled ? '支付宝支付' : 'Mock 支付' }}
+          </ElButton>
           <ElButton @click="handleCancel(detailOrder.id!)">取消订单</ElButton>
+        </div>
+        <div v-if="detailOrder.status === 2" class="detail-actions">
+          <ElButton type="primary" @click="handleConfirmReceive(detailOrder.id!)"
+            >确认收货</ElButton
+          >
+        </div>
+        <div v-if="detailOrder.status === 2 || detailOrder.status === 3" class="detail-actions">
+          <ElButton @click="openReturnDialog">申请退货</ElButton>
         </div>
       </template>
     </ElDrawer>
+
+    <ReturnDialog v-model="returnDialogVisible" :order="returnOrder" @success="onReturnSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
   import {
     fetchPortalOrderCancel,
+    fetchPortalOrderConfirmReceive,
     fetchPortalOrderDetail,
     fetchPortalOrderList,
     fetchPortalOrderMockPay
   } from '@/api/portal/order'
+  import { fetchPortalAlipayEnabled, fetchPortalAlipayPay } from '@/api/portal/pay'
   import type { PortalOrder, PortalOrderItem } from '@/api/portal/types'
   import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
   import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-  import {
-    getPortalOrderStatusLabel,
-    getPortalOrderStatusType
-  } from '@/utils/portal/order-status'
+  import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
+  import { getPortalOrderStatusLabel, getPortalOrderStatusType } from '@/utils/portal/order-status'
   import { ElMessage, ElMessageBox } from 'element-plus'
+  import ReturnDialog from './modules/return-dialog.vue'
 
   defineOptions({ name: 'PortalOrders' })
 
@@ -142,10 +155,15 @@
   const detailOrder = ref<PortalOrder | null>(null)
   const actionOrderId = ref<number>()
   const actionType = ref<'pay' | 'cancel'>()
+  const alipayEnabled = ref(false)
+  const returnDialogVisible = ref(false)
+  const returnOrder = ref<PortalOrder | null>(null)
 
   const placeholderImg =
     'data:image/svg+xml,' +
-    encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect fill="#f0f0f0" width="48" height="48"/></svg>')
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect fill="#f0f0f0" width="48" height="48"/></svg>'
+    )
 
   const statusTabs = [
     { key: 'all', label: '全部', status: undefined },
@@ -216,14 +234,42 @@
     actionOrderId.value = orderId
     actionType.value = 'pay'
     try {
-      await fetchPortalOrderMockPay(orderId)
-      ElMessage.success('支付成功')
-      detailVisible.value = false
-      await loadOrders(true)
+      if (alipayEnabled.value) {
+        const result = await fetchPortalAlipayPay(orderId)
+        submitAlipayPayForm(result.payForm)
+        ElMessage.info('正在跳转支付宝，支付完成后请刷新订单列表')
+      } else {
+        await fetchPortalOrderMockPay(orderId)
+        ElMessage.success('支付成功')
+        detailVisible.value = false
+        await loadOrders(true)
+      }
+    } catch (err) {
+      if (alipayEnabled.value) {
+        ElMessage.error(err instanceof Error ? err.message : '支付宝下单失败')
+      }
     } finally {
       actionOrderId.value = undefined
       actionType.value = undefined
     }
+  }
+
+  async function handleConfirmReceive(orderId: number) {
+    await ElMessageBox.confirm('确认已收到商品吗？', '确认收货', { type: 'info' })
+    await fetchPortalOrderConfirmReceive(orderId)
+    detailVisible.value = false
+    await loadOrders(true)
+  }
+
+  function openReturnDialog() {
+    if (!detailOrder.value) return
+    returnOrder.value = detailOrder.value
+    returnDialogVisible.value = true
+  }
+
+  async function onReturnSuccess() {
+    detailVisible.value = false
+    await loadOrders(true)
   }
 
   async function handleCancel(orderId: number) {
@@ -247,6 +293,7 @@
       return
     }
     try {
+      alipayEnabled.value = await fetchPortalAlipayEnabled()
       await loadOrders(true)
     } finally {
       loading.value = false

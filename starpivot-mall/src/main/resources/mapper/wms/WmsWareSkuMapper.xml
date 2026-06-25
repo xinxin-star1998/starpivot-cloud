@@ -61,9 +61,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE sku_id = #{skuId} AND ware_id = #{wareId} AND stock_locked >= #{skuNum}
     </update>
 
+    <update id="deductAvailableStock">
+        UPDATE wms_ware_sku
+        SET stock = stock - #{skuNum}
+        WHERE sku_id = #{skuId}
+          AND ware_id = #{wareId}
+          AND (stock - IFNULL(stock_locked, 0)) >= #{skuNum}
+    </update>
+
     <select id="listWareIdHasStock" resultType="java.lang.Long">
         SELECT ware_id FROM wms_ware_sku
-        WHERE sku_id = #{skuId} AND stock > 0
-        ORDER BY stock DESC
+        WHERE sku_id = #{skuId}
+          AND (stock - IFNULL(stock_locked, 0)) > 0
+        ORDER BY (stock - IFNULL(stock_locked, 0)) DESC
+    </select>
+
+    <select id="sumAvailableStock" resultType="int">
+        SELECT COALESCE(SUM(GREATEST(stock - IFNULL(stock_locked, 0), 0)), 0)
+        FROM wms_ware_sku
+        WHERE sku_id = #{skuId}
     </select>
 </mapper>

@@ -16,6 +16,7 @@ import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderOperateHistoryMapper;
 import cn.org.starpivot.mall.oms.service.OmsOrderService;
+import cn.org.starpivot.mall.oms.service.OmsOrderStockService;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -55,6 +56,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     private final OmsOrderItemMapper omsOrderItemMapper;
     private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
     private final PortalStockLockService portalStockLockService;
+    private final OmsOrderStockService omsOrderStockService;
 
     @Override
     @Transactional(readOnly = true)
@@ -124,6 +126,10 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
         baseMapper.updateById(order);
         if (Integer.valueOf(PortalConstants.ORDER_STATUS_UNPAID).equals(previousStatus)) {
             portalStockLockService.releaseForOrder(order.getOrderSn());
+        } else if (Integer.valueOf(STATUS_WAIT_DELIVER).equals(previousStatus)) {
+            omsOrderStockService.restoreStockForOrder(order.getId());
+            saveOperateHistory(order.getId(), STATUS_CLOSED, "关闭订单（已回滚库存与销量）");
+            return;
         }
         saveOperateHistory(order.getId(), STATUS_CLOSED, "关闭订单");
     }

@@ -51,8 +51,8 @@ public class PortalOrderSubmitBo {
     private String note;
 
     /** 支付方式，默认 1（在线支付） */
-    /**
-     * 类型
-     */
     private Integer payType;
+
+    /** 使用的优惠券领取记录 ID（sms_coupon_history.id） */
+    private Long couponHistoryId;
 }

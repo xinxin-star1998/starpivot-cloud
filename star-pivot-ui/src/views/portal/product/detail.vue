@@ -33,7 +33,10 @@
                 v-for="val in dim.values"
                 :key="val"
                 class="sku-tag"
-                :class="{ active: selectedAttrs[dim.name] === val, disabled: !isAttrAvailable(dim.name, val) }"
+                :class="{
+                  active: selectedAttrs[dim.name] === val,
+                  disabled: !isAttrAvailable(dim.name, val)
+                }"
                 @click="selectAttr(dim.name, val)"
               >
                 {{ val }}
@@ -43,14 +46,23 @@
 
           <div class="sku-row">
             <span class="sku-row__label">数量</span>
-            <ElInputNumber v-model="quantity" :min="1" :max="99" />
+            <ElInputNumber v-model="quantity" :max="maxPurchaseQty" :min="1" />
+            <span v-if="selectedSku?.availableStock != null" class="stock-hint">
+              可售 {{ selectedSku.availableStock }} 件
+            </span>
           </div>
 
           <div class="actions">
             <ElButton type="danger" size="large" :disabled="!selectedSkuId" @click="handleAddCart">
               加入购物车
             </ElButton>
-            <ElButton type="warning" size="large" plain :disabled="!selectedSkuId" @click="handleBuyNow">
+            <ElButton
+              type="warning"
+              size="large"
+              plain
+              :disabled="!selectedSkuId"
+              @click="handleBuyNow"
+            >
               立即购买
             </ElButton>
           </div>
@@ -119,6 +131,11 @@
 
   const selectedSkuId = computed(() => selectedSku.value?.skuId)
   const currentPrice = computed(() => selectedSku.value?.price ?? product.value?.price)
+  const maxPurchaseQty = computed(() => {
+    const stock = selectedSku.value?.availableStock
+    if (stock == null || stock <= 0) return 1
+    return Math.min(stock, 99)
+  })
 
   const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
 
