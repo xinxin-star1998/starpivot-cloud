@@ -20,20 +20,30 @@ import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Cart服务实现类。
+ * <p>
+ * 实现 {@link PortalCartService}，处理Cart相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PortalCartService
+ */
 
 @Service
 @RequiredArgsConstructor

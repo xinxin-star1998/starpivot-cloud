@@ -26,6 +26,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+/**
+ * SPU 积分/成长值服务实现类。
+ * <p>
+ * 实现 {@link SmsSpuBoundsService}，处理SPU 积分/成长值相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see SmsSpuBoundsService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SmsSpuBoundsServiceImpl implements SmsSpuBoundsService {

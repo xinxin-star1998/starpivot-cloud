@@ -1,21 +1,22 @@
 package cn.org.starpivot.mall.pms.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrDTO;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrQueryDTO;
-import cn.org.starpivot.mall.pms.entity.PmsAttr;
 import cn.org.starpivot.mall.pms.domain.excel.PmsAttrExcel;
 import cn.org.starpivot.mall.pms.domain.vo.PmsAttrVO;
+import cn.org.starpivot.mall.pms.entity.PmsAttr;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
 /**
- * 商品属性Service接口
- * 
- * @author admin
- * @since 2026-05-18
+ * Attrservice服务接口。
+ * <p>
+ * 封装商品属性相关业务逻辑。
+ * </p>
  */
+
 public interface PmsAttrService extends IService<PmsAttr>
 {
     /**
@@ -59,6 +60,9 @@ public interface PmsAttrService extends IService<PmsAttr>
     boolean deletePmsAttrByAttrIds(Long[] attrIds);
 
     /** 按查询条件导出 Excel 行（含关联分组信息） */
+    /**
+     * 查询列表。
+     */
     List<PmsAttrExcel> listForExport(PmsAttrQueryDTO queryDTO);
 
     /**

@@ -1,17 +1,10 @@
 package cn.org.starpivot.mall.pms.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
-import cn.org.starpivot.mall.pms.domain.bo.SkuCreateBo;
-import cn.org.starpivot.mall.pms.domain.bo.SkuPriceBo;
-import cn.org.starpivot.mall.pms.domain.bo.SkuPublishStatusBo;
-import cn.org.starpivot.mall.pms.domain.bo.SkuReqBo;
-import cn.org.starpivot.mall.pms.domain.bo.SkuSaveBo;
+import cn.org.starpivot.mall.pms.domain.bo.*;
 import cn.org.starpivot.mall.pms.domain.vo.Attr;
 import cn.org.starpivot.mall.pms.domain.vo.Images;
 import cn.org.starpivot.mall.pms.domain.vo.SkuVo;
@@ -24,18 +17,35 @@ import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSkuSaleAttrValueMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
 import cn.org.starpivot.mall.pms.service.PmsSkuInfoService;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+/**
+ * SKU服务实现类。
+ * <p>
+ * 实现 {@link PmsSkuInfoService}，处理SKU相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PmsSkuInfoService
+ */
 
 @Service
 @RequiredArgsConstructor

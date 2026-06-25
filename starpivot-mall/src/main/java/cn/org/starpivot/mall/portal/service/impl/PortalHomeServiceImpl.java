@@ -15,22 +15,28 @@ import cn.org.starpivot.mall.sms.domain.vo.HomeAdvVo;
 import cn.org.starpivot.mall.sms.entity.SmsHomeAdv;
 import cn.org.starpivot.mall.sms.mapper.SmsHomeAdvMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Home服务实现类。
+ * <p>
+ * 实现 {@link PortalHomeService}，处理Home相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PortalHomeService
+ */
 
 @Service
 @RequiredArgsConstructor

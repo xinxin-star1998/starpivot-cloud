@@ -18,6 +18,18 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 地址服务实现类。
+ * <p>
+ * 实现 {@link AddressService}，处理地址相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ * </ul>
+ *
+ * @see AddressService
+ */
+
 @Service
 public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> implements AddressService {
 

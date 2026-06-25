@@ -20,6 +20,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+/**
+ * 会员服务实现类。
+ * <p>
+ * 实现 {@link UmsMemberService}，处理会员相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see UmsMemberService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class UmsMemberServiceImpl implements UmsMemberService {

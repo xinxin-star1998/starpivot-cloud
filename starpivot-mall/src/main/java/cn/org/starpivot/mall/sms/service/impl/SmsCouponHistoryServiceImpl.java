@@ -16,6 +16,19 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 优惠券领取历史服务实现类。
+ * <p>
+ * 实现 {@link SmsCouponHistoryService}，处理优惠券领取历史相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see SmsCouponHistoryService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SmsCouponHistoryServiceImpl implements SmsCouponHistoryService {

@@ -23,6 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+/**
+ * 秒杀场次服务实现类。
+ * <p>
+ * 实现 {@link SmsSeckillSessionService}，处理秒杀场次相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see SmsSeckillSessionService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SmsSeckillSessionServiceImpl implements SmsSeckillSessionService {

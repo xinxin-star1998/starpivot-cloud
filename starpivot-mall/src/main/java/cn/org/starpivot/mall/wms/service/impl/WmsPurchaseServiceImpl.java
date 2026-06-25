@@ -33,6 +33,19 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 采购单服务实现类。
+ * <p>
+ * 实现 {@link WmsPurchaseService}，处理采购单相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see WmsPurchaseService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPurchase> implements WmsPurchaseService {

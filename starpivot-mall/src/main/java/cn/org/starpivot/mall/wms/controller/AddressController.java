@@ -22,8 +22,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 省市区地址管理（表 address）
+ * 商城-省市区控制器。
+ * <p>
+ * 省市区地址 CRUD（表 address）。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/address}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-省市区」</li>
+ * </ul>
+ *
+ * @see AddressService
  */
+
 @RestController
 @RequestMapping("/mall/address")
 @RequiredArgsConstructor
@@ -36,6 +49,12 @@ public class AddressController {
     @Operation(
             summary = "懒加载子节点",
             description = "仅返回指定父级编码下的直接子级；parentCode 省略或为 0 时返回省级")
+    /**
+     * children。
+     *
+     * @param parentCode parentCode 参数
+     * @return 列表数据
+     */
     @GetMapping("/children")
     @PreAuthorize("hasAuthority('mall:address:query')")
     public Result<List<AddressVO>> children(
@@ -43,6 +62,15 @@ public class AddressController {
         return Result.success(addressService.listChildren(parentCode));
     }
 
+    /**
+     * 搜索地区。
+     *
+     * @param code code 参数
+     * @param parentCode parentCode 参数
+     * @param name name 参数
+     * @param level level 参数
+     * @return 列表数据
+     */
     @Operation(summary = "搜索地区", description = "扁平列表，最多 200 条；至少传 name/code/parentCode/level 之一")
     @GetMapping("/search")
     @PreAuthorize("hasAuthority('mall:address:query')")
@@ -59,6 +87,12 @@ public class AddressController {
         return Result.success(addressService.searchAddress(queryDTO));
     }
 
+    /**
+     * 省市区详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "省市区详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:address:query')")
@@ -66,6 +100,12 @@ public class AddressController {
         return Result.success(addressService.selectAddressById(id));
     }
 
+    /**
+     * 新增省市区。
+     *
+     * @param addressDTO 数据传输对象
+     * @return 操作结果
+     */
     @Log(title = "新增省市区", businessType = BusinessType.INSERT)
     @Operation(summary = "新增省市区")
     @PostMapping
@@ -75,6 +115,12 @@ public class AddressController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 修改省市区。
+     *
+     * @param addressDTO 数据传输对象
+     * @return 操作结果
+     */
     @Log(title = "修改省市区", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改省市区")
     @PutMapping
@@ -84,6 +130,12 @@ public class AddressController {
         return Result.success("修改成功");
     }
 
+    /**
+     * 删除省市区。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除省市区", businessType = BusinessType.DELETE)
     @Operation(summary = "删除省市区", description = "请求体 ids 为地址主键列表")
     @DeleteMapping("/remove")

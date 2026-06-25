@@ -1,12 +1,11 @@
 package cn.org.starpivot.mall.pms.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.annotation.NoResponseWrapper;
-import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.entity.PageResponse;
-import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.excel.ExcelImportOptions;
 import cn.org.starpivot.common.excel.ExcelToolkit;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrDTO;
@@ -26,14 +25,24 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * 商品属性接口。
+ * 商城-商品属性控制器。
  * <p>
- * 基本属性、销售属性共用本 Controller，通过请求体 {@code attrType} 区分：
- * 1-基本属性（mall:base:*），0-销售属性（mall:sale:*）。
- * <p>
+ * 基本属性、销售属性的增删改查与导入导出等接口。基本属性与销售属性共用本 Controller，
+ * 通过请求体 {@code attrType} 区分：1-基本属性（mall:base:*），0-销售属性（mall:sale:*）。
  * 与属性分组的绑定见 DTO 的 {@code attrGroupId}，由 Service 写入
- * {@code pms_attr_attrgroup_relation}，不在 pms_attr 表存分组 id。
+ * {@code pms_attr_attrgroup_relation}。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/attr}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-商品属性」</li>
+ * </ul>
+ *
+ * @see PmsAttrService
+ * @see PmsAttrExcelHandler
  */
+
 @RestController
 @RequestMapping("/mall/attr")
 @RequiredArgsConstructor
@@ -44,7 +53,11 @@ public class PmsAttrController {
     private final PmsAttrExcelHandler pmsAttrExcelHandler;
 
     /**
-     * 分页列表。queryDTO.attrType 必填；attrGroupId 仅作展示回填，不作为列表筛选条件。
+     * 分页查询商品属性列表。
+     * <p>queryDTO.attrType 必填；attrGroupId 仅作展示回填，不作为列表筛选条件。</p>
+     *
+     * @param queryDTO 分页及筛选条件
+     * @return 分页查询结果
      */
     @PreAuthorize(
             "hasAnyAuthority('mall:base:query', 'mall:sale:query', 'mall:product:query', 'mall:product:add', 'mall:product:edit')")
@@ -54,7 +67,12 @@ public class PmsAttrController {
         return Result.success(page);
     }
 
-    /** 详情（含关联表中的 attrGroupId、attrSort）。 */
+    /**
+     * 根据属性 ID 获取详情（含关联表中的 attrGroupId、attrSort）。
+     *
+     * @param attrId 属性主键
+     * @return 属性视图对象
+     */
     @PreAuthorize("hasAnyAuthority('mall:base:query', 'mall:sale:query')")
     @GetMapping("/{attrId}")
     public Result<PmsAttrVO> getInfo(@PathVariable("attrId") Long attrId) {
@@ -62,7 +80,12 @@ public class PmsAttrController {
         return Result.success(pmsAttrVO);
     }
 
-    /** 新增；可选传 attrGroupId、attrSort 建立分组关联。 */
+    /**
+     * 新增商品属性；可选传 attrGroupId、attrSort 建立分组关联。
+     *
+     * @param pmsAttrDTO 商品属性信息
+     * @return 操作结果
+     */
     @Log(title = "新增商品属性", businessType = BusinessType.INSERT)
     @PreAuthorize("hasAnyAuthority('mall:base:add', 'mall:sale:add')")
     @PostMapping
@@ -71,7 +94,12 @@ public class PmsAttrController {
         return success ? Result.success("新增商品属性成功") : Result.error("新增商品属性失败");
     }
 
-    /** 修改；传 attrGroupId=null 可解除与分组的关联。 */
+    /**
+     * 修改商品属性；传 attrGroupId=null 可解除与分组的关联。
+     *
+     * @param pmsAttrDTO 商品属性信息
+     * @return 操作结果
+     */
     @Log(title = "修改商品属性", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAnyAuthority('mall:base:edit', 'mall:sale:edit')")
     @PutMapping
@@ -80,7 +108,12 @@ public class PmsAttrController {
         return success ? Result.success("修改商品属性成功") : Result.error("修改商品属性失败");
     }
 
-    /** 批量删除（同时删除 pms_attr_attrgroup_relation 中对应行）。 */
+    /**
+     * 批量删除商品属性（同时删除 pms_attr_attrgroup_relation 中对应行）。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除商品属性", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAnyAuthority('mall:base:delete', 'mall:sale:delete')")
     @DeleteMapping("/delete")
@@ -94,7 +127,12 @@ public class PmsAttrController {
         return success ? Result.success("删除商品属性成功") : Result.error("删除商品属性失败");
     }
 
-    /** EasyExcel 导出商品属性（请求体须含 attrType） */
+    /**
+     * 导出商品属性为 Excel（请求体须含 attrType）。
+     *
+     * @param queryDTO 分页及筛选条件
+     * @return Excel 文件响应实体
+     */
     @Log(title = "导出商品属性", businessType = BusinessType.EXPORT)
     @PreAuthorize("hasAnyAuthority('mall:base:export', 'mall:sale:export')")
     @NoResponseWrapper
@@ -106,7 +144,15 @@ public class PmsAttrController {
         return ExcelToolkit.export(pmsAttrExcelHandler, queryDTO, PmsAttrExcel.class);
     }
 
-    /** EasyExcel 导入商品属性 */
+    /**
+     * 从 Excel 批量导入商品属性。
+     *
+     * @param file 上传的 Excel 或图片文件
+     * @param attrType 属性类型（1-基本属性，0-销售属性）
+     * @param updateSupport 是否允许更新已存在记录
+     * @return 操作结果
+     * @throws Exception 文件解析或上传异常
+     */
     @Log(title = "导入商品属性", businessType = BusinessType.IMPORT)
     @PreAuthorize("hasAnyAuthority('mall:base:import', 'mall:sale:import')")
     @PostMapping("/import")
@@ -123,7 +169,12 @@ public class PmsAttrController {
         return ExcelToolkit.importFile(file, pmsAttrExcelHandler, options, PmsAttrExcel.class);
     }
 
-    /** EasyExcel 下载导入模板 */
+    /**
+     * 下载商品属性导入 Excel 模板。
+     *
+     * @param attrType 属性类型（1-基本属性，0-销售属性）
+     * @return 模板文件响应实体
+     */
     @PreAuthorize("hasAnyAuthority('mall:base:import', 'mall:sale:import')")
     @NoResponseWrapper
     @GetMapping("/importTemplate")

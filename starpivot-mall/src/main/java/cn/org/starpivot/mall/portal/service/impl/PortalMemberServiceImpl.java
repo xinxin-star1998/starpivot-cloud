@@ -16,13 +16,27 @@ import cn.org.starpivot.mall.portal.service.PortalMemberService;
 import cn.org.starpivot.mall.ums.entity.UmsMember;
 import cn.org.starpivot.mall.ums.mapper.UmsMemberMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * 会员服务实现类。
+ * <p>
+ * 实现 {@link PortalMemberService}，处理会员相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PortalMemberService
+ */
 
 @Service
 @RequiredArgsConstructor

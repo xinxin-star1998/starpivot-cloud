@@ -16,6 +16,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+/**
+ * 会员等级服务实现类。
+ * <p>
+ * 实现 {@link UmsMemberLevelService}，处理会员等级相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see UmsMemberLevelService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class UmsMemberLevelServiceImpl implements UmsMemberLevelService {

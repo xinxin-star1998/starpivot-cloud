@@ -1,12 +1,11 @@
 package cn.org.starpivot.mall.pms.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.annotation.NoResponseWrapper;
-import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.entity.PageResponse;
-import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.excel.ExcelImportOptions;
 import cn.org.starpivot.common.excel.ExcelToolkit;
 import cn.org.starpivot.mall.pms.domain.dto.GroupAttrRelationSaveDTO;
@@ -28,11 +27,21 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * 属性分组控制器
- * 
- * @author admin
- * @since 2026-05-18
+ * 商城-属性分组控制器。
+ * <p>
+ * 商品属性分组的增删改查、导入导出及属性关联等接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/group}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-属性分组」</li>
+ * </ul>
+ *
+ * @see PmsAttrGroupService
+ * @see PmsAttrGroupExcelHandler
  */
+
 @RestController
 @RequestMapping("/mall/group")
 @RequiredArgsConstructor
@@ -43,10 +52,10 @@ public class PmsAttrGroupController
     private final PmsAttrGroupExcelHandler pmsAttrGroupExcelHandler;
 
     /**
-     * 分页查询属性分组列表
-     * 
-     * @param queryDTO 查询参数
-     * @return 分页结果
+     * 分页查询属性分组列表。
+     *
+     * @param queryDTO 分页及筛选条件
+     * @return 分页查询结果
      */
     @PreAuthorize(
             "hasAnyAuthority('mall:group:query', 'mall:product:query', 'mall:product:add', 'mall:product:edit')")
@@ -101,14 +110,25 @@ public class PmsAttrGroupController
         return success ? Result.success("修改属性分组成功") : Result.error("修改属性分组失败");
     }
 
-    /** 查询分组可关联的基本属性列表（含是否已关联） */
+    /**
+     * 查询分组可关联的基本属性列表（含是否已关联）。
+     *
+     * @param attrGroupId 属性分组主键
+     * @return 属性关联列表
+     */
     @PreAuthorize("hasAuthority('mall:group:query')")
     @GetMapping("/{attrGroupId}/attrs")
     public Result<List<GroupAttrRelationVO>> listGroupAttrs(@PathVariable Long attrGroupId) {
         return Result.success(pmsAttrGroupService.listGroupAttrRelations(attrGroupId));
     }
 
-    /** 保存分组关联的基本属性（全量覆盖本分组） */
+    /**
+     * 保存分组关联的基本属性（全量覆盖本分组）。
+     *
+     * @param attrGroupId 属性分组主键
+     * @param saveDTO 关联属性保存参数
+     * @return 操作结果
+     */
     @Log(title = "保存属性分组关联", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('mall:group:edit')")
     @PutMapping("/{attrGroupId}/attrs")
@@ -137,7 +157,12 @@ public class PmsAttrGroupController
         return success ? Result.success("删除属性分组成功") : Result.error("删除属性分组失败");
     }
 
-    /** EasyExcel 导出属性分组 */
+    /**
+     * 导出属性分组为 Excel。
+     *
+     * @param queryDTO 分页及筛选条件
+     * @return Excel 文件响应实体
+     */
     @Log(title = "导出属性分组", businessType = BusinessType.EXPORT)
     @PreAuthorize("hasAuthority('mall:group:export')")
     @NoResponseWrapper
@@ -146,7 +171,14 @@ public class PmsAttrGroupController
         return ExcelToolkit.export(pmsAttrGroupExcelHandler, queryDTO, PmsAttrGroupExcel.class);
     }
 
-    /** EasyExcel 导入属性分组 */
+    /**
+     * 从 Excel 批量导入属性分组。
+     *
+     * @param file 上传的 Excel 或图片文件
+     * @param updateSupport 是否允许更新已存在记录
+     * @return 操作结果
+     * @throws Exception 文件解析或上传异常
+     */
     @Log(title = "导入属性分组", businessType = BusinessType.IMPORT)
     @PreAuthorize("hasAuthority('mall:group:import')")
     @PostMapping("/import")
@@ -161,7 +193,11 @@ public class PmsAttrGroupController
                 PmsAttrGroupExcel.class);
     }
 
-    /** EasyExcel 下载导入模板 */
+    /**
+     * 下载属性分组导入 Excel 模板。
+     *
+     * @return 模板文件响应实体
+     */
     @PreAuthorize("hasAuthority('mall:group:import')")
     @NoResponseWrapper
     @GetMapping("/importTemplate")

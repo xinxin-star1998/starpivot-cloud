@@ -19,6 +19,19 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 会员成长值服务实现类。
+ * <p>
+ * 实现 {@link UmsMemberGrowthService}，处理会员成长值相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see UmsMemberGrowthService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class UmsMemberGrowthServiceImpl implements UmsMemberGrowthService {

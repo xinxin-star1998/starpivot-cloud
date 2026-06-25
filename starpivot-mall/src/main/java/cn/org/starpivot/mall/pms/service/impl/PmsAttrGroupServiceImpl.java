@@ -1,43 +1,47 @@
 package cn.org.starpivot.mall.pms.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.pms.domain.dto.GroupAttrRelationSaveDTO;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrGroupDTO;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrGroupQueryDTO;
-import cn.org.starpivot.mall.pms.entity.PmsAttr;
-import cn.org.starpivot.mall.pms.entity.PmsAttrAttrgroupRelation;
-import cn.org.starpivot.mall.pms.entity.PmsAttrGroup;
 import cn.org.starpivot.mall.pms.domain.excel.PmsAttrGroupExcel;
 import cn.org.starpivot.mall.pms.domain.vo.GroupAttrRelationVO;
 import cn.org.starpivot.mall.pms.domain.vo.PmsAttrGroupVO;
+import cn.org.starpivot.mall.pms.entity.PmsAttr;
+import cn.org.starpivot.mall.pms.entity.PmsAttrAttrgroupRelation;
+import cn.org.starpivot.mall.pms.entity.PmsAttrGroup;
 import cn.org.starpivot.mall.pms.mapper.PmsAttrAttrgroupRelationMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsAttrGroupMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsAttrMapper;
 import cn.org.starpivot.mall.pms.service.PmsAttrGroupService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 属性分组Service业务层实现
- * 
- * @author admin
- * @since 2026-05-18
+ * 属性分组服务实现类。
+ * <p>
+ * 实现 {@link PmsAttrGroupService}，处理属性分组相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PmsAttrGroupService
  */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

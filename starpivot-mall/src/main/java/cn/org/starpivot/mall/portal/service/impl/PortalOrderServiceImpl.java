@@ -4,6 +4,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
+import cn.org.starpivot.mall.config.MallSecurityProperties;
 import cn.org.starpivot.mall.oms.domain.vo.OmsOrderItemVo;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
@@ -25,7 +26,6 @@ import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderQueryBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
-import cn.org.starpivot.mall.portal.domain.vo.PortalCartItemVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCartVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderVo;
@@ -37,27 +37,36 @@ import cn.org.starpivot.mall.ums.entity.UmsMember;
 import cn.org.starpivot.mall.ums.entity.UmsMemberReceiveAddress;
 import cn.org.starpivot.mall.ums.mapper.UmsMemberMapper;
 import cn.org.starpivot.mall.ums.mapper.UmsMemberReceiveAddressMapper;
-import cn.org.starpivot.mall.config.MallSecurityProperties;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+
+/**
+ * 订单服务实现类。
+ * <p>
+ * 实现 {@link PortalOrderService}，处理订单相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PortalOrderService
+ */
 
 @Service
 @RequiredArgsConstructor

@@ -2,20 +2,44 @@ package cn.org.starpivot.mall.portal.domain.vo;
 
 import cn.org.starpivot.mall.pms.domain.vo.CategoryTreeVo;
 import cn.org.starpivot.mall.sms.domain.vo.HomeAdvVo;
+import lombok.Data;
+
 import java.util.List;
 import java.util.Map;
-import lombok.Data;
+
+
+/**
+ * Home视图对象。
+ * <p>
+ * 用于接口响应的数据视图。
+ * </p>
+ * <ul>
+ *   <li>{@link Data} — 自动生成 getter/setter 等方法</li>
+ * </ul>
+ */
 
 @Data
 public class PortalHomeVo {
 
+    /**
+     * banners
+     */
     private List<HomeAdvVo> banners;
 
+    /**
+     * categories
+     */
     private List<CategoryTreeVo> categories;
 
     /** 一级分类 ID -> 关联品牌（去重，最多 8 个） */
+    /**
+     * category Brands
+     */
     private Map<Long, List<PortalBrandBriefVo>> categoryBrands;
 
     /** 首页营销模块：新品 / 秒杀 / 包邮 / 专题 */
+    /**
+     * home Blocks
+     */
     private List<PortalHomeBlockVo> homeBlocks;
 }

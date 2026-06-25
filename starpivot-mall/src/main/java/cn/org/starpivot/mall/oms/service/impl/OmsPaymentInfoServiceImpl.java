@@ -18,6 +18,18 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 支付信息服务实现类。
+ * <p>
+ * 实现 {@link OmsPaymentInfoService}，处理支付信息相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ * </ul>
+ *
+ * @see OmsPaymentInfoService
+ */
+
 @Service
 public class OmsPaymentInfoServiceImpl extends ServiceImpl<OmsPaymentInfoMapper, OmsPaymentInfo>
         implements OmsPaymentInfoService {

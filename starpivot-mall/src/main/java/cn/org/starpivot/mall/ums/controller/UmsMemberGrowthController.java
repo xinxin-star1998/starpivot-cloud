@@ -16,6 +16,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 商城-会员积分成长控制器。
+ * <p>
+ * 提供商城-会员积分成长相关 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/member-growth}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-会员积分成长」</li>
+ * </ul>
+ *
+ * @see UmsMemberGrowthService
+ */
+
 @RestController
 @RequestMapping("/mall/member-growth")
 @RequiredArgsConstructor
@@ -25,6 +41,12 @@ public class UmsMemberGrowthController {
 
     private final UmsMemberGrowthService umsMemberGrowthService;
 
+    /**
+     * 积分变动记录分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "积分变动记录分页列表")
     @PostMapping("/integration/list")
     @PreAuthorize("hasAuthority('mall:member:growth')")
@@ -33,6 +55,12 @@ public class UmsMemberGrowthController {
         return Result.success(umsMemberGrowthService.integrationPageList(reqBo));
     }
 
+    /**
+     * 成长值变动记录分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "成长值变动记录分页列表")
     @PostMapping("/growth/list")
     @PreAuthorize("hasAuthority('mall:member:growth')")

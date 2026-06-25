@@ -30,6 +30,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 商城-采购控制器。
+ * <p>
+ * 采购单与采购需求。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/purchase}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-采购」</li>
+ * </ul>
+ *
+ * @see WmsPurchaseService
+ */
+
 @RestController
 @RequestMapping("/mall/purchase")
 @RequiredArgsConstructor
@@ -39,6 +55,12 @@ public class WmsPurchaseController {
 
     private final WmsPurchaseService wmsPurchaseService;
 
+    /**
+     * 采购单分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "采购单分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:purchase:list')")
@@ -46,6 +68,12 @@ public class WmsPurchaseController {
         return Result.success(wmsPurchaseService.pageList(reqBo));
     }
 
+    /**
+     * 未领取采购单列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "未领取采购单列表")
     @PostMapping("/unreceive/list")
     @PreAuthorize("hasAuthority('mall:purchase:list')")
@@ -53,6 +81,12 @@ public class WmsPurchaseController {
         return Result.success(wmsPurchaseService.unreceivePageList(reqBo));
     }
 
+    /**
+     * 采购单详情（含明细）。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "采购单详情（含明细）")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:purchase:query')")
@@ -60,6 +94,12 @@ public class WmsPurchaseController {
         return Result.success(wmsPurchaseService.getDetailById(id));
     }
 
+    /**
+     * 合并采购需求到采购单。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "合并采购需求", businessType = BusinessType.UPDATE)
     @Operation(summary = "合并采购需求到采购单")
     @PostMapping("/merge")
@@ -69,6 +109,12 @@ public class WmsPurchaseController {
         return Result.success("合并成功");
     }
 
+    /**
+     * 领取采购单。
+     *
+     * @param ids ids 参数
+     * @return 操作结果
+     */
     @Log(title = "领取采购单", businessType = BusinessType.UPDATE)
     @Operation(summary = "领取采购单")
     @PostMapping("/received")
@@ -78,6 +124,12 @@ public class WmsPurchaseController {
         return Result.success("领取成功");
     }
 
+    /**
+     * 完成采购并入库。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "完成采购", businessType = BusinessType.UPDATE)
     @Operation(summary = "完成采购并入库")
     @PostMapping("/done")
@@ -87,6 +139,12 @@ public class WmsPurchaseController {
         return Result.success("采购完成");
     }
 
+    /**
+     * 采购需求分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "采购需求分页列表")
     @PostMapping("/detail/list")
     @PreAuthorize("hasAuthority('mall:purchase:item')")
@@ -94,6 +152,12 @@ public class WmsPurchaseController {
         return Result.success(wmsPurchaseService.detailPageList(reqBo));
     }
 
+    /**
+     * 新增采购需求。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "新增采购需求", businessType = BusinessType.INSERT)
     @Operation(summary = "新增采购需求")
     @PostMapping("/detail")
@@ -103,6 +167,12 @@ public class WmsPurchaseController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 删除采购需求。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除采购需求", businessType = BusinessType.DELETE)
     @Operation(summary = "删除采购需求")
     @DeleteMapping("/detail/remove")

@@ -14,18 +14,28 @@ import cn.org.starpivot.mall.sms.service.SmsSeckillSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 商城-秒杀场次控制器。
+ * <p>
+ * 提供商城-秒杀场次相关 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/seckill-session}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-秒杀场次」</li>
+ * </ul>
+ *
+ * @see SmsSeckillSessionService
+ */
 
 @RestController
 @RequestMapping("/mall/seckill-session")
@@ -36,6 +46,12 @@ public class SmsSeckillSessionController {
 
     private final SmsSeckillSessionService smsSeckillSessionService;
 
+    /**
+     * 秒杀场次分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "秒杀场次分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:seckill:session')")
@@ -43,6 +59,10 @@ public class SmsSeckillSessionController {
         return Result.success(smsSeckillSessionService.pageList(reqBo));
     }
 
+    /**
+     * 启用中的秒杀场次（下拉）。
+     * @return 列表数据
+     */
     @Operation(summary = "启用中的秒杀场次（下拉）")
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('mall:seckill:session')")
@@ -50,6 +70,12 @@ public class SmsSeckillSessionController {
         return Result.success(smsSeckillSessionService.listAll());
     }
 
+    /**
+     * 秒杀场次详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "秒杀场次详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:seckill:session')")
@@ -57,6 +83,12 @@ public class SmsSeckillSessionController {
         return Result.success(smsSeckillSessionService.getById(id));
     }
 
+    /**
+     * 新增秒杀场次。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "新增秒杀场次", businessType = BusinessType.INSERT)
     @Operation(summary = "新增秒杀场次")
     @PostMapping
@@ -66,6 +98,12 @@ public class SmsSeckillSessionController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 修改秒杀场次。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "修改秒杀场次", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改秒杀场次")
     @PutMapping
@@ -75,6 +113,12 @@ public class SmsSeckillSessionController {
         return Result.success("修改成功");
     }
 
+    /**
+     * 删除秒杀场次。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除秒杀场次", businessType = BusinessType.DELETE)
     @Operation(summary = "删除秒杀场次")
     @DeleteMapping("/remove")

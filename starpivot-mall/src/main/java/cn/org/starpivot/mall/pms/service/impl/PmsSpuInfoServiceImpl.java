@@ -1,18 +1,18 @@
 package cn.org.starpivot.mall.pms.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
 import cn.org.starpivot.mall.pms.domain.bo.ProductReqBo;
 import cn.org.starpivot.mall.pms.domain.bo.ProductSaveBo;
-import cn.org.starpivot.mall.pms.entity.*;
 import cn.org.starpivot.mall.pms.domain.vo.*;
+import cn.org.starpivot.mall.pms.entity.*;
 import cn.org.starpivot.mall.pms.mapper.*;
 import cn.org.starpivot.mall.pms.service.PmsSpuInfoService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,19 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+/**
+ * SPU服务实现类。
+ * <p>
+ * 实现 {@link PmsSpuInfoService}，处理SPU相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PmsSpuInfoService
+ */
 
 @Service
 @RequiredArgsConstructor

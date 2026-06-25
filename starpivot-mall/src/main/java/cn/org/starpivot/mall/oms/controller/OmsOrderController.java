@@ -18,8 +18,21 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 订单管理
+ * 商城-订单控制器。
+ * <p>
+ * 订单查询、发货、关闭。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/order}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-订单」</li>
+ * </ul>
+ *
+ * @see OmsOrderService
  */
+
 @RestController
 @RequestMapping("/mall/order")
 @RequiredArgsConstructor
@@ -29,6 +42,12 @@ public class OmsOrderController {
 
     private final OmsOrderService omsOrderService;
 
+    /**
+     * 订单分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "订单分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:order:query')")
@@ -36,6 +55,12 @@ public class OmsOrderController {
         return Result.success(omsOrderService.pageList(reqBo));
     }
 
+    /**
+     * 订单详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "订单详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:order:query')")
@@ -43,6 +68,12 @@ public class OmsOrderController {
         return Result.success(omsOrderService.getDetailById(id));
     }
 
+    /**
+     * 订单发货。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "订单发货", businessType = BusinessType.UPDATE)
     @Operation(summary = "订单发货")
     @PutMapping("/deliver")
@@ -52,6 +83,12 @@ public class OmsOrderController {
         return Result.success("发货成功");
     }
 
+    /**
+     * 关闭订单。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "关闭订单", businessType = BusinessType.UPDATE)
     @Operation(summary = "关闭订单")
     @PutMapping("/close")

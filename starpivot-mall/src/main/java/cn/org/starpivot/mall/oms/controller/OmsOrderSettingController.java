@@ -14,8 +14,21 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 订单设置
+ * 商城-订单设置控制器。
+ * <p>
+ * 订单超时与自动确认规则。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/order-setting}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-订单设置」</li>
+ * </ul>
+ *
+ * @see OmsOrderSettingService
  */
+
 @RestController
 @RequestMapping("/mall/order-setting")
 @RequiredArgsConstructor
@@ -25,6 +38,10 @@ public class OmsOrderSettingController {
 
     private final OmsOrderSettingService omsOrderSettingService;
 
+    /**
+     * 获取订单设置。
+     * @return 业务数据
+     */
     @Operation(summary = "获取订单设置")
     @GetMapping
     @PreAuthorize("hasAuthority('mall:order:setting')")
@@ -32,6 +49,12 @@ public class OmsOrderSettingController {
         return Result.success(omsOrderSettingService.getSetting());
     }
 
+    /**
+     * 更新订单设置。
+     *
+     * @param setting setting 参数
+     * @return 操作结果
+     */
     @Log(title = "订单设置", businessType = BusinessType.UPDATE)
     @Operation(summary = "更新订单设置")
     @PutMapping

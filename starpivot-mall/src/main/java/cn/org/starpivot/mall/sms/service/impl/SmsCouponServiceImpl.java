@@ -1,7 +1,5 @@
 package cn.org.starpivot.mall.sms.service.impl;
 
-
-
 import cn.org.starpivot.common.entity.PageResponse;
 
 import cn.org.starpivot.common.exception.BizException;
@@ -70,7 +68,18 @@ import org.springframework.util.CollectionUtils;
 
 import org.springframework.util.StringUtils;
 
-
+/**
+ * 优惠券服务实现类。
+ * <p>
+ * 实现 {@link SmsCouponService}，处理优惠券相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see SmsCouponService
+ */
 
 @Service
 
@@ -78,13 +87,9 @@ import org.springframework.util.StringUtils;
 
 public class SmsCouponServiceImpl implements SmsCouponService {
 
-
-
     private static final int USE_TYPE_CATEGORY = 1;
 
     private static final int USE_TYPE_SPU = 2;
-
-
 
     private final SmsCouponMapper smsCouponMapper;
 
@@ -95,8 +100,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
     private final PmsSpuInfoMapper pmsSpuInfoMapper;
 
     private final PmsCategoryMapper pmsCategoryMapper;
-
-
 
     @Override
 
@@ -118,8 +121,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
         IPage<SmsCoupon> pageList = smsCouponMapper.selectPage(page, wrapper);
 
-
-
         PageResponse<CouponVo> pageResponse = new PageResponse<>();
 
         pageResponse.setTotal(pageList.getTotal());
@@ -135,8 +136,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
         return pageResponse;
 
     }
-
-
 
     @Override
 
@@ -168,8 +167,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     }
 
-
-
     @Override
 
     @Transactional(rollbackFor = Exception.class)
@@ -187,8 +184,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
         saveRelations(entity.getId(), bo);
 
     }
-
-
 
     @Override
 
@@ -222,8 +217,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     }
 
-
-
     @Override
 
     @Transactional(rollbackFor = Exception.class)
@@ -246,8 +239,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     }
 
-
-
     private void saveRelations(Long couponId, CouponSaveBo bo) {
 
         if (couponId == null || bo.getUseType() == null) {
@@ -267,8 +258,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
         }
 
     }
-
-
 
     private void saveSpuList(Long couponId, List<CouponSpuBo> spuList) {
 
@@ -314,8 +303,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     }
 
-
-
     private void saveCategoryList(Long couponId, List<CouponCategoryBo> categoryList) {
 
         if (CollectionUtils.isEmpty(categoryList)) {
@@ -360,8 +347,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     }
 
-
-
     private void removeRelations(Long couponId) {
 
         smsCouponSpuRelationMapper.delete(
@@ -373,8 +358,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
                 .eq(SmsCouponSpuCategoryRelation::getCouponId, couponId));
 
     }
-
-
 
     private List<CouponSpuVo> loadSpuList(Long couponId) {
 
@@ -399,8 +382,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
         }).collect(Collectors.toList());
 
     }
-
-
 
     private List<CouponCategoryVo> loadCategoryList(Long couponId) {
 
@@ -428,8 +409,6 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
     }
 
-
-
     private CouponVo toVo(SmsCoupon entity) {
 
         CouponVo vo = new CouponVo();
@@ -441,5 +420,4 @@ public class SmsCouponServiceImpl implements SmsCouponService {
     }
 
 }
-
 

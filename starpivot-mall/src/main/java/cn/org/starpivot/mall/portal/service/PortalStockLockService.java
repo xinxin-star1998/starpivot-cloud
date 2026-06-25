@@ -4,8 +4,12 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * C 端下单 Redis 库存预扣与超时释放。
+ * Stocklockservice服务接口。
+ * <p>
+ * 封装Stocklock相关业务逻辑。
+ * </p>
  */
+
 public interface PortalStockLockService {
 
     /**

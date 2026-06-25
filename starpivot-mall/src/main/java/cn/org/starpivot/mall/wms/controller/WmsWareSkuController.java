@@ -17,11 +17,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 商品库存控制器
- * 
- * @author admin
- * @since 2026-05-22
+ * 商城-库存控制器。
+ * <p>
+ * 仓库 SKU 库存的增删改查等接口。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/ware-sku}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-库存」</li>
+ * </ul>
+ *
+ * @see WmsWareSkuService
  */
+
 @Slf4j
 @RestController
 @RequestMapping("/mall/ware-sku")

@@ -25,6 +25,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 商城-会员等级控制器。
+ * <p>
+ * 提供商城-会员等级相关 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/member-level}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-会员等级」</li>
+ * </ul>
+ *
+ * @see UmsMemberLevelService
+ */
+
 @RestController
 @RequestMapping("/mall/member-level")
 @RequiredArgsConstructor
@@ -34,6 +50,10 @@ public class UmsMemberLevelController {
 
     private final UmsMemberLevelService umsMemberLevelService;
 
+    /**
+     * 会员等级列表。
+     * @return 列表数据
+     */
     @Operation(summary = "会员等级列表")
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('mall:member:level')")
@@ -41,6 +61,12 @@ public class UmsMemberLevelController {
         return Result.success(umsMemberLevelService.listAll());
     }
 
+    /**
+     * 会员等级详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "会员等级详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:member:level')")
@@ -48,6 +74,12 @@ public class UmsMemberLevelController {
         return Result.success(umsMemberLevelService.getById(id));
     }
 
+    /**
+     * 新增会员等级。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "新增会员等级", businessType = BusinessType.INSERT)
     @Operation(summary = "新增会员等级")
     @PostMapping
@@ -57,6 +89,12 @@ public class UmsMemberLevelController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 修改会员等级。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "修改会员等级", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改会员等级")
     @PutMapping
@@ -66,6 +104,12 @@ public class UmsMemberLevelController {
         return Result.success("修改成功");
     }
 
+    /**
+     * 删除会员等级。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除会员等级", businessType = BusinessType.DELETE)
     @Operation(summary = "删除会员等级")
     @DeleteMapping("/remove")

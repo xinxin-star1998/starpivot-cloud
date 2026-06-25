@@ -21,19 +21,29 @@ import cn.org.starpivot.mall.portal.domain.vo.PortalProductDetailVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductListVo;
 import cn.org.starpivot.mall.portal.service.PortalProductService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Product服务实现类。
+ * <p>
+ * 实现 {@link PortalProductService}，处理Product相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PortalProductService
+ */
 
 @Service
 @RequiredArgsConstructor

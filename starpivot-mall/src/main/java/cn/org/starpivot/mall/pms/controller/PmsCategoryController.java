@@ -13,19 +13,28 @@ import cn.org.starpivot.mall.pms.service.PmsCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 商城-分类控制器。
+ * <p>
+ * 提供商城-分类相关 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/category}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-分类」</li>
+ * </ul>
+ *
+ * @see PmsCategoryService
+ */
 
 @RestController
 @RequestMapping("/mall/category")
@@ -36,6 +45,10 @@ public class PmsCategoryController {
 
     private final PmsCategoryService pmsCategoryService;
 
+    /**
+     * 分类树。
+     * @return 列表数据
+     */
     @Operation(summary = "分类树")
     @GetMapping("/tree")
     @PreAuthorize("hasAuthority('mall:category:query')")
@@ -43,6 +56,12 @@ public class PmsCategoryController {
         return Result.success(pmsCategoryService.treeList());
     }
 
+    /**
+     * 子分类列表。
+     *
+     * @param parentCid 主键 ID
+     * @return 列表数据
+     */
     @Operation(summary = "子分类列表")
     @GetMapping("/children")
     @PreAuthorize("hasAuthority('mall:category:query')")
@@ -51,6 +70,12 @@ public class PmsCategoryController {
         return Result.success(pmsCategoryService.listChildren(parentCid));
     }
 
+    /**
+     * 分类详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "分类详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:category:query')")
@@ -58,6 +83,12 @@ public class PmsCategoryController {
         return Result.success(pmsCategoryService.getDetail(id));
     }
 
+    /**
+     * 新增分类。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "新增商品分类", businessType = BusinessType.INSERT)
     @Operation(summary = "新增分类")
     @PostMapping
@@ -67,6 +98,12 @@ public class PmsCategoryController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 修改分类。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "修改商品分类", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改分类")
     @PutMapping
@@ -76,6 +113,12 @@ public class PmsCategoryController {
         return Result.success("修改成功");
     }
 
+    /**
+     * 删除分类。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除商品分类", businessType = BusinessType.DELETE)
     @Operation(summary = "删除分类")
     @DeleteMapping("/remove")
@@ -86,6 +129,12 @@ public class PmsCategoryController {
         return Result.success("删除成功");
     }
 
+    /**
+     * 批量更新同级排序。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "更新商品分类排序", businessType = BusinessType.UPDATE)
     @Operation(summary = "批量更新同级排序")
     @PutMapping("/sort")

@@ -19,6 +19,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 仓库服务实现类。
+ * <p>
+ * 实现 {@link WmsWareInfoService}，处理仓库相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ * </ul>
+ *
+ * @see WmsWareInfoService
+ */
+
 @Service
 public class WmsWareInfoServiceImpl extends ServiceImpl<WmsWareInfoMapper, WmsWareInfo>
         implements WmsWareInfoService {

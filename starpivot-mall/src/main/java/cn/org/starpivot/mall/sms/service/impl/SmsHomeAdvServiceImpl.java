@@ -22,6 +22,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+/**
+ * 首页广告服务实现类。
+ * <p>
+ * 实现 {@link SmsHomeAdvService}，处理首页广告相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see SmsHomeAdvService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SmsHomeAdvServiceImpl implements SmsHomeAdvService {

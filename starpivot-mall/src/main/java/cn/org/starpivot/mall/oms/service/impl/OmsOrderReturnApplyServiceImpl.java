@@ -22,6 +22,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 退货申请服务实现类。
+ * <p>
+ * 实现 {@link OmsOrderReturnApplyService}，处理退货申请相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ * </ul>
+ *
+ * @see OmsOrderReturnApplyService
+ */
+
 @Service
 public class OmsOrderReturnApplyServiceImpl extends ServiceImpl<OmsOrderReturnApplyMapper, OmsOrderReturnApply>
         implements OmsOrderReturnApplyService {

@@ -18,8 +18,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * 商城通用图片上传（文件中心 GOODS 分类）。
+ * 商城-图片控制器。
+ * <p>
+ * 商城素材图片上传（对接文件中心）。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/image}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-图片」</li>
+ * </ul>
+ *
+ * @see MallImageUploadSupport
  */
+
 @Slf4j
 @RestController
 @RequestMapping("/mall/image")

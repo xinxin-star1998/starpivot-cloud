@@ -31,6 +31,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+/**
+ * 首页专题服务实现类。
+ * <p>
+ * 实现 {@link SmsHomeSubjectService}，处理首页专题相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see SmsHomeSubjectService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SmsHomeSubjectServiceImpl implements SmsHomeSubjectService {

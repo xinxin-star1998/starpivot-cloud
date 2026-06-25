@@ -8,12 +8,26 @@ import cn.org.starpivot.mall.portal.service.PortalAddressService;
 import cn.org.starpivot.mall.ums.entity.UmsMemberReceiveAddress;
 import cn.org.starpivot.mall.ums.mapper.UmsMemberReceiveAddressMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 地址服务实现类。
+ * <p>
+ * 实现 {@link PortalAddressService}，处理地址相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PortalAddressService
+ */
 
 @Service
 @RequiredArgsConstructor

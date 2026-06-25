@@ -4,27 +4,33 @@ import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.pms.domain.bo.CategorySaveBo;
 import cn.org.starpivot.mall.pms.domain.bo.CategorySortItemBo;
-import cn.org.starpivot.mall.pms.entity.PmsCategory;
 import cn.org.starpivot.mall.pms.domain.vo.CategoryTreeVo;
+import cn.org.starpivot.mall.pms.entity.PmsCategory;
 import cn.org.starpivot.mall.pms.mapper.PmsCategoryMapper;
 import cn.org.starpivot.mall.pms.service.PmsCategoryService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * 商品分类服务实现类。
+ * <p>
+ * 实现 {@link PmsCategoryService}，处理商品分类相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ * </ul>
+ *
+ * @see PmsCategoryService
+ */
 
 @Service
 public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCategory> implements PmsCategoryService {

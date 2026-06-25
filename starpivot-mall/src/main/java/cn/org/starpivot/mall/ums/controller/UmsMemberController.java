@@ -22,6 +22,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 商城-会员控制器。
+ * <p>
+ * 提供商城-会员相关 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/member}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-会员」</li>
+ * </ul>
+ *
+ * @see UmsMemberService
+ */
+
 @RestController
 @RequestMapping("/mall/member")
 @RequiredArgsConstructor
@@ -31,6 +47,12 @@ public class UmsMemberController {
 
     private final UmsMemberService umsMemberService;
 
+    /**
+     * 会员分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "会员分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:member:query')")
@@ -38,6 +60,12 @@ public class UmsMemberController {
         return Result.success(umsMemberService.pageList(reqBo));
     }
 
+    /**
+     * 会员详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "会员详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:member:query')")
@@ -45,6 +73,12 @@ public class UmsMemberController {
         return Result.success(umsMemberService.getById(id));
     }
 
+    /**
+     * 修改会员。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "修改会员", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改会员")
     @PutMapping

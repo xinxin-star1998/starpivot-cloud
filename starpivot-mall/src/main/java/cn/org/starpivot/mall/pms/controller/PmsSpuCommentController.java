@@ -14,18 +14,28 @@ import cn.org.starpivot.mall.pms.service.PmsSpuCommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 商城-评论控制器。
+ * <p>
+ * 商品评论管理（表 pms_spu_comment）。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/comment}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-评论」</li>
+ * </ul>
+ *
+ * @see PmsSpuCommentService
+ */
 
 @RestController
 @RequestMapping("/mall/comment")
@@ -36,6 +46,12 @@ public class PmsSpuCommentController {
 
     private final PmsSpuCommentService pmsSpuCommentService;
 
+    /**
+     * 评论分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "评论分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:comment:list')")
@@ -43,6 +59,12 @@ public class PmsSpuCommentController {
         return Result.success(pmsSpuCommentService.pageList(reqBo));
     }
 
+    /**
+     * 评论详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "评论详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:comment:query')")
@@ -50,6 +72,12 @@ public class PmsSpuCommentController {
         return Result.success(pmsSpuCommentService.getById(id));
     }
 
+    /**
+     * 评论展示/隐藏。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "评论展示状态", businessType = BusinessType.UPDATE)
     @Operation(summary = "评论展示/隐藏", description = "showStatus：0-隐藏 1-显示")
     @PutMapping("/show-status")
@@ -59,6 +87,12 @@ public class PmsSpuCommentController {
         return Result.success(bo.getShowStatus() == 1 ? "已设为显示" : "已设为隐藏");
     }
 
+    /**
+     * 删除评论。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除评论", businessType = BusinessType.DELETE)
     @Operation(summary = "删除评论", description = "请求体 ids 为评论主键列表")
     @DeleteMapping("/remove")

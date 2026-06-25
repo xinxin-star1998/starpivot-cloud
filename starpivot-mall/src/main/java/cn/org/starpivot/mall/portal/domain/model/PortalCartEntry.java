@@ -3,7 +3,7 @@ package cn.org.starpivot.mall.portal.domain.model;
 import lombok.Data;
 
 /**
- * Redis 购物车条目（仅存 skuId / quantity / checked）。
+ * Cartentry请求 BO。
  */
 @Data
 public class PortalCartEntry {

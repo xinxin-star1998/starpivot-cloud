@@ -1,11 +1,10 @@
 package cn.org.starpivot.mall.pms.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
-import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.entity.PageResponse;
-import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.pms.domain.bo.ProductReqBo;
@@ -23,6 +22,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 商城-SPU控制器。
+ * <p>
+ * SPU CRUD（表 pms_spu_info）。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/product}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-SPU」</li>
+ * </ul>
+ *
+ * @see PmsSpuInfoService
+ */
+
 @RestController
 @RequestMapping("/mall/product")
 @RequiredArgsConstructor
@@ -32,6 +47,12 @@ public class PmsSpuInfoController {
 
     private final PmsSpuInfoService pmsSpuInfoService;
 
+    /**
+     * SPU 分页列表。
+     *
+     * @param productReqBo 业务请求参数
+     * @return 分页查询结果
+     */
     @Operation(summary = "SPU 分页列表", description = "支持 SPU 名称模糊，目录、品牌、上架状态筛选")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:product:query')")
@@ -39,6 +60,12 @@ public class PmsSpuInfoController {
         return Result.success(pmsSpuInfoService.getPmsSpuInfoPageList(productReqBo));
     }
 
+    /**
+     * SPU 详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "SPU 详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:product:query')")
@@ -46,6 +73,12 @@ public class PmsSpuInfoController {
         return Result.success(pmsSpuInfoService.getPmsSpuInfoById(id));
     }
 
+    /**
+     * 新增 SPU。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "新增SPU", businessType = BusinessType.INSERT)
     @Operation(summary = "新增 SPU")
     @PostMapping
@@ -55,6 +88,12 @@ public class PmsSpuInfoController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 修改 SPU。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "修改SPU", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改 SPU")
     @PutMapping
@@ -64,6 +103,12 @@ public class PmsSpuInfoController {
         return Result.success("修改成功");
     }
 
+    /**
+     * SPU 上架/下架。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "SPU上架状态", businessType = BusinessType.UPDATE)
     @Operation(summary = "SPU 上架/下架", description = "publishStatus：0-下架 1-上架")
     @PutMapping("/publish-status")
@@ -73,6 +118,12 @@ public class PmsSpuInfoController {
         return Result.success(bo.getPublishStatus() == 1 ? "上架成功" : "下架成功");
     }
 
+    /**
+     * 删除 SPU。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除SPU", businessType = BusinessType.DELETE)
     @Operation(summary = "删除 SPU", description = "请求体 ids 为 SPU 主键列表")
     @DeleteMapping("/remove")

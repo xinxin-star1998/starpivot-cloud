@@ -17,8 +17,21 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 退货处理
+ * 商城-退货控制器。
+ * <p>
+ * 退货申请查询与审核。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/order-return}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-退货」</li>
+ * </ul>
+ *
+ * @see OmsOrderReturnApplyService
  */
+
 @RestController
 @RequestMapping("/mall/order-return")
 @RequiredArgsConstructor
@@ -28,6 +41,12 @@ public class OmsOrderReturnController {
 
     private final OmsOrderReturnApplyService omsOrderReturnApplyService;
 
+    /**
+     * 退货申请分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "退货申请分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:return:query')")
@@ -35,6 +54,12 @@ public class OmsOrderReturnController {
         return Result.success(omsOrderReturnApplyService.pageList(reqBo));
     }
 
+    /**
+     * 退货申请详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "退货申请详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:return:query')")
@@ -42,6 +67,12 @@ public class OmsOrderReturnController {
         return Result.success(omsOrderReturnApplyService.getDetailById(id));
     }
 
+    /**
+     * 退货审核。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "退货审核", businessType = BusinessType.UPDATE)
     @Operation(summary = "退货审核")
     @PutMapping("/audit")

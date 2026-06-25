@@ -14,18 +14,28 @@ import cn.org.starpivot.mall.sms.service.SmsSpuBoundsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 商城-SPU积分控制器。
+ * <p>
+ * 提供商城-SPU积分相关 REST 接口。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/spu-bounds}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-SPU积分」</li>
+ * </ul>
+ *
+ * @see SmsSpuBoundsService
+ */
 
 @RestController
 @RequestMapping("/mall/spu-bounds")
@@ -36,6 +46,12 @@ public class SmsSpuBoundsController {
 
     private final SmsSpuBoundsService smsSpuBoundsService;
 
+    /**
+     * SPU积分分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "SPU积分分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAuthority('mall:bounds:list')")
@@ -43,6 +59,12 @@ public class SmsSpuBoundsController {
         return Result.success(smsSpuBoundsService.pageList(reqBo));
     }
 
+    /**
+     * SPU积分详情。
+     *
+     * @param id 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "SPU积分详情")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('mall:bounds:query')")
@@ -50,6 +72,12 @@ public class SmsSpuBoundsController {
         return Result.success(smsSpuBoundsService.getById(id));
     }
 
+    /**
+     * 按 SPU ID 查询积分配置。
+     *
+     * @param spuId 主键 ID
+     * @return 业务数据
+     */
     @Operation(summary = "按 SPU ID 查询积分配置")
     @GetMapping("/spu/{spuId}")
     @PreAuthorize("hasAuthority('mall:bounds:query')")
@@ -57,6 +85,12 @@ public class SmsSpuBoundsController {
         return Result.success(smsSpuBoundsService.getBySpuId(spuId));
     }
 
+    /**
+     * 新增SPU积分。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "新增SPU积分", businessType = BusinessType.INSERT)
     @Operation(summary = "新增SPU积分")
     @PostMapping
@@ -66,6 +100,12 @@ public class SmsSpuBoundsController {
         return Result.success("新增成功");
     }
 
+    /**
+     * 修改SPU积分。
+     *
+     * @param bo 业务请求参数
+     * @return 操作结果
+     */
     @Log(title = "修改SPU积分", businessType = BusinessType.UPDATE)
     @Operation(summary = "修改SPU积分")
     @PutMapping
@@ -75,6 +115,12 @@ public class SmsSpuBoundsController {
         return Result.success("修改成功");
     }
 
+    /**
+     * 删除SPU积分。
+     *
+     * @param deleteRequest 待删除主键 ID 列表
+     * @return 操作结果
+     */
     @Log(title = "删除SPU积分", businessType = BusinessType.DELETE)
     @Operation(summary = "删除SPU积分")
     @DeleteMapping("/remove")

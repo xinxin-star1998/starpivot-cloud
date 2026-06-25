@@ -17,6 +17,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 会员统计服务实现类。
+ * <p>
+ * 实现 {@link UmsMemberStatisticsService}，处理会员统计相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see UmsMemberStatisticsService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class UmsMemberStatisticsServiceImpl implements UmsMemberStatisticsService {

@@ -8,6 +8,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 订单设置服务实现类。
+ * <p>
+ * 实现 {@link OmsOrderSettingService}，处理订单设置相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ * </ul>
+ *
+ * @see OmsOrderSettingService
+ */
+
 @Service
 public class OmsOrderSettingServiceImpl extends ServiceImpl<OmsOrderSettingMapper, OmsOrderSetting>
         implements OmsOrderSettingService {

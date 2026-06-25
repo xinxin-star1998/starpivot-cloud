@@ -1,23 +1,23 @@
 package cn.org.starpivot.mall.pms.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrDTO;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrQueryDTO;
+import cn.org.starpivot.mall.pms.domain.excel.PmsAttrExcel;
+import cn.org.starpivot.mall.pms.domain.vo.PmsAttrVO;
 import cn.org.starpivot.mall.pms.entity.PmsAttr;
 import cn.org.starpivot.mall.pms.entity.PmsAttrAttrgroupRelation;
 import cn.org.starpivot.mall.pms.entity.PmsAttrGroup;
-import cn.org.starpivot.mall.pms.domain.excel.PmsAttrExcel;
-import cn.org.starpivot.mall.pms.domain.vo.PmsAttrVO;
 import cn.org.starpivot.mall.pms.mapper.PmsAttrAttrgroupRelationMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsAttrGroupMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsAttrMapper;
 import cn.org.starpivot.mall.pms.service.PmsAttrService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -33,14 +33,19 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * 商品属性业务实现。
+ * 商品属性服务实现类。
  * <p>
- * 属性主数据存 {@code pms_attr}；与属性分组的归属关系存 {@code pms_attr_attrgroup_relation}
- *（字段：attr_id、attr_group_id、attr_sort），不在 pms_attr 表上冗余 attr_group_id。
- * <p>
- * 权限：attrType=1 对应 mall:base:*，attrType=0 对应 mall:sale:*；
- * Controller 层 hasAnyAuthority 放行后，本类再按 attrType 做细粒度校验。
+ * 实现 {@link PmsAttrService}，处理商品属性相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see PmsAttrService
  */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

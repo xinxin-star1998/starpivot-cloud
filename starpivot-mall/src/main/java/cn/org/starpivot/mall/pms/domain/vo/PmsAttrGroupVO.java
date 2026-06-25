@@ -3,11 +3,15 @@ package cn.org.starpivot.mall.pms.domain.vo;
 import lombok.Data;
 
 /**
- * 属性分组VO
- * 
- * @author admin
- * @since 2026-05-18
+ * 属性分组视图对象。
+ * <p>
+ * 用于接口响应的数据视图。
+ * </p>
+ * <ul>
+ *   <li>{@link Data} — 自动生成 getter/setter 等方法</li>
+ * </ul>
  */
+
 @Data
 public class PmsAttrGroupVO {
 

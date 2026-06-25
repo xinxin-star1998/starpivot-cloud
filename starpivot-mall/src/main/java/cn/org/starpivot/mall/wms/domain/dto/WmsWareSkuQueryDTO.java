@@ -3,11 +3,15 @@ package cn.org.starpivot.mall.wms.domain.dto;
 import lombok.Data;
 
 /**
- * 商品库存查询DTO
- * 
- * @author admin
- * @since 2026-05-22
+ * 仓库 SKU 库存DTO。
+ * <p>
+ * 用于接口请求或响应的数据传输。
+ * </p>
+ * <ul>
+ *   <li>{@link Data} — 自动生成 getter/setter 等方法</li>
+ * </ul>
  */
+
 @Data
 public class WmsWareSkuQueryDTO {
 

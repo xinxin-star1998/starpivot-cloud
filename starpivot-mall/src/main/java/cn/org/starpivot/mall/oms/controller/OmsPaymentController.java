@@ -16,8 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 支付流水（只读）
+ * 商城-支付流水控制器。
+ * <p>
+ * 支付流水只读查询。
+ * </p>
+ * <ul>
+ *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
+ *   <li>{@link RequestMapping} — 基础路径 {@code /mall/payment}</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
+ *   <li>{@link Validated} — 启用方法级参数校验</li>
+ *   <li>{@link Tag} — OpenAPI 分组「商城-支付流水」</li>
+ * </ul>
+ *
+ * @see OmsPaymentInfoService
  */
+
 @RestController
 @RequestMapping("/mall/payment")
 @RequiredArgsConstructor
@@ -27,6 +40,12 @@ public class OmsPaymentController {
 
     private final OmsPaymentInfoService omsPaymentInfoService;
 
+    /**
+     * 支付流水分页列表。
+     *
+     * @param reqBo 分页及筛选条件
+     * @return 分页查询结果
+     */
     @Operation(summary = "支付流水分页列表")
     @PostMapping("/list")
     @PreAuthorize("hasAnyAuthority('mall:payment:list', 'mall:payment:query')")

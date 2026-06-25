@@ -6,11 +6,11 @@ import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.pms.domain.bo.BrandCategoryBindBo;
 import cn.org.starpivot.mall.pms.domain.bo.BrandReqBo;
 import cn.org.starpivot.mall.pms.domain.bo.BrandSaveBo;
-import cn.org.starpivot.mall.pms.entity.PmsBrand;
-import cn.org.starpivot.mall.pms.entity.PmsCategoryBrandRelation;
 import cn.org.starpivot.mall.pms.domain.vo.BrandCategoryVo;
 import cn.org.starpivot.mall.pms.domain.vo.BrandVo;
 import cn.org.starpivot.mall.pms.domain.vo.CategoryTreeVo;
+import cn.org.starpivot.mall.pms.entity.PmsBrand;
+import cn.org.starpivot.mall.pms.entity.PmsCategoryBrandRelation;
 import cn.org.starpivot.mall.pms.mapper.PmsBrandMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsCategoryBrandRelationMapper;
 import cn.org.starpivot.mall.pms.service.BrandService;
@@ -18,17 +18,27 @@ import cn.org.starpivot.mall.pms.service.PmsCategoryService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * 品牌服务实现类。
+ * <p>
+ * 实现 {@link BrandService}，处理品牌相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see BrandService
+ */
 
 @Service
 @RequiredArgsConstructor

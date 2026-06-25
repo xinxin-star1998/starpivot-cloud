@@ -1,23 +1,24 @@
 package cn.org.starpivot.mall.pms.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.pms.domain.dto.GroupAttrRelationSaveDTO;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrGroupDTO;
 import cn.org.starpivot.mall.pms.domain.dto.PmsAttrGroupQueryDTO;
-import cn.org.starpivot.mall.pms.entity.PmsAttrGroup;
 import cn.org.starpivot.mall.pms.domain.excel.PmsAttrGroupExcel;
 import cn.org.starpivot.mall.pms.domain.vo.GroupAttrRelationVO;
 import cn.org.starpivot.mall.pms.domain.vo.PmsAttrGroupVO;
+import cn.org.starpivot.mall.pms.entity.PmsAttrGroup;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
 /**
- * 属性分组Service接口
- * 
- * @author admin
- * @since 2026-05-18
+ * Attrgroupservice服务接口。
+ * <p>
+ * 封装属性分组相关业务逻辑。
+ * </p>
  */
+
 public interface PmsAttrGroupService extends IService<PmsAttrGroup>
 {
     /**
@@ -61,12 +62,21 @@ public interface PmsAttrGroupService extends IService<PmsAttrGroup>
     boolean deletePmsAttrGroupByAttrGroupIds(Long[] attrGroupIds);
 
     /** 查询分组所属分类下的基本属性及关联状态 */
+    /**
+     * 查询列表。
+     */
     List<GroupAttrRelationVO> listGroupAttrRelations(Long attrGroupId);
 
     /** 全量保存分组关联的基本属性（先清空本分组再写入） */
+    /**
+     * saveGroupAttrRelations。
+     */
     boolean saveGroupAttrRelations(Long attrGroupId, GroupAttrRelationSaveDTO saveDTO);
 
     /** 按查询条件导出 Excel 行 */
+    /**
+     * 查询列表。
+     */
     List<PmsAttrGroupExcel> listForExport(PmsAttrGroupQueryDTO queryDTO);
 
     /**

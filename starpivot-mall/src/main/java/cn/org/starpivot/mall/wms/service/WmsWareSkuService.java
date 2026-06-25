@@ -8,11 +8,12 @@ import cn.org.starpivot.mall.wms.entity.WmsWareSku;
 import cn.org.starpivot.mall.wms.domain.vo.WmsWareSkuVO;
 
 /**
- * 商品库存Service接口
- * 
- * @author admin
- * @since 2026-05-22
+ * Wareskuservice服务接口。
+ * <p>
+ * 封装仓库 SKU 库存相关业务逻辑。
+ * </p>
  */
+
 public interface WmsWareSkuService extends IService<WmsWareSku>
 {
     /**
@@ -55,5 +56,8 @@ public interface WmsWareSkuService extends IService<WmsWareSku>
      */
     boolean deleteWmsWareSkuByIds(Long[] ids);
 
+    /**
+     * 新增记录。
+     */
     void addStock(Long skuId, Long wareId, Integer skuNum);
 }

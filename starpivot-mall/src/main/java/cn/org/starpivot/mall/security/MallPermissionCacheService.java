@@ -1,15 +1,16 @@
 package cn.org.starpivot.mall.security;
 
 import cn.org.starpivot.common.cache.CacheConstants;
-import java.time.Duration;
-import java.util.List;
-import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.function.Supplier;
+
 /**
- * 商城 B 端权限缓存，与 system 模块 {@code UserPermissionCacheService} 策略一致。
+ * Mallpermissioncacheservice服务接口。
  */
 @Service
 @RequiredArgsConstructor

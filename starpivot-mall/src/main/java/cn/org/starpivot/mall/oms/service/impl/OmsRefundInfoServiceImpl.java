@@ -22,6 +22,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 退款信息服务实现类。
+ * <p>
+ * 实现 {@link OmsRefundInfoService}，处理退款信息相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see OmsRefundInfoService
+ */
+
 @Service
 @RequiredArgsConstructor
 public class OmsRefundInfoServiceImpl extends ServiceImpl<OmsRefundInfoMapper, OmsRefundInfo>

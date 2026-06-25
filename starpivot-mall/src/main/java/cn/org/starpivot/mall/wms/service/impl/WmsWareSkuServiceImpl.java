@@ -21,11 +21,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 商品库存Service业务层实现
- * 
- * @author admin
- * @since 2026-05-22
+ * 仓库 SKU 库存服务实现类。
+ * <p>
+ * 实现 {@link WmsWareSkuService}，处理仓库 SKU 库存相关业务。
+ * </p>
+ * <ul>
+ *   <li>{@link Slf4j} — 日志记录</li>
+ *   <li>{@link Service} — Spring 服务 Bean</li>
+ *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
+ * </ul>
+ *
+ * @see WmsWareSkuService
  */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

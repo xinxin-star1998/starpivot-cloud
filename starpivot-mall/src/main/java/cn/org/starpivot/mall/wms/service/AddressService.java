@@ -9,21 +9,43 @@ import cn.org.starpivot.mall.wms.entity.Address;
 import java.util.List;
 
 /**
- * 省市区地址服务
+ * Addressservice服务接口。
+ * <p>
+ * 封装地址相关业务逻辑。
+ * </p>
  */
+
 public interface AddressService extends IService<Address> {
 
     /** 懒加载：查询某父级下的直接子节点 */
+    /**
+     * 查询列表。
+     */
     List<AddressVO> listChildren(String parentCode);
 
     /** 搜索（扁平列表，最多 200 条） */
+    /**
+     * searchAddress。
+     */
     List<AddressVO> searchAddress(AddressQueryDTO queryDTO);
 
+    /**
+     * 查询AddressById。
+     */
     AddressVO selectAddressById(Long id);
 
+    /**
+     * 新增记录。
+     */
     void insertAddress(AddressDTO addressDTO);
 
+    /**
+     * 修改记录。
+     */
     void updateAddress(AddressDTO addressDTO);
 
+    /**
+     * 删除记录。
+     */
     void deleteAddressByIds(List<Long> ids);
 }
