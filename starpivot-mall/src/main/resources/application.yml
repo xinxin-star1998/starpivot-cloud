@@ -12,6 +12,7 @@ spring:
     import:
       - optional:classpath:application-nacos.yml
       - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:mq-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
       - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
   datasource:
     url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_mall?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}

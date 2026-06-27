@@ -2,25 +2,15 @@ package cn.org.starpivot.auth.service;
 
 import cn.org.starpivot.api.system.SysConfigClient;
 import cn.org.starpivot.api.system.SysUserClient;
-import cn.org.starpivot.api.system.dto.LoginLogDto;
-import cn.org.starpivot.api.system.dto.RegisterUserRequest;
-import cn.org.starpivot.api.system.dto.RegisterUserResponse;
-import cn.org.starpivot.api.system.dto.SysMenuDto;
-import cn.org.starpivot.api.system.dto.SysUserAuthDto;
-import cn.org.starpivot.api.system.dto.VerifyPasswordRequest;
-import cn.org.starpivot.auth.domain.LoginRequest;
-import cn.org.starpivot.auth.domain.LoginResponse;
-import cn.org.starpivot.auth.domain.RefreshRequest;
-import cn.org.starpivot.auth.domain.RegisterRequest;
-import cn.org.starpivot.auth.domain.RegisterResponse;
-import cn.org.starpivot.auth.domain.UserInfoResponse;
+import cn.org.starpivot.api.system.dto.*;
+import cn.org.starpivot.auth.domain.*;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.exception.BusinessException;
 import cn.org.starpivot.common.security.JwtProperties;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.LoginUser;
 import cn.org.starpivot.common.util.LogUtils;
-import cn.org.starpivot.common.domain.Result;
-import cn.org.starpivot.common.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,6 +47,7 @@ public class AuthService {
     private final JwtProperties jwtProperties;
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
+    private final CaptchaService captchaService;
 
     /**
      * 用户登录：校验凭据、签发 JWT 与刷新令牌，并记录登录日志。
@@ -70,8 +62,9 @@ public class AuthService {
         String browser = httpRequest != null ? LogUtils.getBrowser(httpRequest) : "";
         String os = httpRequest != null ? LogUtils.getOs(httpRequest) : "";
         String loginLocation = LogUtils.getLoginLocation(ip);
-        
+
         try {
+            captchaService.consumeProof(request.getCaptchaProof());
             SysUserAuthDto userDto = verifyUserCredentials(request.getUsername(), request.getPassword());
 
             if (!AppConstants.Status.NORMAL.equals(userDto.getStatus())) {
@@ -85,16 +78,20 @@ public class AuthService {
                     .roles(userDto.getRoles())
                     .build();
 
+            RefreshTokenSession session = refreshTokenService.createSession(
+                    userDto.getUserId(), null, ip, browser, os, loginLocation);
+            user.setSessionId(session.getSessionId());
+
             String token = JwtUtils.createToken(user, jwtProperties);
-            String refreshToken = refreshTokenService.createRefreshToken(userDto.getUserId(), ip, browser, os, loginLocation);
             recordLoginLog(request.getUsername(), ip, httpRequest, "0", AppConstants.LOGIN_SUCCESS);
 
             return LoginResponse.builder()
                     .token(token)
-                    .refreshToken(refreshToken)
+                    .refreshToken(session.getRefreshToken())
                     .username(userDto.getUsername())
                     .nickname(userDto.getNickName() != null ? userDto.getNickName() : userDto.getUsername())
                     .expiresIn(jwtProperties.getExpire() / 1000)
+                    .deviceSessionId(session.getSessionId())
                     .build();
         } catch (BusinessException ex) {
             throw ex;
@@ -114,25 +111,46 @@ public class AuthService {
      */
     public LoginResponse refreshToken(RefreshRequest request) {
         SysUserAuthDto userDto = loadUserForLogin(request.getUsername());
-        if (!refreshTokenService.validate(userDto.getUserId(), request.getRefreshToken())) {
+        Long userId = userDto.getUserId();
+        if (!refreshTokenService.validate(userId, request.getDeviceSessionId(), request.getRefreshToken())) {
             throw new BusinessException(401, "刷新令牌无效或已过期，请重新登录");
         }
-        refreshTokenService.revoke(userDto.getUserId());
+
+        String sessionId = request.getDeviceSessionId();
+        if (sessionId == null || sessionId.isBlank()) {
+            sessionId = refreshTokenService.findSessionIdByToken(userId, request.getRefreshToken());
+        }
+        if (sessionId == null || sessionId.isBlank()) {
+            throw new BusinessException(401, "刷新令牌无效或已过期，请重新登录");
+        }
+
+        Map<String, String> sessionInfo = refreshTokenService.getSessionInfo(userId, sessionId);
+        refreshTokenService.revokeSession(userId, sessionId);
+
+        HttpServletRequest httpRequest = currentRequest();
+        String ip = httpRequest != null ? LogUtils.getClientIp(httpRequest) : sessionInfo.get(RefreshTokenService.FIELD_IP);
+        String browser = httpRequest != null ? LogUtils.getBrowser(httpRequest) : sessionInfo.get(RefreshTokenService.FIELD_BROWSER);
+        String os = httpRequest != null ? LogUtils.getOs(httpRequest) : sessionInfo.get(RefreshTokenService.FIELD_OS);
+        String loginLocation = LogUtils.getLoginLocation(ip != null ? ip : "");
 
         LoginUser user = LoginUser.builder()
-                .userId(userDto.getUserId())
+                .userId(userId)
                 .username(userDto.getUsername())
                 .roles(userDto.getRoles())
+                .sessionId(sessionId)
                 .build();
+
+        RefreshTokenSession session = refreshTokenService.createSession(
+                userId, sessionId, ip, browser, os, loginLocation);
         String token = JwtUtils.createToken(user, jwtProperties);
-        String refreshToken = refreshTokenService.createRefreshToken(userDto.getUserId());
 
         return LoginResponse.builder()
                 .token(token)
-                .refreshToken(refreshToken)
+                .refreshToken(session.getRefreshToken())
                 .username(userDto.getUsername())
                 .nickname(userDto.getNickName() != null ? userDto.getNickName() : userDto.getUsername())
                 .expiresIn(jwtProperties.getExpire() / 1000)
+                .deviceSessionId(session.getSessionId())
                 .build();
     }
 
@@ -173,6 +191,31 @@ public class AuthService {
         return result != null && Boolean.TRUE.equals(result.getData());
     }
 
+    public boolean isForgetPasswordEnabled() {
+        Result<Boolean> result = sysConfigClient.isForgetPasswordEnabled();
+        return result != null && Boolean.TRUE.equals(result.getData());
+    }
+
+    /**
+     * 忘记密码重置：校验验证码凭证后重置密码。
+     * 无论用户是否存在均返回成功提示，避免账号枚举。
+     */
+    public void forgotPassword(ForgotPasswordRequest request) {
+        if (!isForgetPasswordEnabled()) {
+            throw new BusinessException(403, "当前未开放忘记密码功能");
+        }
+        captchaService.consumeProof(request.getCaptchaProof());
+
+        ForgotPasswordResetRequest resetRequest = new ForgotPasswordResetRequest();
+        resetRequest.setUsername(request.getUsername().trim());
+        resetRequest.setPassword(request.getPassword());
+        Result<Boolean> result = sysUserClient.resetPasswordByForgot(resetRequest);
+        if (result == null || !result.isSuccess()) {
+            throw new BusinessException(500, result != null ? result.getMessage() : "重置失败，请稍后重试");
+        }
+        // 用户不存在时也静默成功，防止账号枚举
+    }
+
     /**
      * 退出登录：将访问令牌加入黑名单并撤销对应刷新令牌。
      *
@@ -183,7 +226,11 @@ public class AuthService {
             tokenBlacklistService.add(token, jwtProperties.getExpire());
             try {
                 LoginUser loginUser = JwtUtils.toLoginUser(JwtUtils.parseToken(token, jwtProperties.getSecret()));
-                refreshTokenService.revoke(loginUser.getUserId());
+                if (loginUser.getSessionId() != null && !loginUser.getSessionId().isBlank()) {
+                    refreshTokenService.revokeSession(loginUser.getUserId(), loginUser.getSessionId());
+                } else {
+                    refreshTokenService.revokeAll(loginUser.getUserId());
+                }
             } catch (Exception ignored) {
                 // ignore invalid token on logout
             }

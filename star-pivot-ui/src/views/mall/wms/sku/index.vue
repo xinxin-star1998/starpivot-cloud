@@ -40,20 +40,23 @@
   import { h } from 'vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
+  import { useTableSearch, useTableSelection } from '@/hooks/core/useTableSearch'
+  import { runSingleDelete, useBatchDelete } from '@/hooks/core/useBatchDelete'
   import { fetchDeleteSku, fetchGetSkuList, type WareSku } from '@/api/mall/ware-sku'
   import SkuSearch from './modules/sku-search.vue'
   import SkuDialog from './modules/sku-dialog.vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { ElMessage } from 'element-plus'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'WareSku' })
 
   const { hasAuth } = useAuth()
 
   const dialogVisible = ref(false)
-  const selectedRows = ref<WareSku[]>([])
+  const { selectedRows, handleSelectionChange } = useTableSelection<WareSku>()
 
   const searchForm = ref({
     skuId: undefined,
@@ -110,10 +113,20 @@
     }
   })
 
-  function handleSearch(params: Record<string, any>) {
-    Object.assign(searchParams, params)
-    getData()
-  }
+  const { handleSearch } = useTableSearch(searchParams, getData)
+
+  const { handleBatchDelete } = useBatchDelete<WareSku>({
+    selectedRows,
+    getId: (row) => row.id,
+    getLabel: (row) => row.skuName || `SKU#${row.skuId ?? row.id}`,
+    deleteFn: fetchDeleteSku,
+    onSuccess: refreshData,
+    emptyMessage: '请选择要删除的记录',
+    title: '批量删除',
+    buildMessage: (count) => `确定删除 ${count} 条库存记录？`,
+    confirmType: 'warning',
+    onError: (error) => handleMutationError(error, '批量删除失败')
+  })
 
   function openInbound() {
     dialogVisible.value = true
@@ -124,41 +137,16 @@
       ElMessage.warning('无效的记录')
       return
     }
-    try {
-      await ElMessageBox.confirm('确定要删除该库存记录吗？', '删除', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-      await fetchDeleteSku([row.id])
-      refreshData()
-    } catch (error) {
-      if (error !== 'cancel') {
-        ElMessage.error('删除失败')
-      }
-    }
-  }
-
-  function handleBatchDelete(): void {
-    if (selectedRows.value.length === 0) {
-      ElMessage.warning('请选择要删除的记录')
-      return
-    }
-    ElMessageBox.confirm(`确定删除 ${selectedRows.value.length} 条库存记录？`, '批量删除', {
-      type: 'warning'
-    })
-      .then(async () => {
-        const ids = selectedRows.value.map((row) => row.id).filter((id): id is number => id != null)
-        if (!ids.length) return
-        await fetchDeleteSku(ids)
-        selectedRows.value = []
-        refreshData()
-      })
-      .catch(() => {})
-  }
-
-  function handleSelectionChange(selection: WareSku[]): void {
-    selectedRows.value = selection
+    await runSingleDelete(
+      {
+        title: '删除',
+        message: '确定要删除该库存记录吗？',
+        confirmType: 'warning',
+        onError: (error) => handleMutationError(error, '删除失败')
+      },
+      () => fetchDeleteSku([row.id!]),
+      refreshData
+    )
   }
 </script>
 

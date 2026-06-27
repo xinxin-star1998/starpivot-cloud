@@ -77,6 +77,16 @@ public class OmsOrderReturnApply {
     private Integer status;
 
     /**
+     * 审批实例 ID
+     */
+    private Long approvalInstanceId;
+
+    /**
+     * 审批状态：DRAFT/PENDING/APPROVED/REJECTED/WITHDRAWN
+     */
+    private String auditStatus;
+
+    /**
      * handle时间
      */
     private LocalDateTime handleTime;

@@ -5,6 +5,7 @@ import cn.org.starpivot.mq.listener.IdempotentChecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -15,6 +16,7 @@ import java.time.Duration;
  * 基于 Redis SETNX 的幂等校验默认实现。
  */
 @Component
+@ConditionalOnProperty(prefix = "starpivot.mq", name = "enabled", havingValue = "true")
 @ConditionalOnClass(StringRedisTemplate.class)
 @ConditionalOnBean(StringRedisTemplate.class)
 @RequiredArgsConstructor

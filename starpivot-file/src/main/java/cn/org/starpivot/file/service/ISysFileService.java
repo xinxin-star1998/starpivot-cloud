@@ -30,4 +30,6 @@ public interface ISysFileService {
     Map<String, String> previewUrl(Long fileId);
 
     void moveToFolder(List<Long> ids, Long targetFolderId);
+
+    void rename(Long fileId, String fileName);
 }

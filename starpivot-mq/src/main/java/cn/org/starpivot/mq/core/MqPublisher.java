@@ -1,9 +1,9 @@
 package cn.org.starpivot.mq.core;
 
 import cn.org.starpivot.api.event.MqExchangeNames;
+import cn.org.starpivot.common.observability.TraceIdConstants;
 import cn.org.starpivot.mq.config.StarPivotMqProperties;
 import cn.org.starpivot.mq.constant.MqHeaderNames;
-import cn.org.starpivot.common.observability.TraceIdConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.slf4j.MDC;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,6 +24,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "starpivot.mq", name = "enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class MqPublisher {
 

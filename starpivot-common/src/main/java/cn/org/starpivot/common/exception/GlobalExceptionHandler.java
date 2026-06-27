@@ -18,31 +18,16 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /**
-     * 处理业务异常 - 返回 HTTP 200 + 业务码
-     */
-    @ExceptionHandler(cn.org.starpivot.common.exception.BizException.class)
-    public ResponseEntity<Result<Void>> handleBizException(cn.org.starpivot.common.exception.BizException ex) {
-        int code = ex.getCode() != null ? ex.getCode() : ErrorCode.BIZ_ERROR;
-        // 对于认证相关的业务异常，返回对应的 HTTP 状态码
-        if (code == ErrorCode.UNAUTHORIZED) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Result.error(code, ex.getMessage()));
-        }
-        if (code == ErrorCode.FORBIDDEN || code == ErrorCode.PERMISSION_DENIED) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Result.error(code, ex.getMessage()));
-        }
-        if (code == ErrorCode.NOT_FOUND) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Result.error(code, ex.getMessage()));
-        }
-        return ResponseEntity.ok(Result.error(code, ex.getMessage()));
+    @ExceptionHandler(BizException.class)
+    public ResponseEntity<Result<Void>> handleBizException(BizException ex) {
+        return buildBusinessErrorResponse(ex.getCode(), ex.getMessage());
     }
 
-    /**
-     * 处理权限拒绝异常 - 返回 HTTP 403
-     */
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Result<Void>> handleBusinessException(BusinessException ex) {
+        return buildBusinessErrorResponse(ex.getCode(), ex.getMessage());
+    }
+
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<Result<Void>> handleAccessDeniedException(
             org.springframework.security.access.AccessDeniedException ex) {
@@ -51,9 +36,6 @@ public class GlobalExceptionHandler {
                 .body(Result.error(ErrorCode.PERMISSION_DENIED, "没有权限，请联系管理员授权"));
     }
 
-    /**
-     * 处理认证异常 - 返回 HTTP 401
-     */
     @ExceptionHandler(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class)
     public ResponseEntity<Result<Void>> handleAuthenticationCredentialsNotFoundException(
             org.springframework.security.authentication.AuthenticationCredentialsNotFoundException ex) {
@@ -62,18 +44,6 @@ public class GlobalExceptionHandler {
                 .body(Result.error(ErrorCode.UNAUTHORIZED, "未授权，请先登录"));
     }
 
-    /**
-     * 处理另一种业务异常 - 返回 HTTP 200 + 业务码
-     */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Result<Void>> handleBusinessException(BusinessException ex) {
-        int code = ex.getCode() != null ? ex.getCode() : ErrorCode.BIZ_ERROR;
-        return ResponseEntity.ok(Result.error(code, ex.getMessage()));
-    }
-
-    /**
-     * 处理参数校验异常 - 返回 HTTP 400
-     */
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
             BindException.class,
@@ -94,9 +64,6 @@ public class GlobalExceptionHandler {
                 .body(Result.badRequest(message));
     }
 
-    /**
-     * 处理资源未找到异常 - 返回 HTTP 404
-     */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<Result<Void>> handleNoHandlerFoundException(NoHandlerFoundException ex) {
         log.warn("Resource not found: {}", ex.getRequestURL());
@@ -104,13 +71,27 @@ public class GlobalExceptionHandler {
                 .body(Result.notFound("请求的资源不存在"));
     }
 
-    /**
-     * 处理其他未知异常 - 返回 HTTP 500
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleException(Exception ex) {
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Result.error("系统繁忙，请稍后重试"));
+    }
+
+    private ResponseEntity<Result<Void>> buildBusinessErrorResponse(Integer code, String message) {
+        int resolved = code != null ? code : ErrorCode.BIZ_ERROR;
+        if (resolved == ErrorCode.UNAUTHORIZED) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Result.error(resolved, message));
+        }
+        if (resolved == ErrorCode.FORBIDDEN || resolved == ErrorCode.PERMISSION_DENIED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Result.error(resolved, message));
+        }
+        if (resolved == ErrorCode.NOT_FOUND) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Result.error(resolved, message));
+        }
+        return ResponseEntity.ok(Result.error(resolved, message));
     }
 }

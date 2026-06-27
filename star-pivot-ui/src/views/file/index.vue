@@ -20,95 +20,105 @@
           @reset="resetSearch"
         />
 
-        <ElCard class="art-table-card" shadow="never">
-          <div class="panel-toolbar">
-            <ElTabs v-model="activeTab" class="panel-tabs" @tab-change="handleTabChange">
-              <ElTabPane label="全部文件" name="all" />
-              <ElTabPane label="回收站" name="recycle" />
-            </ElTabs>
+        <ElCard class="art-table-card file-table-card" shadow="never">
+          <div class="file-table-card__top">
+            <div class="panel-toolbar">
+              <ElTabs v-model="activeTab" class="panel-tabs" @tab-change="handleTabChange">
+                <ElTabPane label="全部文件" name="all" />
+                <ElTabPane label="回收站" name="recycle" />
+              </ElTabs>
 
-            <div v-if="activeTab === 'all' && locationText" class="location-bar">
-              <ArtSvgIcon icon="ri:folder-open-line" class="location-icon" />
-              <span class="location-text">{{ locationText }}</span>
+              <div v-if="activeTab === 'all' && locationText" class="location-bar">
+                <ArtSvgIcon class="location-icon" icon="ri:folder-open-line" />
+                <span class="location-text">{{ locationText }}</span>
+              </div>
             </div>
+
+            <div v-if="activeTab === 'all'" class="media-filter">
+              <ElRadioGroup v-model="mediaTypeFilter" size="small" @change="handleSearch">
+                <ElRadioButton v-for="item in MEDIA_TYPES" :key="item.code" :value="item.code">
+                  <ArtSvgIcon
+                    v-if="item.code"
+                    :icon="getMediaTypeIcon(item.code)"
+                    class="filter-icon"
+                  />
+                  {{ item.label }}
+                </ElRadioButton>
+              </ElRadioGroup>
+            </div>
+
+            <ArtTableHeader
+              v-model:columns="columnChecks"
+              :loading="loading"
+              @refresh="refreshData"
+            >
+              <template #left>
+                <ElSpace wrap>
+                  <ElButton
+                    v-if="activeTab === 'all'"
+                    v-auth="'file:resource:add'"
+                    v-ripple
+                    type="primary"
+                    @click="uploadVisible = true"
+                  >
+                    <ArtSvgIcon class="mr-1" icon="ri:upload-2-line" />
+                    上传
+                  </ElButton>
+                  <ElButton
+                    v-if="activeTab === 'all'"
+                    v-auth="'file:resource:move'"
+                    v-ripple
+                    :disabled="selectedRows.length === 0"
+                    @click="openMoveDialog(selectedRows.map((r) => r.fileId!))"
+                  >
+                    <ArtSvgIcon class="mr-1" icon="ri:folder-transfer-line" />
+                    迁移
+                  </ElButton>
+                  <ElButton
+                    v-if="activeTab === 'all'"
+                    v-auth="'file:resource:delete'"
+                    v-ripple
+                    :disabled="selectedRows.length === 0"
+                    type="danger"
+                    @click="handleBatchDelete"
+                  >
+                    批量删除
+                  </ElButton>
+                  <ElButton
+                    v-if="activeTab === 'recycle'"
+                    v-auth="'file:resource:restore'"
+                    v-ripple
+                    :disabled="selectedRows.length === 0"
+                    type="primary"
+                    @click="handleBatchRestore"
+                  >
+                    批量恢复
+                  </ElButton>
+                </ElSpace>
+              </template>
+            </ArtTableHeader>
           </div>
 
-          <div v-if="activeTab === 'all'" class="media-filter">
-            <ElRadioGroup v-model="mediaTypeFilter" size="small" @change="handleSearch">
-              <ElRadioButton v-for="item in MEDIA_TYPES" :key="item.code" :value="item.code">
-                <ArtSvgIcon
-                  v-if="item.code"
-                  :icon="getMediaTypeIcon(item.code)"
-                  class="filter-icon"
-                />
-                {{ item.label }}
-              </ElRadioButton>
-            </ElRadioGroup>
+          <div class="file-table-card__body">
+            <ElEmpty
+              v-if="activeTab === 'all' && !selectedFolderId && !loading"
+              :image-size="100"
+              description="请在左侧选择文件夹"
+            />
+
+            <ArtTable
+              v-else
+              :columns="columns"
+              :data="data"
+              :loading="loading"
+              :pagination="pagination"
+              :pagination-options="{ align: 'right' }"
+              :show-table-header="false"
+              @selection-change="handleSelectionChange"
+              @pagination:size-change="handleSizeChange"
+              @pagination:current-change="handleCurrentChange"
+            />
           </div>
-
-          <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
-            <template #left>
-              <ElSpace wrap>
-                <ElButton
-                  v-if="activeTab === 'all'"
-                  v-auth="'file:resource:add'"
-                  v-ripple
-                  type="primary"
-                  @click="uploadVisible = true"
-                >
-                  <ArtSvgIcon icon="ri:upload-2-line" class="mr-1" />
-                  上传
-                </ElButton>
-                <ElButton
-                  v-if="activeTab === 'all'"
-                  v-auth="'file:resource:move'"
-                  v-ripple
-                  :disabled="selectedRows.length === 0"
-                  @click="openMoveDialog(selectedRows.map((r) => r.fileId!))"
-                >
-                  <ArtSvgIcon icon="ri:folder-transfer-line" class="mr-1" />
-                  迁移
-                </ElButton>
-                <ElButton
-                  v-if="activeTab === 'all'"
-                  v-auth="'file:resource:delete'"
-                  v-ripple
-                  type="danger"
-                  :disabled="selectedRows.length === 0"
-                  @click="handleBatchDelete"
-                >
-                  批量删除
-                </ElButton>
-                <ElButton
-                  v-if="activeTab === 'recycle'"
-                  v-auth="'file:resource:restore'"
-                  v-ripple
-                  type="primary"
-                  :disabled="selectedRows.length === 0"
-                  @click="handleBatchRestore"
-                >
-                  批量恢复
-                </ElButton>
-              </ElSpace>
-            </template>
-          </ArtTableHeader>
-
-          <ElEmpty
-            v-if="activeTab === 'all' && !selectedFolderId && !loading"
-            description="请在左侧选择文件夹"
-            :image-size="100"
-          />
-
-          <ArtTable
-            v-else
-            :loading="loading"
-            :data="data"
-            :columns="columns"
-            :pagination="pagination"
-            @selection-change="handleSelectionChange"
-            @pagination:size-change="handleSizeChange"
-            @pagination:current-change="handleCurrentChange"
-          />
         </ElCard>
       </div>
     </div>
@@ -125,6 +135,7 @@
       :file="previewFile"
       @delete="handlePreviewDelete"
       @move="openMoveDialog"
+      @renamed="refreshData"
     />
 
     <FileMoveDialog
@@ -146,7 +157,14 @@
 </template>
 
 <script setup lang="ts">
-  import { deleteFiles, fetchFileList, fetchFilePreviewUrl, fetchRecycleList, restoreFiles } from '@/api/file/file'
+  import {
+    deleteFiles,
+    fetchFileList,
+    fetchFilePreviewUrl,
+    fetchRecycleList,
+    renameFile,
+    restoreFiles
+  } from '@/api/file/file'
   import { deleteFolder, fetchFolderTree } from '@/api/file/folder'
   import type { FileCategoryNode, SysFile, SysFileFolderForm } from '@/api/file/types'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
@@ -155,10 +173,11 @@
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { useAuth } from '@/hooks/core/useAuth'
-  import { formatFileSize, openFileUrl } from '@/utils/file/file-center'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import { formatFileSize, openFileUrl, resolveFileDisplayUrl } from '@/utils/file/file-center'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import { computed, h, onActivated, onMounted, ref } from 'vue'
-  import { getCategoryLabel, getMediaTypeIcon, MEDIA_TYPES, MEDIA_TYPE_TAG } from './constants'
+  import { getCategoryLabel, getMediaTypeIcon, MEDIA_TYPE_TAG, MEDIA_TYPES } from './constants'
   import FileFolderTree from './modules/file-folder-tree.vue'
   import FileMoveDialog from './modules/file-move-dialog.vue'
   import FilePreviewDialog from './modules/file-preview-dialog.vue'
@@ -171,6 +190,8 @@
   const { hasAuth } = useAuth()
 
   const activeTab = ref<'all' | 'recycle'>('all')
+  /** 与 activeTab 同步，供 listApi 读取，避免 Tab 切换瞬间 API 选错 */
+  const listMode = ref<'all' | 'recycle'>('all')
   const categoryTree = ref<FileCategoryNode[]>([])
   const selectedFolderId = ref<number>()
   const selectedCategory = ref('')
@@ -207,7 +228,7 @@
   })
 
   const listApi = (params: Record<string, unknown>) => {
-    if (isRecycle.value) {
+    if (listMode.value === 'recycle') {
       return fetchRecycleList(params as never)
     }
     return fetchFileList(params as never)
@@ -221,7 +242,9 @@
     pagination,
     getData,
     searchParams,
-    resetSearchParams,
+    clearData,
+    cancelRequest,
+    resetPagination,
     handleSizeChange,
     handleCurrentChange,
     refreshData,
@@ -238,6 +261,25 @@
     }
   })
 
+  function renderFileThumb(row: SysFile) {
+    const url = resolveFileDisplayUrl(row)
+    if (row.mediaType === 'IMAGE' && url) {
+      return h(ElImage, {
+        src: url,
+        fit: 'cover',
+        previewSrcList: [url],
+        previewTeleported: true,
+        lazy: true,
+        class: 'file-thumb',
+        onClick: (event: Event) => event.stopPropagation()
+      })
+    }
+    return h(ArtSvgIcon, {
+      icon: getMediaTypeIcon(row.mediaType),
+      class: 'file-type-icon'
+    })
+  }
+
   function buildColumns(recycle: boolean) {
     const cols = [
       { type: 'selection' as const },
@@ -245,7 +287,7 @@
       {
         prop: 'fileName',
         label: '文件名',
-        minWidth: 220,
+        minWidth: 280,
         formatter: (row: SysFile) =>
           h(
             'div',
@@ -254,14 +296,14 @@
               onClick: () => !recycle && hasAuth('file:resource:query') && openPreview(row)
             },
             [
-              h(ArtSvgIcon, {
-                icon: getMediaTypeIcon(row.mediaType),
-                class: 'file-type-icon'
-              }),
+              renderFileThumb(row),
               h(
                 'span',
                 {
-                  class: ['file-name-text', !recycle && hasAuth('file:resource:query') ? 'is-link' : '']
+                  class: [
+                    'file-name-text',
+                    !recycle && hasAuth('file:resource:query') ? 'is-link' : ''
+                  ]
                 },
                 row.fileName
               )
@@ -285,8 +327,10 @@
         label: '类型',
         width: 96,
         formatter: (row: SysFile) =>
-          h(ElTag, { type: MEDIA_TYPE_TAG[row.mediaType || ''] || 'info', size: 'small' }, () =>
-            row.mediaTypeLabel || row.mediaType
+          h(
+            ElTag,
+            { type: MEDIA_TYPE_TAG[row.mediaType || ''] || 'info', size: 'small' },
+            () => row.mediaTypeLabel || row.mediaType
           )
       } as never,
       {
@@ -308,7 +352,7 @@
       {
         prop: 'operation',
         label: '操作',
-        width: recycle ? 120 : 200,
+        width: recycle ? 120 : 240,
         fixed: 'right' as const,
         formatter: (row: SysFile) =>
           h('div', { class: 'file-op-cell' }, [
@@ -328,6 +372,13 @@
                 type: 'edit',
                 tooltip: '迁移',
                 onClick: () => openMoveDialog([row.fileId!])
+              }),
+            !recycle &&
+              hasAuth('file:resource:edit') &&
+              h(ArtButtonTable, {
+                icon: 'ri:input-method-line',
+                tooltip: '重命名',
+                onClick: () => handleRename(row)
               }),
             !recycle &&
               hasAuth('file:resource:delete') &&
@@ -365,11 +416,7 @@
     }
   }
 
-  function handleSelectFolder(payload: {
-    folderId: number
-    category: string
-    folderName: string
-  }) {
+  function handleSelectFolder(payload: { folderId: number; category: string; folderName: string }) {
     selectedFolderId.value = payload.folderId
     selectedCategory.value = payload.category
     selectedFolderName.value = payload.folderName
@@ -383,29 +430,37 @@
     return { beginTime: range[0], endTime: range[1] }
   }
 
-  async function handleSearch() {
+  function clearTableSearchParams() {
+    const paramsRecord = searchParams as Record<string, unknown>
+    Object.keys(searchParams).forEach((key) => {
+      delete paramsRecord[key]
+    })
+    Object.assign(searchParams, { pageNum: 1, pageSize: 20 })
+    resetPagination()
+  }
+
+  async function handleSearch(tab: 'all' | 'recycle' = listMode.value) {
     const { beginTime, endTime } = parseTimeRange(searchForm.value.timeRange)
     const params: Record<string, unknown> = {
-      ...searchParams,
       pageNum: 1,
       fileName: searchForm.value.fileName,
-      createBy: searchForm.value.createBy,
-      deleteBy: searchForm.value.deleteBy,
       beginTime,
       endTime
     }
-    if (isRecycle.value) {
+    if (tab === 'recycle') {
       params.category = searchForm.value.category
+      params.deleteBy = searchForm.value.deleteBy
     } else {
       params.folderId = selectedFolderId.value
       params.category = selectedCategory.value
       params.mediaType = mediaTypeFilter.value || undefined
+      params.createBy = searchForm.value.createBy
     }
     Object.assign(searchParams, params)
     await getData()
   }
 
-  function resetSearch() {
+  async function resetSearch(tab: 'all' | 'recycle' = listMode.value) {
     searchForm.value = {
       fileName: undefined,
       createBy: undefined,
@@ -414,14 +469,18 @@
       timeRange: undefined
     }
     mediaTypeFilter.value = ''
-    resetSearchParams()
-    handleSearch()
+    clearTableSearchParams()
+    await handleSearch(tab)
   }
 
-  function handleTabChange() {
+  async function handleTabChange(tab: 'all' | 'recycle') {
+    listMode.value = tab
     selectedRows.value = []
     resetColumns?.()
-    resetSearch()
+    cancelRequest()
+    clearData()
+    resetPagination()
+    await resetSearch(tab)
   }
 
   function handleSelectionChange(rows: SysFile[]) {
@@ -475,6 +534,30 @@
     }
   }
 
+  async function handleRename(file: SysFile) {
+    if (!file.fileId) return
+    try {
+      const { value } = await ElMessageBox.prompt('请输入新的文件名', '重命名', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputValue: file.fileName || '',
+        inputPlaceholder: '例如：avatar1.webp',
+        inputValidator: (val) => {
+          const name = val?.trim()
+          if (!name) return '文件名不能为空'
+          if (name.includes('/') || name.includes('\\')) return '文件名不能包含路径分隔符'
+          return true
+        }
+      })
+      const fileName = value.trim()
+      await renameFile({ fileId: file.fileId, fileName })
+      ElMessage.success('重命名成功')
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '重命名失败')
+    }
+  }
+
   function openFolderDialog(type: 'add' | 'edit', data?: SysFileFolderForm, category?: string) {
     folderDialogType.value = type
     folderDialogData.value = data
@@ -482,11 +565,7 @@
     folderDialogVisible.value = true
   }
 
-  function handleEditFolder(payload: {
-    folderId: number
-    category: string
-    folderName: string
-  }) {
+  function handleEditFolder(payload: { folderId: number; category: string; folderName: string }) {
     openFolderDialog('edit', {
       folderId: payload.folderId,
       category: payload.category,
@@ -495,25 +574,33 @@
   }
 
   async function handleDeleteFolder(folderId: number) {
-    await ElMessageBox.confirm('删除后文件夹不可恢复，且须为空文件夹。确认删除？', '提示', {
-      type: 'warning'
-    })
-    await deleteFolder(folderId)
-    ElMessage.success('文件夹已删除')
-    if (selectedFolderId.value === folderId) {
-      selectedFolderId.value = undefined
-      selectedFolderName.value = ''
+    try {
+      await ElMessageBox.confirm('删除后文件夹不可恢复，且须为空文件夹。确认删除？', '提示', {
+        type: 'warning'
+      })
+      await deleteFolder(folderId)
+      ElMessage.success('文件夹已删除')
+      if (selectedFolderId.value === folderId) {
+        selectedFolderId.value = undefined
+        selectedFolderName.value = ''
+      }
+      await loadFolderTree()
+    } catch (error) {
+      handleMutationError(error, '删除文件夹失败')
     }
-    await loadFolderTree()
   }
 
   async function handleDelete(ids: number[]) {
-    await ElMessageBox.confirm('确认将选中文件移入回收站？', '提示', { type: 'warning' })
-    await deleteFiles(ids)
-    ElMessage.success('已移入回收站')
-    selectedRows.value = []
-    refreshData()
-    loadFolderTree()
+    try {
+      await ElMessageBox.confirm('确认将选中文件移入回收站？', '提示', { type: 'warning' })
+      await deleteFiles(ids)
+      ElMessage.success('已移入回收站')
+      selectedRows.value = []
+      refreshData()
+      loadFolderTree()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 
   async function handleBatchDelete() {
@@ -521,11 +608,15 @@
   }
 
   async function handleRestore(ids: number[]) {
-    await ElMessageBox.confirm('确认恢复选中文件？', '提示', { type: 'info' })
-    await restoreFiles(ids)
-    ElMessage.success('恢复成功')
-    selectedRows.value = []
-    refreshData()
+    try {
+      await ElMessageBox.confirm('确认恢复选中文件？', '提示', { type: 'info' })
+      await restoreFiles(ids)
+      ElMessage.success('恢复成功')
+      selectedRows.value = []
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '恢复失败')
+    }
   }
 
   async function handleBatchRestore() {
@@ -596,6 +687,28 @@
     min-height: 0;
   }
 
+  .file-table-card {
+    flex: 1;
+    min-height: 0;
+
+    :deep(.el-card__body) {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+  }
+
+  .file-table-card__top {
+    flex-shrink: 0;
+  }
+
+  .file-table-card__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
   .panel-toolbar {
     display: flex;
     align-items: center;
@@ -653,9 +766,22 @@
   :deep(.file-name-cell) {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     max-width: 100%;
     cursor: default;
+  }
+
+  :deep(.file-thumb) {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1px solid var(--el-border-color-lighter);
+    cursor: zoom-in;
+  }
+
+  :deep(.file-thumb .el-image__inner) {
+    border-radius: 4px;
   }
 
   :deep(.file-type-icon) {

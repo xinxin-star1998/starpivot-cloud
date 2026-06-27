@@ -7,28 +7,20 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseDetailReqBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseDetailSaveBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseDoneBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseMergeBo;
-import cn.org.starpivot.mall.wms.domain.bo.PurchaseReqBo;
+import cn.org.starpivot.mall.wms.domain.bo.*;
 import cn.org.starpivot.mall.wms.domain.vo.PurchaseDetailVo;
 import cn.org.starpivot.mall.wms.domain.vo.PurchaseVo;
+import cn.org.starpivot.mall.wms.service.WmsPurchaseApprovalService;
 import cn.org.starpivot.mall.wms.service.WmsPurchaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 商城-采购控制器。
@@ -54,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WmsPurchaseController {
 
     private final WmsPurchaseService wmsPurchaseService;
+    private final WmsPurchaseApprovalService wmsPurchaseApprovalService;
 
     /**
      * 采购单分页列表。
@@ -92,6 +85,15 @@ public class WmsPurchaseController {
     @PreAuthorize("hasAuthority('mall:purchase:query')")
     public Result<PurchaseVo> getById(@PathVariable("id") Long id) {
         return Result.success(wmsPurchaseService.getDetailById(id));
+    }
+
+    @Log(title = "提交采购审批", businessType = BusinessType.UPDATE)
+    @Operation(summary = "提交采购单审批")
+    @PostMapping("/{id}/submit-approval")
+    @PreAuthorize("hasAuthority('mall:purchase:edit')")
+    public Result<?> submitApproval(@PathVariable("id") Long id) {
+        wmsPurchaseApprovalService.submitApproval(id);
+        return Result.success("已提交审批");
     }
 
     /**

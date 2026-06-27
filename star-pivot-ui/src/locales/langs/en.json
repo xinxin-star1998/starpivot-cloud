@@ -159,10 +159,12 @@
   },
   "forgetPassword": {
     "title": "Forgot password?",
-    "subTitle": "Enter your email to reset your password",
-    "placeholder": "Please enter your email",
-    "submitBtnText": "Submit",
-    "backBtnText": "Back"
+    "subTitle": "Enter your account and new password, then verify to reset",
+    "placeholder": "Please enter username",
+    "passwordPlaceholder": "Please enter new password",
+    "confirmPasswordPlaceholder": "Please confirm new password",
+    "submitBtnText": "Reset password",
+    "backBtnText": "Back to login"
   },
   "register": {
     "title": "Create account",

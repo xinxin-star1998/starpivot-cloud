@@ -49,6 +49,11 @@ spring:
           uri: lb://starpivot-mall
           predicates:
             - Path=/api/${starpivot.api.version}/mall/**,/api/${starpivot.api.version}/portal/**
+        # 审批中台
+        - id: starpivot-approval
+          uri: lb://starpivot-approval
+          predicates:
+            - Path=/api/${starpivot.api.version}/approval/**
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
@@ -66,6 +71,8 @@ starpivot:
       - /api/${starpivot.api.version}/auth/captcha
       - /api/${starpivot.api.version}/auth/captcha/**
       - /api/${starpivot.api.version}/auth/register/enabled
+      - /api/${starpivot.api.version}/auth/forgot-password
+      - /api/${starpivot.api.version}/auth/forgot-password/**
       - /api/${starpivot.api.version}/router/dynamic-routes
       # C 端商城公开接口（与 MallSecurityConfig permitAll 对齐）
       - /api/${starpivot.api.version}/portal/home/**

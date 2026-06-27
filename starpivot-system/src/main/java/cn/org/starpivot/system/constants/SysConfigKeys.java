@@ -14,4 +14,7 @@ public final class SysConfigKeys {
 
     /** 是否开放用户自助注册（值为 {@code true}/{@code false}） */
     public static final String REGISTER_USER = "sys.account.registerUser";
+
+    /** 是否开放忘记密码（值为 {@code true}/{@code false}） */
+    public static final String FORGET_PASSWORD = "sys.account.forgetPassword";
 }

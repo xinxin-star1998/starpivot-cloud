@@ -159,10 +159,12 @@
   },
   "forgetPassword": {
     "title": "忘记密码？",
-    "subTitle": "输入您的电子邮件来重置您的密码",
-    "placeholder": "请输入您的电子邮件",
-    "submitBtnText": "提交",
-    "backBtnText": "返回"
+    "subTitle": "输入账号与新密码，完成验证后重置密码",
+    "placeholder": "请输入账号",
+    "passwordPlaceholder": "请输入新密码",
+    "confirmPasswordPlaceholder": "请再次输入新密码",
+    "submitBtnText": "重置密码",
+    "backBtnText": "返回登录"
   },
   "register": {
     "title": "创建账号",

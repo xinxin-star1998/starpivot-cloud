@@ -49,6 +49,7 @@
   import SkuSearch from './modules/sku-search.vue'
   import SkuDialog from './modules/sku-dialog.vue'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
   import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
 
   defineOptions({ name: 'MallSku' })
@@ -106,38 +107,44 @@
     createDialogVisible.value = true
   }
 
-  const editPrice = (row: MallSkuVo) => {
+  const editPrice = async (row: MallSkuVo) => {
     if (row.skuId == null) return
     const current = row.price != null && row.price !== '' ? Number(row.price) : 0
-    ElMessageBox.prompt(`当前价格：${formatPrice(row)}`, `改价 - ${row.skuName || row.skuId}`, {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPattern: /^\d+(\.\d{1,2})?$/,
-      inputErrorMessage: '请输入有效价格（最多两位小数）',
-      inputValue: Number.isFinite(current) ? String(current) : '0'
-    })
-      .then(async ({ value }) => {
-        await fetchMallSkuUpdatePrice(row.skuId!, Number(value))
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      const { value } = await ElMessageBox.prompt(
+        `当前价格：${formatPrice(row)}`,
+        `改价 - ${row.skuName || row.skuId}`,
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^\d+(\.\d{1,2})?$/,
+          inputErrorMessage: '请输入有效价格（最多两位小数）',
+          inputValue: Number.isFinite(current) ? String(current) : '0'
+        }
+      )
+      await fetchMallSkuUpdatePrice(row.skuId!, Number(value))
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '改价失败')
+    }
   }
 
-  const togglePublishStatus = (row: MallSkuVo) => {
+  const togglePublishStatus = async (row: MallSkuVo) => {
     if (row.skuId == null) return
     const onShelf = row.spuPublishStatus === 1
     const nextStatus = (onShelf ? 0 : 1) as 0 | 1
     const action = onShelf ? '下架' : '上架'
-    ElMessageBox.confirm(
-      `确定${action} SKU「${row.skuName || row.skuId}」所属 SPU 吗？${onShelf ? '下架后该 SPU 下全部 SKU 将不再对外展示。' : ''}`,
-      `${action}商品`,
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    )
-      .then(async () => {
-        await fetchMallSkuPublishStatus(row.skuId!, nextStatus)
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm(
+        `确定${action} SKU「${row.skuName || row.skuId}」所属 SPU 吗？${onShelf ? '下架后该 SPU 下全部 SKU 将不再对外展示。' : ''}`,
+        `${action}商品`,
+        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      )
+      await fetchMallSkuPublishStatus(row.skuId!, nextStatus)
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, `${action}失败`)
+    }
   }
 
   const {

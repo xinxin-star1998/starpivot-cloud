@@ -24,6 +24,7 @@ public final class SecurityConstants {
 
     public static final String CLAIM_USER_ID = "userId";
     public static final String CLAIM_ROLES = "roles";
+    public static final String CLAIM_SESSION_ID = "sessionId";
     public static final String CLAIM_PERMISSIONS = "permissions";
     public static final String CLAIM_ISSUED_AT = "iat";
     public static final String CLAIM_EXPIRATION = "exp";

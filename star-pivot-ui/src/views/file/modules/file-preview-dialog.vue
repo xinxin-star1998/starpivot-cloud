@@ -120,6 +120,7 @@
 
     <template #footer>
       <div class="preview-footer">
+        <ElButton v-if="showRename" @click="handleRename">重命名</ElButton>
         <ElButton v-if="showMove" @click="handleMove">迁移</ElButton>
         <ElButton type="primary" :disabled="!previewUrl" @click="download">下载</ElButton>
         <ElButton :disabled="!previewUrl" @click="copyPreviewLink">复制链接</ElButton>
@@ -130,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchFileDetail, fetchFilePreviewUrl } from '@/api/file/file'
+  import { fetchFileDetail, fetchFilePreviewUrl, renameFile } from '@/api/file/file'
   import type { SysFile } from '@/api/file/types'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
@@ -153,6 +154,7 @@
   const emit = defineEmits<{
     delete: [fileId: number]
     move: [fileIds: number[]]
+    renamed: []
   }>()
 
   const { hasAuth } = useAuth()
@@ -208,6 +210,8 @@
   const showDelete = computed(() => hasAuth('file:resource:delete') && !!detail.value?.fileId)
 
   const showMove = computed(() => hasAuth('file:resource:move') && !!detail.value?.fileId)
+
+  const showRename = computed(() => hasAuth('file:resource:edit') && !!detail.value?.fileId)
 
   watch(
     () => [visible.value, props.file?.fileId] as const,
@@ -279,6 +283,26 @@
     if (!fileId) return
     emit('move', [fileId])
     visible.value = false
+  }
+
+  async function handleRename() {
+    const fileId = detail.value?.fileId
+    if (!fileId) return
+    const { value } = await ElMessageBox.prompt('请输入新的文件名', '重命名', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputValue: detail.value?.fileName || '',
+      inputValidator: (val) => {
+        const name = val?.trim()
+        if (!name) return '文件名不能为空'
+        if (name.includes('/') || name.includes('\\')) return '文件名不能包含路径分隔符'
+        return true
+      }
+    })
+    await renameFile({ fileId, fileName: value.trim() })
+    ElMessage.success('重命名成功')
+    detail.value = await fetchFileDetail(fileId)
+    emit('renamed')
   }
 
   function reset() {

@@ -70,6 +70,16 @@ public class ReturnVo {
     private Integer status;
 
     /**
+     * 审批实例 ID
+     */
+    private Long approvalInstanceId;
+
+    /**
+     * 审批状态
+     */
+    private String auditStatus;
+
+    /**
      * handle时间
      */
     private LocalDateTime handleTime;

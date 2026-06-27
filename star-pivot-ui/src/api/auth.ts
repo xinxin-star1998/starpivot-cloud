@@ -89,7 +89,11 @@ export function fetchVerifyCaptcha(data: { captchaToken: string; code: string; s
  * @param data 刷新令牌请求参数
  * @returns 新的登录响应（包含新的访问令牌和刷新令牌）
  */
-export function fetchRefreshToken(data: { username: string; refreshToken: string }) {
+export function fetchRefreshToken(data: {
+  username: string
+  refreshToken: string
+  deviceSessionId?: string
+}) {
   return request.post<Api.Auth.LoginResponse>({
     url: '/api/auth/refresh',
     data,
@@ -106,6 +110,25 @@ export async function fetchRegisterEnabled(): Promise<boolean> {
     showErrorMessage: false
   })
   return response.registerEnabled
+}
+
+export async function fetchForgetPasswordEnabled(): Promise<boolean> {
+  const response = await request.get<{ forgetPasswordEnabled: boolean }>({
+    url: '/api/auth/forgot-password/enabled',
+    showErrorMessage: false
+  })
+  return response.forgetPasswordEnabled
+}
+
+export function fetchForgotPassword(data: {
+  username: string
+  password: string
+  captchaProof: string
+}) {
+  return request.post({
+    url: '/api/auth/forgot-password',
+    data
+  })
 }
 
 /**

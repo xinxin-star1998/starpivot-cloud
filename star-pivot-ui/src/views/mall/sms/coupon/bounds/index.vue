@@ -44,16 +44,13 @@
   import { h } from 'vue'
   import { ElMessageBox } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchSpuBoundsList,
-    fetchSpuBoundsRemove,
-    type SpuBoundsVo
-  } from '@/api/mall/spu-bounds'
+  import { fetchSpuBoundsList, fetchSpuBoundsRemove, type SpuBoundsVo } from '@/api/mall/spu-bounds'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import BoundsDialog from './modules/bounds-dialog.vue'
   import type { DialogType } from '@/types'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'SmsSpuBounds' })
 
@@ -125,16 +122,21 @@
     dialogVisible.value = true
   }
 
-  const deleteOne = (row: SpuBoundsVo) => {
+  const deleteOne = async (row: SpuBoundsVo) => {
     if (!row.id) return
-    ElMessageBox.confirm(`确定删除 SPU「${row.spuName || row.spuId}」的积分配置吗？`, '删除', {
-      type: 'warning'
-    })
-      .then(async () => {
-        await fetchSpuBoundsRemove([row.id!])
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm(
+        `确定删除 SPU「${row.spuName || row.spuId}」的积分配置吗？`,
+        '删除',
+        {
+          type: 'warning'
+        }
+      )
+      await fetchSpuBoundsRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

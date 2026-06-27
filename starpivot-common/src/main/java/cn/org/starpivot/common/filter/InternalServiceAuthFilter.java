@@ -74,6 +74,12 @@ public class InternalServiceAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
         String configuredToken = internalServiceProperties.getToken();
         if (!StringUtils.hasText(configuredToken)) {
+            if (internalServiceProperties.isRequireToken()) {
+                log.warn("Internal service token required but not configured: {} {}",
+                        request.getMethod(), request.getServletPath());
+                rejectInternalRequest(response);
+                return;
+            }
             log.debug("Internal service token not configured, skipping validation for {}", request.getServletPath());
             filterChain.doFilter(request, response);
             return;
@@ -86,6 +92,10 @@ public class InternalServiceAuthFilter extends OncePerRequestFilter {
         }
 
         log.warn("Rejected internal request without valid token: {} {}", request.getMethod(), request.getServletPath());
+        rejectInternalRequest(response);
+    }
+
+    private void rejectInternalRequest(HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());

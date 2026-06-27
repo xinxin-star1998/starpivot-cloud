@@ -1,0 +1,17 @@
+package cn.org.starpivot.mall.wms.service;
+
+/**
+ * 采购单审批接入。
+ */
+public interface WmsPurchaseApprovalService {
+
+    /**
+     * 提交采购单审批。
+     */
+    void submitApproval(Long purchaseId);
+
+    /**
+     * 消费审批完结 MQ。
+     */
+    void handleApprovalFinished(String bizModule, String bizType, String bizKey, String result, String comment);
+}

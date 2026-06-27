@@ -74,3 +74,8 @@ export interface SysFileFolderForm {
   status?: string
   remark?: string
 }
+
+export interface SysFileRenameParams {
+  fileId: number
+  fileName: string
+}

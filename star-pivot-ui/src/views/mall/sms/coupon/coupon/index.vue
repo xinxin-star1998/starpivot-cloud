@@ -102,6 +102,7 @@
   import CouponDetailDrawer from './modules/coupon-detail-drawer.vue'
   import type { DialogType } from '@/types'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
   import {
     COUPON_RUN_STATUS_MAP,
     formatCouponDateRange,
@@ -310,36 +311,40 @@
     openDialog('edit', id)
   }
 
-  const togglePublishStatus = (row: CouponVo) => {
+  const togglePublishStatus = async (row: CouponVo) => {
     if (row.id == null) return
     const published = row.publish === 1
     const nextPublish = (published ? 0 : 1) as 0 | 1
     const action = published ? '下架' : '发布'
-    ElMessageBox.confirm(
-      `确定${action}优惠券「${row.couponName}」吗？${published ? '下架后用户将无法继续领取。' : ''}`,
-      `${action}优惠券`,
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    )
-      .then(async () => {
-        await fetchCouponPublishStatus(row.id!, nextPublish)
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm(
+        `确定${action}优惠券「${row.couponName}」吗？${published ? '下架后用户将无法继续领取。' : ''}`,
+        `${action}优惠券`,
+        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      )
+      await fetchCouponPublishStatus(row.id!, nextPublish)
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, `${action}失败`)
+    }
   }
 
-  const deleteOne = (row: CouponVo) => {
+  const deleteOne = async (row: CouponVo) => {
     if (!row.id) return
     const received = row.receiveCount ?? 0
     if (received > 0) {
       ElMessage.warning('该优惠券已有用户领取，不能删除')
       return
     }
-    ElMessageBox.confirm(`确定删除优惠券「${row.couponName}」吗？`, '删除', { type: 'warning' })
-      .then(async () => {
-        await fetchCouponRemove([row.id!])
-        refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除优惠券「${row.couponName}」吗？`, '删除', {
+        type: 'warning'
       })
-      .catch(() => {})
+      await fetchCouponRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

@@ -54,6 +54,7 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import SeckillDialog from './modules/seckill-dialog.vue'
   import type { DialogType } from '@/types'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'SmsSeckillPromotion' })
 
@@ -144,14 +145,17 @@
     dialogVisible.value = true
   }
 
-  const deleteOne = (row: SeckillPromotionVo) => {
+  const deleteOne = async (row: SeckillPromotionVo) => {
     if (!row.id) return
-    ElMessageBox.confirm(`确定删除活动「${row.title}」吗？`, '删除活动', { type: 'warning' })
-      .then(async () => {
-        await fetchSeckillPromotionRemove([row.id!])
-        refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除活动「${row.title}」吗？`, '删除活动', {
+        type: 'warning'
       })
-      .catch(() => {})
+      await fetchSeckillPromotionRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

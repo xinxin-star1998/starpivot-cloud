@@ -16,13 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -80,18 +74,19 @@ public class CloudOnlineUserService {
             }
 
             Map<String, Long> keyToUserId = new HashMap<>();
+            Map<String, String> keyToDeviceSessionId = new HashMap<>();
             List<Long> userIds = new ArrayList<>();
             for (String key : keys) {
                 if (!key.startsWith(REFRESH_PREFIX)) {
                     continue;
                 }
-                try {
-                    Long userId = Long.parseLong(key.substring(REFRESH_PREFIX.length()));
-                    userIds.add(userId);
-                    keyToUserId.put(key, userId);
-                } catch (NumberFormatException e) {
-                    log.warn("解析在线用户 key 失败: {}", key);
+                ParsedSessionKey parsed = parseSessionKey(key);
+                if (parsed == null) {
+                    continue;
                 }
+                userIds.add(parsed.userId());
+                keyToUserId.put(key, parsed.userId());
+                keyToDeviceSessionId.put(key, parsed.deviceSessionId());
             }
 
             Map<Long, MonitorUser> userMap = monitorUserQueryService.listByIds(userIds).stream()
@@ -115,7 +110,7 @@ public class CloudOnlineUserService {
                 Map<String, String> clientInfo = getClientInfoFromRedis(key);
                 
                 OnlineUserVO vo = new OnlineUserVO();
-                vo.setSessionId(key);
+                vo.setSessionId(keyToDeviceSessionId.getOrDefault(key, key));
                 vo.setUserId(user.getUserId());
                 vo.setUserName(user.getUserName());
                 vo.setNickName(user.getNickName());
@@ -219,6 +214,14 @@ public class CloudOnlineUserService {
                 stringRedisTemplate.delete(sessionId);
                 return true;
             }
+            Set<String> keys = scanKeys(REFRESH_PREFIX + "*");
+            for (String key : keys) {
+                ParsedSessionKey parsed = parseSessionKey(key);
+                if (parsed != null && sessionId.equals(parsed.deviceSessionId())) {
+                    stringRedisTemplate.delete(key);
+                    return true;
+                }
+            }
             if (sessionId.matches("\\d+")) {
                 stringRedisTemplate.delete(REFRESH_PREFIX + sessionId);
                 return true;
@@ -230,6 +233,28 @@ public class CloudOnlineUserService {
             return false;
         }
     }
+
+    private ParsedSessionKey parseSessionKey(String key) {
+        if (!StringUtils.hasText(key) || !key.startsWith(REFRESH_PREFIX)) {
+            return null;
+        }
+        String suffix = key.substring(REFRESH_PREFIX.length());
+        int colonIdx = suffix.indexOf(':');
+        try {
+            if (colonIdx < 0) {
+                Long userId = Long.parseLong(suffix);
+                return new ParsedSessionKey(userId, String.valueOf(userId));
+            }
+            Long userId = Long.parseLong(suffix.substring(0, colonIdx));
+            String deviceSessionId = suffix.substring(colonIdx + 1);
+            return new ParsedSessionKey(userId, deviceSessionId);
+        } catch (NumberFormatException e) {
+            log.warn("解析在线用户 key 失败: {}", key);
+            return null;
+        }
+    }
+
+    private record ParsedSessionKey(Long userId, String deviceSessionId) {}
 
     /**
      * 使用 SCAN 命令非阻塞扫描匹配模式的 Redis 键。

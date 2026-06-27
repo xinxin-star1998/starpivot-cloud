@@ -1,37 +1,42 @@
 package cn.org.starpivot.auth.service;
 
+import cn.org.starpivot.auth.domain.RefreshTokenSession;
+import cn.org.starpivot.auth.domain.UserSessionSnapshot;
 import cn.org.starpivot.common.security.JwtProperties;
 import cn.org.starpivot.common.security.SecurityConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.security.SecureRandom;
+import java.util.*;
 
 /**
- * 刷新令牌服务类。
+ * 刷新令牌与会话管理（支持多设备并行登录）。
  * <p>
- * 在 Redis 中按用户 ID 存储刷新令牌及客户端信息（IP、浏览器、操作系统等），
- * 支持令牌校验、撤销、有效期延长及在线用户信息查询。
+ * 新格式 Redis 键：{@code login_tokens:refresh:{userId}:{sessionId}}；
+ * 兼容旧格式 {@code login_tokens:refresh:{userId}}（单会话）。
  * </p>
- * <ul>
- *   <li>{@link Slf4j} — Lombok 生成 {@code log} 日志字段</li>
- *   <li>{@link Service} — 注册为 Spring 业务服务 Bean</li>
- *   <li>{@link RequiredArgsConstructor} — Lombok 生成含 {@code final} 字段的构造器，注入 Redis 模板与 {@link JwtProperties}</li>
- * </ul>
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
+
+    static final String FIELD_TOKEN = "token";
+    static final String FIELD_IP = "ip";
+    static final String FIELD_BROWSER = "browser";
+    static final String FIELD_OS = "os";
+    static final String FIELD_LOGIN_LOCATION = "loginLocation";
+    static final String FIELD_LOGIN_TIME = "loginTime";
+    static final String FIELD_LAST_ACCESS_TIME = "lastAccessTime";
 
     private static final String PREFIX = SecurityConstants.REFRESH_TOKEN_PREFIX;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -40,34 +45,22 @@ public class RefreshTokenService {
     private final StringRedisTemplate stringRedisTemplate;
     private final JwtProperties jwtProperties;
 
-    // Hash 字段名常量
-    private static final String FIELD_TOKEN = "token";
-    private static final String FIELD_IP = "ip";
-    private static final String FIELD_BROWSER = "browser";
-    private static final String FIELD_OS = "os";
-    private static final String FIELD_LOGIN_LOCATION = "loginLocation";
-    private static final String FIELD_LOGIN_TIME = "loginTime";
-    private static final String FIELD_LAST_ACCESS_TIME = "lastAccessTime";
+    static String sessionKey(Long userId, String sessionId) {
+        return PREFIX + userId + ":" + sessionId;
+    }
 
-    /**
-     * 创建刷新令牌并记录客户端登录信息。
-     *
-     * @param userId        用户 ID
-     * @param ip            客户端 IP 地址
-     * @param browser       浏览器标识
-     * @param os            操作系统标识
-     * @param loginLocation 登录地理位置
-     * @return 新生成的刷新令牌字符串
-     * @throws IllegalArgumentException userId 为 null 时抛出
-     */
-    public String createRefreshToken(Long userId, String ip, String browser, String os, String loginLocation) {
+    static String legacyKey(Long userId) {
+        return PREFIX + userId;
+    }
+
+    public RefreshTokenSession createSession(Long userId, String sessionId,
+                                             String ip, String browser, String os, String loginLocation) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-
+        String resolvedSessionId = StringUtils.hasText(sessionId) ? sessionId : UUID.randomUUID().toString();
         String token = generateSecureToken();
-        Duration expiryDuration = resolveRefreshDuration();
-        String key = PREFIX + userId;
+        String key = sessionKey(userId, resolvedSessionId);
         String now = LocalDateTime.now().format(FORMATTER);
 
         Map<String, String> hash = new HashMap<>();
@@ -79,101 +72,168 @@ public class RefreshTokenService {
         hash.put(FIELD_LOGIN_TIME, now);
         hash.put(FIELD_LAST_ACCESS_TIME, now);
 
+        Duration expiryDuration = resolveRefreshDuration();
         stringRedisTemplate.opsForHash().putAll(key, hash);
         stringRedisTemplate.expire(key, expiryDuration);
-
-        log.debug("Refresh token created for user ID: {}", userId);
-        return token;
+        log.debug("Refresh session created: userId={}, sessionId={}", userId, resolvedSessionId);
+        return new RefreshTokenSession(token, resolvedSessionId);
     }
 
-    /**
-     * 创建刷新令牌（不记录客户端信息，供令牌刷新场景使用）。
-     *
-     * @param userId 用户 ID
-     * @return 新生成的刷新令牌字符串
-     */
-    public String createRefreshToken(Long userId) {
-        return createRefreshToken(userId, null, null, null, null);
-    }
-
-    /**
-     * 校验刷新令牌是否与 Redis 中存储的一致。
-     *
-     * @param userId       用户 ID
-     * @param refreshToken 待校验的刷新令牌
-     * @return 有效返回 {@code true}，无效或不存在返回 {@code false}
-     */
-    public boolean validate(Long userId, String refreshToken) {
+    public boolean validate(Long userId, String sessionId, String refreshToken) {
         if (userId == null || refreshToken == null || refreshToken.isBlank()) {
-            log.warn("Invalid parameters for refresh token validation: userId={}, refreshToken={}", userId, refreshToken);
             return false;
         }
+        if (StringUtils.hasText(sessionId)) {
+            return validateSessionKey(sessionKey(userId, sessionId), refreshToken);
+        }
+        if (validateSessionKey(legacyKey(userId), refreshToken)) {
+            return true;
+        }
+        for (UserSessionSnapshot snapshot : listSessions(userId)) {
+            if (validateSessionKey(sessionKey(userId, snapshot.getSessionId()), refreshToken)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    public Map<String, String> getSessionInfo(Long userId, String sessionId) {
+        if (userId == null || !StringUtils.hasText(sessionId)) {
+            return Map.of();
+        }
+        Map<String, String> info = readHash(sessionKey(userId, sessionId));
+        if (!info.isEmpty()) {
+            return info;
+        }
+        if (String.valueOf(userId).equals(sessionId)) {
+            return readHash(legacyKey(userId));
+        }
+        return Map.of();
+    }
+
+    public List<UserSessionSnapshot> listSessions(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        List<UserSessionSnapshot> sessions = new ArrayList<>();
+        String legacy = legacyKey(userId);
+        Map<String, String> legacyInfo = readHash(legacy);
+        if (!legacyInfo.isEmpty() && legacyInfo.get(FIELD_TOKEN) != null) {
+            sessions.add(new UserSessionSnapshot(String.valueOf(userId), legacyInfo));
+        }
+        String pattern = PREFIX + userId + ":*";
+        for (String key : scanKeys(pattern)) {
+            if (key.equals(legacy)) {
+                continue;
+            }
+            String sessionId = key.substring((PREFIX + userId + ":").length());
+            Map<String, String> info = readHash(key);
+            if (!info.isEmpty() && info.get(FIELD_TOKEN) != null) {
+                sessions.add(new UserSessionSnapshot(sessionId, info));
+            }
+        }
+        return sessions;
+    }
+
+    public String findSessionIdByToken(Long userId, String refreshToken) {
+        if (userId == null || refreshToken == null || refreshToken.isBlank()) {
+            return null;
+        }
+        for (UserSessionSnapshot snapshot : listSessions(userId)) {
+            String stored = snapshot.getAttributes().get(FIELD_TOKEN);
+            if (refreshToken.equals(stored)) {
+                return snapshot.getSessionId();
+            }
+        }
+        return null;
+    }
+
+    public void revokeSession(Long userId, String sessionId) {
+        if (userId == null || !StringUtils.hasText(sessionId)) {
+            return;
+        }
         try {
-            String key = PREFIX + userId;
+            if (String.valueOf(userId).equals(sessionId)) {
+                stringRedisTemplate.delete(legacyKey(userId));
+            }
+            stringRedisTemplate.delete(sessionKey(userId, sessionId));
+        } catch (Exception ex) {
+            log.error("Error revoking session: userId={}, sessionId={}", userId, sessionId, ex);
+        }
+    }
+
+    public void revokeAll(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        for (UserSessionSnapshot snapshot : listSessions(userId)) {
+            revokeSession(userId, snapshot.getSessionId());
+        }
+    }
+
+    /** @deprecated 使用 {@link #revokeSession(Long, String)} 或 {@link #revokeAll(Long)} */
+    @Deprecated
+    public void revoke(Long userId) {
+        revokeAll(userId);
+    }
+
+    /** @deprecated 使用 {@link #createSession(Long, String, String, String, String, String)} */
+    @Deprecated
+    public String createRefreshToken(Long userId, String ip, String browser, String os, String loginLocation) {
+        return createSession(userId, null, ip, browser, os, loginLocation).getRefreshToken();
+    }
+
+    /** @deprecated 使用 {@link #createSession(Long, String, String, String, String, String)} */
+    @Deprecated
+    public String createRefreshToken(Long userId) {
+        return createSession(userId, null, null, null, null, null).getRefreshToken();
+    }
+
+    /** @deprecated 使用 {@link #validate(Long, String, String)} */
+    @Deprecated
+    public boolean validate(Long userId, String refreshToken) {
+        return validate(userId, null, refreshToken);
+    }
+
+    /** @deprecated 使用 {@link #listSessions(Long)} */
+    @Deprecated
+    public Map<String, String> getOnlineUserInfo(Long userId) {
+        List<UserSessionSnapshot> sessions = listSessions(userId);
+        return sessions.isEmpty() ? null : sessions.get(0).getAttributes();
+    }
+
+    public boolean exists(Long userId) {
+        return userId != null && !listSessions(userId).isEmpty();
+    }
+
+    private boolean validateSessionKey(String key, String refreshToken) {
+        try {
             String storedToken = (String) stringRedisTemplate.opsForHash().get(key, FIELD_TOKEN);
-            
-            // 兼容旧版本（字符串存储方式）
             if (storedToken == null) {
                 storedToken = stringRedisTemplate.opsForValue().get(key);
             }
-
-            if (storedToken == null) {
-                log.debug("No refresh token found for user ID: {}", userId);
+            if (storedToken == null || !refreshToken.equals(storedToken)) {
                 return false;
             }
-
-            boolean isValid = refreshToken.equals(storedToken);
-
-            if (!isValid) {
-                log.warn("Invalid refresh token for user ID: {}", userId);
-            } else {
-                log.debug("Valid refresh token for user ID: {}", userId);
-                // 更新最后访问时间
-                stringRedisTemplate.opsForHash().put(key, FIELD_LAST_ACCESS_TIME, LocalDateTime.now().format(FORMATTER));
-            }
-
-            return isValid;
-        } catch (Exception e) {
-            log.error("Error validating refresh token for user ID: {}", userId, e);
+            stringRedisTemplate.opsForHash().put(key, FIELD_LAST_ACCESS_TIME, LocalDateTime.now().format(FORMATTER));
+            return true;
+        } catch (Exception ex) {
+            log.error("Error validating refresh token for key={}", key, ex);
             return false;
         }
     }
 
-    /**
-     * 获取在线用户的客户端信息。
-     *
-     * @param userId 用户 ID
-     * @return 含 ip、browser、os、loginLocation、loginTime、lastAccessTime 等字段的 Map；不存在时返回 {@code null}
-     */
-    public Map<String, String> getOnlineUserInfo(Long userId) {
-        if (userId == null) {
-            return null;
-        }
-
+    private Map<String, String> readHash(String key) {
+        Map<String, String> info = new HashMap<>();
         try {
-            String key = PREFIX + userId;
             Map<Object, Object> hash = stringRedisTemplate.opsForHash().entries(key);
-            
             if (hash.isEmpty()) {
-                // 尝试兼容旧版本
                 String token = stringRedisTemplate.opsForValue().get(key);
-                if (token == null) {
-                    return null;
+                if (token != null) {
+                    info.put(FIELD_TOKEN, token);
                 }
-                // 旧版本只有token，返回空的客户端信息
-                Map<String, String> info = new HashMap<>();
-                info.put(FIELD_TOKEN, token);
-                info.put(FIELD_IP, "");
-                info.put(FIELD_BROWSER, "");
-                info.put(FIELD_OS, "");
-                info.put(FIELD_LOGIN_LOCATION, "");
-                info.put(FIELD_LOGIN_TIME, "");
-                info.put(FIELD_LAST_ACCESS_TIME, "");
                 return info;
             }
-
-            Map<String, String> info = new HashMap<>();
             info.put(FIELD_TOKEN, (String) hash.get(FIELD_TOKEN));
             info.put(FIELD_IP, (String) hash.get(FIELD_IP));
             info.put(FIELD_BROWSER, (String) hash.get(FIELD_BROWSER));
@@ -181,31 +241,21 @@ public class RefreshTokenService {
             info.put(FIELD_LOGIN_LOCATION, (String) hash.get(FIELD_LOGIN_LOCATION));
             info.put(FIELD_LOGIN_TIME, (String) hash.get(FIELD_LOGIN_TIME));
             info.put(FIELD_LAST_ACCESS_TIME, (String) hash.get(FIELD_LAST_ACCESS_TIME));
-            return info;
-        } catch (Exception e) {
-            log.error("Error getting online user info for user ID: {}", userId, e);
-            return null;
+        } catch (Exception ex) {
+            log.error("Error reading session hash: key={}", key, ex);
         }
+        return info;
     }
 
-    /**
-     * 撤销指定用户的刷新令牌（登出或令牌轮换时调用）。
-     *
-     * @param userId 用户 ID
-     */
-    public void revoke(Long userId) {
-        if (userId != null) {
-            try {
-                Boolean deleted = stringRedisTemplate.delete(PREFIX + userId);
-                if (Boolean.TRUE.equals(deleted)) {
-                    log.debug("Refresh token revoked for user ID: {}", userId);
-                } else {
-                    log.debug("No refresh token found to revoke for user ID: {}", userId);
-                }
-            } catch (Exception e) {
-                log.error("Error revoking refresh token for user ID: {}", userId, e);
+    private Set<String> scanKeys(String pattern) {
+        Set<String> keys = new HashSet<>();
+        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(100).build();
+        try (Cursor<String> cursor = stringRedisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                keys.add(cursor.next());
             }
         }
+        return keys;
     }
 
     private Duration resolveRefreshDuration() {
@@ -216,60 +266,9 @@ public class RefreshTokenService {
         return Duration.ofMillis(refreshExpireMs);
     }
 
-    /**
-     * 生成密码学安全的随机刷新令牌。
-     *
-     * @return URL 安全的 Base64 编码令牌字符串
-     */
     private String generateSecureToken() {
-        byte[] randomBytes = new byte[32]; // 256 bits
+        byte[] randomBytes = new byte[32];
         SECURE_RANDOM.nextBytes(randomBytes);
-        // 使用URL安全的Base64编码
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
-    }
-
-    /**
-     * 延长指定用户刷新令牌的 Redis 过期时间。
-     *
-     * @param userId 用户 ID
-     * @return 延长成功返回 {@code true}，令牌不存在返回 {@code false}
-     */
-    public boolean extendTokenExpiry(Long userId) {
-        if (userId == null) {
-            return false;
-        }
-
-        try {
-            String currentToken = stringRedisTemplate.opsForValue().get(PREFIX + userId);
-            if (currentToken != null) {
-                Duration expiryDuration = resolveRefreshDuration();
-                stringRedisTemplate.expire(PREFIX + userId, expiryDuration);
-                log.debug("Refresh token expiry extended for user ID: {}", userId);
-                return true;
-            }
-            return false;
-        } catch (Exception e) {
-            log.error("Error extending refresh token expiry for user ID: {}", userId, e);
-            return false;
-        }
-    }
-
-    /**
-     * 检查指定用户是否存在有效的刷新令牌。
-     *
-     * @param userId 用户 ID
-     * @return 存在返回 {@code true}，否则返回 {@code false}
-     */
-    public boolean exists(Long userId) {
-        if (userId == null) {
-            return false;
-        }
-
-        try {
-            return Boolean.TRUE.equals(stringRedisTemplate.hasKey(PREFIX + userId));
-        } catch (Exception e) {
-            log.error("Error checking refresh token existence for user ID: {}", userId, e);
-            return false;
-        }
     }
 }

@@ -63,6 +63,7 @@
   import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import type { DialogType } from '@/types'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
   import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
 
   defineOptions({ name: 'MallBrand' })
@@ -247,38 +248,40 @@
     selectedRows.value = selection
   }
 
-  const deleteOne = (row: MallBrandVo) => {
+  const deleteOne = async (row: MallBrandVo) => {
     if (!row.brandId) return
-    ElMessageBox.confirm(`确定删除品牌「${row.name || row.brandId}」吗？`, '删除品牌', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        await fetchMallBrandRemove([row.brandId!])
-        refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除品牌「${row.name || row.brandId}」吗？`, '删除品牌', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
-      .catch(() => {})
+      await fetchMallBrandRemove([row.brandId!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     if (selectedRows.value.length === 0) {
       ElMessage.warning('请选择要删除的品牌')
       return
     }
     const names = selectedRows.value.map((r) => r.name || r.brandId).join('、')
-    ElMessageBox.confirm(`确定删除以下品牌吗？\n${names}`, '批量删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        const ids = selectedRows.value.map((r) => r.brandId!).filter(Boolean)
-        await fetchMallBrandRemove(ids)
-        selectedRows.value = []
-        refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除以下品牌吗？\n${names}`, '批量删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
-      .catch(() => {})
+      const ids = selectedRows.value.map((r) => r.brandId!).filter(Boolean)
+      await fetchMallBrandRemove(ids)
+      selectedRows.value = []
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '批量删除失败')
+    }
   }
 </script>
 

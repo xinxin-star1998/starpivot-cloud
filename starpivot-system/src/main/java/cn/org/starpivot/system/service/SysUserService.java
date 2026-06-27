@@ -102,4 +102,11 @@ public interface SysUserService extends IService<SysUser> {
 
     /** 用户自助注册（内部接口）。 */
     RegisterUserResponse registerUser(RegisterUserRequest request);
+
+    /**
+     * 忘记密码重置（内部接口，由 auth 服务调用）。
+     *
+     * @return 用户不存在或已停用时返回 {@code false}，重置成功返回 {@code true}
+     */
+    boolean resetPasswordByForgot(String username, String password);
 }

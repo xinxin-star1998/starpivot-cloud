@@ -11,6 +11,8 @@ export interface PurchaseVo {
   wareId?: number
   wareName?: string
   amount?: number
+  approvalInstanceId?: number
+  auditStatus?: string
   createTime?: string
   updateTime?: string
   details?: PurchaseDetailVo[]
@@ -107,6 +109,13 @@ export function fetchPurchaseDone(data: PurchaseDonePayload) {
   })
 }
 
+export function fetchPurchaseSubmitApproval(id: number) {
+  return request.post<void>({
+    url: `/api/mall/purchase/${id}/submit-approval`,
+    showSuccessMessage: true
+  })
+}
+
 export function fetchPurchaseDetailList(params: PurchaseDetailListParams) {
   return request.post<Api.Common.PaginatedResponse<PurchaseDetailVo>>({
     url: '/api/mall/purchase/detail/list',
@@ -146,4 +155,21 @@ export const PURCHASE_DETAIL_STATUS_MAP: Record<number, string> = {
   2: '采购中',
   3: '完成',
   4: '失败'
+}
+
+/** 采购单审批状态 */
+export const PURCHASE_AUDIT_STATUS_MAP: Record<string, string> = {
+  DRAFT: '草稿',
+  PENDING: '审批中',
+  APPROVED: '已通过',
+  REJECTED: '已驳回',
+  WITHDRAWN: '已撤回'
+}
+
+export function canSubmitPurchaseAudit(status?: string) {
+  return !status || status === 'DRAFT' || status === 'REJECTED' || status === 'WITHDRAWN'
+}
+
+export function canReceivePurchase(row: Pick<PurchaseVo, 'status' | 'auditStatus'>) {
+  return (row.status === 0 || row.status === 1) && row.auditStatus === 'APPROVED'
 }

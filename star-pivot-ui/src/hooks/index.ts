@@ -12,6 +12,15 @@ export { useDict } from './core/useDict'
 // 表格数据管理方案
 export { useTable } from './core/useTable'
 
+// 表格搜索与选择
+export { useTableSearch, useTableSelection, useCrudDialog } from './core/useTableSearch'
+
+// 批量删除 / 单条删除确认
+export { useBatchDelete, runSingleDelete } from './core/useBatchDelete'
+
+// 管理员重置密码弹窗
+export { useResetPasswordPrompt, promptResetPassword } from './core/useResetPasswordPrompt'
+
 // 表格列配置管理
 export { useTableColumns } from './core/useTableColumns'
 

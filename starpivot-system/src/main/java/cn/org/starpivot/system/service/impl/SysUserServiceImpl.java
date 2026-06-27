@@ -838,4 +838,28 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 .nickName(user.getNickName())
                 .build();
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean resetPasswordByForgot(String username, String password) {
+        if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
+            return false;
+        }
+        SysUser user = getUserByUsername(username.trim());
+        if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
+            return false;
+        }
+        if (!AppConstants.Status.NORMAL.equals(user.getStatus())) {
+            return false;
+        }
+        user.setPassword(SecurityUtils.encryptPassword(password));
+        user.setPwdUpdateDate(LocalDateTime.now());
+        user.setUpdateBy(username.trim());
+        user.setUpdateTime(LocalDateTime.now());
+        boolean success = this.updateById(user);
+        if (success) {
+            userPermissionCacheService.clearUserPermissionCacheByUserId(user.getUserId());
+        }
+        return success;
+    }
 }

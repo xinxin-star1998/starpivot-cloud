@@ -155,6 +155,7 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   const props = withDefaults(
     defineProps<{
@@ -512,24 +513,29 @@
     }
   }
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     if (selectedRows.value.length === 0) {
       ElMessage.warning('请选择要删除的属性')
       return
     }
-    ElMessageBox.confirm(`确定删除选中的 ${selectedRows.value.length} 个属性吗？`, '批量删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        const ids = selectedRows.value.map((r) => r.attrId!).filter(Boolean)
-        await fetchDeleteAttr(ids)
-        selectedRows.value = []
-        refreshData()
-        ElMessage.success('删除成功')
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm(
+        `确定删除选中的 ${selectedRows.value.length} 个属性吗？`,
+        '批量删除',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+      const ids = selectedRows.value.map((r) => r.attrId!).filter(Boolean)
+      await fetchDeleteAttr(ids)
+      selectedRows.value = []
+      refreshData()
+      ElMessage.success('删除成功')
+    } catch (error) {
+      handleMutationError(error, '批量删除失败')
+    }
   }
 
   const handleDialogSubmit = () => {

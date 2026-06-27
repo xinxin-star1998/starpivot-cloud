@@ -27,4 +27,7 @@ public interface SysConfigClient {
      */
     @GetMapping("/internal/config/register-enabled")
     Result<Boolean> isRegisterEnabled();
+
+    @GetMapping("/internal/config/forget-password-enabled")
+    Result<Boolean> isForgetPasswordEnabled();
 }

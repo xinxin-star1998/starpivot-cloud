@@ -26,6 +26,18 @@
           <ElRadioButton value="F" :disabled="menuTypeDisabled.F">按钮</ElRadioButton>
         </ElRadioGroup>
       </template>
+      <template #parentId>
+        <ElTreeSelect
+          v-model="form.parentId"
+          :data="parentMenuOptions"
+          :props="parentTreeProps"
+          :render-after-expand="false"
+          check-strictly
+          clearable
+          placeholder="请选择上级菜单，不选则为顶级菜单"
+          style="width: 100%"
+        />
+      </template>
       <template #icon>
         <ArtIconPicker ref="iconPickerRef" v-model="form.icon" :manual="true">
           <ElInput
@@ -61,7 +73,7 @@
 
 <script setup lang="ts">
   import type { FormRules } from 'element-plus'
-  import { ElIcon, ElTooltip, ElMessage, ElInput } from 'element-plus'
+  import { ElIcon, ElInput, ElMessage, ElTooltip, ElTreeSelect } from 'element-plus'
   import { QuestionFilled } from '@element-plus/icons-vue'
   import { Icon } from '@iconify/vue'
   import { formatMenuTitle } from '@/utils/router'
@@ -121,15 +133,20 @@
   const formRef = ref()
   const iconPickerRef = ref<{ open: () => void; close: () => void } | null>(null)
   const isEdit = ref(false)
-  // 树形选择器的数据结构
-  interface TreeNode {
-    label: string
-    value: number
-    menuType?: string // 新增menuType字段，用于判断上级菜单类型
-    children?: TreeNode[]
-  }
-  const parentMenuOptions = ref<TreeNode[]>([])
+  const parentMenuOptions = ref<SysMenu[]>([])
   const originalMenus = ref<SysMenu[]>([])
+  const parentTreeProps = {
+    label: 'label',
+    value: 'value',
+    children: 'children'
+  }
+
+  /** 统一 parentId 为 number，避免 ElTreeSelect 因类型不一致只显示 ID */
+  const normalizeParentId = (id: unknown): number | undefined => {
+    if (id === undefined || id === null || id === '') return undefined
+    const num = Number(id)
+    return Number.isNaN(num) ? undefined : num
+  }
 
   const form = reactive<MenuFormData>({
     menuType: 'M',
@@ -154,7 +171,7 @@
    */
   const findMenuTypeById = (menuId: number, menuList: SysMenu[]): string | undefined => {
     for (const menu of menuList) {
-      if (menu.menuId === menuId) {
+      if (menu.menuId === menuId || menu.value === menuId) {
         return menu.menuType
       }
       if (menu.children && menu.children.length > 0) {
@@ -266,25 +283,13 @@
    * 根据菜单类型动态生成表单项
    */
   const formItems = computed<FormItem[]>(() => {
-    // 确保选项数据存在
-    const menuOptions = parentMenuOptions.value || []
-
     // 菜单类型和上级菜单放在同一行
     const baseItems: FormItem[] = [
       { label: '菜单类型', key: 'menuType', span: 12 },
       {
         label: '上级菜单',
         key: 'parentId',
-        type: 'treeselect',
-        span: 12,
-        props: {
-          placeholder: '请选择上级菜单，不选则为顶级菜单',
-          clearable: true,
-          data: menuOptions,
-          'render-after-expand': false,
-          'check-strictly': true,
-          'default-expand-all': false
-        }
+        span: 12
       }
     ]
 
@@ -498,49 +503,18 @@
   const loadParentMenuOptions = async (): Promise<void> => {
     try {
       const menus = await fetchGetParentMenu()
+      const treeData = Array.isArray(menus) ? menus : []
       // 保存原始菜单数据，用于后续查找菜单类型
-      originalMenus.value = menus
-
-      // 将菜单数据转换为树形结构（跳过 menuId 为 0 的顶级虚拟节点）
-      const convertToTree = (menuList: SysMenu[]): TreeNode[] => {
-        const treeNodes: TreeNode[] = []
-
-        if (!Array.isArray(menuList)) return treeNodes
-
-        menuList.forEach((menu) => {
-          // 直接使用接口返回的 label 和 value
-          if ((menu as any).label && (menu as any).value !== undefined) {
-            const node: TreeNode = {
-              label: (menu as any).label,
-              value: (menu as any).value,
-              menuType: menu.menuType // 保存菜单类型
-            }
-            // 递归处理子菜单
-            if (menu.children && Array.isArray(menu.children) && menu.children.length > 0) {
-              const children = convertToTree(menu.children)
-              if (children.length > 0) {
-                node.children = children
-              }
-            }
-
-            treeNodes.push(node)
-          }
-        })
-
-        return treeNodes
-      }
-
-      const treeData = convertToTree(menus)
-
-      // 确保至少有一个选项
-      if (treeData.length === 0) {
-        treeData.push({ label: '无上级菜单', value: 0 })
-      }
-
-      parentMenuOptions.value = treeData
+      originalMenus.value = treeData
+      parentMenuOptions.value =
+        treeData.length > 0
+          ? treeData
+          : [{ menuName: '无上级菜单', label: '无上级菜单', value: 0, children: [] } as SysMenu]
     } catch (error) {
       safeError('加载上级菜单失败:', error)
-      parentMenuOptions.value = [{ label: '无上级菜单', value: 0 }]
+      parentMenuOptions.value = [
+        { menuName: '无上级菜单', label: '无上级菜单', value: 0, children: [] } as SysMenu
+      ]
     }
   }
 
@@ -623,7 +597,7 @@
       // 优先使用原始数据
       form.menuName = rawMenu?.menuName || row.meta?.title || row.title || row.menuName || ''
       form.perms = rawMenu?.perms || row.meta?.authMark || row.authMark || row.perms || ''
-      form.parentId = rawMenu?.parentId ?? row.parentId ?? undefined
+      form.parentId = normalizeParentId(rawMenu?.parentId ?? row.parentId)
       form.orderNum = rawMenu?.orderNum || row.meta?.orderNum || row.orderNum || 1
       form.remark = rawMenu?.remark || row.remark || ''
       return
@@ -632,7 +606,7 @@
     // 目录或菜单类型 - 优先使用原始数据
     form.menuId = row.id || undefined
     form.menuName = rawMenu?.menuName || formatMenuTitle(row.meta?.title || row.menuName || '')
-    form.parentId = rawMenu?.parentId ?? row.parentId ?? undefined
+    form.parentId = normalizeParentId(rawMenu?.parentId ?? row.parentId)
     form.orderNum = rawMenu?.orderNum || row.meta?.orderNum || row.orderNum || 1
     form.path = rawMenu?.path || row.path || ''
     form.component = rawMenu?.component || row.component || ''
@@ -734,23 +708,12 @@
     () => props.visible,
     async (newVal: boolean) => {
       if (newVal) {
-        // 先加载上级菜单选项
+        // 先加载上级菜单选项，再重置并回显，确保 TreeSelect 能解析 label
         await loadParentMenuOptions()
-
-        // 设置菜单类型
-        if (props.type === 'button') {
-          form.menuType = 'F'
-        } else if (!props.editData) {
-          // 新增菜单时，如果未锁定类型，默认设置为目录（M），用户可自行切换
-          form.menuType = 'M'
-        }
-
-        // 等待 DOM 更新后再加载表单数据
+        resetForm()
         await nextTick()
         if (props.editData) {
           loadFormData()
-        } else {
-          resetForm()
         }
       }
     }

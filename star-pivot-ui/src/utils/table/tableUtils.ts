@@ -39,6 +39,9 @@
  * @author Art Design Pro Team
  */
 
+import { ElMessage } from 'element-plus'
+import { isHttpError } from '@utils/http/error'
+import { safeError } from '@/utils/sys/console'
 import type { ApiResponse } from './tableCache'
 import { tableConfig } from './tableConfig'
 
@@ -261,6 +264,22 @@ export const createSmartDebounce = <T extends (...args: unknown[]) => Promise<un
   }
 
   return debouncedFn as T & { cancel: () => void; flush: () => Promise<unknown> }
+}
+
+/**
+ * useTable 默认错误反馈：非 HttpError 时 toast，HttpError 由 HTTP 拦截器统一提示
+ */
+export const defaultTableErrorHandler = (
+  error: TableError,
+  context = '获取表格数据失败'
+): void => {
+  if (isHttpError(error.details)) {
+    if (import.meta.env.DEV) {
+      safeError(context, error.details)
+    }
+    return
+  }
+  ElMessage.error(error.message || context)
 }
 
 /**

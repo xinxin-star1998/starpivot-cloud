@@ -13,12 +13,15 @@
         <result property="status" column="status"/>
         <result property="wareId" column="ware_id"/>
         <result property="amount" column="amount"/>
+        <result property="approvalInstanceId" column="approval_instance_id"/>
+        <result property="auditStatus" column="audit_status"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <sql id="selectPurchaseVo">
-        select id, assignee_id, assignee_name, phone, priority, status, ware_id, amount, create_time, update_time
+        select id, assignee_id, assignee_name, phone, priority, status, ware_id, amount,
+               approval_instance_id, audit_status, create_time, update_time
         from wms_purchase
     </sql>
 

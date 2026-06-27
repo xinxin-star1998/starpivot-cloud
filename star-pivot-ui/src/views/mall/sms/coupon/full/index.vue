@@ -75,6 +75,7 @@
 <script setup lang="ts">
   import { h, onMounted } from 'vue'
   import { ElMessageBox } from 'element-plus'
+  import { handleMutationError } from '@/utils/http/mutation'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import {
@@ -241,24 +242,26 @@
     ladderDialogVisible.value = true
   }
 
-  const deleteFull = (row: SkuFullReductionVo) => {
+  const deleteFull = async (row: SkuFullReductionVo) => {
     if (!row.id) return
-    ElMessageBox.confirm('确定删除该满减规则吗？', '删除', { type: 'warning' })
-      .then(async () => {
-        await fetchSkuFullReductionRemove([row.id!])
-        loadFull()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm('确定删除该满减规则吗？', '删除', { type: 'warning' })
+      await fetchSkuFullReductionRemove([row.id!])
+      loadFull()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 
-  const deleteLadder = (row: SkuLadderVo) => {
+  const deleteLadder = async (row: SkuLadderVo) => {
     if (!row.id) return
-    ElMessageBox.confirm('确定删除该阶梯价规则吗？', '删除', { type: 'warning' })
-      .then(async () => {
-        await fetchSkuLadderRemove([row.id!])
-        loadLadder()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm('确定删除该阶梯价规则吗？', '删除', { type: 'warning' })
+      await fetchSkuLadderRemove([row.id!])
+      loadLadder()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

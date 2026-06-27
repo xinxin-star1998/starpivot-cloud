@@ -100,6 +100,7 @@ async function tryRefreshToken(): Promise<string | null> {
   const userStore = useUserStore()
   const refreshToken = userStore.refreshToken
   const username = userStore.getUserInfo.user?.username
+  const deviceSessionId = userStore.sessionId
 
   // 如果没有刷新令牌或用户名，无法刷新
   if (!refreshToken || !username) {
@@ -109,14 +110,19 @@ async function tryRefreshToken(): Promise<string | null> {
   try {
     const response = await fetchRefreshToken({
       username,
-      refreshToken
+      refreshToken,
+      deviceSessionId: deviceSessionId || undefined
     })
 
-    const { token: newAccessToken, refreshToken: newRefreshToken } = response
+    const {
+      token: newAccessToken,
+      refreshToken: newRefreshToken,
+      deviceSessionId: newDeviceSessionId
+    } = response
 
     if (newAccessToken) {
       // 更新令牌（同时更新访问令牌和刷新令牌）
-      userStore.setToken(newAccessToken, newRefreshToken)
+      userStore.setToken(newAccessToken, newRefreshToken, newDeviceSessionId)
       return newAccessToken
     }
 
@@ -564,5 +570,9 @@ const api = {
     return retryRequest<T>(config)
   }
 }
+
+export { isUserCancelError, handleMutationError } from './mutation'
+export type { HandleMutationErrorOptions } from './mutation'
+export { HttpError, isHttpError, showError, showSuccess } from './error'
 
 export default api

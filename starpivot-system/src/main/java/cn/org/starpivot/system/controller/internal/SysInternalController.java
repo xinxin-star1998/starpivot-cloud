@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.controller.internal;
 
+import cn.org.starpivot.api.system.dto.ForgotPasswordResetRequest;
 import cn.org.starpivot.api.system.dto.LoginLogDto;
 import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
@@ -12,11 +13,7 @@ import cn.org.starpivot.system.service.SysUserService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -51,6 +48,11 @@ public class SysInternalController {
         return Result.success(sysConfigService.isRegisterUserEnabled());
     }
 
+    @GetMapping("/internal/config/forget-password-enabled")
+    public Result<Boolean> isForgetPasswordEnabled() {
+        return Result.success(sysConfigService.isForgetPasswordEnabled());
+    }
+
     /**
      * 保存登录审计日志（由 auth 服务在登录成功/失败后回调）。
      *
@@ -75,6 +77,12 @@ public class SysInternalController {
     @PostMapping("/internal/user/register")
     public Result<RegisterUserResponse> registerUser(@RequestBody RegisterUserRequest request) {
         return Result.success(sysUserService.registerUser(request));
+    }
+
+    @PostMapping("/internal/user/forgot-password")
+    public Result<Boolean> resetPasswordByForgot(@RequestBody ForgotPasswordResetRequest request) {
+        boolean success = sysUserService.resetPasswordByForgot(request.getUsername(), request.getPassword());
+        return Result.success(success);
     }
 
     /**

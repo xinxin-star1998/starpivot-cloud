@@ -61,10 +61,14 @@
   import SubjectDialog from './modules/subject-dialog.vue'
   import type { DialogType } from '@/types'
   import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'SmsSubject' })
 
-  const searchForm = ref({ name: undefined as string | undefined, status: undefined as number | undefined })
+  const searchForm = ref({
+    name: undefined as string | undefined,
+    status: undefined as number | undefined
+  })
   const dialogVisible = ref(false)
   const dialogType = ref<DialogType>('add')
   const currentId = ref<number>()
@@ -178,14 +182,15 @@
     dialogVisible.value = true
   }
 
-  const deleteOne = (row: HomeSubjectVo) => {
+  const deleteOne = async (row: HomeSubjectVo) => {
     if (!row.id) return
-    ElMessageBox.confirm(`确定删除专题「${row.name}」吗？`, '删除专题', { type: 'warning' })
-      .then(async () => {
-        await fetchHomeSubjectRemove([row.id!])
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm(`确定删除专题「${row.name}」吗？`, '删除专题', { type: 'warning' })
+      await fetchHomeSubjectRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

@@ -1,11 +1,12 @@
 package cn.org.starpivot.mall.wms.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 采购单实体。
@@ -64,6 +65,16 @@ public class WmsPurchase {
      * 金额
      */
     private BigDecimal amount;
+
+    /**
+     * 审批实例 ID
+     */
+    private Long approvalInstanceId;
+
+    /**
+     * 审批状态
+     */
+    private String auditStatus;
 
     /**
      * 创建时间

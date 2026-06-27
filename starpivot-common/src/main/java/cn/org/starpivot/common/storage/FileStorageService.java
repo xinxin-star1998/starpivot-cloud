@@ -4,6 +4,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -67,6 +69,30 @@ public interface FileStorageService {
      * @throws Exception 生成失败时抛出异常
      */
     String getPresignedUrl(String objectName) throws Exception;
+
+    /**
+     * 批量生成临时访问链接；单个对象失败时回退为永久 URL，不中断整批。
+     *
+     * @param objectNames 对象路径列表（去重后逐个签名）
+     * @return objectName → 访问 URL
+     */
+    default Map<String, String> getPresignedUrls(List<String> objectNames) throws Exception {
+        if (objectNames == null || objectNames.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, String> urls = new LinkedHashMap<>();
+        for (String objectName : objectNames) {
+            if (!org.springframework.util.StringUtils.hasText(objectName)) {
+                continue;
+            }
+            try {
+                urls.put(objectName, getPresignedUrl(objectName));
+            } catch (Exception e) {
+                urls.put(objectName, getPermanentUrl(objectName));
+            }
+        }
+        return urls;
+    }
 
     /**
      * 生成文件永久访问URL（公共桶专用）

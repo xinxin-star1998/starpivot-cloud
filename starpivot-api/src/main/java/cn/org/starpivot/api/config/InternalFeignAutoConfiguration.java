@@ -35,4 +35,9 @@ public class InternalFeignAutoConfiguration {
             InternalServiceProperties internalServiceProperties) {
         return new InternalFeignRequestInterceptor(internalServiceProperties);
     }
+
+    @Bean
+    public FeignAuthForwardInterceptor feignAuthForwardInterceptor() {
+        return new FeignAuthForwardInterceptor();
+    }
 }

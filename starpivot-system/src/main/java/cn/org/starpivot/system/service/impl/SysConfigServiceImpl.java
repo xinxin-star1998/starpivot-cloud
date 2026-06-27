@@ -183,6 +183,11 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
         return "true".equalsIgnoreCase(StringUtils.trimWhitespace(selectConfigValueByKey(SysConfigKeys.REGISTER_USER)));
     }
 
+    @Override
+    public boolean isForgetPasswordEnabled() {
+        return "true".equalsIgnoreCase(StringUtils.trimWhitespace(selectConfigValueByKey(SysConfigKeys.FORGET_PASSWORD)));
+    }
+
     /**
      * 将 {@link SysConfig} 实体转换为 {@link SysConfigVO}。
      *

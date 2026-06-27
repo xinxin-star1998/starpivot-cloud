@@ -28,7 +28,7 @@ public abstract class AbstractMqListener<T> {
         TraceIdMessageListenerAdvice.applyTraceId(message);
         try {
             MessageEnvelope<T> envelope = messageConverter.fromMessage(message, payloadType);
-            String messageId = messageConverter.resolveMessageId(message, envelope);
+            String messageId = resolveIdempotentKey(message, envelope);
 
             IdempotentChecker idempotentChecker = idempotentCheckerProvider.getIfAvailable();
             if (idempotentChecker != null && !idempotentChecker.tryAcquire(messageId)) {
@@ -45,5 +45,12 @@ public abstract class AbstractMqListener<T> {
         } finally {
             TraceIdMessageListenerAdvice.clearTraceId();
         }
+    }
+
+    /**
+     * 解析幂等键，子类可覆盖以使用业务语义键（如 approval:finished:{instanceId}:{result}）。
+     */
+    protected String resolveIdempotentKey(Message message, MessageEnvelope<T> envelope) {
+        return messageConverter.resolveMessageId(message, envelope);
     }
 }

@@ -4,13 +4,12 @@ import cn.org.starpivot.common.annotation.Log;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
-import cn.org.starpivot.mall.oms.domain.bo.ReturnAuditBo;
 import cn.org.starpivot.mall.oms.domain.bo.ReturnReqBo;
 import cn.org.starpivot.mall.oms.domain.vo.ReturnVo;
 import cn.org.starpivot.mall.oms.service.OmsOrderReturnApplyService;
+import cn.org.starpivot.mall.oms.service.OmsOrderReturnApprovalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -40,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 public class OmsOrderReturnController {
 
     private final OmsOrderReturnApplyService omsOrderReturnApplyService;
+    private final OmsOrderReturnApprovalService omsOrderReturnApprovalService;
 
     /**
      * 退货申请分页列表。
@@ -67,19 +67,13 @@ public class OmsOrderReturnController {
         return Result.success(omsOrderReturnApplyService.getDetailById(id));
     }
 
-    /**
-     * 退货审核。
-     *
-     * @param bo 业务请求参数
-     * @return 操作结果
-     */
-    @Log(title = "退货审核", businessType = BusinessType.UPDATE)
-    @Operation(summary = "退货审核")
-    @PutMapping("/audit")
+    @Log(title = "提交退货审批", businessType = BusinessType.UPDATE)
+    @Operation(summary = "提交退货申请审批")
+    @PostMapping("/{id}/submit-approval")
     @PreAuthorize("hasAuthority('mall:return:audit')")
-    public Result<?> audit(@Valid @RequestBody ReturnAuditBo bo) {
-        omsOrderReturnApplyService.audit(bo);
-        return Result.success("审核成功");
+    public Result<?> submitApproval(@PathVariable("id") Long id) {
+        omsOrderReturnApprovalService.submitApproval(id);
+        return Result.success("已提交审批");
     }
 
     @Log(title = "完成退货", businessType = BusinessType.UPDATE)

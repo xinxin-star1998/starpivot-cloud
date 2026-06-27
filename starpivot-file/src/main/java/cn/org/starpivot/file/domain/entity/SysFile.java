@@ -3,7 +3,6 @@ package cn.org.starpivot.file.domain.entity;
 import cn.org.starpivot.common.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -50,7 +49,6 @@ public class SysFile extends BaseEntity {
 
     private String bizId;
 
-    @TableLogic
     private String delFlag;
 
     private String deleteBy;

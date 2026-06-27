@@ -11,6 +11,8 @@ export interface ReturnVo {
   returnName?: string
   returnPhone?: string
   status?: number
+  approvalInstanceId?: number
+  auditStatus?: string
   handleTime?: string
   skuImg?: string
   skuName?: string
@@ -39,13 +41,6 @@ export interface ReturnListParams extends Api.Common.CommonSearchParams {
   endTime?: string
 }
 
-export interface ReturnAuditPayload {
-  id: number
-  status: number
-  handleNote?: string
-  handleMan?: string
-}
-
 export function fetchReturnList(params: ReturnListParams) {
   return request.post<Api.Common.PaginatedResponse<ReturnVo>>({
     url: '/api/mall/order-return/list',
@@ -59,10 +54,9 @@ export function fetchReturnById(id: number) {
   })
 }
 
-export function fetchReturnAudit(data: ReturnAuditPayload) {
-  return request.put<void>({
-    url: '/api/mall/order-return/audit',
-    data,
+export function fetchReturnSubmitApproval(id: number) {
+  return request.post<void>({
+    url: `/api/mall/order-return/${id}/submit-approval`,
     showSuccessMessage: true
   })
 }
@@ -80,4 +74,24 @@ export const RETURN_STATUS_MAP: Record<number, string> = {
   1: '退货中',
   2: '已完成',
   3: '已拒绝'
+}
+
+/** 退货审批状态 */
+export const RETURN_AUDIT_STATUS_MAP: Record<string, string> = {
+  DRAFT: '草稿',
+  PENDING: '审批中',
+  APPROVED: '已通过',
+  REJECTED: '已驳回',
+  WITHDRAWN: '已撤回'
+}
+
+export function canSubmitReturnAudit(row: Pick<ReturnVo, 'status' | 'auditStatus'>) {
+  return (
+    row.status === 0 &&
+    (!row.auditStatus || ['DRAFT', 'REJECTED', 'WITHDRAWN'].includes(row.auditStatus))
+  )
+}
+
+export function canCompleteReturn(row: Pick<ReturnVo, 'status'>) {
+  return row.status === 1
 }

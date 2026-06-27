@@ -39,4 +39,8 @@ public class LoginResponse {
     /** 访问令牌有效期，单位：秒 */
     @Schema(description = "有效期（秒）")
     private Long expiresIn;
+
+    /** 设备会话 ID，用于用户中心会话管理 */
+    @Schema(description = "设备会话 ID")
+    private String deviceSessionId;
 }

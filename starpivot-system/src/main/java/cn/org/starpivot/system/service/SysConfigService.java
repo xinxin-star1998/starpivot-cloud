@@ -40,4 +40,7 @@ public interface SysConfigService extends IService<SysConfig> {
 
     /** 判断系统是否开放用户自助注册。 */
     boolean isRegisterUserEnabled();
+
+    /** 判断系统是否开放忘记密码。 */
+    boolean isForgetPasswordEnabled();
 }

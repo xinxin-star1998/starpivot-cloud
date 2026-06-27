@@ -4,6 +4,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
+import cn.org.starpivot.mall.common.MallAuditStatus;
 import cn.org.starpivot.mall.pms.entity.PmsSkuInfo;
 import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
 import cn.org.starpivot.mall.wms.domain.bo.*;
@@ -96,6 +97,7 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
         if (purchaseId == null) {
             WmsPurchase purchase = new WmsPurchase();
             purchase.setStatus(WmsPurchaseStatusEnum.CREATED.getCode());
+            purchase.setAuditStatus(MallAuditStatus.DRAFT);
             purchase.setCreateTime(LocalDateTime.now());
             purchase.setUpdateTime(LocalDateTime.now());
             baseMapper.insert(purchase);
@@ -149,6 +151,9 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
         for (WmsPurchase purchase : purchases) {
             if (!WmsPurchaseStatusEnum.canReceive(purchase.getStatus())) {
                 throw new BizException("采购单[" + purchase.getId() + "]状态不可领取");
+            }
+            if (!MallAuditStatus.isApproved(purchase.getAuditStatus())) {
+                throw new BizException("采购单[" + purchase.getId() + "]尚未审批通过，无法领取");
             }
             purchase.setStatus(WmsPurchaseStatusEnum.RECEIVED.getCode());
             purchase.setAssigneeId(assigneeId);

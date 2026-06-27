@@ -30,4 +30,11 @@ public class InternalServiceProperties {
      * Feign 调用 {@code /internal/**} 时通过请求头携带；为空字符串表示未启用校验。
      */
     private String token = "";
+
+    /**
+     * 是否强制要求配置内部 Token（生产环境建议 {@code true}）。
+     * <p>
+     * 为 {@code true} 且 {@link #token} 为空时，所有 {@code /internal/**} 请求将被拒绝。
+     */
+    private boolean requireToken = false;
 }

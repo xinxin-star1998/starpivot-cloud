@@ -54,6 +54,7 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import MemberPriceDialog from './modules/member-price-dialog.vue'
   import type { DialogType } from '@/types'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'SmsMemberPrice' })
 
@@ -124,14 +125,15 @@
     dialogVisible.value = true
   }
 
-  const deleteOne = (row: MemberPriceVo) => {
+  const deleteOne = async (row: MemberPriceVo) => {
     if (!row.id) return
-    ElMessageBox.confirm('确定删除该会员价吗？', '删除', { type: 'warning' })
-      .then(async () => {
-        await fetchMemberPriceRemove([row.id!])
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm('确定删除该会员价吗？', '删除', { type: 'warning' })
+      await fetchMemberPriceRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

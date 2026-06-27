@@ -8,10 +8,7 @@ import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.file.domain.bo.SysFileVO;
-import cn.org.starpivot.file.domain.dto.SysFileMoveDTO;
-import cn.org.starpivot.file.domain.dto.SysFileQueryDTO;
-import cn.org.starpivot.file.domain.dto.SysFileRecycleQueryDTO;
-import cn.org.starpivot.file.domain.dto.SysFileUploadDTO;
+import cn.org.starpivot.file.domain.dto.*;
 import cn.org.starpivot.file.service.ISysFileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +31,7 @@ public class SysFileController {
 
     @PreAuthorize("hasAuthority('file:resource:query')")
     @PostMapping("/list")
-    public Result<PageResponse<SysFileVO>> pageList(@RequestBody SysFileQueryDTO queryDTO) {
+    public Result<PageResponse<SysFileVO>> pageList(@Valid @RequestBody SysFileQueryDTO queryDTO) {
         return Result.success(sysFileService.pageList(queryDTO));
     }
 
@@ -86,7 +83,7 @@ public class SysFileController {
 
     @PreAuthorize("hasAuthority('file:resource:query')")
     @PostMapping("/recycle/list")
-    public Result<PageResponse<SysFileVO>> recycleList(@RequestBody SysFileRecycleQueryDTO queryDTO) {
+    public Result<PageResponse<SysFileVO>> recycleList(@Valid @RequestBody SysFileRecycleQueryDTO queryDTO) {
         return Result.success(sysFileService.recyclePage(queryDTO));
     }
 
@@ -95,6 +92,14 @@ public class SysFileController {
     @PutMapping("/move")
     public Result<Void> move(@Valid @RequestBody SysFileMoveDTO moveDTO) {
         sysFileService.moveToFolder(moveDTO.getIds(), moveDTO.getTargetFolderId());
+        return Result.success();
+    }
+
+    @Log(title = "重命名文件", businessType = BusinessType.UPDATE)
+    @PreAuthorize("hasAuthority('file:resource:edit')")
+    @PutMapping("/rename")
+    public Result<Void> rename(@Valid @RequestBody SysFileRenameDTO renameDTO) {
+        sysFileService.rename(renameDTO.getFileId(), renameDTO.getFileName());
         return Result.success();
     }
 

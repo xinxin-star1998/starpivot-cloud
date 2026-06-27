@@ -133,7 +133,7 @@ public interface ErrorCode extends BaseErrorCode {
     /** 权限不足 */
     int PERMISSION_DENIED = 90004;
     /** 业务处理异常 */
-    int BUSINESS_ERROR = 90005;
+    int BUSINESS_ERROR = 90008;
     /** 请求过于频繁 */
     int REQUEST_TOO_FREQUENT = 90006;
     /** Redis 操作异常 */

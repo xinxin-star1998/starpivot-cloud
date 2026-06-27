@@ -33,4 +33,7 @@ public class LoginUser implements Serializable {
 
     /** 角色标识列表（如 {@code admin}、{@code ROLE_admin}） */
     private List<String> roles;
+
+    /** 设备会话 ID，写入 JWT 供登出/会话管理使用 */
+    private String sessionId;
 }

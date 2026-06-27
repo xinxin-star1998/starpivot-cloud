@@ -88,6 +88,7 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
   import {
     addressHasChildren,
     addressLevelTagType,
@@ -416,41 +417,43 @@
     selectedRows.value = selection
   }
 
-  const deleteAddress = (row: Address) => {
+  const deleteAddress = async (row: Address) => {
     if (!row.id) return
-    ElMessageBox.confirm(`确定删除地区「${row.name || row.code}」吗？`, '删除地区', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        await fetchDeleteAddress([row.id!])
-        buildRestoreForSiblings(row)
-        await refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除地区「${row.name || row.code}」吗？`, '删除地区', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
-      .catch(() => {})
+      await fetchDeleteAddress([row.id!])
+      buildRestoreForSiblings(row)
+      await refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     if (selectedRows.value.length === 0) {
       ElMessage.warning('请选择要删除的地区')
       return
     }
     const names = selectedRows.value.map((r) => r.name || r.code).join('、')
-    ElMessageBox.confirm(`确定删除以下地区吗？\n${names}`, '批量删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        const ids = selectedRows.value.map((r) => r.id!).filter(Boolean)
-        const anchor = selectedRows.value[0]
-        await fetchDeleteAddress(ids)
-        selectedRows.value = []
-        if (anchor) buildRestoreForSiblings(anchor)
-        await refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除以下地区吗？\n${names}`, '批量删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
-      .catch(() => {})
+      const ids = selectedRows.value.map((r) => r.id!).filter(Boolean)
+      const anchor = selectedRows.value[0]
+      await fetchDeleteAddress(ids)
+      selectedRows.value = []
+      if (anchor) buildRestoreForSiblings(anchor)
+      await refreshData()
+    } catch (error) {
+      handleMutationError(error, '批量删除失败')
+    }
   }
 
   const toggleExpand = () => {

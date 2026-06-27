@@ -54,6 +54,7 @@
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import SessionDialog from './modules/session-dialog.vue'
   import type { DialogType } from '@/types'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'SmsSeckillSession' })
 
@@ -144,14 +145,15 @@
     dialogVisible.value = true
   }
 
-  const deleteOne = (row: SeckillSessionVo) => {
+  const deleteOne = async (row: SeckillSessionVo) => {
     if (!row.id) return
-    ElMessageBox.confirm(`确定删除场次「${row.name}」吗？`, '删除场次', { type: 'warning' })
-      .then(async () => {
-        await fetchSeckillSessionRemove([row.id!])
-        refreshData()
-      })
-      .catch(() => {})
+    try {
+      await ElMessageBox.confirm(`确定删除场次「${row.name}」吗？`, '删除场次', { type: 'warning' })
+      await fetchSeckillSessionRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 </script>
 

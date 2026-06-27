@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.Message;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * Message 与 {@link MessageEnvelope} 互转。
  */
 @Component
+@ConditionalOnProperty(prefix = "starpivot.mq", name = "enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class MqMessageConverter {
 

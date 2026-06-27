@@ -38,6 +38,12 @@ public final class SecurityContextUtils {
         return loginUser != null ? loginUser.getUserId() : null;
     }
 
+    /** @return 当前设备会话 ID，未登录或未写入 JWT 时返回 {@code null} */
+    public static String getSessionId() {
+        LoginUser loginUser = getLoginUser();
+        return loginUser != null ? loginUser.getSessionId() : null;
+    }
+
     /**
      * 获取当前用户名；优先 {@link LoginUser#getUsername()}，否则回退至 {@code Authentication#getName()}。
      *

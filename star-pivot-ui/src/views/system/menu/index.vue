@@ -603,7 +603,9 @@
     dialogType.value = 'button'
     // 新增权限时，只传递 parentId，不传递完整的父菜单对象，避免被误判为编辑模式
     editData.value = parentRow
-      ? ({ parentId: parentRow.id } as Partial<MenuFormData & AppRouteRecord>)
+      ? ({ parentId: parentRow.id != null ? Number(parentRow.id) : undefined } as Partial<
+          MenuFormData & AppRouteRecord
+        >)
       : null
     lockMenuType.value = false
     dialogVisible.value = true

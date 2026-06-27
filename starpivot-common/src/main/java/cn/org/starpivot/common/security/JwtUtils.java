@@ -1,10 +1,6 @@
 package cn.org.starpivot.common.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
@@ -43,14 +39,16 @@ public final class JwtUtils {
         SecretKey key = getSigningKey(properties.getSecret());
         long expirationTime = System.currentTimeMillis() + properties.getExpire();
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(user.getUsername())
                 .claim(SecurityConstants.CLAIM_USER_ID, user.getUserId())
                 .claim(SecurityConstants.CLAIM_ROLES, user.getRoles())
                 .issuedAt(new Date())
-                .expiration(new Date(expirationTime))
-                .signWith(key)
-                .compact();
+                .expiration(new Date(expirationTime));
+        if (user.getSessionId() != null && !user.getSessionId().isBlank()) {
+            builder.claim(SecurityConstants.CLAIM_SESSION_ID, user.getSessionId());
+        }
+        return builder.signWith(key).compact();
     }
 
     /**
@@ -110,6 +108,7 @@ public final class JwtUtils {
                 .userId(userId)
                 .username(username)
                 .roles(roles)
+                .sessionId(claims.get(SecurityConstants.CLAIM_SESSION_ID, String.class))
                 .build();
     }
 

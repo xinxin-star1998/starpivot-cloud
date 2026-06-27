@@ -51,11 +51,24 @@ declare namespace Api {
       /** 每页条数，默认值为 10 */
       pageSize?: number
     }
-    /** 分页响应基础结构（后端返回的数据结构） */
-    interface PaginatedResponse<T = any> {
-      records: T[]
+    /** 后端 PageResponse 标准结构（列表字段为 rows） */
+    interface PageResponse<T = any> {
+      rows: T[]
+      total: number
       pageNum?: number
       pageSize?: number
+      pageCount?: number
+    }
+    /**
+     * 分页响应（兼容 records / rows，优先 rows）
+     * @deprecated 新接口请使用 PageResponse
+     */
+    interface PaginatedResponse<T = any> {
+      records?: T[]
+      rows?: T[]
+      pageNum?: number
+      pageSize?: number
+      pageCount?: number
       total: number
     }
     /** 启用状态 */

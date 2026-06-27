@@ -15,6 +15,8 @@
         <result property="returnName" column="return_name"/>
         <result property="returnPhone" column="return_phone"/>
         <result property="status" column="status"/>
+        <result property="approvalInstanceId" column="approval_instance_id"/>
+        <result property="auditStatus" column="audit_status"/>
         <result property="handleTime" column="handle_time"/>
         <result property="skuImg" column="sku_img"/>
         <result property="skuName" column="sku_name"/>
@@ -37,7 +39,8 @@
 
     <sql id="selectReturnApplyVo">
         select id, order_id, sku_id, order_sn, create_time, member_username, return_amount,
-               return_name, return_phone, status, handle_time, sku_img, sku_name, sku_brand,
+               return_name, return_phone, status, approval_instance_id, audit_status, handle_time,
+               sku_img, sku_name, sku_brand,
                sku_attrs_vals, sku_count, sku_price, sku_real_price, reason, description,
                desc_pics, handle_note, handle_man, receive_man, receive_time, receive_note,
                receive_phone, company_address

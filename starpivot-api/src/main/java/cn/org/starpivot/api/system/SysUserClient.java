@@ -1,10 +1,6 @@
 package cn.org.starpivot.api.system;
 
-import cn.org.starpivot.api.system.dto.RegisterUserRequest;
-import cn.org.starpivot.api.system.dto.RegisterUserResponse;
-import cn.org.starpivot.api.system.dto.SysMenuDto;
-import cn.org.starpivot.api.system.dto.SysUserAuthDto;
-import cn.org.starpivot.api.system.dto.VerifyPasswordRequest;
+import cn.org.starpivot.api.system.dto.*;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,4 +62,7 @@ public interface SysUserClient {
      */
     @PostMapping("/internal/user/register")
     Result<RegisterUserResponse> registerUser(@RequestBody RegisterUserRequest request);
+
+    @PostMapping("/internal/user/forgot-password")
+    Result<Boolean> resetPasswordByForgot(@RequestBody ForgotPasswordResetRequest request);
 }

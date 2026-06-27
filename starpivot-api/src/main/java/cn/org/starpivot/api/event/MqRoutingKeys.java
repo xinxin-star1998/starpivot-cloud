@@ -9,6 +9,9 @@ public final class MqRoutingKeys {
     public static final String AUDIT_OPER_LOG_CREATED = "audit.oper-log.created";
     public static final String JOB_OPER_LOG_CLEAN = "job.oper-log.clean";
 
+    /** 审批实例完结（通过/驳回/撤回） */
+    public static final String APPROVAL_INSTANCE_FINISHED = "approval.instance.finished";
+
     private MqRoutingKeys() {
     }
 }

@@ -93,6 +93,20 @@ public class CaptchaService {
         return CaptchaVerifyResponse.builder().captchaProof(proof).build();
     }
 
+    /**
+     * 消费验证码凭证（一次性）。
+     */
+    public void consumeProof(String proof) {
+        if (!StringUtils.hasText(proof)) {
+            throw new BusinessException(401, "验证码凭证无效或已过期");
+        }
+        String key = CacheConstants.captchaProofKey(proof);
+        Boolean deleted = redisTemplate.delete(key);
+        if (!Boolean.TRUE.equals(deleted)) {
+            throw new BusinessException(401, "验证码凭证无效或已过期");
+        }
+    }
+
     private String buildCaptchaKey(String scene, String token) {
         return CacheConstants.captchaKey(scene, token);
     }

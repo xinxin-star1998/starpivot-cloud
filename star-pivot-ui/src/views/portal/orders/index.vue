@@ -134,6 +134,7 @@
   import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
   import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
   import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
+  import { handleMutationError } from '@/utils/http/mutation'
   import { getPortalOrderStatusLabel, getPortalOrderStatusType } from '@/utils/portal/order-status'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import ReturnDialog from './modules/return-dialog.vue'
@@ -201,15 +202,23 @@
       pageNum.value = 1
       orders.value = []
     }
-    const res = await fetchPortalOrderList({
-      pageNum: pageNum.value,
-      pageSize,
-      status: currentStatusFilter()
-    })
-    total.value = res.total || 0
-    const rows = res.rows || []
-    orders.value = reset ? rows : [...orders.value, ...rows]
-    await resolveOrderImages(rows)
+    try {
+      const res = await fetchPortalOrderList({
+        pageNum: pageNum.value,
+        pageSize,
+        status: currentStatusFilter()
+      })
+      total.value = res.total || 0
+      const rows = res.rows || []
+      orders.value = reset ? rows : [...orders.value, ...rows]
+      await resolveOrderImages(rows)
+    } catch (error) {
+      handleMutationError(error, '加载订单失败')
+      if (reset) {
+        orders.value = []
+        total.value = 0
+      }
+    }
   }
 
   function handleTabChange() {
@@ -225,9 +234,13 @@
   }
 
   async function openDetail(orderId: number) {
-    detailOrder.value = await fetchPortalOrderDetail(orderId)
-    detailVisible.value = true
-    await resolveOrderImages([detailOrder.value])
+    try {
+      detailOrder.value = await fetchPortalOrderDetail(orderId)
+      detailVisible.value = true
+      await resolveOrderImages([detailOrder.value])
+    } catch (error) {
+      handleMutationError(error, '加载订单详情失败')
+    }
   }
 
   async function handlePay(orderId: number) {
@@ -246,7 +259,9 @@
       }
     } catch (err) {
       if (alipayEnabled.value) {
-        ElMessage.error(err instanceof Error ? err.message : '支付宝下单失败')
+        handleMutationError(err, '支付宝下单失败')
+      } else {
+        handleMutationError(err, '支付失败')
       }
     } finally {
       actionOrderId.value = undefined
@@ -255,10 +270,14 @@
   }
 
   async function handleConfirmReceive(orderId: number) {
-    await ElMessageBox.confirm('确认已收到商品吗？', '确认收货', { type: 'info' })
-    await fetchPortalOrderConfirmReceive(orderId)
-    detailVisible.value = false
-    await loadOrders(true)
+    try {
+      await ElMessageBox.confirm('确认已收到商品吗？', '确认收货', { type: 'info' })
+      await fetchPortalOrderConfirmReceive(orderId)
+      detailVisible.value = false
+      await loadOrders(true)
+    } catch (error) {
+      handleMutationError(error, '确认收货失败')
+    }
   }
 
   function openReturnDialog() {
@@ -273,14 +292,16 @@
   }
 
   async function handleCancel(orderId: number) {
-    await ElMessageBox.confirm('确定取消该订单吗？', '提示', { type: 'warning' })
-    actionOrderId.value = orderId
-    actionType.value = 'cancel'
     try {
+      await ElMessageBox.confirm('确定取消该订单吗？', '提示', { type: 'warning' })
+      actionOrderId.value = orderId
+      actionType.value = 'cancel'
       await fetchPortalOrderCancel(orderId)
       ElMessage.success('订单已取消')
       detailVisible.value = false
       await loadOrders(true)
+    } catch (error) {
+      handleMutationError(error, '取消订单失败')
     } finally {
       actionOrderId.value = undefined
       actionType.value = undefined

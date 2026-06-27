@@ -25,6 +25,7 @@ import {
   createErrorHandler,
   createSmartDebounce,
   defaultResponseAdapter,
+  defaultTableErrorHandler,
   extractTableData,
   type TableError,
   updatePaginationFromResponse
@@ -197,6 +198,9 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   // 请求取消控制器
   let abortController: AbortController | null = null
 
+  // 请求世代：用于丢弃 Tab 切换等场景下的过期响应
+  let fetchGeneration = 0
+
   // 缓存清理定时器
   let cacheCleanupTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -241,8 +245,11 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     return cache.getStats()
   })
 
-  // 错误处理函数
-  const handleError = createErrorHandler(onError, enableLog)
+  // 错误处理函数（默认 toast + 可选自定义 onError）
+  const handleError = createErrorHandler((tableError) => {
+    defaultTableErrorHandler(tableError, '获取表格数据失败')
+    onError?.(tableError)
+  }, enableLog)
 
   // 清理缓存，根据不同的业务场景选择性地清理缓存
   const clearCache = (strategy: CacheInvalidationStrategy, context?: string): void => {
@@ -284,13 +291,20 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     params?: Partial<TParams>,
     useCache = enableCache
   ): Promise<ApiResponse<TRecord>> => {
-    // 如果正在请求中，取消上一个请求
-    if (isFetching && abortController) {
-      abortController.abort()
-    }
+    const shouldAbortPrevious = isFetching && abortController
 
-    // 如果已有待处理的请求，等待它完成（避免重复调用）
-    if (pendingRequest) {
+    // 如果正在请求中，取消上一个请求
+    if (shouldAbortPrevious) {
+      abortController!.abort()
+      if (pendingRequest) {
+        try {
+          await pendingRequest
+        } catch {
+          // 被取消的请求结束后继续发起新请求
+        }
+      }
+    } else if (pendingRequest) {
+      // 无取消意图时复用进行中的请求，避免重复调用
       try {
         return await pendingRequest
       } catch {
@@ -301,12 +315,13 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     // 创建新的取消控制器
     const currentController = new AbortController()
     abortController = currentController
+    const generation = ++fetchGeneration
 
     // 设置请求标记和待处理请求
     isFetching = true
     pendingRequest = (async () => {
       try {
-        return await executeFetchData(currentController, params, useCache)
+        return await executeFetchData(currentController, params, useCache, generation)
       } finally {
         isFetching = false
         pendingRequest = null
@@ -320,7 +335,8 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   const executeFetchData = async (
     currentController: AbortController,
     params?: Partial<TParams>,
-    useCache = enableCache
+    useCache = enableCache,
+    generation = fetchGeneration
   ): Promise<ApiResponse<TRecord>> => {
     // 状态机：进入 loading 状态
     loadingState.value = 'loading'
@@ -350,6 +366,9 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
       if (useCache && cache) {
         const cachedItem = cache.get(requestParams)
         if (cachedItem) {
+          if (generation !== fetchGeneration) {
+            throw new Error('请求已取消')
+          }
           data.value = cachedItem.data
           updatePaginationFromResponse(pagination, cachedItem.response)
 
@@ -377,8 +396,8 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
 
       const response = await apiFn(requestParams)
 
-      // 检查请求是否被取消
-      if (currentController.signal.aborted) {
+      // 检查请求是否被取消或已过期
+      if (currentController.signal.aborted || generation !== fetchGeneration) {
         throw new Error('请求已取消')
       }
 
@@ -391,6 +410,10 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
       // 应用数据转换函数
       if (dataTransformer) {
         tableData = dataTransformer(tableData)
+      }
+
+      if (generation !== fetchGeneration) {
+        throw new Error('请求已取消')
       }
 
       // 更新状态
@@ -433,7 +456,9 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
       // 状态机：请求失败，进入 error 状态
       loadingState.value = 'error'
       data.value = []
-      throw handleError(err, '获取表格数据失败')
+      const tableError = handleError(err, '获取表格数据失败')
+      error.value = tableError
+      throw tableError
     } finally {
       // 只有当前控制器是活跃的才清空
       if (abortController === currentController) {
@@ -612,10 +637,17 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
 
   // 取消当前请求
   const cancelRequest = (): void => {
+    fetchGeneration++
     if (abortController) {
       abortController.abort()
     }
     debouncedGetDataByPage.cancel()
+  }
+
+  const resetPagination = (): void => {
+    pagination.current = 1
+    pagination.total = 0
+    ;(searchParams as Record<string, unknown>)[pageKey] = 1
   }
 
   // 清空数据
@@ -695,6 +727,8 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     searchParams,
     /** 重置搜索参数 */
     resetSearchParams,
+    /** 重置分页到第一页并清空 total */
+    resetPagination,
 
     // 数据操作 - 更明确的操作意图
     /** 加载数据 */

@@ -16,11 +16,10 @@
       />
     </ElCard>
 
-    <ReturnDetailDrawer v-model:visible="detailVisible" :return-id="currentReturnId" />
-    <AuditDialog
-      v-model:visible="auditVisible"
+    <ReturnDetailDrawer
+      v-model:visible="detailVisible"
       :return-id="currentReturnId"
-      @submit="refreshData"
+      @changed="refreshData"
     />
   </div>
 </template>
@@ -28,12 +27,17 @@
 <script setup lang="ts">
   import { h } from 'vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchReturnComplete, fetchReturnList, RETURN_STATUS_MAP } from '@/api/mall/order-return'
+  import {
+    canCompleteReturn,
+    fetchReturnComplete,
+    fetchReturnList,
+    RETURN_AUDIT_STATUS_MAP,
+    RETURN_STATUS_MAP
+  } from '@/api/mall/order-return'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import ReturnSearch from './modules/return-search.vue'
   import ReturnDetailDrawer from './modules/return-detail-drawer.vue'
-  import AuditDialog from './modules/audit-dialog.vue'
   import { ElButton, ElSpace, ElTag } from 'element-plus'
   import { useAuth } from '@/hooks/core/useAuth'
 
@@ -48,7 +52,6 @@
   })
 
   const detailVisible = ref(false)
-  const auditVisible = ref(false)
   const currentReturnId = ref<number>()
 
   const {
@@ -83,6 +86,23 @@
             row.returnAmount != null ? `¥${Number(row.returnAmount).toFixed(2)}` : '-'
         },
         {
+          prop: 'auditStatus',
+          label: '审批',
+          width: 100,
+          formatter: (row) => {
+            const label = RETURN_AUDIT_STATUS_MAP[row.auditStatus || ''] || row.auditStatus || '-'
+            const type =
+              row.auditStatus === 'APPROVED'
+                ? 'success'
+                : row.auditStatus === 'REJECTED'
+                  ? 'danger'
+                  : row.auditStatus === 'PENDING'
+                    ? 'warning'
+                    : 'info'
+            return h(ElTag, { type, size: 'small' }, () => label)
+          }
+        },
+        {
           prop: 'status',
           label: '状态',
           width: 100,
@@ -106,7 +126,7 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 160,
+          width: 140,
           fixed: 'right',
           formatter: (row) => {
             const actions: ReturnType<typeof h>[] = []
@@ -119,16 +139,7 @@
                 )
               )
             }
-            if (hasAuth('mall:return:audit') && row.status === 0) {
-              actions.push(
-                h(
-                  ElButton,
-                  { link: true, type: 'success', onClick: () => openAudit(row.id) },
-                  () => '审核'
-                )
-              )
-            }
-            if (hasAuth('mall:return:audit') && row.status === 1) {
+            if (hasAuth('mall:return:audit') && canCompleteReturn(row)) {
               actions.push(
                 h(
                   ElButton,
@@ -152,11 +163,6 @@
   function openDetail(id?: number) {
     currentReturnId.value = id
     detailVisible.value = true
-  }
-
-  function openAudit(id?: number) {
-    currentReturnId.value = id
-    auditVisible.value = true
   }
 
   async function handleComplete(id: number) {

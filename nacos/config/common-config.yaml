@@ -25,6 +25,7 @@ starpivot:
     refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
   internal:
     token: ${INTERNAL_SERVICE_TOKEN:}
+    require-token: ${INTERNAL_SERVICE_TOKEN_REQUIRED:false}
 
 management:
   endpoints:

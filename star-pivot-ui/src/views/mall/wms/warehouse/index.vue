@@ -59,6 +59,7 @@
   import { ElMessage, ElMessageBox } from 'element-plus'
   import type { DialogType } from '@/types'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
 
   defineOptions({ name: 'WmsWarehouse' })
 
@@ -163,38 +164,40 @@
     selectedRows.value = selection
   }
 
-  const deleteOne = (row: WmsWareInfoVo) => {
+  const deleteOne = async (row: WmsWareInfoVo) => {
     if (!row.id) return
-    ElMessageBox.confirm(`确定删除仓库「${row.name || row.id}」吗？`, '删除仓库', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        await fetchWmsWareInfoRemove([row.id!])
-        refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除仓库「${row.name || row.id}」吗？`, '删除仓库', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
-      .catch(() => {})
+      await fetchWmsWareInfoRemove([row.id!])
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
   }
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     if (selectedRows.value.length === 0) {
       ElMessage.warning('请选择要删除的仓库')
       return
     }
     const names = selectedRows.value.map((r) => r.name || r.id).join('、')
-    ElMessageBox.confirm(`确定删除以下仓库吗？\n${names}`, '批量删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(async () => {
-        const ids = selectedRows.value.map((r) => r.id!).filter(Boolean)
-        await fetchWmsWareInfoRemove(ids)
-        selectedRows.value = []
-        refreshData()
+    try {
+      await ElMessageBox.confirm(`确定删除以下仓库吗？\n${names}`, '批量删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
-      .catch(() => {})
+      const ids = selectedRows.value.map((r) => r.id!).filter(Boolean)
+      await fetchWmsWareInfoRemove(ids)
+      selectedRows.value = []
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '批量删除失败')
+    }
   }
 </script>
 

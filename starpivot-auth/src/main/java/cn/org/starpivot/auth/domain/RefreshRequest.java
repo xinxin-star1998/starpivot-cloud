@@ -22,4 +22,7 @@ public class RefreshRequest {
     /** 登录时下发的刷新令牌 */
     @NotBlank(message = "刷新令牌不能为空")
     private String refreshToken;
+
+    /** 设备会话 ID（多设备登录时用于定位 RefreshToken） */
+    private String deviceSessionId;
 }

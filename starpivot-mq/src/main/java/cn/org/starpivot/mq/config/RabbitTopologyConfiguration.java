@@ -3,12 +3,8 @@ package cn.org.starpivot.mq.config;
 import cn.org.starpivot.api.event.MqExchangeNames;
 import cn.org.starpivot.api.event.MqQueueNames;
 import cn.org.starpivot.api.event.MqRoutingKeys;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +15,7 @@ import java.util.Map;
  * RabbitMQ Exchange / Queue / Binding 声明。
  */
 @Configuration
+@ConditionalOnProperty(prefix = "starpivot.mq", name = "enabled", havingValue = "true")
 public class RabbitTopologyConfiguration {
 
     @Bean
@@ -79,5 +76,20 @@ public class RabbitTopologyConfiguration {
         return BindingBuilder.bind(systemJobHandlerQueue)
                 .to(starPivotDirectExchange)
                 .with(MqRoutingKeys.JOB_OPER_LOG_CLEAN);
+    }
+
+    @Bean
+    public Queue mallApprovalFinishedQueue() {
+        return QueueBuilder.durable(MqQueueNames.MALL_APPROVAL_FINISHED)
+                .deadLetterExchange(MqExchangeNames.DLX)
+                .deadLetterRoutingKey("dlx." + MqRoutingKeys.APPROVAL_INSTANCE_FINISHED)
+                .build();
+    }
+
+    @Bean
+    public Binding mallApprovalFinishedBinding(Queue mallApprovalFinishedQueue, TopicExchange starPivotTopicExchange) {
+        return BindingBuilder.bind(mallApprovalFinishedQueue)
+                .to(starPivotTopicExchange)
+                .with(MqRoutingKeys.APPROVAL_INSTANCE_FINISHED);
     }
 }
