@@ -7,11 +7,13 @@ import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.util.AssertUtils;
 import cn.org.starpivot.file.domain.bo.FileCategoryNodeVO;
+import cn.org.starpivot.file.domain.bo.FolderFileCount;
 import cn.org.starpivot.file.domain.bo.SysFileFolderVO;
 import cn.org.starpivot.file.domain.dto.SysFileFolderDTO;
 import cn.org.starpivot.file.domain.entity.SysFileFolder;
 import cn.org.starpivot.file.mapper.SysFileFolderMapper;
 import cn.org.starpivot.file.mapper.SysFileMapper;
+import cn.org.starpivot.file.service.FileCategoryAccessService;
 import cn.org.starpivot.file.service.ISysFileFolderService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -22,10 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,12 +36,16 @@ public class SysFileFolderServiceImpl extends ServiceImpl<SysFileFolderMapper, S
         implements ISysFileFolderService {
 
     private final SysFileMapper sysFileMapper;
+    private final FileCategoryAccessService fileCategoryAccessService;
 
     @Override
     public List<FileCategoryNodeVO> listTree(String category) {
         List<FileCategory> categories = StringUtils.hasText(category)
                 ? List.of(FileCategory.of(category))
                 : Arrays.asList(FileCategory.values());
+        categories = categories.stream()
+                .filter(cat -> fileCategoryAccessService.canAccess(cat.getCode()))
+                .toList();
 
         List<FileCategoryNodeVO> nodes = new ArrayList<>();
         for (FileCategory cat : categories) {
@@ -56,8 +59,9 @@ public class SysFileFolderServiceImpl extends ServiceImpl<SysFileFolderMapper, S
                     .orderByAsc(SysFileFolder::getOrderNum)
                     .orderByAsc(SysFileFolder::getFolderId));
 
+            Map<Long, Long> fileCountMap = loadFileCountMap(folders);
             List<SysFileFolderVO> children = folders.stream()
-                    .map(this::toFolderVO)
+                    .map(folder -> toFolderVO(folder, fileCountMap))
                     .sorted(Comparator.comparing(SysFileFolderVO::getOrderNum, Comparator.nullsLast(Integer::compareTo)))
                     .collect(Collectors.toList());
             node.setChildren(children);
@@ -69,7 +73,8 @@ public class SysFileFolderServiceImpl extends ServiceImpl<SysFileFolderMapper, S
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long create(SysFileFolderDTO dto) {
-        FileCategory.of(dto.getCategory());
+        FileCategory category = FileCategory.of(dto.getCategory());
+        fileCategoryAccessService.requireAccess(category.getCode());
         if (dto.getFolderName() == null || dto.getFolderName().isBlank()) {
             throw new BizException(ErrorCode.PARAM_INVALID, "文件夹名称不能为空");
         }
@@ -100,6 +105,7 @@ public class SysFileFolderServiceImpl extends ServiceImpl<SysFileFolderMapper, S
         AssertUtils.notNull(dto.getFolderId(), ErrorCode.PARAM_INVALID, "文件夹ID不能为空");
         SysFileFolder folder = getById(dto.getFolderId());
         AssertUtils.notNull(folder, ErrorCode.NOT_FOUND, "文件夹不存在");
+        fileCategoryAccessService.requireAccess(folder.getCategory());
 
         if (StringUtils.hasText(dto.getFolderName()) && !dto.getFolderName().equals(folder.getFolderName())) {
             long exists = count(new LambdaQueryWrapper<SysFileFolder>()
@@ -130,20 +136,35 @@ public class SysFileFolderServiceImpl extends ServiceImpl<SysFileFolderMapper, S
     public void delete(Long folderId) {
         SysFileFolder folder = getById(folderId);
         AssertUtils.notNull(folder, ErrorCode.NOT_FOUND, "文件夹不存在");
+        fileCategoryAccessService.requireAccess(folder.getCategory());
         if (FileBizConstants.DEFAULT_FOLDER_NAME.equals(folder.getFolderName())) {
             throw new BizException(ErrorCode.PARAM_INVALID, "默认文件夹不可删除");
         }
-        long fileCount = sysFileMapper.countActiveByFolderId(folderId);
+        long fileCount = sysFileMapper.countByFolderId(folderId);
         if (fileCount > 0) {
-            throw new BizException(ErrorCode.PARAM_INVALID, "文件夹下存在文件，无法删除");
+            throw new BizException(ErrorCode.PARAM_INVALID, "文件夹下存在文件（含回收站），无法删除");
         }
         removeById(folderId);
     }
 
-    private SysFileFolderVO toFolderVO(SysFileFolder folder) {
+    private Map<Long, Long> loadFileCountMap(List<SysFileFolder> folders) {
+        if (folders.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<Long> folderIds = folders.stream()
+                .map(SysFileFolder::getFolderId)
+                .toList();
+        return sysFileMapper.countByFolderIds(folderIds).stream()
+                .collect(Collectors.toMap(
+                        FolderFileCount::getFolderId,
+                        FolderFileCount::getFileCount,
+                        (left, right) -> left));
+    }
+
+    private SysFileFolderVO toFolderVO(SysFileFolder folder, Map<Long, Long> fileCountMap) {
         SysFileFolderVO vo = new SysFileFolderVO();
         BeanUtils.copyProperties(folder, vo);
-        vo.setFileCount(sysFileMapper.countActiveByFolderId(folder.getFolderId()));
+        vo.setFileCount(fileCountMap.getOrDefault(folder.getFolderId(), 0L));
         return vo;
     }
 }

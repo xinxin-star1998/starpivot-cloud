@@ -36,6 +36,11 @@ public enum FileCategory {
         return ossPrefix;
     }
 
+    /** Category 数据权限标识，如 {@code file:category:HR} */
+    public String getAccessPermission() {
+        return "file:category:" + code;
+    }
+
     public static FileCategory of(String code) {
         if (code == null || code.isBlank()) {
             throw new IllegalArgumentException("业务分类不能为空");

@@ -87,6 +87,15 @@ public class SysFileController {
         return Result.success(sysFileService.recyclePage(queryDTO));
     }
 
+    @Log(title = "永久删除文件", businessType = BusinessType.DELETE)
+    @PreAuthorize("hasAuthority('file:resource:purge')")
+    @DeleteMapping("/recycle/purge")
+    public Result<Void> permanentDelete(@RequestBody DeleteRequest deleteRequest) {
+        List<Long> ids = validateIds(deleteRequest.getIds());
+        sysFileService.permanentDelete(ids);
+        return Result.success();
+    }
+
     @Log(title = "迁移文件", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('file:resource:move')")
     @PutMapping("/move")

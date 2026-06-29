@@ -69,6 +69,13 @@
             <dt>文件 ID</dt>
             <dd>{{ detail.fileId }}</dd>
           </div>
+          <div v-if="detail.refCount != null" class="meta-row">
+            <dt>业务引用</dt>
+            <dd>
+              <ElTag v-if="detail.refCount > 0" type="warning" size="small">{{ detail.refCount }}</ElTag>
+              <span v-else>0</span>
+            </dd>
+          </div>
           <div v-if="detail.contentType" class="meta-row">
             <dt>MIME</dt>
             <dd>{{ detail.contentType }}</dd>
@@ -131,21 +138,16 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchFileDetail, fetchFilePreviewUrl, renameFile } from '@/api/file/file'
-  import type { SysFile } from '@/api/file/types'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import {
-    formatFileSize,
-    getPreviewMode,
-    openFileUrl,
-    type PreviewMode
-  } from '@/utils/file/file-center'
-  import { getMediaTypeIcon, MEDIA_TYPE_TAG } from '../constants'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import { computed, ref, watch } from 'vue'
+import {fetchFileDetail, fetchFilePreviewUrl, renameFile} from '@/api/file/file'
+import type {SysFile} from '@/api/file/types'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {formatFileSize, getPreviewMode, openFileUrl, type PreviewMode} from '@/utils/file/file-center'
+import {getMediaTypeIcon, MEDIA_TYPE_TAG} from '../constants'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {computed, ref, watch} from 'vue'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
   const props = defineProps<{
     file?: SysFile | null

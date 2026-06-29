@@ -15,6 +15,7 @@ import cn.org.starpivot.mall.pms.mapper.PmsBrandMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsCategoryBrandRelationMapper;
 import cn.org.starpivot.mall.pms.service.BrandService;
 import cn.org.starpivot.mall.pms.service.PmsCategoryService;
+import cn.org.starpivot.mall.pms.support.MallFileRefSupport;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -47,6 +48,7 @@ public class BrandServiceImpl implements BrandService {
     private final PmsBrandMapper pmsBrandMapper;
     private final PmsCategoryBrandRelationMapper categoryBrandRelationMapper;
     private final PmsCategoryService pmsCategoryService;
+    private final MallFileRefSupport mallFileRefSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -85,6 +87,7 @@ public class BrandServiceImpl implements BrandService {
             entity.setSort(0);
         }
         pmsBrandMapper.insert(entity);
+        mallFileRefSupport.syncBrandLogo(entity.getBrandId(), entity.getLogo());
     }
 
     @Override
@@ -106,6 +109,7 @@ public class BrandServiceImpl implements BrandService {
         existing.setShowStatus(bo.getShowStatus());
         existing.setFirstLetter(bo.getFirstLetter());
         pmsBrandMapper.updateById(existing);
+        mallFileRefSupport.syncBrandLogo(existing.getBrandId(), existing.getLogo());
     }
 
     @Override
@@ -113,6 +117,11 @@ public class BrandServiceImpl implements BrandService {
     public void removeByIds(List<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             throw new BizException(ErrorCode.PARAM_INVALID, "删除ID不能为空");
+        }
+        for (Long brandId : ids) {
+            if (brandId != null) {
+                mallFileRefSupport.unbindBrand(brandId);
+            }
         }
         pmsBrandMapper.delete(Wrappers.<PmsBrand>lambdaQuery().in(PmsBrand::getBrandId, ids));
         categoryBrandRelationMapper.delete(

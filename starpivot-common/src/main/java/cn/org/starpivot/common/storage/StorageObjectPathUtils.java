@@ -9,7 +9,7 @@ import java.net.URI;
  */
 public final class StorageObjectPathUtils {
 
-    private static final String[] STORAGE_PREFIXES = {"goods/", "editor/", "avatar/"};
+    private static final String[] STORAGE_PREFIXES = {"goods/", "editor/", "avatar/", "brand/", "file/"};
 
     private StorageObjectPathUtils() {
     }

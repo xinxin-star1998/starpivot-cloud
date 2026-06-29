@@ -42,6 +42,10 @@ export interface SysFile {
   updateTime?: string
   deleteBy?: string
   deleteTime?: string
+  /** 是否为秒传（复用已有 OSS 对象） */
+  instantUpload?: boolean
+  /** 业务引用计数 */
+  refCount?: number
 }
 
 export interface SysFileQueryParams {

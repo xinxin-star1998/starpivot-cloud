@@ -52,14 +52,14 @@
 </template>
 
 <script setup lang="ts">
-  import { uploadFile } from '@/api/file/file'
-  import type { FileCategoryNode } from '@/api/file/types'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import type { UploadFile, UploadInstance } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { computed, ref, watch } from 'vue'
+import {uploadFile} from '@/api/file/file'
+import type {FileCategoryNode} from '@/api/file/types'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import type {UploadFile, UploadInstance} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {computed, ref, watch} from 'vue'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
   const props = defineProps<{
     categories: FileCategoryNode[]
@@ -157,6 +157,7 @@
     uploadDone.value = 0
     uploadTotal.value = items.length
     let failed = 0
+    let instantCount = 0
 
     try {
       for (const item of items) {
@@ -166,7 +167,10 @@
           formData.append('file', item.raw)
           formData.append('folderId', String(folderId))
           if (remark.value) formData.append('remark', remark.value)
-          await uploadFile(formData)
+          const uploaded = await uploadFile(formData)
+          if (uploaded?.instantUpload) {
+            instantCount++
+          }
         } catch {
           failed++
         } finally {
@@ -175,7 +179,9 @@
       }
 
       if (failed === 0) {
-        ElMessage.success(`成功上传 ${items.length} 个文件`)
+        const instantHint =
+          instantCount > 0 ? `（其中 ${instantCount} 个秒传，未重复上传存储）` : ''
+        ElMessage.success(`成功上传 ${items.length} 个文件${instantHint}`)
         visible.value = false
         emit('success', folderId)
       } else if (failed < items.length) {

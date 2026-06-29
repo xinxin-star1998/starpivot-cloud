@@ -1,10 +1,5 @@
 import request from '@/utils/http'
-import type {
-  SysFile,
-  SysFileQueryParams,
-  SysFileRecycleQueryParams,
-  SysFileRenameParams
-} from './types'
+import type {SysFile, SysFileQueryParams, SysFileRecycleQueryParams, SysFileRenameParams} from './types'
 
 export function fetchFileList(params: SysFileQueryParams) {
   return request.post<Api.Common.PageResponse<SysFile>>({
@@ -43,6 +38,13 @@ export function deleteFiles(ids: number[]) {
 export function restoreFiles(ids: number[]) {
   return request.put({
     url: '/api/file/restore',
+    data: { ids }
+  })
+}
+
+export function purgeRecycleFiles(ids: number[]) {
+  return request.del({
+    url: '/api/file/recycle/purge',
     data: { ids }
   })
 }

@@ -23,9 +23,11 @@ public class GlobalExceptionHandler {
         return buildBusinessErrorResponse(ex.getCode(), ex.getMessage());
     }
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Result<Void>> handleBusinessException(BusinessException ex) {
-        return buildBusinessErrorResponse(ex.getCode(), ex.getMessage());
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Result<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.warn("Illegal argument: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.badRequest(ex.getMessage() != null ? ex.getMessage() : "参数无效"));
     }
 
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)

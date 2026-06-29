@@ -6,7 +6,7 @@ import cn.org.starpivot.api.system.dto.*;
 import cn.org.starpivot.auth.domain.*;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.AppConstants;
-import cn.org.starpivot.common.exception.BusinessException;
+import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.security.JwtProperties;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.LoginUser;
@@ -54,7 +54,7 @@ public class AuthService {
      *
      * @param request 登录请求，含用户名与密码
      * @return 登录响应，含访问令牌、刷新令牌及用户基本信息
-     * @throws BusinessException 凭据错误或用户已停用时抛出 401
+     * @throws BizException 凭据错误或用户已停用时抛出 401
      */
     public LoginResponse login(LoginRequest request) {
         HttpServletRequest httpRequest = currentRequest();
@@ -69,7 +69,7 @@ public class AuthService {
 
             if (!AppConstants.Status.NORMAL.equals(userDto.getStatus())) {
                 recordLoginLog(request.getUsername(), ip, httpRequest, "1", "用户已停用");
-                throw new BusinessException(401, "用户名或密码错误");
+                throw new BizException(401, "用户名或密码错误");
             }
 
             LoginUser user = LoginUser.builder()
@@ -93,12 +93,12 @@ public class AuthService {
                     .expiresIn(jwtProperties.getExpire() / 1000)
                     .deviceSessionId(session.getSessionId())
                     .build();
-        } catch (BusinessException ex) {
+        } catch (BizException ex) {
             throw ex;
         } catch (Exception ex) {
             log.error("登录失败, username={}", request.getUsername(), ex);
             recordLoginLog(request.getUsername(), ip, httpRequest, "1", "登录异常");
-            throw new BusinessException(401, "用户名或密码错误");
+            throw new BizException(401, "用户名或密码错误");
         }
     }
 
@@ -107,13 +107,13 @@ public class AuthService {
      *
      * @param request 刷新请求，含用户名与刷新令牌
      * @return 新的登录响应
-     * @throws BusinessException 刷新令牌无效或已过期时抛出 401
+     * @throws BizException 刷新令牌无效或已过期时抛出 401
      */
     public LoginResponse refreshToken(RefreshRequest request) {
         SysUserAuthDto userDto = loadUserForLogin(request.getUsername());
         Long userId = userDto.getUserId();
         if (!refreshTokenService.validate(userId, request.getDeviceSessionId(), request.getRefreshToken())) {
-            throw new BusinessException(401, "刷新令牌无效或已过期，请重新登录");
+            throw new BizException(401, "刷新令牌无效或已过期，请重新登录");
         }
 
         String sessionId = request.getDeviceSessionId();
@@ -121,7 +121,7 @@ public class AuthService {
             sessionId = refreshTokenService.findSessionIdByToken(userId, request.getRefreshToken());
         }
         if (sessionId == null || sessionId.isBlank()) {
-            throw new BusinessException(401, "刷新令牌无效或已过期，请重新登录");
+            throw new BizException(401, "刷新令牌无效或已过期，请重新登录");
         }
 
         Map<String, String> sessionInfo = refreshTokenService.getSessionInfo(userId, sessionId);
@@ -159,19 +159,19 @@ public class AuthService {
      *
      * @param request 注册请求，含用户名与密码
      * @return 注册响应，含新用户 ID 及用户名
-     * @throws BusinessException 未开放注册或远程注册失败时抛出
+     * @throws BizException 未开放注册或远程注册失败时抛出
      */
     public RegisterResponse register(RegisterRequest request) {
         Result<Boolean> enabledResult = sysConfigClient.isRegisterEnabled();
         if (enabledResult == null || enabledResult.getData() == null || !enabledResult.getData()) {
-            throw new BusinessException(403, "当前未开放用户注册");
+            throw new BizException(403, "当前未开放用户注册");
         }
         RegisterUserRequest registerUserRequest = new RegisterUserRequest();
         registerUserRequest.setUsername(request.getUsername().trim());
         registerUserRequest.setPassword(request.getPassword());
         Result<RegisterUserResponse> result = sysUserClient.registerUser(registerUserRequest);
         if (result == null || !result.isSuccess() || result.getData() == null) {
-            throw new BusinessException(500, result != null ? result.getMessage() : "注册失败");
+            throw new BizException(500, result != null ? result.getMessage() : "注册失败");
         }
         RegisterUserResponse data = result.getData();
         return RegisterResponse.builder()
@@ -202,7 +202,7 @@ public class AuthService {
      */
     public void forgotPassword(ForgotPasswordRequest request) {
         if (!isForgetPasswordEnabled()) {
-            throw new BusinessException(403, "当前未开放忘记密码功能");
+            throw new BizException(403, "当前未开放忘记密码功能");
         }
         captchaService.consumeProof(request.getCaptchaProof());
 
@@ -211,7 +211,7 @@ public class AuthService {
         resetRequest.setPassword(request.getPassword());
         Result<Boolean> result = sysUserClient.resetPasswordByForgot(resetRequest);
         if (result == null || !result.isSuccess()) {
-            throw new BusinessException(500, result != null ? result.getMessage() : "重置失败，请稍后重试");
+            throw new BizException(500, result != null ? result.getMessage() : "重置失败，请稍后重试");
         }
         // 用户不存在时也静默成功，防止账号枚举
     }
@@ -242,14 +242,14 @@ public class AuthService {
      *
      * @param token JWT 访问令牌
      * @return 用户信息响应
-     * @throws BusinessException 令牌缺失、已失效或用户不存在时抛出 401
+     * @throws BizException 令牌缺失、已失效或用户不存在时抛出 401
      */
     public UserInfoResponse getUserInfo(String token) {
         if (token == null || token.isBlank()) {
-            throw new BusinessException(401, "未授权，请先登录");
+            throw new BizException(401, "未授权，请先登录");
         }
         if (tokenBlacklistService.isBlacklisted(token)) {
-            throw new BusinessException(401, "令牌已失效，请重新登录");
+            throw new BizException(401, "令牌已失效，请重新登录");
         }
         LoginUser loginUser = JwtUtils.toLoginUser(JwtUtils.parseToken(token, jwtProperties.getSecret()));
         SysUserAuthDto userDto = loadUserForLogin(loginUser.getUsername());
@@ -302,7 +302,7 @@ public class AuthService {
     private SysUserAuthDto loadUserForLogin(String username) {
         Result<SysUserAuthDto> result = sysUserClient.getByUsername(username);
         if (result == null || result.getData() == null || !result.isSuccess()) {
-            throw new BusinessException(401, "用户名或密码错误");
+            throw new BizException(401, "用户名或密码错误");
         }
         return result.getData();
     }
@@ -316,7 +316,7 @@ public class AuthService {
             HttpServletRequest httpRequest = currentRequest();
             String ip = httpRequest != null ? LogUtils.getClientIp(httpRequest) : "";
             recordLoginLog(username, ip, httpRequest, "1", "密码错误");
-            throw new BusinessException(401, "用户名或密码错误");
+            throw new BizException(401, "用户名或密码错误");
         }
         return result.getData();
     }

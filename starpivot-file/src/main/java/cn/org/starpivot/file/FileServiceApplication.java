@@ -2,19 +2,23 @@ package cn.org.starpivot.file;
 
 import cn.org.starpivot.common.config.OssProperties;
 import cn.org.starpivot.common.security.JwtProperties;
+import cn.org.starpivot.file.config.FileCategoryAccessProperties;
 import cn.org.starpivot.file.config.FileCenterProperties;
+import cn.org.starpivot.file.config.FileCenterPurgeProperties;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 文件服务启动类。
  */
 @SpringBootApplication(scanBasePackages = "cn.org.starpivot")
 @EnableDiscoveryClient
-@EnableConfigurationProperties({JwtProperties.class, OssProperties.class, FileCenterProperties.class})
+@EnableScheduling
+@EnableConfigurationProperties({JwtProperties.class, OssProperties.class, FileCenterProperties.class, FileCenterPurgeProperties.class, FileCategoryAccessProperties.class})
 @MapperScan({"cn.org.starpivot.file.mapper", "cn.org.starpivot.common.security.mapper"})
 public class FileServiceApplication {
 

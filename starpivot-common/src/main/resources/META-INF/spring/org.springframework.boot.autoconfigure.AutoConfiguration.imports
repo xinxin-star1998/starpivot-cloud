@@ -2,3 +2,4 @@ cn.org.starpivot.common.config.InternalServiceAutoConfiguration
 cn.org.starpivot.common.config.ObservabilityAutoConfiguration
 cn.org.starpivot.common.config.SecurityBeansConfiguration
 cn.org.starpivot.common.config.MicroserviceAuthenticationAutoConfiguration
+cn.org.starpivot.common.config.MybatisPlusAutoConfiguration

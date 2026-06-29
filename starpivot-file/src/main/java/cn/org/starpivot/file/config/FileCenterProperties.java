@@ -2,7 +2,6 @@ package cn.org.starpivot.file.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +10,6 @@ import java.util.Map;
  * 文件中心上传配置。
  */
 @Data
-@Component
 @ConfigurationProperties(prefix = "file-center.upload")
 public class FileCenterProperties {
 

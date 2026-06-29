@@ -3,8 +3,7 @@ package cn.org.starpivot.common.exception;
 /**
  * 全局业务错误码定义，按模块分段编号。
  * <p>
- * 继承 {@link BaseErrorCode} 中的通用码；各模块 Service 抛出 {@link BusinessException} 或
- * {@link BizException} 时引用对应常量。
+ * 继承 {@link BaseErrorCode} 中的通用码；各模块 Service 抛出 {@link BizException} 时引用对应常量。
  * </p>
  */
 public interface ErrorCode extends BaseErrorCode {

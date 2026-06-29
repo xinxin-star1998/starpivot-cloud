@@ -10,6 +10,7 @@ import cn.org.starpivot.mall.pms.domain.vo.*;
 import cn.org.starpivot.mall.pms.entity.*;
 import cn.org.starpivot.mall.pms.mapper.*;
 import cn.org.starpivot.mall.pms.service.PmsSpuInfoService;
+import cn.org.starpivot.mall.pms.support.MallFileRefSupport;
 import cn.org.starpivot.mall.wms.service.WmsWareSkuService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -53,6 +54,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
     private final PmsSpuCommentMapper pmsSpuCommentMapper;
     private final PmsCommentReplayMapper pmsCommentReplayMapper;
     private final WmsWareSkuService wmsWareSkuService;
+    private final MallFileRefSupport mallFileRefSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -107,6 +109,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         entity.setUpdateTime(now);
         pmsSpuInfoMapper.insert(entity);
         saveSpuRelations(entity.getId(), bo, true);
+        syncProductFileRefs(entity.getId());
     }
 
     @Override
@@ -122,8 +125,10 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         copySpuMainFields(bo, existing);
         existing.setUpdateTime(LocalDateTime.now());
         pmsSpuInfoMapper.updateById(existing);
+        unbindProductFileRefs(bo.getId());
         removeSpuRelations(bo.getId());
         saveSpuRelations(bo.getId(), bo, false);
+        syncProductFileRefs(bo.getId());
     }
 
     /**
@@ -142,6 +147,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         List<Long> spuIds =
                 ids.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
         for (Long spuId : spuIds) {
+            unbindProductFileRefs(spuId);
             removeSpuRelations(spuId);
         }
         pmsSpuInfoMapper.delete(Wrappers.<PmsSpuInfo>lambdaQuery().in(PmsSpuInfo::getId, spuIds));
@@ -473,6 +479,35 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
                 Wrappers.<PmsProductAttrValue>lambdaQuery().eq(PmsProductAttrValue::getSpuId, spuId));
         pmsSpuImagesMapper.delete(Wrappers.<PmsSpuImages>lambdaQuery().eq(PmsSpuImages::getSpuId, spuId));
         pmsSpuInfoDescMapper.deleteById(spuId);
+    }
+
+    private void syncProductFileRefs(Long spuId) {
+        List<PmsSpuImages> spuImages =
+                pmsSpuImagesMapper.selectList(
+                        Wrappers.<PmsSpuImages>lambdaQuery().eq(PmsSpuImages::getSpuId, spuId));
+        mallFileRefSupport.syncSpuImages(
+                spuId,
+                spuImages.stream()
+                        .map(PmsSpuImages::getImgUrl)
+                        .filter(StringUtils::hasText)
+                        .toList());
+
+        List<Long> skuIds = listSkuIdsBySpuId(spuId);
+        for (Long skuId : skuIds) {
+            List<PmsSkuImages> skuImages =
+                    pmsSkuImagesMapper.selectList(
+                            Wrappers.<PmsSkuImages>lambdaQuery().eq(PmsSkuImages::getSkuId, skuId));
+            mallFileRefSupport.syncSkuImages(
+                    skuId,
+                    skuImages.stream()
+                            .map(PmsSkuImages::getImgUrl)
+                            .filter(StringUtils::hasText)
+                            .toList());
+        }
+    }
+
+    private void unbindProductFileRefs(Long spuId) {
+        mallFileRefSupport.unbindProduct(spuId, listSkuIdsBySpuId(spuId));
     }
 
     private List<Long> listSkuIdsBySpuId(Long spuId) {

@@ -4,7 +4,7 @@ import cn.org.starpivot.auth.domain.CaptchaResponse;
 import cn.org.starpivot.auth.domain.CaptchaVerifyRequest;
 import cn.org.starpivot.auth.domain.CaptchaVerifyResponse;
 import cn.org.starpivot.common.cache.CacheConstants;
-import cn.org.starpivot.common.exception.BusinessException;
+import cn.org.starpivot.common.exception.BizException;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -43,7 +43,7 @@ public class CaptchaService {
      *
      * @param scene 业务场景标识，用于 Redis 键隔离
      * @return 含 captchaToken 与 captchaImage 的响应
-     * @throws BusinessException 图片编码失败时抛出
+     * @throws BizException 图片编码失败时抛出
      */
     public CaptchaResponse generate(String scene) {
         String token = UUID.randomUUID().toString();
@@ -63,7 +63,7 @@ public class CaptchaService {
                     .captchaImage("data:image/jpeg;base64," + base64)
                     .build();
         } catch (Exception e) {
-            throw new BusinessException("验证码生成失败");
+            throw new BizException("验证码生成失败");
         }
     }
 
@@ -72,11 +72,11 @@ public class CaptchaService {
      *
      * @param request 校验请求，含 captchaToken、code 及可选 scene
      * @return 含 captchaProof 的响应
-     * @throws BusinessException 参数缺失、验证码错误或已过期时抛出 401
+     * @throws BizException 参数缺失、验证码错误或已过期时抛出 401
      */
     public CaptchaVerifyResponse verify(CaptchaVerifyRequest request) {
         if (!StringUtils.hasText(request.getCaptchaToken()) || !StringUtils.hasText(request.getCode())) {
-            throw new BusinessException(401, "验证码不能为空");
+            throw new BizException(401, "验证码不能为空");
         }
 
         String scene = StringUtils.hasText(request.getScene()) ? request.getScene() : "login";
@@ -85,7 +85,7 @@ public class CaptchaService {
         redisTemplate.delete(redisKey);
 
         if (storedCode == null || !storedCode.equalsIgnoreCase(request.getCode().trim())) {
-            throw new BusinessException(401, "验证码错误或已过期");
+            throw new BizException(401, "验证码错误或已过期");
         }
 
         String proof = UUID.randomUUID().toString();
@@ -98,12 +98,12 @@ public class CaptchaService {
      */
     public void consumeProof(String proof) {
         if (!StringUtils.hasText(proof)) {
-            throw new BusinessException(401, "验证码凭证无效或已过期");
+            throw new BizException(401, "验证码凭证无效或已过期");
         }
         String key = CacheConstants.captchaProofKey(proof);
         Boolean deleted = redisTemplate.delete(key);
         if (!Boolean.TRUE.equals(deleted)) {
-            throw new BusinessException(401, "验证码凭证无效或已过期");
+            throw new BizException(401, "验证码凭证无效或已过期");
         }
     }
 

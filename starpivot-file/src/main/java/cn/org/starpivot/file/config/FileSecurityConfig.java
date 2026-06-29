@@ -50,6 +50,7 @@ public class FileSecurityConfig {
                 unauthorizedEntryPoint,
                 auth -> auth
                         .requestMatchers(
+                                "/internal/**",
                                 "/actuator/**",
                                 "/doc.html",
                                 "/swagger-ui/**",

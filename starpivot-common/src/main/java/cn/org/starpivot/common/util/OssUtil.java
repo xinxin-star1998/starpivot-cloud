@@ -1,8 +1,8 @@
 package cn.org.starpivot.common.util;
 
+import cn.org.starpivot.common.config.OssProperties;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.*;
-import cn.org.starpivot.common.config.OssProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;

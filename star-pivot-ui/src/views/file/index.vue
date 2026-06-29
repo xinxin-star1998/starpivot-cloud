@@ -94,6 +94,16 @@
                   >
                     批量恢复
                   </ElButton>
+                  <ElButton
+                    v-if="activeTab === 'recycle'"
+                    v-auth="'file:resource:purge'"
+                    v-ripple
+                    :disabled="selectedRows.length === 0"
+                    type="danger"
+                    @click="handleBatchPurge"
+                  >
+                    永久删除
+                  </ElButton>
                 </ElSpace>
               </template>
             </ArtTableHeader>
@@ -157,35 +167,36 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    deleteFiles,
-    fetchFileList,
-    fetchFilePreviewUrl,
-    fetchRecycleList,
-    renameFile,
-    restoreFiles
-  } from '@/api/file/file'
-  import { deleteFolder, fetchFolderTree } from '@/api/file/folder'
-  import type { FileCategoryNode, SysFile, SysFileFolderForm } from '@/api/file/types'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { formatFileSize, openFileUrl, resolveFileDisplayUrl } from '@/utils/file/file-center'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { computed, h, onActivated, onMounted, ref } from 'vue'
-  import { getCategoryLabel, getMediaTypeIcon, MEDIA_TYPE_TAG, MEDIA_TYPES } from './constants'
-  import FileFolderTree from './modules/file-folder-tree.vue'
-  import FileMoveDialog from './modules/file-move-dialog.vue'
-  import FilePreviewDialog from './modules/file-preview-dialog.vue'
-  import FileSearch from './modules/file-search.vue'
-  import FileUploadDialog from './modules/file-upload-dialog.vue'
-  import FolderDialog from './modules/folder-dialog.vue'
+import {
+  deleteFiles,
+  fetchFileList,
+  fetchFilePreviewUrl,
+  fetchRecycleList,
+  purgeRecycleFiles,
+  renameFile,
+  restoreFiles
+} from '@/api/file/file'
+import {deleteFolder, fetchFolderTree} from '@/api/file/folder'
+import type {FileCategoryNode, SysFile, SysFileFolderForm} from '@/api/file/types'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import {formatFileSize, openFileUrl, resolveFileDisplayUrl} from '@/utils/file/file-center'
+import {handleMutationError} from '@/utils/http/mutation'
+import {ElImage, ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {computed, h, onActivated, onMounted, ref} from 'vue'
+import {getCategoryLabel, getMediaTypeIcon, MEDIA_TYPE_TAG, MEDIA_TYPES} from './constants'
+import FileFolderTree from './modules/file-folder-tree.vue'
+import FileMoveDialog from './modules/file-move-dialog.vue'
+import FilePreviewDialog from './modules/file-preview-dialog.vue'
+import FileSearch from './modules/file-search.vue'
+import FileUploadDialog from './modules/file-upload-dialog.vue'
+import FolderDialog from './modules/folder-dialog.vue'
 
-  defineOptions({ name: 'FileManage' })
+defineOptions({ name: 'FileManage' })
 
   const { hasAuth } = useAuth()
 
@@ -340,6 +351,19 @@
         formatter: (row: SysFile) => formatFileSize(row.fileSize)
       } as never,
       {
+        prop: 'refCount',
+        label: '引用',
+        width: 72,
+        align: 'center' as const,
+        formatter: (row: SysFile) => {
+          const count = row.refCount ?? 0
+          if (count > 0) {
+            return h(ElTag, { type: 'warning', size: 'small' }, () => String(count))
+          }
+          return h('span', { class: 'text-g-500' }, '0')
+        }
+      } as never,
+      {
         prop: recycle ? 'deleteBy' : 'createBy',
         label: recycle ? '删除人' : '上传人',
         width: 100
@@ -352,10 +376,12 @@
       {
         prop: 'operation',
         label: '操作',
-        width: recycle ? 120 : 240,
+        width: recycle ? 220 : 240,
         fixed: 'right' as const,
-        formatter: (row: SysFile) =>
-          h('div', { class: 'file-op-cell' }, [
+        formatter: (row: SysFile) => {
+          const refCount = row.refCount ?? 0
+          const purgeBlocked = refCount > 0
+          return h('div', { class: 'file-op-cell' }, [
             !recycle &&
               hasAuth('file:resource:query') &&
               h(ArtButtonTable, { type: 'view', onClick: () => openPreview(row) }),
@@ -385,8 +411,25 @@
               h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete([row.fileId!]) }),
             recycle &&
               hasAuth('file:resource:restore') &&
-              h(ArtButtonTable, { type: 'resume', onClick: () => handleRestore([row.fileId!]) })
+              h(ArtButtonTable, { type: 'resume', tooltip: '恢复', onClick: () => handleRestore([row.fileId!]) }),
+            recycle &&
+              hasAuth('file:resource:purge') &&
+              h(ArtButtonTable, {
+                type: 'delete',
+                tooltip: purgeBlocked
+                  ? `仍有 ${refCount} 个业务引用，不可永久删除`
+                  : '永久删除',
+                iconClass: purgeBlocked ? 'bg-g-300/30 text-g-400 cursor-not-allowed' : undefined,
+                onClick: () => {
+                  if (purgeBlocked) {
+                    ElMessage.warning(`文件仍被 ${refCount} 个业务引用，请先解绑`)
+                    return
+                  }
+                  handlePurge([row.fileId!])
+                }
+              })
           ])
+        }
       } as never
     )
 
@@ -621,6 +664,31 @@
 
   async function handleBatchRestore() {
     await handleRestore(selectedRows.value.map((r) => r.fileId!))
+  }
+
+  async function handlePurge(ids: number[]) {
+    try {
+      await ElMessageBox.confirm(
+        '永久删除后文件及存储对象不可恢复，确认继续？',
+        '永久删除',
+        { type: 'warning', confirmButtonText: '永久删除', confirmButtonClass: 'el-button--danger' }
+      )
+      await purgeRecycleFiles(ids)
+      ElMessage.success('已永久删除')
+      selectedRows.value = []
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '永久删除失败')
+    }
+  }
+
+  async function handleBatchPurge() {
+    const blocked = selectedRows.value.filter((row) => (row.refCount ?? 0) > 0)
+    if (blocked.length > 0) {
+      ElMessage.warning(`选中有 ${blocked.length} 个文件仍被业务引用，无法永久删除`)
+      return
+    }
+    await handlePurge(selectedRows.value.map((r) => r.fileId!))
   }
 
   function onUploadSuccess(folderId: number) {

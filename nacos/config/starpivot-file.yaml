@@ -41,3 +41,16 @@ file-center:
       DOCUMENT: 52428800
       AUDIO: 52428800
       OTHER: 52428800
+  purge:
+    enabled: true
+    recycle-retention-days: 90
+    batch-size: 100
+    cron: "0 0 3 * * ?"
+  category-access:
+    enabled: true
+    restricted-categories:
+      - HR
+      - FINANCE
+      - CONTRACT
+      - CERT
+    all-categories-permission: file:category:all

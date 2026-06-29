@@ -9,10 +9,20 @@
         del_flag, delete_by, delete_time, create_by, create_time, update_by, update_time, remark
     </sql>
 
+    <sql id="accessibleCategoryFilter">
+        <if test="query.accessibleCategories != null and query.accessibleCategories.size() > 0">
+            AND category IN
+            <foreach collection="query.accessibleCategories" item="cat" open="(" separator="," close=")">
+                #{cat}
+            </foreach>
+        </if>
+    </sql>
+
     <select id="selectPageList" resultType="cn.org.starpivot.file.domain.entity.SysFile">
         SELECT <include refid="fileColumns"/>
         FROM sys_file
         WHERE del_flag = '0'
+        <include refid="accessibleCategoryFilter"/>
         <if test="query.folderId != null">
             AND folder_id = #{query.folderId}
         </if>
@@ -41,6 +51,7 @@
         SELECT <include refid="fileColumns"/>
         FROM sys_file
         WHERE del_flag = '2'
+        <include refid="accessibleCategoryFilter"/>
         <if test="query.category != null and query.category != ''">
             AND category = #{query.category}
         </if>
@@ -59,11 +70,39 @@
         ORDER BY delete_time DESC
     </select>
 
+    <select id="selectRecycleByIds" resultType="cn.org.starpivot.file.domain.entity.SysFile">
+        SELECT <include refid="fileColumns"/>
+        FROM sys_file
+        WHERE del_flag = '2'
+          AND file_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="countActiveByFolderId" resultType="long">
         SELECT COUNT(1)
         FROM sys_file
         WHERE folder_id = #{folderId}
           AND del_flag = '0'
+    </select>
+
+    <select id="countByFolderId" resultType="long">
+        SELECT COUNT(1)
+        FROM sys_file
+        WHERE folder_id = #{folderId}
+          AND del_flag IN ('0', '2')
+    </select>
+
+    <select id="countByFolderIds" resultType="cn.org.starpivot.file.domain.bo.FolderFileCount">
+        SELECT folder_id AS folderId, COUNT(1) AS fileCount
+        FROM sys_file
+        WHERE folder_id IN
+        <foreach collection="folderIds" item="folderId" open="(" separator="," close=")">
+            #{folderId}
+        </foreach>
+          AND del_flag IN ('0', '2')
+        GROUP BY folder_id
     </select>
 
     <update id="restoreByIds">
@@ -79,4 +118,53 @@
             #{id}
         </foreach>
     </update>
+
+    <select id="selectExpiredRecycleFiles" resultType="cn.org.starpivot.file.domain.entity.SysFile">
+        SELECT <include refid="fileColumns"/>
+        FROM sys_file
+        WHERE del_flag = '2'
+          AND delete_time IS NOT NULL
+          AND delete_time &lt; #{deadline}
+        ORDER BY delete_time ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectActiveByHash" resultType="cn.org.starpivot.file.domain.entity.SysFile">
+        SELECT <include refid="fileColumns"/>
+        FROM sys_file
+        WHERE file_hash = #{fileHash}
+          AND del_flag = '0'
+        ORDER BY create_time ASC
+        LIMIT 1
+    </select>
+
+    <select id="selectActiveByObjectName" resultType="cn.org.starpivot.file.domain.entity.SysFile">
+        SELECT <include refid="fileColumns"/>
+        FROM sys_file
+        WHERE object_name = #{objectName}
+          AND del_flag = '0'
+        ORDER BY create_time ASC
+        LIMIT 1
+    </select>
+
+    <select id="countReferencesByObjectName" resultType="long">
+        SELECT COUNT(1)
+        FROM sys_file
+        WHERE object_name = #{objectName}
+          AND del_flag IN ('0', '2')
+        <if test="excludeFileIds != null and excludeFileIds.size() > 0">
+            AND file_id NOT IN
+            <foreach collection="excludeFileIds" item="fileId" open="(" separator="," close=")">
+                #{fileId}
+            </foreach>
+        </if>
+    </select>
+
+    <delete id="deletePhysicallyByIds">
+        DELETE FROM sys_file
+        WHERE file_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

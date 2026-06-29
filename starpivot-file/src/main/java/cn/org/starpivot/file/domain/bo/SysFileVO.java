@@ -53,6 +53,12 @@ public class SysFileVO {
 
     private String folderName;
 
+    /** 是否为秒传（复用已有 OSS 对象） */
+    private Boolean instantUpload;
+
+    /** 业务引用计数 */
+    private Long refCount;
+
     private String updateBy;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

@@ -32,4 +32,14 @@ public interface ISysFileService {
     void moveToFolder(List<Long> ids, Long targetFolderId);
 
     void rename(Long fileId, String fileName);
+
+    /**
+     * 物理清理回收站超期文件，返回实际清理数量。
+     */
+    int purgeExpiredRecycleFiles();
+
+    /**
+     * 回收站永久删除（立即删 OSS + DB）。
+     */
+    void permanentDelete(List<Long> ids);
 }

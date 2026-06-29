@@ -1,60 +1,40 @@
 package cn.org.starpivot.common.exception;
 
 /**
- * 业务异常
+ * 业务异常。
+ *
+ * @deprecated 请使用 {@link BizException}，本类保留仅为兼容旧代码。
  */
-public class ServiceException extends RuntimeException {
+@Deprecated
+public class ServiceException extends BizException {
+
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 错误码
-     */
-    private Integer code;
-
-    /**
-     * 错误提示
-     */
-    private String message;
-
-    /**
-     * 错误明细，内部调试错误
-     */
     private String detailMessage;
 
-    /**
-     * 空构造方法，避免反序列化问题
-     */
     public ServiceException() {
     }
 
     public ServiceException(String message) {
-        this.message = message;
+        super(message);
     }
 
     public ServiceException(String message, Integer code) {
-        this.message = message;
-        this.code = code;
+        super(code, message);
     }
 
     public String getDetailMessage() {
         return detailMessage;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public Integer getCode() {
-        return code;
-    }
-
-    public ServiceException setMessage(String message) {
-        this.message = message;
+    public ServiceException setDetailMessage(String detailMessage) {
+        this.detailMessage = detailMessage;
         return this;
     }
 
-    public ServiceException setDetailMessage(String detailMessage) {
-        this.detailMessage = detailMessage;
+    @Override
+    public ServiceException setMessage(String message) {
+        super.setMessage(message);
         return this;
     }
 }
