@@ -1,0 +1,226 @@
+# 微服务层：与 docker-compose.yml 叠加使用
+# 示例：docker compose -f docker-compose.yml -f docker-compose.services.yml up -d
+
+x-microservice-env: &microservice-env
+  env_file:
+    - .env.docker
+
+x-microservice-depends: &microservice-depends
+  nacos-init:
+    condition: service_completed_successfully
+  mysql:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+  rabbitmq:
+    condition: service_started
+
+services:
+  nacos-init:
+    image: curlimages/curl:8.5.0
+    container_name: starpivot-nacos-init
+    volumes:
+      - ./nacos/config:/config:ro
+      - ./docker/nacos-import.sh:/import.sh:ro
+    entrypoint: ["/bin/sh", "/import.sh"]
+    environment:
+      NACOS_SERVER: nacos:8848
+      CONFIG_DIR: /config
+    networks:
+      - starpivot-net
+    depends_on:
+      nacos:
+        condition: service_healthy
+    restart: "no"
+
+  starpivot-system:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-system
+    container_name: starpivot-system
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: "8082"
+    depends_on:
+      <<: *microservice-depends
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8082/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  starpivot-auth:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-auth
+    container_name: starpivot-auth
+    ports:
+      - "8081:8081"
+    depends_on:
+      <<: *microservice-depends
+      starpivot-system:
+        condition: service_started
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8081/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  starpivot-gateway:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-gateway
+    container_name: starpivot-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      <<: *microservice-depends
+      starpivot-auth:
+        condition: service_started
+      starpivot-system:
+        condition: service_started
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  starpivot-file:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-file
+    container_name: starpivot-file
+    ports:
+      - "9202:9202"
+    depends_on:
+      <<: *microservice-depends
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9202/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  starpivot-generator:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-generator
+    container_name: starpivot-generator
+    ports:
+      - "9203:9203"
+    depends_on:
+      <<: *microservice-depends
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9203/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  starpivot-monitor:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-monitor
+    container_name: starpivot-monitor
+    ports:
+      - "9204:9204"
+    depends_on:
+      <<: *microservice-depends
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9204/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  starpivot-mall:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-mall
+    container_name: starpivot-mall
+    ports:
+      - "9205:9205"
+    environment:
+      SERVER_PORT: "9205"
+    depends_on:
+      <<: *microservice-depends
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9205/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+    restart: unless-stopped
+
+  starpivot-approval:
+    <<: *microservice-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        MODULE: starpivot-approval
+    container_name: starpivot-approval
+    ports:
+      - "9206:9206"
+    environment:
+      SERVER_PORT: "9206"
+    depends_on:
+      <<: *microservice-depends
+    networks:
+      - starpivot-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9206/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+networks:
+  starpivot-net:
+    external: false

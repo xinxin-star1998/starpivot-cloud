@@ -1,1 +1,20 @@
-package cn.org.starpivot.api.file.dto;import jakarta.validation.constraints.NotBlank;import lombok.Data;/** * 按业务实体解除文件引用请求。 */@Datapublic class FileRefBizRequest {    @NotBlank(message = "业务类型不能为空")    private String bizType;    @NotBlank(message = "业务ID不能为空")    private String bizId;}
+package cn.org.starpivot.api.file.dto;
+
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+/**
+ * 按业务实体解除文件引用请求。
+ */
+@Data
+public class FileRefBizRequest {
+    @NotBlank(message = "业务类型不能为空")
+    private String bizType;
+
+    @NotBlank(message = "业务ID不能为空")
+
+    private String bizId;
+
+}
+

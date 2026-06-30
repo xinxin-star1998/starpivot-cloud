@@ -1,0 +1,6 @@
+# starpivot-approval 专属配置
+# Nacos Data ID: starpivot-approval.yaml  |  Group: DEFAULT_GROUP
+
+logging:
+  level:
+    cn.org.starpivot.approval: DEBUG

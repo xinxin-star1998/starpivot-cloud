@@ -1,0 +1,12 @@
+**/.git
+**/.idea
+**/.vscode
+**/target
+**/node_modules
+**/dist
+**/.husky
+**/*.iml
+**/.DS_Store
+star-pivot-ui/.auto-import.json
+**/logs
+**/*.log

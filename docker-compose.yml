@@ -12,6 +12,12 @@ services:
     volumes:
       - nacos-data:/home/nacos/data
       - nacos-logs:/home/nacos/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8848/nacos/v1/console/health/readiness || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
     networks:
       starpivot-net:
     restart: unless-stopped
@@ -26,14 +32,23 @@ services:
     ports:
       - "3307:3306"
     # 命名卷替代本地E盘目录绑定
+    # 首次仅导入核心库；商城大 SQL（~7.8MB）请手动导入，见 docs/docker-deploy.md
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./sql:/docker-entrypoint-initdb.d:ro
+      - ./sql/00_create_mall_database.sql:/docker-entrypoint-initdb.d/00_create_mall_database.sql:ro
+      - ./sql/star_pivot.sql:/docker-entrypoint-initdb.d/01_star_pivot.sql:ro
+      - ./sql/sys_menu.sql:/docker-entrypoint-initdb.d/02_sys_menu.sql:ro
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
       --default-time_zone='+8:00'
       --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 300s
     networks:
       starpivot-net:
     restart: unless-stopped
@@ -46,6 +61,12 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --requirepass root --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "root", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       starpivot-net:
     restart: unless-stopped

@@ -1,0 +1,21 @@
+# 前端层：与基础设施 + 微服务叠加使用
+# 示例：docker compose -f docker-compose.yml -f docker-compose.services.yml -f docker-compose.ui.yml up -d
+
+services:
+  star-pivot-ui:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ui
+    container_name: starpivot-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      starpivot-gateway:
+        condition: service_started
+    networks:
+      - starpivot-net
+    restart: unless-stopped
+
+networks:
+  starpivot-net:
+    external: false
