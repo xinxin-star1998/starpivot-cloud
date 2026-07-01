@@ -18,7 +18,7 @@ function adaptData(res) {
  */
 export function list${BusinessName}(query) {
   return request.post({
-    url: '/api/${moduleName}/${businessName}/list',
+    url: '/api/${moduleName}/${businessName}/${businessName}PageList',
     data: query
   }).then(#if($table.tree)adaptData#else adaptPage#end)
 }
@@ -58,7 +58,7 @@ export function update${BusinessName}(data) {
 export function del${BusinessName}(${pkColumn.javaField}s) {
   const ids = Array.isArray(${pkColumn.javaField}s) ? ${pkColumn.javaField}s : [${pkColumn.javaField}s]
   return request.del({
-    url: '/api/${moduleName}/${businessName}/delete',
+    url: '/api/${moduleName}/${businessName}/remove${BusinessName}',
     data: { ids }
   })
 }

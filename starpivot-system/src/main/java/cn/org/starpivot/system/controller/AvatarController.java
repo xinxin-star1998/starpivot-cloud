@@ -1,23 +1,18 @@
 package cn.org.starpivot.system.controller;
 
 import cn.org.starpivot.common.annotation.Log;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.storage.FileStorageService;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.system.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
@@ -209,7 +204,7 @@ public class AvatarController {
      */
     @Log(title = "删除用户头像", businessType = BusinessType.DELETE)
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeAvatar")
     public Result<?> delete(@RequestParam("userId") String userId) {
         try {
             if (!hasPermissionToModifyUser(userId)) {

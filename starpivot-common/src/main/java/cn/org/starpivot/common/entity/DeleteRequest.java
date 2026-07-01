@@ -19,4 +19,7 @@ public class DeleteRequest implements Serializable {
 
     /** 待删除记录的主键 ID 集合 */
     private List<Long> ids;
+
+    /** 是否强制删除（跳过关联检查，可选） */
+    private Boolean force;
 }

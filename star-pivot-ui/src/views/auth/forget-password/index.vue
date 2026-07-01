@@ -74,19 +74,26 @@
             </ElFormItem>
 
             <ElFormItem prop="captcha">
-              <div class="flex w-full gap-2">
+              <div class="captcha-container">
                 <ElInput
                   v-model.trim="formData.captcha"
                   :placeholder="t('login.placeholder.captcha')"
-                  class="custom-height flex-1"
+                  class="captcha-input custom-height"
                   @keyup.enter="submit"
-                />
-                <img
-                  v-if="captchaImage"
-                  :src="captchaImage"
-                  alt="captcha"
-                  class="h-[40px] cursor-pointer rounded border border-g-300"
-                  @click="loadCaptcha"
+                  clearable
+                >
+                  <template #prefix>
+                    <ArtSvgIcon
+                      icon="ri:shield-check-line"
+                      class="text-lg transition-colors"
+                      :class="isDark ? 'text-g-500' : 'text-g-400'"
+                    />
+                  </template>
+                </ElInput>
+                <CaptchaImage
+                  :image="captchaImage"
+                  :loading="loadingCaptcha"
+                  @refresh="refreshCaptcha(clearCaptchaInput)"
                 />
               </div>
             </ElFormItem>
@@ -112,18 +119,16 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { useI18n } from 'vue-i18n'
-  import {
-    fetchCaptcha,
-    fetchForgetPasswordEnabled,
-    fetchForgotPassword,
-    fetchVerifyCaptcha
-  } from '@/api/auth'
-  import { useSettingStore } from '@/store/modules/setting'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {useI18n} from 'vue-i18n'
+import {fetchForgetPasswordEnabled, fetchForgotPassword} from '@/api/auth'
+import {useCaptcha} from '@/hooks'
+import {useSettingStore} from '@/store/modules/setting'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import CaptchaImage from '@/components/core/views/login/CaptchaImage.vue'
 
-  defineOptions({ name: 'ForgetPassword' })
+defineOptions({ name: 'ForgetPassword' })
 
   const { t } = useI18n()
   const router = useRouter()
@@ -132,8 +137,11 @@
 
   const formRef = ref<FormInstance>()
   const loading = ref(false)
-  const captchaImage = ref('')
-  const captchaToken = ref('')
+  const { captchaToken, captchaImage, loadingCaptcha, refreshCaptcha } = useCaptcha('forget-password')
+
+  const clearCaptchaInput = () => {
+    formData.captcha = ''
+  }
 
   const formData = reactive({
     username: '',
@@ -168,16 +176,6 @@
     captcha: [{ required: true, message: () => t('login.placeholder.captcha'), trigger: 'blur' }]
   }
 
-  const loadCaptcha = async () => {
-    try {
-      const res = await fetchCaptcha('forget-password')
-      captchaToken.value = res.captchaToken
-      captchaImage.value = res.captchaImage
-    } catch {
-      captchaImage.value = ''
-    }
-  }
-
   const submit = async () => {
     if (!formRef.value) return
     await formRef.value.validate(async (valid) => {
@@ -189,22 +187,17 @@
           ElMessage.warning('当前未开放忘记密码功能')
           return
         }
-        const verifyRes = await fetchVerifyCaptcha({
-          captchaToken: captchaToken.value,
-          code: formData.captcha,
-          scene: 'forget-password'
-        })
         await fetchForgotPassword({
           username: formData.username,
           password: formData.password,
-          captchaProof: verifyRes.captchaProof
+          captchaToken: captchaToken.value,
+          captcha: formData.captcha
         })
         ElMessage.success('密码重置成功，请使用新密码登录')
         router.push({ name: 'Login' })
       } catch (error: any) {
         ElMessage.error(error?.message || '重置失败，请稍后重试')
-        await loadCaptcha()
-        formData.captcha = ''
+        await refreshCaptcha(clearCaptchaInput)
       } finally {
         loading.value = false
       }
@@ -216,7 +209,7 @@
   }
 
   onMounted(() => {
-    loadCaptcha()
+    refreshCaptcha(clearCaptchaInput)
   })
 </script>
 

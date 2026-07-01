@@ -3,6 +3,7 @@ package cn.org.starpivot.approval.controller.internal;
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
 import cn.org.starpivot.approval.service.ApInstanceService;
 import cn.org.starpivot.common.domain.Result;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/internal/approval/instance")
 @RequiredArgsConstructor
+@Hidden
 public class ApInstanceInternalController {
 
     private final ApInstanceService instanceService;

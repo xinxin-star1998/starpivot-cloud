@@ -14,15 +14,15 @@
  * @author Art Design Pro Team
  */
 
-import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { useUserStore } from '@/store/modules/user'
-import { usePortalMemberStore } from '@/store/modules/portal-member'
-import { ApiStatus } from './status'
-import { handleError, HttpError, showError, showSuccess } from './error'
-import { $t } from '@/locales'
-import { BaseResponse } from '@/types'
-import { fetchRefreshToken } from '@/api/auth'
-import { logger } from '@/utils/sys/logger'
+import axios, {AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig} from 'axios'
+import {useUserStore} from '@/store/modules/user'
+import {usePortalMemberStore} from '@/store/modules/portal-member'
+import {ApiStatus} from './status'
+import {handleError, HttpError, showError, showSuccess} from './error'
+import {$t} from '@/locales'
+import {BaseResponse} from '@/types'
+import {fetchRefreshToken} from '@/api/auth'
+import {logger} from '@/utils/sys/logger'
 
 /** 请求配置常量 */
 const REQUEST_TIMEOUT = 15000
@@ -37,7 +37,6 @@ function isAuthEntryRequest(url?: string): boolean {
   const authEntryPaths = [
     '/auth/login',
     '/auth/captcha',
-    '/auth/captcha/verify',
     '/auth/register',
     '/auth/register/enabled',
     '/auth/refresh'
@@ -51,7 +50,13 @@ function isPortalApiRequest(url?: string): boolean {
 
 function isPortalAuthEntryRequest(url?: string): boolean {
   if (!url) return false
-  return url.includes('/portal/member/register') || url.includes('/portal/member/login')
+  return (
+    url.includes('/portal/member/register') ||
+    url.includes('/portal/member/login') ||
+    url.includes('/portal/auth/sms/login') ||
+    url.includes('/portal/auth/login/password') ||
+    url.includes('/portal/auth/wechat/login')
+  )
 }
 
 /** C 端公开接口：无需会员 Token（与网关白名单 / MallSecurityConfig permitAll 对齐） */
@@ -60,7 +65,8 @@ function isPortalPublicRequest(url?: string): boolean {
   return (
     url.includes('/portal/home') ||
     url.includes('/portal/product/') ||
-    url.includes('/portal/region/')
+    url.includes('/portal/region/') ||
+    url.includes('/portal/auth/config')
   )
 }
 
@@ -444,7 +450,7 @@ async function retryRequest<T>(
   baseDelay: number = RETRY_DELAY
 ): Promise<T> {
   try {
-    return await request<T>(config)
+    return await executeRequest<T>(config)
   } catch (error) {
     if (retries > 0 && error instanceof HttpError && shouldRetry(error.code)) {
       // 指数退避：延迟时间 = 基础延迟 * 2^(总重试次数 - 当前剩余重试次数)
@@ -483,7 +489,7 @@ function generateRequestKey(config: ExtendedAxiosRequestConfig): string {
 }
 
 /** 请求函数（带请求去重） */
-async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> {
+async function executeRequest<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> {
   // POST | PUT 参数自动填充
   if (
     ['POST', 'PUT'].includes(config.method?.toUpperCase() || '') &&
@@ -552,22 +558,26 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
   return requestPromise
 }
 
-/** API方法集合 */
+/** API方法集合（写操作不重试，避免重复提交） */
 const api = {
   get<T>(config: ExtendedAxiosRequestConfig) {
     return retryRequest<T>({ ...config, method: 'GET' })
   },
   post<T>(config: ExtendedAxiosRequestConfig) {
-    return retryRequest<T>({ ...config, method: 'POST' })
+    return executeRequest<T>({ ...config, method: 'POST' })
   },
   put<T>(config: ExtendedAxiosRequestConfig) {
-    return retryRequest<T>({ ...config, method: 'PUT' })
+    return executeRequest<T>({ ...config, method: 'PUT' })
   },
   del<T>(config: ExtendedAxiosRequestConfig) {
-    return retryRequest<T>({ ...config, method: 'DELETE' })
+    return executeRequest<T>({ ...config, method: 'DELETE' })
   },
   request<T>(config: ExtendedAxiosRequestConfig) {
-    return retryRequest<T>(config)
+    const method = (config.method || 'GET').toUpperCase()
+    if (method === 'GET') {
+      return retryRequest<T>(config)
+    }
+    return executeRequest<T>(config)
   }
 }
 

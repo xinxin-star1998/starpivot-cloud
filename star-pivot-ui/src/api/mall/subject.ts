@@ -40,7 +40,7 @@ export interface HomeSubjectSavePayload {
 
 export function fetchHomeSubjectList(params: HomeSubjectListParams) {
   return request.post<Api.Common.PaginatedResponse<HomeSubjectVo>>({
-    url: '/api/mall/subject/list',
+    url: '/api/mall/subject/subjectPageList',
     data: params
   })
 }
@@ -69,7 +69,7 @@ export function fetchHomeSubjectUpdate(data: HomeSubjectSavePayload) {
 
 export function fetchHomeSubjectRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/subject/remove',
+    url: '/api/mall/subject/removeSubject',
     data: { ids },
     showSuccessMessage: true
   })

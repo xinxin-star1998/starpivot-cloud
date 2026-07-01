@@ -214,13 +214,13 @@ fileStorageService.uploadFileInternal(file, objectName);
 
 | 方法 | 路径 | 权限 | 请求 | 响应 |
 |------|------|------|------|------|
-| POST | `/file/list` | `file:resource:query` | `SysFileQueryDTO` | `PageResponse<SysFileVO>` |
+| POST | `/file/filePageList` | `file:resource:query` | `SysFileQueryDTO` | `PageResponse<SysFileVO>` |
 | POST | `/file/upload` | `file:resource:add` | `multipart: file, folderId, bizType?, bizId?, remark?` | `SysFileVO` |
 | GET | `/file/{fileId}` | `file:resource:query` | - | `SysFileVO` |
 | GET | `/file/preview-url/{fileId}` | `file:resource:query` | - | `{ url, objectName }` |
-| DELETE | `/file/remove` | `file:resource:delete` | `{ ids: number[] }` | - |
+| DELETE | `/file/removeFile` | `file:resource:delete` | `{ ids: number[] }` | - |
 | PUT | `/file/restore` | `file:resource:restore` | `{ ids: number[] }` | - |
-| POST | `/file/recycle/list` | `file:resource:query` | `SysFileRecycleQueryDTO` | `PageResponse<SysFileVO>` |
+| POST | `/file/recycleFilePageList` | `file:resource:query` | `SysFileRecycleQueryDTO` | `PageResponse<SysFileVO>` |
 
 ### 4.4 配置改动
 
@@ -285,7 +285,7 @@ file-center:
 
 ```typescript
 export function fetchFileList(params: SysFileQueryParams) {
-  return request.post({ url: '/api/file/list', data: params })
+  return request.post({ url: '/api/file/filePageList', data: params })
 }
 
 export function uploadFile(formData: FormData) {

@@ -1,14 +1,9 @@
 package cn.org.starpivot.auth.controller;
 
-import cn.org.starpivot.auth.domain.LoginRequest;
-import cn.org.starpivot.auth.domain.LoginResponse;
-import cn.org.starpivot.auth.domain.RefreshRequest;
-import cn.org.starpivot.auth.domain.RegisterRequest;
-import cn.org.starpivot.auth.domain.RegisterResponse;
-import cn.org.starpivot.auth.domain.UserInfoResponse;
+import cn.org.starpivot.auth.domain.*;
 import cn.org.starpivot.auth.service.AuthService;
-import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,7 +91,7 @@ public class AuthController {
      * @return 含用户信息、角色列表及权限列表的 {@link Result}
      */
     @Operation(summary = "获取当前用户信息")
-    @GetMapping({"/user/info", "/userinfo"})
+    @GetMapping("/user/info")
     public Result<UserInfoResponse> userInfo(HttpServletRequest request) {
         String token = JwtUtils.resolveToken(request.getHeader(SecurityConstants.TOKEN_HEADER));
         return Result.success(authService.getUserInfo(token));

@@ -55,10 +55,20 @@ public class UmsMemberLevelController {
      * @return 列表数据
      */
     @Operation(summary = "会员等级列表")
-    @GetMapping("/list")
+    @GetMapping("/memberLevelPageList")
     @PreAuthorize("hasAuthority('mall:member:level')")
     public Result<List<MemberLevelVo>> listAll() {
         return Result.success(umsMemberLevelService.listAll());
+    }
+
+    /**
+     * 会员等级列表（与商城其他模块一致使用 POST /list）。
+     */
+    @Operation(summary = "会员等级列表")
+    @PostMapping("/memberLevelPageList")
+    @PreAuthorize("hasAuthority('mall:member:level')")
+    public Result<List<MemberLevelVo>> list() {
+        return listAll();
     }
 
     /**
@@ -112,7 +122,7 @@ public class UmsMemberLevelController {
      */
     @Log(title = "删除会员等级", businessType = BusinessType.DELETE)
     @Operation(summary = "删除会员等级")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeMemberLevel")
     @PreAuthorize("hasAuthority('mall:member:level:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

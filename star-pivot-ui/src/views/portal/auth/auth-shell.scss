@@ -1,0 +1,240 @@
+@import '../styles/variables.scss';
+
+.portal-auth {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: -20px -20px 0;
+  border-radius: var(--portal-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--portal-shadow);
+
+  @media (width <= 768px) {
+    flex-direction: column;
+    margin: 0;
+  }
+}
+
+.portal-auth__visual {
+  flex: 1;
+  background: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #ff4757 150%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #fff;
+
+  @media (width <= 768px) {
+    padding: 32px 24px;
+  }
+
+  &-content {
+    max-width: 320px;
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0 0 32px;
+      font-size: 16px;
+      opacity: 0.8;
+    }
+  }
+}
+
+.portal-auth__features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 15px;
+    opacity: 0.9;
+
+    svg {
+      font-size: 22px;
+      opacity: 0.8;
+    }
+  }
+}
+
+.portal-auth__card {
+  width: 440px;
+  flex-shrink: 0;
+  background: var(--portal-bg-elevated);
+  padding: 48px 40px 32px;
+  display: flex;
+  flex-direction: column;
+
+  @media (width <= 768px) {
+    width: 100%;
+    padding: 32px 24px;
+  }
+}
+
+.portal-auth__title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--portal-text);
+  letter-spacing: -0.02em;
+}
+
+.portal-auth__subtitle {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: var(--portal-text-secondary);
+}
+
+.portal-auth__switch-link {
+  color: var(--portal-primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.portal-auth__autofill-trap {
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-tabs {
+  :deep(.el-tabs__item.is-active) {
+    color: var(--portal-primary);
+    font-weight: 600;
+  }
+
+  :deep(.el-tabs__active-bar) {
+    background: var(--portal-primary);
+  }
+}
+
+.oauth-section {
+  margin-top: 20px;
+}
+
+.oauth-section--primary {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--portal-text-muted);
+  font-size: 12px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--portal-border);
+  }
+}
+
+.oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border-radius: 24px;
+  border: 1px solid var(--portal-border);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--portal-transition);
+
+  &--wechat {
+    color: #07c160;
+    border-color: #b7eb8f;
+    background: #f6ffed;
+
+    &:hover:not(:disabled) {
+      background: #ecfdf5;
+      border-color: #07c160;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.sms-code-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+
+  .el-input {
+    flex: 1;
+  }
+}
+
+.sms-send-btn {
+  flex-shrink: 0;
+  min-width: 112px;
+  border-color: var(--portal-primary);
+  color: var(--portal-primary);
+}
+
+.sms-mock-tip {
+  margin: -8px 0 12px;
+  font-size: 12px;
+  color: var(--portal-text-muted);
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 24px;
+  font-weight: 600;
+  height: 44px;
+  background: var(--portal-primary-gradient);
+  border: none;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 24px auto 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--portal-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--portal-transition);
+
+  &:hover {
+    color: var(--portal-primary);
+  }
+}

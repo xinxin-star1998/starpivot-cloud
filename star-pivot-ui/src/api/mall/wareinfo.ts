@@ -23,7 +23,7 @@ export interface WmsWareInfoSavePayload {
 
 export function fetchWmsWareInfoList(params: WmsWareInfoListParams) {
   return request.post<Api.Common.PaginatedResponse<WmsWareInfoVo>>({
-    url: '/api/mall/wareinfo/list',
+    url: '/api/mall/wareinfo/wareInfoPageList',
     data: params
   })
 }
@@ -52,7 +52,7 @@ export function fetchWmsWareInfoUpdate(data: WmsWareInfoSavePayload) {
 
 export function fetchWmsWareInfoRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/wareinfo/remove',
+    url: '/api/mall/wareinfo/removeWareInfo',
     data: { ids },
     showSuccessMessage: true
   })

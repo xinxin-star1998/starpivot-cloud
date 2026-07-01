@@ -50,6 +50,14 @@ public class ProductVo {
      * 状态
      */
     private Integer publishStatus;
+    /**
+     * 审批实例 ID
+     */
+    private Long approvalInstanceId;
+    /**
+     * 审批状态
+     */
+    private String auditStatus;
 
     /**
      * 创建时间

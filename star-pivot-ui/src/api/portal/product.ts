@@ -13,3 +13,10 @@ export function fetchPortalProductDetail(id: number) {
     url: `/api/portal/product/${id}`
   })
 }
+
+export function fetchPortalProductRelated(id: number, limit = 8) {
+  return request.get<PortalProductListItem[]>({
+    url: `/api/portal/product/${id}/related`,
+    params: { limit }
+  })
+}

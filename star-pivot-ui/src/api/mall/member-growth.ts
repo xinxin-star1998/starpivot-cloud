@@ -24,14 +24,14 @@ export interface MemberGrowthListParams extends Api.Common.CommonSearchParams {
 
 export function fetchIntegrationHistoryList(params: MemberGrowthListParams) {
   return request.post<Api.Common.PaginatedResponse<IntegrationChangeHistoryVo>>({
-    url: '/api/mall/member-growth/integration/list',
+    url: '/api/mall/member-growth/integrationPageList',
     data: params
   })
 }
 
 export function fetchGrowthHistoryList(params: MemberGrowthListParams) {
   return request.post<Api.Common.PaginatedResponse<GrowthChangeHistoryVo>>({
-    url: '/api/mall/member-growth/growth/list',
+    url: '/api/mall/member-growth/growthPageList',
     data: params
   })
 }

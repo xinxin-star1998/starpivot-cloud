@@ -47,7 +47,7 @@ public class OmsRefundController {
      * @return 分页查询结果
      */
     @Operation(summary = "退款流水分页列表")
-    @PostMapping("/list")
+    @PostMapping("/refundPageList")
     @PreAuthorize("hasAnyAuthority('mall:refund:list', 'mall:refund:query')")
     public Result<PageResponse<RefundVo>> pageList(@RequestBody RefundReqBo reqBo) {
         return Result.success(omsRefundInfoService.pageList(reqBo));

@@ -1,12 +1,9 @@
 package cn.org.starpivot.mall.wms.service.impl;
 
-import cn.org.starpivot.api.approval.ApprovalInternalClient;
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.mall.common.MallApprovalConstants;
+import cn.org.starpivot.mall.common.MallApprovalSubmitter;
 import cn.org.starpivot.mall.common.MallAuditStatus;
 import cn.org.starpivot.mall.wms.entity.WmsPurchase;
 import cn.org.starpivot.mall.wms.entity.WmsPurchaseDetail;
@@ -18,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
@@ -34,29 +30,17 @@ public class WmsPurchaseApprovalServiceImpl implements WmsPurchaseApprovalServic
 
     private final WmsPurchaseMapper purchaseMapper;
     private final WmsPurchaseDetailMapper purchaseDetailMapper;
-    private final ApprovalInternalClient approvalInternalClient;
-    private final TransactionTemplate transactionTemplate;
+    private final MallApprovalSubmitter mallApprovalSubmitter;
 
     @Override
     public void submitApproval(Long purchaseId) {
         WmsPurchase purchase = validateForSubmit(purchaseId);
-        Long userId = requireUserId();
-
-        transactionTemplate.executeWithoutResult(status -> markPending(purchaseId));
-
-        Long instanceId = null;
-        try {
-            instanceId = submitRemote(purchase, userId);
-            final Long boundInstanceId = instanceId;
-            transactionTemplate.executeWithoutResult(status -> bindInstanceId(purchaseId, boundInstanceId));
-        } catch (RuntimeException ex) {
-            compensateApproval(instanceId);
-            transactionTemplate.executeWithoutResult(status -> rollbackDraft(purchaseId));
-            if (ex instanceof BizException bizException) {
-                throw bizException;
-            }
-            throw new BizException(ErrorCode.SYSTEM_ERROR, "提交审批失败: " + ex.getMessage());
-        }
+        Long userId = mallApprovalSubmitter.requireUserId();
+        mallApprovalSubmitter.submit(
+                () -> markPending(purchaseId),
+                () -> buildSubmitRequest(purchase, userId),
+                instanceId -> bindInstanceId(purchaseId, instanceId),
+                () -> rollbackDraft(purchaseId));
     }
 
     @Override
@@ -132,7 +116,7 @@ public class WmsPurchaseApprovalServiceImpl implements WmsPurchaseApprovalServic
         purchaseMapper.updateById(patch);
     }
 
-    private Long submitRemote(WmsPurchase purchase, Long userId) {
+    private InternalApprovalSubmitRequest buildSubmitRequest(WmsPurchase purchase, Long userId) {
         InternalApprovalSubmitRequest request = new InternalApprovalSubmitRequest();
         request.setBizModule(MallApprovalConstants.BIZ_MODULE);
         request.setBizType(MallApprovalConstants.BIZ_TYPE_PURCHASE);
@@ -143,12 +127,7 @@ public class WmsPurchaseApprovalServiceImpl implements WmsPurchaseApprovalServic
         context.put("amount", purchase.getAmount());
         context.put("wareId", purchase.getWareId());
         request.setContext(context);
-
-        Result<Long> result = approvalInternalClient.submit(request);
-        if (result == null || !result.isSuccess() || result.getData() == null) {
-            throw new BizException(result != null ? result.getMessage() : "提交审批失败");
-        }
-        return result.getData();
+        return request;
     }
 
     private void bindInstanceId(Long purchaseId, Long instanceId) {
@@ -166,24 +145,5 @@ public class WmsPurchaseApprovalServiceImpl implements WmsPurchaseApprovalServic
         rollback.setAuditStatus(MallAuditStatus.DRAFT);
         rollback.setUpdateTime(LocalDateTime.now());
         purchaseMapper.updateById(rollback);
-    }
-
-    private void compensateApproval(Long instanceId) {
-        if (instanceId == null) {
-            return;
-        }
-        try {
-            approvalInternalClient.withdraw(instanceId);
-        } catch (Exception ex) {
-            log.error("补偿撤回审批实例失败: instanceId={}", instanceId, ex);
-        }
-    }
-
-    private Long requireUserId() {
-        Long userId = SecurityContextUtils.getUserId();
-        if (userId == null) {
-            throw new BizException(ErrorCode.UNAUTHORIZED, "未登录");
-        }
-        return userId;
     }
 }

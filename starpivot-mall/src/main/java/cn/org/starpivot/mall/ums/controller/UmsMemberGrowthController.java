@@ -48,7 +48,7 @@ public class UmsMemberGrowthController {
      * @return 分页查询结果
      */
     @Operation(summary = "积分变动记录分页列表")
-    @PostMapping("/integration/list")
+    @PostMapping("/integrationPageList")
     @PreAuthorize("hasAuthority('mall:member:growth')")
     public Result<PageResponse<IntegrationChangeHistoryVo>> integrationPageList(
             @RequestBody MemberGrowthReqBo reqBo) {
@@ -62,7 +62,7 @@ public class UmsMemberGrowthController {
      * @return 分页查询结果
      */
     @Operation(summary = "成长值变动记录分页列表")
-    @PostMapping("/growth/list")
+    @PostMapping("/growthPageList")
     @PreAuthorize("hasAuthority('mall:member:growth')")
     public Result<PageResponse<GrowthChangeHistoryVo>> growthPageList(@RequestBody MemberGrowthReqBo reqBo) {
         return Result.success(umsMemberGrowthService.growthPageList(reqBo));

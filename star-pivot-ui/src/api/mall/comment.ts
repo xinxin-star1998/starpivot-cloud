@@ -17,6 +17,21 @@ export interface CommentVo {
   content?: string
   memberIcon?: string
   commentType?: number
+  replies?: CommentReplyVo[]
+}
+
+export interface CommentReplyVo {
+  id?: number
+  commentId?: number
+  memberNickName?: string
+  memberIcon?: string
+  content?: string
+  createTime?: string
+}
+
+export interface CommentReplyPayload {
+  commentId: number
+  content: string
 }
 
 export interface CommentListParams extends Api.Common.CommonSearchParams {
@@ -34,7 +49,7 @@ export interface CommentShowStatusPayload {
 
 export function fetchCommentList(params: CommentListParams) {
   return request.post<Api.Common.PaginatedResponse<CommentVo>>({
-    url: '/api/mall/comment/list',
+    url: '/api/mall/comment/commentPageList',
     data: params
   })
 }
@@ -55,9 +70,23 @@ export function fetchCommentUpdateShowStatus(data: CommentShowStatusPayload) {
 
 export function fetchCommentRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/comment/remove',
+    url: '/api/mall/comment/removeComment',
     data: { ids },
     showSuccessMessage: true
+  })
+}
+
+export function fetchCommentReply(data: CommentReplyPayload) {
+  return request.post<void>({
+    url: '/api/mall/comment/reply',
+    data,
+    showSuccessMessage: true
+  })
+}
+
+export function fetchCommentReplies(commentId: number) {
+  return request.get<CommentReplyVo[]>({
+    url: `/api/mall/comment/${commentId}/replies`
   })
 }
 

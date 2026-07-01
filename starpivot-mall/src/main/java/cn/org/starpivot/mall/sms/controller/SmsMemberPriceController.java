@@ -53,7 +53,7 @@ public class SmsMemberPriceController {
      * @return 分页查询结果
      */
     @Operation(summary = "会员价格分页列表")
-    @PostMapping("/list")
+    @PostMapping("/memberPricePageList")
     @PreAuthorize("hasAuthority('mall:memberprice:list')")
     public Result<PageResponse<MemberPriceVo>> pageList(@RequestBody MemberPriceReqBo reqBo) {
         return Result.success(smsMemberPriceService.pageList(reqBo));
@@ -110,7 +110,7 @@ public class SmsMemberPriceController {
      */
     @Log(title = "删除会员价格", businessType = BusinessType.DELETE)
     @Operation(summary = "删除会员价格")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeMemberPrice")
     @PreAuthorize("hasAuthority('mall:memberprice:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

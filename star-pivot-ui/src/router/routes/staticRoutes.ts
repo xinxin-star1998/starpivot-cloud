@@ -116,10 +116,82 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         meta: { title: '优惠券', isHideTab: true }
       },
       {
+        path: 'search',
+        name: 'PortalSearch',
+        component: () => import('@views/portal/search/index.vue'),
+        meta: { title: '商品搜索', isHideTab: true }
+      },
+      {
+        path: 'subject/:id',
+        name: 'PortalSubject',
+        component: () => import('@views/portal/subject/index.vue'),
+        meta: { title: '专题活动', isHideTab: true }
+      },
+      {
+        path: 'seckill',
+        name: 'PortalSeckill',
+        component: () => import('@views/portal/seckill/index.vue'),
+        meta: { title: '限时秒杀', isHideTab: true }
+      },
+      {
+        path: 'account',
+        name: 'PortalAccount',
+        component: () => import('@views/portal/account/index.vue'),
+        meta: { title: '会员中心', isHideTab: true }
+      },
+      {
+        path: 'account/favorites',
+        name: 'PortalFavorites',
+        component: () => import('@views/portal/account/favorites/index.vue'),
+        meta: { title: '我的收藏', isHideTab: true }
+      },
+      {
+        path: 'account/reviews',
+        name: 'PortalReviews',
+        component: () => import('@views/portal/account/reviews/index.vue'),
+        meta: { title: '我的评价', isHideTab: true }
+      },
+      {
+        path: 'account/pending-reviews',
+        name: 'PortalPendingReviews',
+        component: () => import('@views/portal/account/pending-reviews/index.vue'),
+        meta: { title: '待评价', isHideTab: true }
+      },
+      {
+        path: 'account/addresses',
+        name: 'PortalAddresses',
+        component: () => import('@views/portal/account/addresses/index.vue'),
+        meta: { title: '收货地址', isHideTab: true }
+      },
+      {
+        path: 'account/history',
+        name: 'PortalBrowseHistory',
+        component: () => import('@views/portal/account/history/index.vue'),
+        meta: { title: '浏览足迹', isHideTab: true }
+      },
+      {
         path: 'login',
         name: 'PortalLogin',
         component: () => import('@views/portal/auth/login.vue'),
         meta: { title: '会员登录', isHideTab: true }
+      },
+      {
+        path: 'register',
+        name: 'PortalRegister',
+        component: () => import('@views/portal/auth/register.vue'),
+        meta: { title: '会员注册', isHideTab: true }
+      },
+      {
+        path: 'login/wechat/callback',
+        name: 'PortalWechatCallback',
+        component: () => import('@views/portal/auth/wechat-callback.vue'),
+        meta: { title: '微信登录', isHideTab: true }
+      },
+      {
+        path: 'account/security',
+        name: 'PortalAccountSecurity',
+        component: () => import('@views/portal/account/security/index.vue'),
+        meta: { title: '账号安全', isHideTab: true }
       }
     ]
   },

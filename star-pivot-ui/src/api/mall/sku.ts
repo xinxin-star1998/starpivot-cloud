@@ -24,6 +24,8 @@ export interface MallSkuListParams extends Api.Common.CommonSearchParams {
   spuId?: number
   catalogId?: number
   brandId?: number
+  minPrice?: number
+  maxPrice?: number
   spuPublishStatus?: number
 }
 
@@ -47,7 +49,7 @@ export interface MallSkuSavePayload {
 /** SKU 分页列表 */
 export function fetchMallSkuList(params: MallSkuListParams) {
   return request.post<Api.Common.PaginatedResponse<MallSkuVo>>({
-    url: '/api/mall/sku/list',
+    url: '/api/mall/sku/skuPageList',
     data: params
   })
 }
@@ -95,7 +97,7 @@ export function fetchMallSkuPublishStatus(skuId: number, publishStatus: 0 | 1) {
 
 export function fetchMallSkuRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/sku/remove',
+    url: '/api/mall/sku/removeSku',
     data: { ids },
     showSuccessMessage: true
   })

@@ -4,8 +4,11 @@ import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.PortalMemberContext;
+import cn.org.starpivot.mall.portal.domain.bo.PortalOrderPriceTrialBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderQueryBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
+import cn.org.starpivot.mall.portal.domain.vo.PortalOrderPriceTrialVo;
+import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitTokenVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderVo;
 import cn.org.starpivot.mall.portal.service.PortalOrderService;
@@ -18,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * C端-订单控制器。
@@ -44,6 +48,20 @@ public class PortalOrderController {
 
     private final PortalOrderService portalOrderService;
 
+    @Operation(summary = "获取下单防重令牌")
+    @GetMapping("/submit-token")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<PortalOrderSubmitTokenVo> submitToken() {
+        return Result.success(portalOrderService.issueSubmitToken(PortalMemberContext.requireMemberId()));
+    }
+
+    @Operation(summary = "结算价格试算")
+    @PostMapping("/price-trial")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<PortalOrderPriceTrialVo> priceTrial(@RequestBody PortalOrderPriceTrialBo bo) {
+        return Result.success(portalOrderService.priceTrial(PortalMemberContext.requireMemberId(), bo));
+    }
+
     /**
      * 提交订单。
      *
@@ -64,7 +82,7 @@ public class PortalOrderController {
      * @return 分页查询结果
      */
     @Operation(summary = "我的订单分页")
-    @PostMapping("/list")
+    @PostMapping("/portalOrderPageList")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<PageResponse<PortalOrderVo>> pageList(@RequestBody PortalOrderQueryBo bo) {
         return Result.success(portalOrderService.pageMyOrders(PortalMemberContext.requireMemberId(), bo));
@@ -97,20 +115,6 @@ public class PortalOrderController {
         return Result.success("取消成功");
     }
 
-    /**
-     * Mock 支付。
-     *
-     * @param id 主键 ID
-     * @return 操作结果
-     */
-    @Operation(summary = "Mock 支付", description = "开发联调用：待付款 → 待发货，写入 oms_payment_info")
-    @PutMapping("/{id}/pay")
-    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> mockPay(@PathVariable("id") Long id) {
-        portalOrderService.mockPay(PortalMemberContext.requireMemberId(), id);
-        return Result.success("支付成功");
-    }
-
     @Operation(summary = "确认收货")
     @PutMapping("/{id}/receive")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
@@ -124,5 +128,12 @@ public class PortalOrderController {
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<List<Long>> applyReturn(@Valid @RequestBody cn.org.starpivot.mall.portal.domain.bo.PortalOrderReturnApplyBo bo) {
         return Result.success(portalOrderService.applyReturn(PortalMemberContext.requireMemberId(), bo));
+    }
+
+    @Operation(summary = "订单状态数量")
+    @GetMapping("/status-counts")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<Map<String, Integer>> statusCounts() {
+        return Result.success(portalOrderService.statusCounts(PortalMemberContext.requireMemberId()));
     }
 }

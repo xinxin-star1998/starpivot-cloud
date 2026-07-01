@@ -91,7 +91,7 @@ public class PortalCartController {
      * @return 操作结果
      */
     @Operation(summary = "删除购物车条目")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeCart")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

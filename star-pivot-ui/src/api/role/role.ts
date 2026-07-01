@@ -5,7 +5,7 @@ import request from '@/utils/http'
  */
 export function fetchGetRoleList(params: Api.SystemManage.RoleSearchParams) {
   return request.post<Api.SystemManage.RoleList>({
-    url: '/api/sys/role/list',
+    url: '/api/sys/role/rolePageList',
     data: params
   })
 }
@@ -37,7 +37,7 @@ export function fetchUpdateRole(data: Api.SystemManage.RoleListItem) {
  */
 export function fetchDeleteRole(roleIds: number[]) {
   return request.del({
-    url: '/api/sys/role/delete',
+    url: '/api/sys/role/removeRole',
     data: { ids: roleIds },
     showSuccessMessage: true
   })

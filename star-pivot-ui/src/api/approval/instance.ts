@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { ApInstanceVo, ApprovalSubmitRequest, ApprovalTimelineVo } from './types'
+import type {ApInstanceVo, ApprovalSubmitRequest, ApprovalTimelineVo} from './types'
 
 export interface ApInstanceQuery {
   title?: string
@@ -12,7 +12,7 @@ export interface ApInstanceQuery {
 
 export function fetchApprovalMineList(data: ApInstanceQuery) {
   return request.post<{ total: number; rows: ApInstanceVo[] }>({
-    url: '/api/approval/instance/mine/list',
+    url: '/api/approval/instance/mineInstancePageList',
     data
   })
 }

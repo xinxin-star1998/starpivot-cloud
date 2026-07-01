@@ -36,7 +36,7 @@ export interface WareOrderTaskListParams extends Api.Common.CommonSearchParams {
 
 export function fetchWareTaskList(params: WareOrderTaskListParams) {
   return request.post<Api.Common.PaginatedResponse<WareOrderTaskVo>>({
-    url: '/api/mall/ware-task/list',
+    url: '/api/mall/ware-task/wareTaskPageList',
     data: params
   })
 }

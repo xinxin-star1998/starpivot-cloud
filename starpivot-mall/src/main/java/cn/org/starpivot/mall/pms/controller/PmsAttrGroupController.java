@@ -59,7 +59,7 @@ public class PmsAttrGroupController
      */
     @PreAuthorize(
             "hasAnyAuthority('mall:group:query', 'mall:product:query', 'mall:product:add', 'mall:product:edit')")
-    @PostMapping("/list")
+    @PostMapping("/attrGroupPageList")
     public Result<PageResponse<PmsAttrGroupVO>> list(@RequestBody PmsAttrGroupQueryDTO queryDTO)
     {
         PageResponse<PmsAttrGroupVO> page = pmsAttrGroupService.selectPmsAttrGroupPage(queryDTO);
@@ -145,7 +145,7 @@ public class PmsAttrGroupController
      */
     @Log(title = "删除属性分组", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('mall:group:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeAttrGroup")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest)
     {
         List<Long> idList = deleteRequest.getIds();

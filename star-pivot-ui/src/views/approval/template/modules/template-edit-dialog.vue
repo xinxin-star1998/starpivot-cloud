@@ -65,14 +65,54 @@
             </ElSelect>
           </template>
         </ElTableColumn>
-        <ElTableColumn label="策略值" min-width="120">
+        <ElTableColumn label="策略值" min-width="160">
           <template #default="{ row }">
-            <ElInput
+            <ElSelect
+              v-if="row.assigneeType === 'ROLE'"
               v-model="row.assigneeValue"
-              :disabled="!needsAssigneeValue(row.assigneeType)"
-              :placeholder="assigneeValuePlaceholder(row.assigneeType)"
+              filterable
+              placeholder="选择角色"
               size="small"
-            />
+            >
+              <ElOption
+                v-for="opt in roleOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </ElSelect>
+            <ElSelect
+              v-else-if="row.assigneeType === 'POST'"
+              v-model="row.assigneeValue"
+              filterable
+              placeholder="选择岗位"
+              size="small"
+            >
+              <ElOption
+                v-for="opt in postOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </ElSelect>
+            <ElSelect
+              v-else-if="row.assigneeType === 'USER'"
+              v-model="row.assigneeValue"
+              filterable
+              remote
+              :remote-method="searchUsers"
+              :loading="userLoading"
+              placeholder="搜索用户"
+              size="small"
+            >
+              <ElOption
+                v-for="opt in userOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </ElSelect>
+            <span v-else class="assignee-placeholder">-</span>
           </template>
         </ElTableColumn>
         <ElTableColumn label="通过模式" width="110">
@@ -92,9 +132,89 @@
             <ElInput v-model="row.skipExpression" placeholder="SpEL，可选" size="small" />
           </template>
         </ElTableColumn>
+        <ElTableColumn label="超时(小时)" width="110">
+          <template #default="{ row }">
+            <ElInputNumber
+              v-model="row.timeoutHours"
+              :min="0"
+              controls-position="right"
+              placeholder="不启用"
+              size="small"
+            />
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="超时策略" width="130">
+          <template #default="{ row }">
+            <ElSelect
+              v-model="row.timeoutAction"
+              :disabled="!row.timeoutHours"
+              placeholder="策略"
+              size="small"
+            >
+              <ElOption
+                v-for="opt in TIMEOUT_ACTION_OPTIONS"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </ElSelect>
+          </template>
+        </ElTableColumn>
         <ElTableColumn align="center" fixed="right" label="操作" width="70">
           <template #default="{ $index }">
             <ElButton link type="danger" @click="removeStep($index)">删</ElButton>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+
+      <div class="steps-toolbar routes-toolbar">
+        <span class="steps-title">条件路由（可选）</span>
+        <ElButton link type="primary" @click="addRoute">添加路由</ElButton>
+      </div>
+      <p class="routes-hint">某步骤完成后按优先级匹配 SpEL，决定跳转目标步骤；留空则按顺序进入下一步。</p>
+
+      <ElTable :data="form.routes" border class="steps-table routes-table" size="small">
+        <ElTableColumn label="完成后步骤" min-width="130">
+          <template #default="{ row }">
+            <ElSelect v-model="row.fromStepCode" placeholder="来源步骤" size="small">
+              <ElOption
+                v-for="step in form.steps"
+                :key="step.stepCode"
+                :label="`${step.stepOrder}. ${step.stepName}`"
+                :value="step.stepCode"
+              />
+            </ElSelect>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="条件表达式" min-width="180">
+          <template #default="{ row }">
+            <ElInput
+              v-model="row.conditionExpr"
+              placeholder="SpEL 或 default"
+              size="small"
+            />
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="跳转步骤" min-width="130">
+          <template #default="{ row }">
+            <ElSelect v-model="row.toStepCode" placeholder="目标步骤" size="small">
+              <ElOption
+                v-for="step in form.steps"
+                :key="`to-${step.stepCode}`"
+                :label="`${step.stepOrder}. ${step.stepName}`"
+                :value="step.stepCode"
+              />
+            </ElSelect>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="优先级" width="90">
+          <template #default="{ row }">
+            <ElInputNumber v-model="row.priority" :min="0" size="small" controls-position="right" />
+          </template>
+        </ElTableColumn>
+        <ElTableColumn align="center" fixed="right" label="操作" width="70">
+          <template #default="{ $index }">
+            <ElButton link type="danger" @click="removeRoute($index)">删</ElButton>
           </template>
         </ElTableColumn>
       </ElTable>
@@ -111,9 +231,12 @@
   import type { FormInstance, FormRules } from 'element-plus'
   import { ElMessage } from 'element-plus'
   import { fetchApprovalTemplateDetail, fetchApprovalTemplateSave } from '@/api/approval/template'
-  import type { ApTemplate, ApTemplateStep } from '@/api/approval/types'
-  import { APPROVE_MODE_OPTIONS, ASSIGNEE_TYPE_OPTIONS } from '../../utils/approval-labels'
+  import type { ApTemplate, ApTemplateRoute, ApTemplateStep } from '@/api/approval/types'
+  import { APPROVE_MODE_OPTIONS, ASSIGNEE_TYPE_OPTIONS, TIMEOUT_ACTION_OPTIONS } from '../../utils/approval-labels'
   import { handleMutationError } from '@/utils/http/mutation'
+  import { fetchGetRoleSelect } from '@/api/role/role'
+  import { fetchGetAllPosts } from '@/api/post/post'
+  import { fetchGetUserList } from '@/api/user/user'
 
   const visible = defineModel<boolean>('visible', { default: false })
   const templateId = defineModel<number | undefined>('templateId')
@@ -122,6 +245,10 @@
 
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
+  const roleOptions = ref<{ label: string; value: string }[]>([])
+  const postOptions = ref<{ label: string; value: string }[]>([])
+  const userOptions = ref<{ label: string; value: string }[]>([])
+  const userLoading = ref(false)
 
   const form = reactive({
     templateId: undefined as number | undefined,
@@ -129,7 +256,8 @@
     templateName: '',
     bizModule: 'mall',
     remark: '',
-    steps: [] as ApTemplateStep[]
+    steps: [] as ApTemplateStep[],
+    routes: [] as ApTemplateRoute[]
   })
 
   const rules: FormRules = {
@@ -146,7 +274,9 @@
       assigneeType: 'DEPT_LEADER',
       assigneeValue: '',
       approveMode: 'ANY',
-      skipExpression: ''
+      skipExpression: '',
+      timeoutHours: undefined,
+      timeoutAction: 'AUTO_REJECT'
     }
   }
 
@@ -154,11 +284,58 @@
     return type === 'ROLE' || type === 'POST' || type === 'USER'
   }
 
-  function assigneeValuePlaceholder(type?: string) {
-    if (type === 'ROLE') return 'roleKey'
-    if (type === 'POST') return 'postCode'
-    if (type === 'USER') return '用户ID'
-    return '-'
+  async function loadOrgOptions() {
+    try {
+      const [roles, posts] = await Promise.all([fetchGetRoleSelect(), fetchGetAllPosts()])
+      roleOptions.value = (roles || [])
+        .filter((r) => r.roleKey)
+        .map((r) => ({ label: `${r.roleName} (${r.roleKey})`, value: r.roleKey! }))
+      postOptions.value = (posts || [])
+        .filter((p) => p.status !== '1' && p.postCode)
+        .map((p) => ({ label: `${p.postName} (${p.postCode})`, value: p.postCode }))
+    } catch {
+      roleOptions.value = []
+      postOptions.value = []
+    }
+  }
+
+  async function searchUsers(query: string) {
+    if (!query?.trim()) {
+      userOptions.value = []
+      return
+    }
+    userLoading.value = true
+    try {
+      const res = await fetchGetUserList({
+        pageNum: 1,
+        pageSize: 20,
+        userName: query.trim()
+      })
+      userOptions.value = (res.rows || []).map((u) => ({
+        label: `${u.nickName || u.userName} (#${u.userId})`,
+        value: String(u.userId)
+      }))
+    } finally {
+      userLoading.value = false
+    }
+  }
+
+  async function preloadUserOption(userId?: string) {
+    if (!userId || !/^\d+$/.test(userId)) return
+    try {
+      const res = await fetchGetUserList({ pageNum: 1, pageSize: 1, userId: Number(userId) })
+      const user = res.rows?.[0]
+      if (user?.userId) {
+        userOptions.value = [
+          {
+            label: `${user.nickName || user.userName} (#${user.userId})`,
+            value: String(user.userId)
+          }
+        ]
+      }
+    } catch {
+      userOptions.value = [{ label: `用户 #${userId}`, value: userId }]
+    }
   }
 
   function addStep() {
@@ -170,9 +347,35 @@
     form.steps.forEach((s, i) => {
       s.stepOrder = i + 1
     })
+    const codes = new Set(form.steps.map((s) => s.stepCode))
+    form.routes = form.routes.filter(
+      (r) => codes.has(r.fromStepCode || '') && codes.has(r.toStepCode || '')
+    )
+  }
+
+  function createEmptyRoute(): ApTemplateRoute {
+    return {
+      fromStepCode: form.steps[0]?.stepCode || '',
+      toStepCode: form.steps[1]?.stepCode || form.steps[0]?.stepCode || '',
+      priority: form.routes.length,
+      conditionExpr: 'default'
+    }
+  }
+
+  function addRoute() {
+    if (!form.steps.length) {
+      ElMessage.warning('请先配置审批步骤')
+      return
+    }
+    form.routes.push(createEmptyRoute())
+  }
+
+  function removeRoute(index: number) {
+    form.routes.splice(index, 1)
   }
 
   async function handleOpen() {
+    await loadOrgOptions()
     if (templateId.value) {
       const detail = await fetchApprovalTemplateDetail(templateId.value)
       const tpl = detail.template as ApTemplate
@@ -186,6 +389,16 @@
         stepOrder: i + 1,
         approveMode: s.approveMode || 'ANY'
       }))
+      form.routes = (detail.routes || []).map((r) => ({
+        fromStepCode: r.fromStepCode,
+        toStepCode: r.toStepCode,
+        priority: r.priority ?? 0,
+        conditionExpr: r.conditionExpr || ''
+      }))
+      const userStep = form.steps.find((s) => s.assigneeType === 'USER' && s.assigneeValue)
+      if (userStep?.assigneeValue) {
+        await preloadUserOption(userStep.assigneeValue)
+      }
     } else {
       form.templateId = undefined
       form.templateCode = ''
@@ -193,6 +406,7 @@
       form.bizModule = 'mall'
       form.remark = ''
       form.steps = [createEmptyStep(1)]
+      form.routes = []
     }
   }
 
@@ -215,7 +429,8 @@
         templateName: form.templateName,
         bizModule: form.bizModule,
         remark: form.remark,
-        steps
+        steps,
+        routes: form.routes
       })
       ElMessage.success('保存成功')
       visible.value = false
@@ -242,5 +457,20 @@
 
   .steps-table {
     width: 100%;
+  }
+
+  .routes-toolbar {
+    margin-top: 16px;
+  }
+
+  .routes-hint {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .assignee-placeholder {
+    color: var(--el-text-color-placeholder);
+    font-size: 12px;
   }
 </style>

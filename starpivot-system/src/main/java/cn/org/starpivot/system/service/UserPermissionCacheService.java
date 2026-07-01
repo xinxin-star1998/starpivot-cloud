@@ -2,10 +2,13 @@ package cn.org.starpivot.system.service;
 
 import cn.org.starpivot.common.cache.CacheConstants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -72,13 +75,24 @@ public class UserPermissionCacheService {
     }
 
     /**
-     * 清除全部用户权限缓存（按 Redis Key 模式批量删除）。
+     * 清除全部用户权限缓存（按 Redis Key 模式 SCAN 批量删除）。
      */
     public void clearAllUserPermissionCache() {
-        Set<String> keys = redisTemplate.keys(CacheConstants.userPermissionPattern());
-        if (keys != null && !keys.isEmpty()) {
+        Set<String> keys = scanKeys(CacheConstants.userPermissionPattern());
+        if (!keys.isEmpty()) {
             redisTemplate.delete(keys);
         }
+    }
+
+    private Set<String> scanKeys(String pattern) {
+        Set<String> keys = new HashSet<>();
+        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(100).build();
+        try (Cursor<String> cursor = redisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                keys.add(cursor.next());
+            }
+        }
+        return keys;
     }
 
     private static String cacheKey(Long userId) {

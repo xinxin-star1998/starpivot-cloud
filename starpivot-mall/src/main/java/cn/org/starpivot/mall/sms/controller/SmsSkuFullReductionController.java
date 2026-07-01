@@ -53,7 +53,7 @@ public class SmsSkuFullReductionController {
      * @return 分页查询结果
      */
     @Operation(summary = "SKU满减分页列表")
-    @PostMapping("/list")
+    @PostMapping("/skuFullReductionPageList")
     @PreAuthorize("hasAuthority('mall:reduction:list')")
     public Result<PageResponse<SkuFullReductionVo>> pageList(@RequestBody SkuFullReductionReqBo reqBo) {
         return Result.success(smsSkuFullReductionService.pageList(reqBo));
@@ -110,7 +110,7 @@ public class SmsSkuFullReductionController {
      */
     @Log(title = "删除SKU满减", businessType = BusinessType.DELETE)
     @Operation(summary = "删除SKU满减")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSkuFullReduction")
     @PreAuthorize("hasAuthority('mall:reduction:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

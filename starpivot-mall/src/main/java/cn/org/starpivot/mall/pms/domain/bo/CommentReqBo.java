@@ -47,4 +47,10 @@ public class CommentReqBo extends PageReqBo {
      * star
      */
     private Integer star;
+
+    /** 会员 ID（C 端「我的评价」） */
+    private Long memberId;
+
+    /** 评论类型：0-商品评价 1-回复 */
+    private Integer commentType;
 }

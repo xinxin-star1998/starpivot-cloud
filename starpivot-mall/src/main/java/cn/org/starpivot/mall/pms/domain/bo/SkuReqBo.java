@@ -4,6 +4,8 @@ import cn.org.starpivot.common.domain.PageReqBo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+
 /** SKU 分页查询（pms_sku_info） */
 
 /**
@@ -53,4 +55,10 @@ public class SkuReqBo extends PageReqBo {
      * 状态
      */
     private Integer spuPublishStatus;
+
+    /** 价格下限（含） */
+    private BigDecimal minPrice;
+
+    /** 价格上限（含） */
+    private BigDecimal maxPrice;
 }

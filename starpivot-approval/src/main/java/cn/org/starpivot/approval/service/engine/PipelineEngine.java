@@ -7,6 +7,7 @@ import cn.org.starpivot.approval.mapper.ApInstanceMapper;
 import cn.org.starpivot.approval.mapper.ApRecordMapper;
 import cn.org.starpivot.approval.mapper.ApTaskMapper;
 import cn.org.starpivot.approval.mq.ApprovalFinishedPublisher;
+import cn.org.starpivot.approval.service.ApprovalNotificationPublisher;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -38,6 +39,7 @@ public class PipelineEngine {
     private final AssigneeResolver assigneeResolver;
     private final SpelEvaluator spelEvaluator;
     private final ObjectProvider<ApprovalFinishedPublisher> finishedPublisherProvider;
+    private final ApprovalNotificationPublisher notificationPublisher;
 
     @Transactional(rollbackFor = Exception.class)
     public Long submit(ApprovalSubmitRequest request, Long starterId) {
@@ -66,6 +68,28 @@ public class PipelineEngine {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    public void handleTimeout(Long taskId) {
+        ApTask task = taskMapper.selectById(taskId);
+        if (task == null || !ApprovalConstants.TASK_PENDING.equals(task.getStatus())) {
+            return;
+        }
+        if (task.getDueTime() == null || !task.getDueTime().isBefore(LocalDateTime.now())) {
+            return;
+        }
+        ApInstance instance = loadRunningInstanceForUpdate(task.getInstanceId());
+        TemplateResolver.ResolvedTemplate resolved = loadResolved(instance);
+        ApTemplateStep currentStep = resolved.findStep(task.getStepId());
+        String timeoutAction = StringUtils.hasText(currentStep.getTimeoutAction())
+                ? currentStep.getTimeoutAction() : ApprovalConstants.TIMEOUT_ACTION_REJECT;
+        Long operatorId = task.getAssigneeId();
+        if (ApprovalConstants.TIMEOUT_ACTION_APPROVE.equals(timeoutAction)) {
+            doApprove(task, instance, resolved, currentStep, operatorId, "超时自动通过", true);
+        } else {
+            doReject(task, instance, resolved, currentStep, operatorId, "超时自动驳回", true);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     public void approve(Long taskId, String comment, Long operatorId) {
         ApTask task = loadPendingTask(taskId);
         if (!operatorId.equals(task.getAssigneeId())) {
@@ -74,10 +98,27 @@ public class PipelineEngine {
         ApInstance instance = loadRunningInstanceForUpdate(task.getInstanceId());
         TemplateResolver.ResolvedTemplate resolved = loadResolved(instance);
         ApTemplateStep currentStep = resolved.findStep(task.getStepId());
+        doApprove(task, instance, resolved, currentStep, operatorId, comment, false);
+    }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void reject(Long taskId, String comment, Long operatorId) {
+        ApTask task = loadPendingTask(taskId);
+        if (!operatorId.equals(task.getAssigneeId())) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权审批该任务");
+        }
+        ApInstance instance = loadRunningInstanceForUpdate(task.getInstanceId());
+        TemplateResolver.ResolvedTemplate resolved = loadResolved(instance);
+        ApTemplateStep currentStep = resolved.findStep(task.getStepId());
+        doReject(task, instance, resolved, currentStep, operatorId, comment, false);
+    }
+
+    private void doApprove(ApTask task, ApInstance instance, TemplateResolver.ResolvedTemplate resolved,
+                           ApTemplateStep currentStep, Long operatorId, String comment, boolean fromTimeout) {
         completeTask(task, ApprovalConstants.ACTION_APPROVE, comment);
         saveRecord(instance.getInstanceId(), task.getTaskId(), currentStep.getStepCode(),
-                currentStep.getStepName(), operatorId, ApprovalConstants.ACTION_APPROVE, comment);
+                currentStep.getStepName(), operatorId,
+                fromTimeout ? ApprovalConstants.ACTION_TIMEOUT : ApprovalConstants.ACTION_APPROVE, comment);
 
         if (ApprovalConstants.APPROVE_MODE_ALL.equals(currentStep.getApproveMode())) {
             long pending = taskMapper.selectCount(new LambdaQueryWrapper<ApTask>()
@@ -93,19 +134,12 @@ public class PipelineEngine {
         advanceFrom(instance, resolved, currentStep);
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public void reject(Long taskId, String comment, Long operatorId) {
-        ApTask task = loadPendingTask(taskId);
-        if (!operatorId.equals(task.getAssigneeId())) {
-            throw new BizException(ErrorCode.FORBIDDEN, "无权审批该任务");
-        }
-        ApInstance instance = loadRunningInstanceForUpdate(task.getInstanceId());
-        TemplateResolver.ResolvedTemplate resolved = loadResolved(instance);
-        ApTemplateStep currentStep = resolved.findStep(task.getStepId());
-
+    private void doReject(ApTask task, ApInstance instance, TemplateResolver.ResolvedTemplate resolved,
+                          ApTemplateStep currentStep, Long operatorId, String comment, boolean fromTimeout) {
         completeTask(task, ApprovalConstants.ACTION_REJECT, comment);
         saveRecord(instance.getInstanceId(), task.getTaskId(), currentStep.getStepCode(),
-                currentStep.getStepName(), operatorId, ApprovalConstants.ACTION_REJECT, comment);
+                currentStep.getStepName(), operatorId,
+                fromTimeout ? ApprovalConstants.ACTION_TIMEOUT : ApprovalConstants.ACTION_REJECT, comment);
         cancelAllPending(instance.getInstanceId());
         finishInstance(instance, ApprovalConstants.INSTANCE_REJECTED, comment, true);
     }
@@ -144,6 +178,7 @@ public class PipelineEngine {
 
         List<Long> assigneeIds = assigneeResolver.resolve(step, instance.getStarterId());
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime dueTime = resolveDueTime(step, now);
         for (Long assigneeId : assigneeIds) {
             ApTask task = new ApTask();
             task.setInstanceId(instance.getInstanceId());
@@ -153,14 +188,25 @@ public class PipelineEngine {
             task.setAssigneeId(assigneeId);
             task.setStatus(ApprovalConstants.TASK_PENDING);
             task.setCreateTime(now);
+            task.setDueTime(dueTime);
             taskMapper.insert(task);
         }
+
+        notificationPublisher.notifyTaskAssigned(instance, step, assigneeIds);
 
         ApInstance patch = new ApInstance();
         patch.setInstanceId(instance.getInstanceId());
         patch.setCurrentStepId(step.getStepId());
         instanceMapper.updateById(patch);
         instance.setCurrentStepId(step.getStepId());
+    }
+
+    private LocalDateTime resolveDueTime(ApTemplateStep step, LocalDateTime now) {
+        Integer hours = step.getTimeoutHours();
+        if (hours == null || hours <= 0) {
+            return null;
+        }
+        return now.plusHours(hours);
     }
 
     private void advanceFrom(ApInstance instance, TemplateResolver.ResolvedTemplate resolved, ApTemplateStep currentStep) {
@@ -206,6 +252,10 @@ public class PipelineEngine {
         patch.setFinishTime(now);
         patch.setCurrentStepId(null);
         instanceMapper.updateById(patch);
+
+        if (publishEvent) {
+            notificationPublisher.notifyInstanceFinished(instance, status);
+        }
 
         ApprovalFinishedPublisher finishedPublisher = finishedPublisherProvider.getIfAvailable();
         if (finishedPublisher != null) {

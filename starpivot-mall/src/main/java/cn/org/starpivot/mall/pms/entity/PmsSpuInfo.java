@@ -62,6 +62,16 @@ public class PmsSpuInfo {
     private Integer publishStatus;
 
     /**
+     * 审批实例 ID
+     */
+    private Long approvalInstanceId;
+
+    /**
+     * 审批状态
+     */
+    private String auditStatus;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;

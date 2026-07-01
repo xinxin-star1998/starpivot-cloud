@@ -53,7 +53,7 @@ public class SmsSeckillSessionController {
      * @return 分页查询结果
      */
     @Operation(summary = "秒杀场次分页列表")
-    @PostMapping("/list")
+    @PostMapping("/seckillSessionPageList")
     @PreAuthorize("hasAuthority('mall:seckill:session')")
     public Result<PageResponse<SeckillSessionVo>> pageList(@RequestBody SeckillSessionReqBo reqBo) {
         return Result.success(smsSeckillSessionService.pageList(reqBo));
@@ -121,7 +121,7 @@ public class SmsSeckillSessionController {
      */
     @Log(title = "删除秒杀场次", businessType = BusinessType.DELETE)
     @Operation(summary = "删除秒杀场次")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSeckillSession")
     @PreAuthorize("hasAuthority('mall:seckill:session:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

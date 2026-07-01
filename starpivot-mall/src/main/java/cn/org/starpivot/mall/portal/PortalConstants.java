@@ -56,6 +56,30 @@ public final class PortalConstants {
     /** 待付款库存锁默认超时（分钟），无订单设置时兜底 */
     public static final int DEFAULT_UNPAID_LOCK_MINUTES = 30;
 
+    /** Redis：下单防重令牌 mall:portal:order:submit:token:{memberId}:{token} */
+    public static final String ORDER_SUBMIT_TOKEN_PREFIX = "mall:portal:order:submit:token:";
+
+    /** 下单令牌有效期（分钟） */
+    public static final int ORDER_SUBMIT_TOKEN_TTL_MINUTES = 30;
+
+    /** 支付方式：支付宝 */
+    public static final int PAY_TYPE_ALIPAY = 1;
+
+    /** 支付方式：微信 */
+    public static final int PAY_TYPE_WECHAT = 2;
+
+    /** Redis：秒杀库存 mall:portal:seckill:stock:{promotionId}:{sessionId}:{skuId} */
+    public static final String SECKILL_STOCK_PREFIX = "mall:portal:seckill:stock:";
+
+    /** Redis：秒杀限购 mall:portal:seckill:limit:{promotionId}:{sessionId}:{skuId}:{memberId} */
+    public static final String SECKILL_LIMIT_PREFIX = "mall:portal:seckill:limit:";
+
+    /** Redis：秒杀订单绑定 mall:portal:seckill:order:{orderSn} */
+    public static final String SECKILL_ORDER_PREFIX = "mall:portal:seckill:order:";
+
+    /** Redis：秒杀限流 mall:portal:seckill:rate:{memberId} */
+    public static final String SECKILL_RATE_PREFIX = "mall:portal:seckill:rate:";
+
     private PortalConstants() {
     }
 
@@ -73,5 +97,21 @@ public final class PortalConstants {
 
     public static String cartKey(Long memberId) {
         return CART_KEY_PREFIX + memberId;
+    }
+
+    public static String seckillStockKey(Long promotionId, Long sessionId, Long skuId) {
+        return SECKILL_STOCK_PREFIX + promotionId + ":" + sessionId + ":" + skuId;
+    }
+
+    public static String seckillLimitKey(Long promotionId, Long sessionId, Long skuId, Long memberId) {
+        return SECKILL_LIMIT_PREFIX + promotionId + ":" + sessionId + ":" + skuId + ":" + memberId;
+    }
+
+    public static String seckillOrderKey(String orderSn) {
+        return SECKILL_ORDER_PREFIX + orderSn;
+    }
+
+    public static String seckillRateKey(Long memberId) {
+        return SECKILL_RATE_PREFIX + memberId;
     }
 }

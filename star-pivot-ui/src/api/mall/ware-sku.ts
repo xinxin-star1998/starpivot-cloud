@@ -39,7 +39,7 @@ export interface SkuSearchParams {
  */
 export function fetchGetSkuList(params: SkuSearchParams) {
   return request.post<Api.Common.PaginatedResponse<WareSku>>({
-    url: '/api/mall/ware-sku/list',
+    url: '/api/mall/ware-sku/wareSkuPageList',
     data: params
   })
 }
@@ -89,7 +89,7 @@ export function fetchUpdateSku(data: WareSku) {
  */
 export function fetchDeleteSku(ids: number[]) {
   return request.del({
-    url: '/api/mall/ware-sku/delete',
+    url: '/api/mall/ware-sku/removeWareSku',
     data: { ids }
   })
 }

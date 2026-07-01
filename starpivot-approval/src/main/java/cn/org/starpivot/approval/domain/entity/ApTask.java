@@ -22,5 +22,6 @@ public class ApTask {
     private String action;
     private String comment;
     private LocalDateTime createTime;
+    private LocalDateTime dueTime;
     private LocalDateTime finishTime;
 }

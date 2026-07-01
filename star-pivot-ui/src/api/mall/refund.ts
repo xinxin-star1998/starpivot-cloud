@@ -16,7 +16,7 @@ export interface RefundListParams extends Api.Common.CommonSearchParams {
 
 export function fetchRefundList(params: RefundListParams) {
   return request.post<Api.Common.PaginatedResponse<RefundVo>>({
-    url: '/api/mall/refund/list',
+    url: '/api/mall/refund/refundPageList',
     data: params
   })
 }

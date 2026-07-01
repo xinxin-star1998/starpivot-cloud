@@ -68,7 +68,7 @@ export function fetchUpdateAddress(data: AddressSavePayload) {
 
 export function fetchDeleteAddress(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/address/remove',
+    url: '/api/mall/address/removeAddress',
     data: { ids },
     showSuccessMessage: true
   })

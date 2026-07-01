@@ -368,12 +368,14 @@ API 前缀：`/api/v1/approval`（经网关对外暴露）。
 
 | 功能 | 方法 | 路径 | 权限 |
 |------|------|------|------|
-| 模板分页 | POST | `/template/list` | `approval:template:query` |
+| 模板分页 | POST | `/template/templatePageList` | `approval:template:query` |
 | 模板详情（含步骤） | GET | `/template/{id}` | `approval:template:query` |
 | 保存模板+步骤 | POST | `/template/save` | `approval:template:edit` |
 | 发布 | POST | `/template/{id}/publish` | `approval:template:publish` |
 | 停用 | POST | `/template/{id}/disable` | `approval:template:edit` |
-| 绑定规则 CRUD | POST | `/template/bind/list` 等 | `approval:bind:edit` |
+| 绑定规则分页 | POST | `/template/templateBindPageList` | `approval:bind:edit` |
+| 保存绑定规则 | POST | `/template/bind/save` | `approval:bind:edit` |
+| 删除绑定规则 | DELETE | `/template/removeTemplateBind` | `approval:bind:edit` |
 
 > 对应通用方案 `POST /template/deploy` → 本方案 **publish**（无 Flowable 部署步骤）。
 
@@ -383,7 +385,7 @@ API 前缀：`/api/v1/approval`（经网关对外暴露）。
 |------|------|------|------|
 | 提交审批 | POST | `/instance/submit` | `approval:instance:submit` |
 | 撤回 | POST | `/instance/{id}/withdraw` | `approval:instance:withdraw` |
-| 我发起的 | POST | `/instance/mine/list` | `approval:instance:query` |
+| 我发起的 | POST | `/instance/mineInstancePageList` | `approval:instance:query` |
 | 审批时间轴 | GET | `/instance/{id}/timeline` | `approval:instance:query` |
 
 ## 6.2.1 内部接口（Feign 直连，不经网关）
@@ -429,8 +431,8 @@ API 前缀：`/api/v1/approval`（经网关对外暴露）。
 
 | 功能 | 方法 | 路径 | 权限 |
 |------|------|------|------|
-| 待办列表 | POST | `/task/todo/list` | `approval:task:query` |
-| 已办列表 | POST | `/task/done/list` | `approval:task:query` |
+| 待办列表 | POST | `/task/todoTaskPageList` | `approval:task:query` |
+| 已办列表 | POST | `/task/doneTaskPageList` | `approval:task:query` |
 | 通过 | POST | `/task/approve` | `approval:task:action` |
 | 驳回 | POST | `/task/reject` | `approval:task:action` |
 

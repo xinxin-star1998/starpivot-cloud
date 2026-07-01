@@ -31,7 +31,6 @@ public class ApprovalSecurityConfig {
                                 "/internal/**",
                                 "/actuator/**",
                                 "/doc.html",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**"
                         ).permitAll()

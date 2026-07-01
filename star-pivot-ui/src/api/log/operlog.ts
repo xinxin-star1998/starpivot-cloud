@@ -1,12 +1,12 @@
 import request from '@/utils/http'
-import type { OperLogListItem, OperLogSearchParams, OperLogList } from '@/types/api/operlog'
+import type {OperLogList, OperLogListItem, OperLogSearchParams} from '@/types/api/operlog'
 
 /**
  * 获取操作日志列表（分页）
  */
 export function fetchGetOperLogList(params: OperLogSearchParams) {
   return request.post<OperLogList>({
-    url: '/api/sys/operlog/pageList',
+    url: '/api/sys/operlog/operLogPageList',
     params
   })
 }
@@ -25,7 +25,7 @@ export function fetchGetOperLogById(operId: number) {
  */
 export function fetchDeleteOperLog(operIds: number[]) {
   return request.del({
-    url: '/api/sys/operlog/delete',
+    url: '/api/sys/operlog/removeOperLog',
     data: { ids: operIds }
   })
 }

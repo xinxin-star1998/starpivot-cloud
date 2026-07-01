@@ -55,7 +55,7 @@ public class BrandController {
      * @return 分页查询结果
      */
     @Operation(summary = "品牌分页列表")
-    @PostMapping("/list")
+    @PostMapping("/brandPageList")
     @PreAuthorize("hasAuthority('mall:brand:query')")
     public Result<PageResponse<BrandVo>> pageList(@RequestBody BrandReqBo brandReqBo) {
         return Result.success(brandService.pageList(brandReqBo));
@@ -112,7 +112,7 @@ public class BrandController {
      */
     @Log(title = "删除品牌", businessType = BusinessType.DELETE)
     @Operation(summary = "删除品牌")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeBrand")
     @PreAuthorize("hasAuthority('mall:brand:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

@@ -53,7 +53,7 @@ public class SmsSkuLadderController {
      * @return 分页查询结果
      */
     @Operation(summary = "SKU阶梯价分页列表")
-    @PostMapping("/list")
+    @PostMapping("/skuLadderPageList")
     @PreAuthorize("hasAuthority('mall:reduction:list')")
     public Result<PageResponse<SkuLadderVo>> pageList(@RequestBody SkuLadderReqBo reqBo) {
         return Result.success(smsSkuLadderService.pageList(reqBo));
@@ -110,7 +110,7 @@ public class SmsSkuLadderController {
      */
     @Log(title = "删除SKU阶梯价", businessType = BusinessType.DELETE)
     @Operation(summary = "删除SKU阶梯价")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSkuLadder")
     @PreAuthorize("hasAuthority('mall:reduction:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

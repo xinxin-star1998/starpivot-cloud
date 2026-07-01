@@ -24,7 +24,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "cn.org.starpivot.mall.wms.mapper",
         "cn.org.starpivot.mall.oms.mapper",
         "cn.org.starpivot.mall.sms.mapper",
-        "cn.org.starpivot.mall.ums.mapper"
+        "cn.org.starpivot.mall.ums.mapper",
+        "cn.org.starpivot.mall.portal.auth.mapper"
 })
 public class StarPivotMallApplication {
 

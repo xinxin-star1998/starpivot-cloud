@@ -26,7 +26,7 @@ export interface MemberPriceSavePayload {
 
 export function fetchMemberPriceList(params: MemberPriceListParams) {
   return request.post<Api.Common.PaginatedResponse<MemberPriceVo>>({
-    url: '/api/mall/member-price/list',
+    url: '/api/mall/member-price/memberPricePageList',
     data: params
   })
 }
@@ -55,7 +55,7 @@ export function fetchMemberPriceUpdate(data: MemberPriceSavePayload) {
 
 export function fetchMemberPriceRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/member-price/remove',
+    url: '/api/mall/member-price/removeMemberPrice',
     data: { ids },
     showSuccessMessage: true
   })
@@ -67,7 +67,7 @@ export interface MemberLevelVo {
 }
 
 export function fetchMemberLevelList() {
-  return request.get<MemberLevelVo[]>({
-    url: '/api/mall/member-level/list'
+  return request.post<MemberLevelVo[]>({
+    url: '/api/mall/member-level/memberLevelPageList'
   })
 }

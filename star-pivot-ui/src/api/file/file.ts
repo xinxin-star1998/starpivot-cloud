@@ -3,7 +3,7 @@ import type {SysFile, SysFileQueryParams, SysFileRecycleQueryParams, SysFileRena
 
 export function fetchFileList(params: SysFileQueryParams) {
   return request.post<Api.Common.PageResponse<SysFile>>({
-    url: '/api/file/list',
+    url: '/api/file/filePageList',
     data: params
   })
 }
@@ -30,7 +30,7 @@ export function fetchFilePreviewUrl(fileId: number) {
 
 export function deleteFiles(ids: number[]) {
   return request.del({
-    url: '/api/file/remove',
+    url: '/api/file/removeFile',
     data: { ids }
   })
 }
@@ -51,7 +51,7 @@ export function purgeRecycleFiles(ids: number[]) {
 
 export function fetchRecycleList(params: SysFileRecycleQueryParams) {
   return request.post<Api.Common.PageResponse<SysFile>>({
-    url: '/api/file/recycle/list',
+    url: '/api/file/recycleFilePageList',
     data: params
   })
 }

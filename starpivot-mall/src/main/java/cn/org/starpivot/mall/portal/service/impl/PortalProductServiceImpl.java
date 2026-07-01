@@ -13,9 +13,12 @@ import cn.org.starpivot.mall.pms.entity.PmsSpuImages;
 import cn.org.starpivot.mall.pms.entity.PmsSpuInfo;
 import cn.org.starpivot.mall.pms.mapper.PmsBrandMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
+import cn.org.starpivot.mall.pms.mapper.PmsSpuCommentMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSpuImagesMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
 import cn.org.starpivot.mall.pms.service.PmsSpuInfoService;
+import cn.org.starpivot.mall.pms.search.PmsProductElasticsearchService;
+import cn.org.starpivot.mall.pms.search.PmsProductSearchSyncService;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.domain.bo.PortalProductSearchBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductDetailVo;
@@ -24,7 +27,9 @@ import cn.org.starpivot.mall.portal.service.PortalProductService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -47,6 +52,7 @@ import java.util.stream.Collectors;
  * @see PortalProductService
  */
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PortalProductServiceImpl implements PortalProductService {
@@ -55,12 +61,30 @@ public class PortalProductServiceImpl implements PortalProductService {
     private final PmsSkuInfoMapper pmsSkuInfoMapper;
     private final PmsSpuImagesMapper pmsSpuImagesMapper;
     private final PmsBrandMapper pmsBrandMapper;
+    private final PmsSpuCommentMapper pmsSpuCommentMapper;
     private final PmsSpuInfoService pmsSpuInfoService;
     private final PortalStockLockService portalStockLockService;
+    private final PmsProductSearchSyncService productSearchSyncService;
+    private final ObjectProvider<PmsProductElasticsearchService> productElasticsearchServiceProvider;
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PortalProductListVo> search(PortalProductSearchBo bo) {
+        if (productSearchSyncService.isElasticsearchActive()) {
+            try {
+                PmsProductElasticsearchService es = productElasticsearchServiceProvider.getIfAvailable();
+                if (es != null) {
+                    PageResponse<Long> idPage = es.searchSpuIds(bo);
+                    return buildPageFromSpuIds(idPage);
+                }
+            } catch (Exception ex) {
+                log.warn("Elasticsearch search failed, fallback to database", ex);
+            }
+        }
+        return searchFromDatabase(bo);
+    }
+
+    private PageResponse<PortalProductListVo> searchFromDatabase(PortalProductSearchBo bo) {
         ProductReqBo reqBo = new ProductReqBo();
         reqBo.setPageNum(bo.getPageNum());
         reqBo.setPageSize(bo.getPageSize());
@@ -85,6 +109,39 @@ public class PortalProductServiceImpl implements PortalProductService {
         return response;
     }
 
+    private PageResponse<PortalProductListVo> buildPageFromSpuIds(PageResponse<Long> idPage) {
+        List<Long> spuIds = idPage.getRows() != null ? idPage.getRows() : List.of();
+        List<PortalProductListVo> rows = new ArrayList<>();
+        if (!spuIds.isEmpty()) {
+            List<PmsSpuInfo> spuList = pmsSpuInfoMapper.selectBatchIds(spuIds);
+            Map<Long, PmsSpuInfo> spuMap = spuList.stream()
+                    .filter(spu -> spu.getId() != null)
+                    .collect(Collectors.toMap(PmsSpuInfo::getId, spu -> spu, (a, b) -> a));
+            for (Long spuId : spuIds) {
+                PmsSpuInfo spu = spuMap.get(spuId);
+                if (spu == null) {
+                    continue;
+                }
+                PortalProductListVo vo = new PortalProductListVo();
+                vo.setId(spu.getId());
+                vo.setSpuName(spu.getSpuName());
+                vo.setSpuDescription(spu.getSpuDescription());
+                vo.setCatalogId(spu.getCatalogId());
+                vo.setBrandId(spu.getBrandId());
+                vo.setCreateTime(spu.getCreateTime());
+                rows.add(vo);
+            }
+            fillListExtras(rows);
+        }
+        PageResponse<PortalProductListVo> response = new PageResponse<>();
+        response.setTotal(idPage.getTotal());
+        response.setRows(rows);
+        response.setPageNum(idPage.getPageNum());
+        response.setPageSize(idPage.getPageSize());
+        response.setPageCount(idPage.getPageCount());
+        return response;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public PortalProductDetailVo getDetail(Long spuId) {
@@ -106,6 +163,108 @@ public class PortalProductServiceImpl implements PortalProductService {
         }
         fillSkuAvailableStock(vo.getSkus());
         return vo;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PortalProductListVo> listRelated(Long spuId, int limit) {
+        if (spuId == null || limit <= 0) {
+            return List.of();
+        }
+        PmsSpuInfo spu = pmsSpuInfoMapper.selectById(spuId);
+        if (spu == null) {
+            return List.of();
+        }
+        Set<Long> seen = new HashSet<>();
+        seen.add(spuId);
+        List<PortalProductListVo> result = new ArrayList<>();
+        appendRelated(spu.getCatalogId(), null, limit, seen, result);
+        if (result.size() < limit && spu.getBrandId() != null) {
+            appendRelated(null, spu.getBrandId(), limit, seen, result);
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PortalProductListVo> listByOrderedSpuIds(
+            List<Long> orderedSpuIds, int pageNum, int pageSize) {
+        PageResponse<PortalProductListVo> response = new PageResponse<>();
+        response.setPageNum((long) pageNum);
+        response.setPageSize((long) pageSize);
+        if (CollectionUtils.isEmpty(orderedSpuIds)) {
+            response.setTotal(0L);
+            response.setRows(List.of());
+            response.setPageCount(0L);
+            return response;
+        }
+
+        List<PmsSpuInfo> published = pmsSpuInfoMapper.selectList(
+                Wrappers.<PmsSpuInfo>lambdaQuery()
+                        .in(PmsSpuInfo::getId, orderedSpuIds)
+                        .eq(PmsSpuInfo::getPublishStatus, PortalConstants.PUBLISH_STATUS_ON));
+        Map<Long, PmsSpuInfo> spuMap = published.stream()
+                .filter(spu -> spu.getId() != null)
+                .collect(Collectors.toMap(PmsSpuInfo::getId, spu -> spu, (a, b) -> a));
+        List<Long> validIds = orderedSpuIds.stream().filter(spuMap::containsKey).toList();
+
+        long total = validIds.size();
+        int from = Math.max(0, (pageNum - 1) * pageSize);
+        if (from >= validIds.size()) {
+            response.setTotal(total);
+            response.setRows(List.of());
+            response.setPageCount(pageSize > 0 ? (long) Math.ceil((double) total / pageSize) : 0L);
+            return response;
+        }
+
+        int to = Math.min(from + pageSize, validIds.size());
+        List<PortalProductListVo> rows = new ArrayList<>();
+        for (Long spuId : validIds.subList(from, to)) {
+            PmsSpuInfo spu = spuMap.get(spuId);
+            if (spu == null) {
+                continue;
+            }
+            PortalProductListVo vo = new PortalProductListVo();
+            vo.setId(spu.getId());
+            vo.setSpuName(spu.getSpuName());
+            vo.setSpuDescription(spu.getSpuDescription());
+            vo.setCatalogId(spu.getCatalogId());
+            vo.setBrandId(spu.getBrandId());
+            vo.setCreateTime(spu.getCreateTime());
+            rows.add(vo);
+        }
+        fillListExtras(rows);
+
+        response.setTotal(total);
+        response.setRows(rows);
+        response.setPageCount(pageSize > 0 ? (long) Math.ceil((double) total / pageSize) : 0L);
+        return response;
+    }
+
+    private void appendRelated(
+            Long catalogId,
+            Long brandId,
+            int limit,
+            Set<Long> seen,
+            List<PortalProductListVo> result) {
+        if (result.size() >= limit || (catalogId == null && brandId == null)) {
+            return;
+        }
+        PortalProductSearchBo bo = new PortalProductSearchBo();
+        bo.setPageNum(1L);
+        bo.setPageSize((long) Math.min(limit + 8, 32));
+        bo.setCatalogId(catalogId);
+        bo.setBrandId(brandId);
+        for (PortalProductListVo row : search(bo).getRows()) {
+            if (row.getId() == null || seen.contains(row.getId())) {
+                continue;
+            }
+            seen.add(row.getId());
+            result.add(row);
+            if (result.size() >= limit) {
+                break;
+            }
+        }
     }
 
     private void fillSkuAvailableStock(List<Skus> skus) {
@@ -161,14 +320,48 @@ public class PortalProductServiceImpl implements PortalProductService {
                         .collect(Collectors.toMap(PmsBrand::getBrandId, PmsBrand::getName, (a, b) -> a));
 
         Map<Long, String> coverMap = loadCoverMap(spuIds);
+        Map<Long, CommentSummary> commentMap = loadCommentSummaryMap(spuIds);
         for (PortalProductListVo row : rows) {
             row.setPrice(minPriceMap.get(row.getId()));
             row.setCoverImg(coverMap.get(row.getId()));
             if (row.getBrandId() != null) {
                 row.setBrandName(brandNameMap.get(row.getBrandId()));
             }
+            CommentSummary summary = commentMap.get(row.getId());
+            if (summary != null) {
+                row.setCommentCount(summary.total());
+                row.setAvgStar(summary.avgStar());
+            }
         }
     }
+
+    private Map<Long, CommentSummary> loadCommentSummaryMap(List<Long> spuIds) {
+        if (CollectionUtils.isEmpty(spuIds)) {
+            return Map.of();
+        }
+        List<Map<String, Object>> rows = pmsSpuCommentMapper.selectSummaryBySpuIds(spuIds);
+        if (CollectionUtils.isEmpty(rows)) {
+            return Map.of();
+        }
+        Map<Long, CommentSummary> result = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            Object spuIdObj = row.get("spuId");
+            if (spuIdObj == null) {
+                continue;
+            }
+            Long spuId = spuIdObj instanceof Number n ? n.longValue() : Long.parseLong(spuIdObj.toString());
+            Object totalObj = row.get("total");
+            Long total = totalObj instanceof Number n ? n.longValue() : 0L;
+            Object avgObj = row.get("avgStar");
+            BigDecimal avg = avgObj instanceof BigDecimal bd
+                    ? bd
+                    : avgObj instanceof Number n ? BigDecimal.valueOf(n.doubleValue()) : null;
+            result.put(spuId, new CommentSummary(total, avg));
+        }
+        return result;
+    }
+
+    private record CommentSummary(Long total, BigDecimal avgStar) {}
 
     private Map<Long, String> loadCoverMap(List<Long> spuIds) {
         List<PmsSpuImages> imgs = pmsSpuImagesMapper.selectList(

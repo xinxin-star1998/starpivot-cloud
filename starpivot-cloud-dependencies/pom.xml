@@ -52,6 +52,7 @@
         <!-- MapStruct Plus -->
         <mapstruct-plus.version>1.1.0</mapstruct-plus.version>
         <alipay-sdk.version>4.39.218.ALL</alipay-sdk.version>
+        <wechatpay-java.version>0.2.16</wechatpay-java.version>
     </properties>
 
     <dependencyManagement>
@@ -228,7 +229,7 @@
                 <version>${yauaa.version}</version>
             </dependency>
 
-            <!-- ========== 接口文档 Knife4j ========== -->
+            <!-- Knife4j（排除默认 Swagger UI，文档入口为 /doc.html） -->
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
@@ -240,9 +241,10 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <!-- springdoc 核心 + OpenAPI 注解（不含 Swagger UI） -->
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
 
@@ -322,6 +324,11 @@
                 <groupId>com.alipay.sdk</groupId>
                 <artifactId>alipay-sdk-java</artifactId>
                 <version>${alipay-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.wechatpay-apiv3</groupId>
+                <artifactId>wechatpay-java</artifactId>
+                <version>${wechatpay-java.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

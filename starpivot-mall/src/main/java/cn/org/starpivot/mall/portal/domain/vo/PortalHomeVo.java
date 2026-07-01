@@ -2,6 +2,7 @@ package cn.org.starpivot.mall.portal.domain.vo;
 
 import cn.org.starpivot.mall.pms.domain.vo.CategoryTreeVo;
 import cn.org.starpivot.mall.sms.domain.vo.HomeAdvVo;
+import cn.org.starpivot.mall.sms.domain.vo.HomeCategoryHotVo;
 import lombok.Data;
 
 import java.util.List;
@@ -42,4 +43,7 @@ public class PortalHomeVo {
      * home Blocks
      */
     private List<PortalHomeBlockVo> homeBlocks;
+
+    /** 首页分类热门 */
+    private List<HomeCategoryHotVo> hotCategories;
 }

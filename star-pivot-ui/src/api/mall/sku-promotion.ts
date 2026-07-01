@@ -23,7 +23,7 @@ export interface SkuFullReductionSavePayload {
 
 export function fetchSkuFullReductionList(params: SkuFullReductionListParams) {
   return request.post<Api.Common.PaginatedResponse<SkuFullReductionVo>>({
-    url: '/api/mall/sku-full-reduction/list',
+    url: '/api/mall/sku-full-reduction/skuFullReductionPageList',
     data: params
   })
 }
@@ -52,7 +52,7 @@ export function fetchSkuFullReductionUpdate(data: SkuFullReductionSavePayload) {
 
 export function fetchSkuFullReductionRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/sku-full-reduction/remove',
+    url: '/api/mall/sku-full-reduction/removeSkuFullReduction',
     data: { ids },
     showSuccessMessage: true
   })
@@ -83,7 +83,7 @@ export interface SkuLadderSavePayload {
 
 export function fetchSkuLadderList(params: SkuLadderListParams) {
   return request.post<Api.Common.PaginatedResponse<SkuLadderVo>>({
-    url: '/api/mall/sku-ladder/list',
+    url: '/api/mall/sku-ladder/skuLadderPageList',
     data: params
   })
 }
@@ -112,7 +112,7 @@ export function fetchSkuLadderUpdate(data: SkuLadderSavePayload) {
 
 export function fetchSkuLadderRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/sku-ladder/remove',
+    url: '/api/mall/sku-ladder/removeSkuLadder',
     data: { ids },
     showSuccessMessage: true
   })

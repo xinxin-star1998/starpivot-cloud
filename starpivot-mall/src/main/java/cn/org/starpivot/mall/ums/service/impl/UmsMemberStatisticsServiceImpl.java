@@ -58,8 +58,8 @@ public class UmsMemberStatisticsServiceImpl implements UmsMemberStatisticsServic
         requireMember(memberId);
         MemberStatisticsReqBo reqBo = new MemberStatisticsReqBo();
         reqBo.setMemberId(memberId);
-        reqBo.setPageNum(1);
-        reqBo.setPageSize(1);
+        reqBo.setPageNum(1L);
+        reqBo.setPageSize(1L);
         PageResponse<MemberStatisticsVo> pageResponse = pageList(reqBo);
         if (pageResponse.getRows().isEmpty()) {
             throw new BizException("会员不存在");

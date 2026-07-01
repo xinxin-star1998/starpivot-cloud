@@ -14,6 +14,7 @@ import cn.org.starpivot.mall.portal.service.support.PortalHomeMarketingLoader;
 import cn.org.starpivot.mall.sms.domain.vo.HomeAdvVo;
 import cn.org.starpivot.mall.sms.entity.SmsHomeAdv;
 import cn.org.starpivot.mall.sms.mapper.SmsHomeAdvMapper;
+import cn.org.starpivot.mall.sms.service.SmsHomeCategoryHotService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -49,6 +50,7 @@ public class PortalHomeServiceImpl implements PortalHomeService {
     private final PmsCategoryBrandRelationMapper categoryBrandRelationMapper;
     private final PmsBrandMapper pmsBrandMapper;
     private final PortalHomeMarketingLoader portalHomeMarketingLoader;
+    private final SmsHomeCategoryHotService smsHomeCategoryHotService;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,6 +60,7 @@ public class PortalHomeServiceImpl implements PortalHomeService {
         List<CategoryTreeVo> categories = filterVisibleCategories(pmsCategoryService.treeList());
         vo.setCategories(categories);
         vo.setCategoryBrands(buildCategoryBrands(categories));
+        vo.setHotCategories(smsHomeCategoryHotService.listActive());
         vo.setHomeBlocks(portalHomeMarketingLoader.loadHomeBlocks());
         return vo;
     }

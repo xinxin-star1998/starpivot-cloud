@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import { fetchExcelExport } from '@/api/common/excel'
+import {fetchExcelExport} from '@/api/common/excel'
 
 /**
  * 参数配置实体类型
@@ -30,7 +30,7 @@ export interface ConfigSearchParams {
  */
 export function fetchGetConfigList(params: ConfigSearchParams) {
   return request.post<Api.Common.PaginatedResponse<Config>>({
-    url: '/api/config/list',
+    url: '/api/config/configPageList',
     data: params
   })
 }
@@ -69,7 +69,7 @@ export function fetchUpdateConfig(data: Config) {
  */
 export function fetchDeleteConfig(configIds: number[]) {
   return request.del({
-    url: '/api/config/delete',
+    url: '/api/config/removeConfig',
     data: { ids: configIds }
   })
 }

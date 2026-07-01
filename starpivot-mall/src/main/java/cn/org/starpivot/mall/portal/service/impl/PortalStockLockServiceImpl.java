@@ -11,6 +11,8 @@ import cn.org.starpivot.mall.oms.service.OmsOrderSettingService;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.service.PortalAvailableStockService;
 import cn.org.starpivot.mall.portal.service.PortalCouponService;
+import cn.org.starpivot.mall.portal.service.PortalMemberIntegrationService;
+import cn.org.starpivot.mall.portal.service.PortalSeckillStockService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import cn.org.starpivot.mall.wms.domain.dto.WmsStockDeductionLine;
 import cn.org.starpivot.mall.wms.entity.WmsWareSku;
@@ -64,6 +66,8 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
     private final WmsStockWarningService wmsStockWarningService;
     private final PortalAvailableStockService portalAvailableStockService;
     private final PortalCouponService portalCouponService;
+    private final PortalMemberIntegrationService portalMemberIntegrationService;
+    private final PortalSeckillStockService portalSeckillStockService;
     private final ObjectMapper objectMapper;
 
     private final DefaultRedisScript<Long> reserveScript = loadScript("lua/portal_stock_reserve.lua");
@@ -295,6 +299,8 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
         order.setModifyTime(LocalDateTime.now());
         omsOrderMapper.updateById(order);
         portalCouponService.releaseByOrder(order.getId());
+        portalMemberIntegrationService.restoreForOrder(order);
+        portalSeckillStockService.releaseByOrderSn(orderSn);
         saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_CLOSED, "system", "超时未支付自动关闭");
         log.info("Closed unpaid order due to stock lock timeout: {}", orderSn);
     }

@@ -21,5 +21,9 @@ public class ApTemplateStep {
     private String assigneeValue;
     private String approveMode;
     private String skipExpression;
+    /** 超时小时数，null 表示不启用 */
+    private Integer timeoutHours;
+    /** AUTO_REJECT / AUTO_APPROVE */
+    private String timeoutAction;
     private LocalDateTime createTime;
 }

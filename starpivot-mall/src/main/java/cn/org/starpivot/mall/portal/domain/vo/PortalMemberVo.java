@@ -54,4 +54,24 @@ public class PortalMemberVo {
      * Level ID
      */
     private Long levelId;
+
+    /**
+     * 等级名称
+     */
+    private String levelName;
+
+    /**
+     * 性别
+     */
+    private Integer gender;
+
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
+     * 个性签名
+     */
+    private String sign;
 }

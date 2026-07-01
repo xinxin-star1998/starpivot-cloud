@@ -27,7 +27,7 @@ gen:
     query-timeout-seconds: 30
     max-tables-per-download: 20
     allowed-hosts: []
-    write-to-disk-enabled: true
+    write-to-disk-enabled: ${GEN_EXTERNAL_WRITE_TO_DISK:false}
     default-output-root: ""
     allowed-write-paths: []
     template-dir: ""

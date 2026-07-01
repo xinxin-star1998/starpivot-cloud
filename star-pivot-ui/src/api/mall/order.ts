@@ -81,7 +81,7 @@ export interface OmsOrderClosePayload {
 
 export function fetchOmsOrderList(params: OmsOrderListParams) {
   return request.post<Api.Common.PaginatedResponse<OmsOrderVo>>({
-    url: '/api/mall/order/list',
+    url: '/api/mall/order/orderPageList',
     data: params
   })
 }

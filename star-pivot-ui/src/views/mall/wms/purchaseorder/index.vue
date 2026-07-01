@@ -50,26 +50,28 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    canReceivePurchase,
-    fetchPurchaseList,
-    fetchPurchaseReceived,
-    PURCHASE_AUDIT_STATUS_MAP,
-    PURCHASE_STATUS_MAP,
-    type PurchaseVo
-  } from '@/api/mall/purchase'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import PurchaseOrderSearch from './modules/purchase-order-search.vue'
-  import PurchaseDetailDrawer from './modules/purchase-detail-drawer.vue'
-  import PurchaseDoneDialog from './modules/purchase-done-dialog.vue'
-  import { ElButton, ElMessage, ElMessageBox, ElSpace, ElTag, ElTooltip } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h, onMounted} from 'vue'
+import {useRoute} from 'vue-router'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  canReceivePurchase,
+  fetchPurchaseList,
+  fetchPurchaseReceived,
+  PURCHASE_AUDIT_STATUS_MAP,
+  PURCHASE_STATUS_MAP,
+  type PurchaseVo
+} from '@/api/mall/purchase'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import PurchaseOrderSearch from './modules/purchase-order-search.vue'
+import PurchaseDetailDrawer from './modules/purchase-detail-drawer.vue'
+import PurchaseDoneDialog from './modules/purchase-done-dialog.vue'
+import {ElButton, ElMessage, ElMessageBox, ElSpace, ElTag, ElTooltip} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'PurchaseOrder' })
+defineOptions({ name: 'PurchaseOrder' })
 
+  const route = useRoute()
   const { hasAuth } = useAuth()
 
   const formatTime = (t?: string) => (t ? t.replace('T', ' ').slice(0, 19) : '-')
@@ -213,6 +215,13 @@
     currentPurchaseId.value = id
     detailVisible.value = true
   }
+
+  onMounted(() => {
+    const raw = route.query.openId
+    if (raw && /^\d+$/.test(String(raw))) {
+      openDetail(Number(raw))
+    }
+  })
 
   function openDone(id?: number) {
     currentPurchaseId.value = id

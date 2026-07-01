@@ -87,6 +87,16 @@ public class PortalOrderVo {
     private String note;
 
     /**
+     * delivery Company
+     */
+    private String deliveryCompany;
+
+    /**
+     * delivery Sn
+     */
+    private String deliverySn;
+
+    /**
      * 创建时间
      */
     /**

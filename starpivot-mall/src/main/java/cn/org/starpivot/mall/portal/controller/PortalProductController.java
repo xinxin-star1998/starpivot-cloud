@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * C端-商品控制器。
  * <p>
@@ -59,5 +61,14 @@ public class PortalProductController {
     @GetMapping("/{id}")
     public Result<PortalProductDetailVo> detail(@PathVariable("id") Long id) {
         return Result.success(portalProductService.getDetail(id));
+    }
+
+    @Operation(summary = "相关推荐")
+    @GetMapping("/{id}/related")
+    public Result<List<PortalProductListVo>> related(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "limit", defaultValue = "8") int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 20));
+        return Result.success(portalProductService.listRelated(id, safeLimit));
     }
 }

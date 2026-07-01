@@ -4,7 +4,7 @@ import cn.org.starpivot.common.cache.CacheConstants;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -36,19 +36,20 @@ public class RedisConfig {
     /**
      * 创建 Redis 专用 {@link ObjectMapper}。
      * <p>
-     * 启用默认类型信息（{@link ObjectMapper.DefaultTyping#NON_FINAL}）以便反序列化恢复具体类型；
-     * 不注册为 Spring Bean，避免污染 HTTP 接口的 JSON 序列化行为。
-     *
-     * @return 配置了可见性与多态类型的 ObjectMapper
+     * 启用受信任包范围内的多态类型信息，避免 {@code LaissezFaireSubTypeValidator} 带来的反序列化风险。
      */
     private static ObjectMapper createRedisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        mapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL
-        );
+        BasicPolymorphicTypeValidator validator = BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType("cn.org.starpivot")
+                .allowIfSubType("java.util")
+                .allowIfSubType("java.lang")
+                .allowIfSubType("java.time")
+                .allowIfSubType("java.math")
+                .build();
+        mapper.activateDefaultTyping(validator, ObjectMapper.DefaultTyping.NON_FINAL);
         return mapper;
     }
 

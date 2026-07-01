@@ -52,14 +52,20 @@ Client (Bearer JWT)
 
 ## Controller 注解规范
 
-统一使用 Spring Security 标准注解（**不要**使用已废弃的自定义 `@RequiresPermissions`）：
+统一使用 Spring Security 标准注解（**不要**使用已废弃的自定义 `@RequiresPermissions`）。
+
+列表与删除路径命名：`POST /{entity}PageList`、`DELETE /remove{Entity}`（详见根目录 [README.md](../../README.md) §API 路径命名约定）。
 
 ```java
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @PreAuthorize("hasAuthority('system:user:query')")
-@GetMapping("/list")
-public Result<?> list() { ... }
+@PostMapping("/userPageList")
+public Result<?> pageList(@RequestBody UserReqBo query) { ... }
+
+@PreAuthorize("hasAuthority('system:user:delete')")
+@DeleteMapping("/removeUser")
+public Result<?> remove(@RequestBody DeleteRequest request) { ... }
 
 @PreAuthorize("isAuthenticated()")
 @GetMapping("/profile")

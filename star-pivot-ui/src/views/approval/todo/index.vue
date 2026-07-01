@@ -4,10 +4,15 @@
     <ApprovalSearch v-model="searchForm" @reset="resetSearchParams" @search="handleSearch" />
 
     <ElCard class="art-table-card" shadow="never">
-      <ElTabs v-model="activeTab" class="approval-tabs" @tab-change="handleTabChange">
-        <ElTabPane label="待办" name="todo" />
-        <ElTabPane label="已办" name="done" />
-      </ElTabs>
+      <div class="todo-toolbar">
+        <ElTabs v-model="activeTab" class="approval-tabs" @tab-change="handleTabChange">
+          <ElTabPane label="待办" name="todo" />
+          <ElTabPane label="已办" name="done" />
+        </ElTabs>
+        <ElBadge :hidden="!notifyUnread" :max="99" :value="notifyUnread">
+          <ElButton @click="notifyVisible = true">通知</ElButton>
+        </ElBadge>
+      </div>
 
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData" />
 
@@ -24,6 +29,10 @@
     <ApprovalActionDialog
       v-model:comment="comment"
       v-model:visible="dialogVisible"
+      :mode="dialogMode"
+      :biz-key="currentTask?.bizKey"
+      :biz-module="currentTask?.bizModule"
+      :biz-type="currentTask?.bizType"
       :instance-id="currentTask?.instanceId"
       :submitting="submitting"
       :task-meta="approvalTaskMeta"
@@ -37,34 +46,58 @@
       v-model:instance-id="progressInstanceId"
       v-model:visible="progressVisible"
     />
+
+    <ApprovalNotificationDrawer
+      ref="notifyDrawerRef"
+      v-model:visible="notifyVisible"
+      @navigate="openTimelineDialog"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { h } from 'vue'
-  import { ElMessage } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import {
-    fetchApprovalApprove,
-    fetchApprovalDoneList,
-    fetchApprovalReject,
-    fetchApprovalTodoList
-  } from '@/api/approval/task'
-  import type { ApTaskVo } from '@/api/approval/types'
-  import ApprovalSearch from './modules/approval-search.vue'
-  import ApprovalActionDialog from './modules/approval-action-dialog.vue'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
-  import { useApprovalTimelineDialog } from '../composables/useApprovalTimelineDialog'
+import {h} from 'vue'
+import {ElMessage} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {
+  fetchApprovalApprove,
+  fetchApprovalDoneList,
+  fetchApprovalReject,
+  fetchApprovalTodoList
+} from '@/api/approval/task'
+import type {ApTaskVo} from '@/api/approval/types'
+import ApprovalSearch from './modules/approval-search.vue'
+import ApprovalActionDialog from './modules/approval-action-dialog.vue'
+import {handleMutationError} from '@/utils/http/mutation'
+import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
+import ApprovalNotificationDrawer from '../components/ApprovalNotificationDrawer.vue'
+import {useApprovalTimelineDialog} from '../composables/useApprovalTimelineDialog'
+import {fetchApprovalUnreadCount} from '@/api/approval/notification'
 
-  defineOptions({ name: 'ApprovalTodo' })
+defineOptions({ name: 'ApprovalTodo' })
 
   const { hasAuth } = useAuth()
   const { progressVisible, progressInstanceId, openTimelineDialog } = useApprovalTimelineDialog()
+
+  const notifyVisible = ref(false)
+  const notifyUnread = ref(0)
+  const notifyDrawerRef = ref<InstanceType<typeof ApprovalNotificationDrawer>>()
+
+  async function refreshNotifyCount() {
+    try {
+      notifyUnread.value = Number(await fetchApprovalUnreadCount()) || 0
+    } catch {
+      notifyUnread.value = 0
+    }
+  }
+
+  onMounted(() => {
+    refreshNotifyCount()
+  })
 
   const activeTab = ref<'todo' | 'done'>('todo')
   const searchForm = ref({
@@ -217,6 +250,10 @@
 
   async function submitAction() {
     if (!currentTask.value?.taskId) return
+    if (dialogMode.value === 'reject' && !comment.value?.trim()) {
+      ElMessage.warning('驳回时必须填写审批意见')
+      return
+    }
     submitting.value = true
     try {
       const payload = { taskId: currentTask.value.taskId, comment: comment.value }
@@ -229,6 +266,8 @@
       }
       dialogVisible.value = false
       refreshData()
+      refreshNotifyCount()
+      notifyDrawerRef.value?.refresh()
     } catch (error) {
       handleMutationError(error, dialogMode.value === 'approve' ? '审批通过失败' : '审批驳回失败')
     } finally {
@@ -239,11 +278,19 @@
 
 <style lang="scss" scoped>
   .approval-tabs {
+    flex: 1;
     padding: 0 4px;
 
     :deep(.el-tabs__header) {
       margin-bottom: 12px;
     }
+  }
+
+  .todo-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
   }
 
   :deep(.link-title) {

@@ -1,18 +1,13 @@
 package cn.org.starpivot.monitor.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.monitor.domain.vo.RedisCacheVO;
 import cn.org.starpivot.monitor.service.MonitorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -37,7 +32,7 @@ public class CacheController {
      */
     @Log(title = "Redis缓存管理")
     @PreAuthorize("hasAuthority('monitor:cache:query')")
-    @GetMapping("/list")
+    @GetMapping("/cachePageList")
     public Result<List<RedisCacheVO>> getCacheList() {
         return Result.success(monitorService.getCacheList());
     }

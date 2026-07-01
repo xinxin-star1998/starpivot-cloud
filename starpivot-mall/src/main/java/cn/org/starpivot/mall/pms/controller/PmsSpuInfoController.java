@@ -11,6 +11,7 @@ import cn.org.starpivot.mall.pms.domain.bo.ProductReqBo;
 import cn.org.starpivot.mall.pms.domain.bo.ProductSaveBo;
 import cn.org.starpivot.mall.pms.domain.bo.PublishStatusBo;
 import cn.org.starpivot.mall.pms.domain.vo.ProductVo;
+import cn.org.starpivot.mall.pms.service.PmsSpuApprovalService;
 import cn.org.starpivot.mall.pms.service.PmsSpuInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,6 +47,7 @@ import java.util.List;
 public class PmsSpuInfoController {
 
     private final PmsSpuInfoService pmsSpuInfoService;
+    private final PmsSpuApprovalService pmsSpuApprovalService;
 
     /**
      * SPU 分页列表。
@@ -54,7 +56,7 @@ public class PmsSpuInfoController {
      * @return 分页查询结果
      */
     @Operation(summary = "SPU 分页列表", description = "支持 SPU 名称模糊，目录、品牌、上架状态筛选")
-    @PostMapping("/list")
+    @PostMapping("/productPageList")
     @PreAuthorize("hasAuthority('mall:product:query')")
     public Result<PageResponse<ProductVo>> pageList(@RequestBody ProductReqBo productReqBo) {
         return Result.success(pmsSpuInfoService.getPmsSpuInfoPageList(productReqBo));
@@ -103,6 +105,15 @@ public class PmsSpuInfoController {
         return Result.success("修改成功");
     }
 
+    @Log(title = "提交商品上架审批", businessType = BusinessType.UPDATE)
+    @Operation(summary = "提交商品上架审批")
+    @PostMapping("/{id}/submit-approval")
+    @PreAuthorize("hasAuthority('mall:product:edit')")
+    public Result<?> submitApproval(@PathVariable("id") Long id) {
+        pmsSpuApprovalService.submitApproval(id);
+        return Result.success("已提交审批");
+    }
+
     /**
      * SPU 上架/下架。
      *
@@ -126,7 +137,7 @@ public class PmsSpuInfoController {
      */
     @Log(title = "删除SPU", businessType = BusinessType.DELETE)
     @Operation(summary = "删除 SPU", description = "请求体 ids 为 SPU 主键列表")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeProduct")
     @PreAuthorize("hasAuthority('mall:product:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

@@ -11,7 +11,7 @@ import {
  */
 export function fetchGetUserList(params: Api.SystemManage.UserSearchParams) {
   return request.post<Api.SystemManage.UserList>({
-    url: '/api/sys/user/pageList',
+    url: '/api/sys/user/userPageList',
     data: params
   })
 }
@@ -50,7 +50,7 @@ export function fetchUpdateUser(data: Api.SystemManage.UserListItem) {
  */
 export function fetchDeleteUser(userIds: number[]) {
   return request.del({
-    url: '/api/sys/user/delete',
+    url: '/api/sys/user/removeUser',
     data: { ids: userIds }
   })
 }
@@ -108,7 +108,7 @@ export function fetchUploadAvatar(data: FormData) {
  */
 export function fetchDeleteAvatar(userId: string) {
   return request.del({
-    url: '/api/avatar/delete',
+    url: '/api/avatar/removeAvatar',
     params: {
       userId
     }

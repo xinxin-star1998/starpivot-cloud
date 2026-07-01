@@ -1,7 +1,7 @@
 package cn.org.starpivot.file.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.domain.DeleteRequest;
+import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
@@ -30,7 +30,7 @@ public class SysFileController {
     private final ISysFileService sysFileService;
 
     @PreAuthorize("hasAuthority('file:resource:query')")
-    @PostMapping("/list")
+    @PostMapping("/filePageList")
     public Result<PageResponse<SysFileVO>> pageList(@Valid @RequestBody SysFileQueryDTO queryDTO) {
         return Result.success(sysFileService.pageList(queryDTO));
     }
@@ -65,7 +65,7 @@ public class SysFileController {
 
     @Log(title = "删除文件", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('file:resource:delete')")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeFile")
     public Result<Void> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());
         sysFileService.logicDelete(ids);
@@ -82,7 +82,7 @@ public class SysFileController {
     }
 
     @PreAuthorize("hasAuthority('file:resource:query')")
-    @PostMapping("/recycle/list")
+    @PostMapping("/recycleFilePageList")
     public Result<PageResponse<SysFileVO>> recycleList(@Valid @RequestBody SysFileRecycleQueryDTO queryDTO) {
         return Result.success(sysFileService.recyclePage(queryDTO));
     }

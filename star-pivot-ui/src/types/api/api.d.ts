@@ -82,8 +82,8 @@ declare namespace Api {
       username: string
       password: string
       rememberPassword: boolean
-      /** 验证码通过凭证（一次性 proof） */
-      captchaProof: string
+      captchaToken: string
+      captcha: string
     }
     /** 登录响应 */
     interface LoginResponse {
@@ -145,11 +145,6 @@ declare namespace Api {
       /** 服务端生成的验证码 token */
       captchaToken: string
       captchaImage: string
-    }
-
-    /** 验证码校验响应 */
-    interface CaptchaVerifyResponse {
-      captchaProof: string
     }
 
     /** 注册请求参数 */

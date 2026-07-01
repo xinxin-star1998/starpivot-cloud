@@ -1,7 +1,7 @@
 package cn.org.starpivot.system.controller.dict;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.domain.DeleteRequest;
+import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
@@ -55,7 +55,7 @@ public class SysDictTypeController {
             @ApiResponse(responseCode = "200", description = "查询成功", content = @Content(schema = @Schema(implementation = PageResponse.class)))
     })
     @PreAuthorize("hasAuthority('system:type:query')")
-    @PostMapping("/list")
+    @PostMapping("/dictTypePageList")
     public Result<PageResponse<SysDictTypeVO>> list(@RequestBody SysDictTypeQueryDTO queryDTO) {
         PageResponse<SysDictTypeVO> page = sysDictTypeService.selectDictTypePage(queryDTO);
         return Result.success(page);
@@ -131,7 +131,7 @@ public class SysDictTypeController {
     })
     @Log(title = "删除字典类型", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:type:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeDictType")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> dictIds = validateIds(deleteRequest.getIds());
         boolean success = sysDictTypeService.deleteDictTypeByIds(dictIds);

@@ -57,7 +57,6 @@ public final class CacheConstants {
     public static final Duration TTL_SYS_CONFIG = Duration.ofHours(2);
     public static final Duration TTL_SYS_DICT = Duration.ofHours(24);
     public static final Duration TTL_CAPTCHA = Duration.ofMinutes(5);
-    public static final Duration TTL_CAPTCHA_PROOF = Duration.ofMinutes(2);
     public static final Duration TTL_PWD_ERR = Duration.ofMinutes(15);
     public static final Duration TTL_USER_PERMISSIONS = Duration.ofMinutes(30);
     public static final Duration TTL_MENU_TREE = Duration.ofHours(1);
@@ -87,10 +86,6 @@ public final class CacheConstants {
         return CAPTCHA_CODES + ":" + scene + ":" + token;
     }
 
-    public static String captchaProofKey(String proof) {
-        return CAPTCHA_CODES + ":proof:" + proof;
-    }
-
     public static String sysConfigKey(String configKey) {
         return SYS_CONFIG + ":" + configKey;
     }
@@ -109,6 +104,10 @@ public final class CacheConstants {
 
     public static String userPermissionPattern() {
         return USER_PERMISSIONS + ":*";
+    }
+
+    public static String gatewayRateLimitKey(String ruleId, String clientKey) {
+        return RATE_LIMIT + ":gateway:" + ruleId + ":" + clientKey;
     }
 
     public static String dashboardKey() {

@@ -1,12 +1,9 @@
 package cn.org.starpivot.mall.oms.service.impl;
 
-import cn.org.starpivot.api.approval.ApprovalInternalClient;
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.common.exception.ErrorCode;
-import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.mall.common.MallApprovalConstants;
+import cn.org.starpivot.mall.common.MallApprovalSubmitter;
 import cn.org.starpivot.mall.common.MallAuditStatus;
 import cn.org.starpivot.mall.oms.OmsConstants;
 import cn.org.starpivot.mall.oms.entity.OmsOrderReturnApply;
@@ -16,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -28,29 +24,17 @@ import java.util.Map;
 public class OmsOrderReturnApprovalServiceImpl implements OmsOrderReturnApprovalService {
 
     private final OmsOrderReturnApplyMapper returnApplyMapper;
-    private final ApprovalInternalClient approvalInternalClient;
-    private final TransactionTemplate transactionTemplate;
+    private final MallApprovalSubmitter mallApprovalSubmitter;
 
     @Override
     public void submitApproval(Long returnId) {
         OmsOrderReturnApply apply = validateForSubmit(returnId);
-        Long userId = requireUserId();
-
-        transactionTemplate.executeWithoutResult(status -> markPending(returnId));
-
-        Long instanceId = null;
-        try {
-            instanceId = submitRemote(apply, userId);
-            final Long boundInstanceId = instanceId;
-            transactionTemplate.executeWithoutResult(status -> bindInstanceId(returnId, boundInstanceId));
-        } catch (RuntimeException ex) {
-            compensateApproval(instanceId);
-            transactionTemplate.executeWithoutResult(status -> rollbackDraft(returnId));
-            if (ex instanceof BizException bizException) {
-                throw bizException;
-            }
-            throw new BizException(ErrorCode.SYSTEM_ERROR, "提交审批失败: " + ex.getMessage());
-        }
+        Long userId = mallApprovalSubmitter.requireUserId();
+        mallApprovalSubmitter.submit(
+                () -> markPending(returnId),
+                () -> buildSubmitRequest(apply, userId),
+                instanceId -> bindInstanceId(returnId, instanceId),
+                () -> rollbackDraft(returnId));
     }
 
     @Override
@@ -124,7 +108,7 @@ public class OmsOrderReturnApprovalServiceImpl implements OmsOrderReturnApproval
         returnApplyMapper.updateById(patch);
     }
 
-    private Long submitRemote(OmsOrderReturnApply apply, Long userId) {
+    private InternalApprovalSubmitRequest buildSubmitRequest(OmsOrderReturnApply apply, Long userId) {
         InternalApprovalSubmitRequest request = new InternalApprovalSubmitRequest();
         request.setBizModule(MallApprovalConstants.BIZ_MODULE);
         request.setBizType(MallApprovalConstants.BIZ_TYPE_RETURN);
@@ -137,12 +121,7 @@ public class OmsOrderReturnApprovalServiceImpl implements OmsOrderReturnApproval
         context.put("skuId", apply.getSkuId());
         context.put("skuName", apply.getSkuName());
         request.setContext(context);
-
-        Result<Long> result = approvalInternalClient.submit(request);
-        if (result == null || !result.isSuccess() || result.getData() == null) {
-            throw new BizException(result != null ? result.getMessage() : "提交审批失败");
-        }
-        return result.getData();
+        return request;
     }
 
     private void bindInstanceId(Long returnId, Long instanceId) {
@@ -158,24 +137,5 @@ public class OmsOrderReturnApprovalServiceImpl implements OmsOrderReturnApproval
         rollback.setId(returnId);
         rollback.setAuditStatus(MallAuditStatus.DRAFT);
         returnApplyMapper.updateById(rollback);
-    }
-
-    private void compensateApproval(Long instanceId) {
-        if (instanceId == null) {
-            return;
-        }
-        try {
-            approvalInternalClient.withdraw(instanceId);
-        } catch (Exception ex) {
-            log.error("补偿撤回审批实例失败: instanceId={}", instanceId, ex);
-        }
-    }
-
-    private Long requireUserId() {
-        Long userId = SecurityContextUtils.getUserId();
-        if (userId == null) {
-            throw new BizException(ErrorCode.UNAUTHORIZED, "未登录");
-        }
-        return userId;
     }
 }

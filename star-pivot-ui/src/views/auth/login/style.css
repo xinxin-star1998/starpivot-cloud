@@ -77,44 +77,6 @@
     @apply flex-1;
   }
 
-  .captcha-image-wrapper {
-    @apply relative w-[140px] h-[52px] rounded-xl overflow-hidden
-      border-2 border-g-200/80 dark:border-g-600/50
-      bg-gradient-to-br from-g-50 to-g-100
-      dark:from-g-800 dark:to-g-700
-      transition-all duration-300 ease-out
-      hover:border-theme hover:shadow-[0_4px_20px_rgba(var(--theme-color-rgb),0.25)]
-      hover:scale-[1.02];
-  }
-
-  .captcha-image {
-    @apply w-full h-full object-contain cursor-pointer
-      transition-all duration-300;
-  }
-
-  .captcha-image-wrapper:hover .captcha-image {
-    transform: scale(1.05);
-  }
-
-  .captcha-placeholder {
-    @apply w-full h-full flex items-center justify-center gap-2
-      bg-gradient-to-br from-g-50 to-g-100 dark:from-g-800 dark:to-g-700
-      cursor-pointer
-      text-g-400 dark:text-g-500 text-sm
-      transition-all duration-300
-      hover:from-g-100 hover:to-g-200 dark:hover:from-g-700 dark:hover:to-g-600;
-  }
-
-  .captcha-loading {
-    @apply absolute inset-0 flex items-center justify-center
-      bg-white/90 dark:bg-g-900/90 backdrop-blur-sm;
-  }
-
-  .loading-spinner {
-    @apply w-6 h-6 border-[3px] border-g-200 dark:border-g-600 border-t-theme
-      rounded-full animate-spin;
-  }
-
   /* 表单选项 */
   .form-options {
     @apply flex items-center justify-between text-sm

@@ -24,7 +24,7 @@ export interface SeckillSessionSavePayload {
 
 export function fetchSeckillSessionList(params: SeckillSessionListParams) {
   return request.post<Api.Common.PaginatedResponse<SeckillSessionVo>>({
-    url: '/api/mall/seckill-session/list',
+    url: '/api/mall/seckill-session/seckillSessionPageList',
     data: params
   })
 }
@@ -59,7 +59,7 @@ export function fetchSeckillSessionUpdate(data: SeckillSessionSavePayload) {
 
 export function fetchSeckillSessionRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/seckill-session/remove',
+    url: '/api/mall/seckill-session/removeSeckillSession',
     data: { ids },
     showSuccessMessage: true
   })

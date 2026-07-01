@@ -77,15 +77,52 @@ starpivot:
       # C 端商城公开接口（与 MallSecurityConfig permitAll 对齐）
       - /api/${starpivot.api.version}/portal/home/**
       - /api/${starpivot.api.version}/portal/product/**
+      - /api/${starpivot.api.version}/portal/subject/**
+      - /api/${starpivot.api.version}/portal/seckill/**
       - /api/${starpivot.api.version}/portal/region/**
       - /api/${starpivot.api.version}/portal/member/register
       - /api/${starpivot.api.version}/portal/member/login
+      # C 端新认证入口（与 MallSecurityConfig / GatewayAuthProperties 对齐）
+      - /api/${starpivot.api.version}/portal/auth/config
+      - /api/${starpivot.api.version}/portal/auth/sms/**
+      - /api/${starpivot.api.version}/portal/auth/login/password
+      - /api/${starpivot.api.version}/portal/auth/wechat/**
       - /api/${starpivot.api.version}/portal/pay/alipay/notify
       - /**/actuator/**
       - /**/doc.html
-      - /**/swagger-ui/**
       - /**/v3/api-docs/**
       - /**/webjars/**
+    rate-limit:
+      enabled: true
+      rules:
+        - id: auth-login
+          pattern: /api/${starpivot.api.version}/auth/login
+          limit: 20
+          window-seconds: 60
+        - id: auth-captcha
+          pattern: /api/${starpivot.api.version}/auth/captcha/**
+          limit: 30
+          window-seconds: 60
+        - id: auth-forgot-password
+          pattern: /api/${starpivot.api.version}/auth/forgot-password/**
+          limit: 10
+          window-seconds: 60
+        - id: portal-sms
+          pattern: /api/${starpivot.api.version}/portal/auth/sms/**
+          limit: 10
+          window-seconds: 60
+        - id: portal-login-password
+          pattern: /api/${starpivot.api.version}/portal/auth/login/password
+          limit: 20
+          window-seconds: 60
+        - id: portal-member-login
+          pattern: /api/${starpivot.api.version}/portal/member/login
+          limit: 20
+          window-seconds: 60
+        - id: portal-member-register
+          pattern: /api/${starpivot.api.version}/portal/member/register
+          limit: 10
+          window-seconds: 60
 
 management:
   endpoints:

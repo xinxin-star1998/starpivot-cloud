@@ -39,6 +39,9 @@ public class PortalHomeBlockVo {
      */
     private String url;
 
+    /** 业务关联 ID（如专题 ID） */
+    private Long refId;
+
     /**
      * 图片
      */

@@ -8,6 +8,10 @@ export interface PortalMember {
   integration?: number
   growth?: number
   levelId?: number
+  levelName?: string
+  gender?: number
+  email?: string
+  sign?: string
 }
 
 export interface PortalLoginResult {
@@ -25,6 +29,33 @@ export interface PortalRegisterPayload {
 export interface PortalLoginPayload {
   account: string
   password: string
+}
+
+export interface PortalAuthConfig {
+  passwordLogin: boolean
+  smsLogin: boolean
+  wechatLogin: boolean
+  qqLogin: boolean
+  smsMockEnabled: boolean
+  captchaRequired: boolean
+}
+
+export interface PortalSmsSendPayload {
+  mobile: string
+  scene: 'login' | 'register' | 'bind' | 'set_password' | 'unbind'
+}
+
+export interface PortalSmsLoginPayload {
+  mobile: string
+  code: string
+}
+
+export interface PortalMemberAuthBinding {
+  authType: number
+  authTypeLabel: string
+  identifier: string
+  maskedIdentifier: string
+  bindTime?: string
 }
 
 /** 首页轮播（复用后台字段） */
@@ -56,10 +87,22 @@ export interface PortalBrandBrief {
   logo?: string
 }
 
+/** 首页分类热门 */
+export interface PortalHotCategory {
+  id?: number
+  catId?: number
+  catName?: string
+  title?: string
+  icon?: string
+  url?: string
+  sort?: number
+}
+
 export interface PortalHomeData {
   banners: PortalBanner[]
   categories: PortalCategory[]
   categoryBrands?: Record<number, PortalBrandBrief[]>
+  hotCategories?: PortalHotCategory[]
   homeBlocks?: PortalHomeBlock[]
 }
 
@@ -71,6 +114,8 @@ export interface PortalHomeProduct {
   coverImg?: string
   price?: number
   promoPrice?: number
+  seckillStockRemain?: number
+  seckillLimit?: number
 }
 
 /** 秒杀场次 */
@@ -83,12 +128,34 @@ export interface PortalSeckillSession {
   products?: PortalHomeProduct[]
 }
 
+/** 秒杀页 */
+export interface PortalSeckillPage {
+  title?: string
+  subTitle?: string
+  promotionId?: number
+  activeSessionId?: number
+  sessions?: PortalSeckillSession[]
+  products?: PortalHomeProduct[]
+}
+
+/** 秒杀下单 */
+export interface PortalSeckillOrderPayload {
+  sessionId: number
+  skuId: number
+  quantity: number
+  addressId: number
+  orderToken: string
+  payType?: number
+  note?: string
+}
+
 /** 首页营销模块 */
 export interface PortalHomeBlock {
   code: 'new' | 'seckill' | 'budget' | 'subject'
   title?: string
   subTitle?: string
   url?: string
+  refId?: number
   coverImg?: string
   products?: PortalHomeProduct[]
   sessions?: PortalSeckillSession[]
@@ -106,6 +173,8 @@ export interface PortalProductListItem {
   price?: number
   coverImg?: string
   createTime?: string
+  commentCount?: number
+  avgStar?: number
 }
 
 export interface PortalProductSearchParams extends Api.Common.CommonSearchParams {
@@ -114,6 +183,17 @@ export interface PortalProductSearchParams extends Api.Common.CommonSearchParams
   brandId?: number
   /** default | priceAsc | priceDesc | newest */
   sort?: string
+}
+
+/** 专题活动详情 */
+export interface PortalSubjectDetail {
+  id?: number
+  name?: string
+  title?: string
+  subTitle?: string
+  coverImg?: string
+  url?: string
+  products?: Api.Common.PaginatedResponse<PortalProductListItem>
 }
 
 /** 商品详情（继承 SPU 结构） */
@@ -231,6 +311,8 @@ export interface PortalOrder {
   receiverRegion?: string
   receiverDetailAddress?: string
   note?: string
+  deliveryCompany?: string
+  deliverySn?: string
   createTime?: string
   orderItemList?: PortalOrderItem[]
 }
@@ -243,6 +325,46 @@ export interface PortalOrderSubmitPayload {
   note?: string
   payType?: number
   couponHistoryId?: number
+  useIntegration?: number
+  orderToken: string
+}
+
+export interface PortalOrderSubmitToken {
+  orderToken: string
+}
+
+export interface PortalOrderPriceTrialPayload {
+  useCart?: boolean
+  cartSkuIds?: number[]
+  items?: Array<{ skuId: number; quantity: number }>
+  couponHistoryId?: number
+  useIntegration?: number
+}
+
+export interface PortalOrderPriceLine {
+  skuId: number
+  skuTitle?: string
+  quantity: number
+  originalUnitPrice: number
+  unitPrice: number
+  lineOriginalAmount: number
+  promotionAmount: number
+  lineAmount: number
+}
+
+export interface PortalOrderPriceTrial {
+  originalAmount: number
+  promotionAmount: number
+  merchandiseAmount: number
+  couponAmount: number
+  integrationAmount: number
+  useIntegration: number
+  availableIntegration: number
+  maxUsableIntegration: number
+  freightAmount: number
+  freeFreight: boolean
+  payAmount: number
+  lines: PortalOrderPriceLine[]
 }
 
 export interface PortalMemberCoupon {
@@ -296,4 +418,86 @@ export interface PortalOrderSubmitResult {
 
 export interface PortalOrderQueryParams extends Api.Common.CommonSearchParams {
   status?: number
+}
+
+/** 会员中心概览 */
+export interface PortalMemberCenter {
+  member: PortalMember
+  levelName?: string
+  collectCount?: number
+  orderCount?: number
+  couponCount?: number
+  commentCount?: number
+  pendingReviewCount?: number
+}
+
+export interface PortalCommentSummary {
+  spuId?: number
+  total?: number
+  avgStar?: number
+}
+
+export interface PortalPendingReview {
+  spuId?: number
+  skuId?: number
+  spuName?: string
+  coverImg?: string
+  orderSn?: string
+}
+
+export interface PortalMemberProfilePayload {
+  nickname?: string
+  header?: string
+  gender?: number
+  sign?: string
+}
+
+/** 收藏 */
+export interface PortalCollectItem {
+  id?: number
+  spuId?: number
+  spuName?: string
+  spuImg?: string
+  price?: number
+  publishStatus?: number
+  defaultSkuId?: number
+  createTime?: string
+}
+
+/** 商品评价 */
+export interface PortalCommentReply {
+  id?: number
+  memberNickName?: string
+  memberIcon?: string
+  content?: string
+  createTime?: string
+}
+
+export interface PortalComment {
+  id?: number
+  spuId?: number
+  spuName?: string
+  skuId?: number
+  memberNickName?: string
+  memberIcon?: string
+  star?: number
+  content?: string
+  resources?: string
+  spuAttributes?: string
+  likesCount?: number
+  replyCount?: number
+  createTime?: string
+  replies?: PortalCommentReply[]
+}
+
+export interface PortalCommentSubmitPayload {
+  spuId: number
+  skuId: number
+  star: number
+  content: string
+  resources?: string
+}
+
+export interface PortalCommentQueryParams extends Api.Common.CommonSearchParams {
+  spuId: number
 }

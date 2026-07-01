@@ -25,24 +25,26 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    canCompleteReturn,
-    fetchReturnComplete,
-    fetchReturnList,
-    RETURN_AUDIT_STATUS_MAP,
-    RETURN_STATUS_MAP
-  } from '@/api/mall/order-return'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ReturnSearch from './modules/return-search.vue'
-  import ReturnDetailDrawer from './modules/return-detail-drawer.vue'
-  import { ElButton, ElSpace, ElTag } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h, onMounted} from 'vue'
+import {useRoute} from 'vue-router'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  canCompleteReturn,
+  fetchReturnComplete,
+  fetchReturnList,
+  RETURN_AUDIT_STATUS_MAP,
+  RETURN_STATUS_MAP
+} from '@/api/mall/order-return'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ReturnSearch from './modules/return-search.vue'
+import ReturnDetailDrawer from './modules/return-detail-drawer.vue'
+import {ElButton, ElSpace, ElTag} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'OmsOrderReturn' })
+defineOptions({ name: 'OmsOrderReturn' })
 
+  const route = useRoute()
   const { hasAuth } = useAuth()
 
   const searchForm = ref({
@@ -164,6 +166,13 @@
     currentReturnId.value = id
     detailVisible.value = true
   }
+
+  onMounted(() => {
+    const raw = route.query.openId
+    if (raw && /^\d+$/.test(String(raw))) {
+      openDetail(Number(raw))
+    }
+  })
 
   async function handleComplete(id: number) {
     await fetchReturnComplete(id)

@@ -83,36 +83,40 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    COUPON_PUBLISH_OPTIONS,
-    COUPON_TYPE_OPTIONS,
-    COUPON_USE_TYPE_OPTIONS,
-    type CouponVo,
-    fetchCouponList,
-    fetchCouponPublishStatus,
-    fetchCouponRemove
-  } from '@/api/mall/coupon'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import CouponDialog from './modules/coupon-dialog.vue'
-  import CouponDetailDrawer from './modules/coupon-detail-drawer.vue'
-  import type { DialogType } from '@/types'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import {
-    COUPON_RUN_STATUS_MAP,
-    formatCouponDateRange,
-    formatCouponMoney,
-    formatCouponStock,
-    getCouponRunStatus
-  } from '@/utils/mall/coupon'
+import {h, onMounted} from 'vue'
+import {useRoute} from 'vue-router'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  canSubmitCouponAudit,
+  COUPON_PUBLISH_OPTIONS,
+  COUPON_TYPE_OPTIONS,
+  COUPON_USE_TYPE_OPTIONS,
+  type CouponVo,
+  fetchCouponList,
+  fetchCouponPublishStatus,
+  fetchCouponRemove,
+  fetchCouponSubmitApproval
+} from '@/api/mall/coupon'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import CouponDialog from './modules/coupon-dialog.vue'
+import CouponDetailDrawer from './modules/coupon-detail-drawer.vue'
+import type {DialogType} from '@/types'
+import {useAuth} from '@/hooks/core/useAuth'
+import {handleMutationError} from '@/utils/http/mutation'
+import {
+  COUPON_RUN_STATUS_MAP,
+  formatCouponDateRange,
+  formatCouponMoney,
+  formatCouponStock,
+  getCouponRunStatus
+} from '@/utils/mall/coupon'
 
-  defineOptions({ name: 'SmsCoupon' })
+defineOptions({ name: 'SmsCoupon' })
 
+  const route = useRoute()
   const { hasAuth } = useAuth()
   const validityRange = ref<[string, string] | null>(null)
   const searchForm = ref({
@@ -246,16 +250,25 @@
             }
             if (hasAuth('mall:coupon:edit')) {
               const published = row.publish === 1
-              actions.push(
-                h(ArtButtonTable, {
-                  label: published ? '下架' : '发布',
-                  icon: published ? 'ri:arrow-down-circle-line' : 'ri:arrow-up-circle-line',
-                  iconClass: published
-                    ? 'bg-warning/12 text-warning'
-                    : 'bg-success/12 text-success',
-                  onClick: () => togglePublishStatus(row)
-                })
-              )
+              if (published) {
+                actions.push(
+                  h(ArtButtonTable, {
+                    label: '下架',
+                    icon: 'ri:arrow-down-circle-line',
+                    iconClass: 'bg-warning/12 text-warning',
+                    onClick: () => togglePublishStatus(row)
+                  })
+                )
+              } else if (canSubmitCouponAudit(row)) {
+                actions.push(
+                  h(ArtButtonTable, {
+                    label: '提交审批',
+                    icon: 'ri:shield-check-line',
+                    iconClass: 'bg-primary/12 text-primary',
+                    onClick: () => submitCouponApproval(row)
+                  })
+                )
+              }
               actions.push(
                 h(ArtButtonTable, {
                   label: '编辑',
@@ -306,6 +319,13 @@
     detailVisible.value = true
   }
 
+  onMounted(() => {
+    const raw = route.query.openId
+    if (raw && /^\d+$/.test(String(raw))) {
+      openDetail(Number(raw))
+    }
+  })
+
   const handleDetailEdit = (id?: number) => {
     detailVisible.value = false
     openDialog('edit', id)
@@ -313,19 +333,31 @@
 
   const togglePublishStatus = async (row: CouponVo) => {
     if (row.id == null) return
-    const published = row.publish === 1
-    const nextPublish = (published ? 0 : 1) as 0 | 1
-    const action = published ? '下架' : '发布'
     try {
       await ElMessageBox.confirm(
-        `确定${action}优惠券「${row.couponName}」吗？${published ? '下架后用户将无法继续领取。' : ''}`,
-        `${action}优惠券`,
+        `确定下架优惠券「${row.couponName}」吗？下架后用户将无法继续领取。`,
+        '下架优惠券',
         { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
       )
-      await fetchCouponPublishStatus(row.id!, nextPublish)
+      await fetchCouponPublishStatus(row.id!, 0)
       refreshData()
     } catch (error) {
-      handleMutationError(error, `${action}失败`)
+      handleMutationError(error, '下架失败')
+    }
+  }
+
+  const submitCouponApproval = async (row: CouponVo) => {
+    if (row.id == null) return
+    try {
+      await ElMessageBox.confirm(
+        `确定提交优惠券「${row.couponName}」发布审批吗？`,
+        '提交审批',
+        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' }
+      )
+      await fetchCouponSubmitApproval(row.id!)
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '提交审批失败')
     }
   }
 

@@ -6,15 +6,15 @@ import request from '@/utils/http'
  * @returns 登录响应
  */
 export function fetchLogin(data: Api.Auth.LoginParams) {
-  // 仅将后端需要的字段发送给服务端，记住密码标记仅在前端本地使用
-  const { username, password, captchaProof } = data
+  const { username, password, captchaToken, captcha } = data
 
   return request.post<Api.Auth.LoginResponse>({
     url: '/api/auth/login',
     data: {
       username,
       password,
-      captchaProof
+      captchaToken,
+      captcha
     }
     // showSuccessMessage: true // 显示成功消息
     // showErrorMessage: false // 不显示错误消息
@@ -44,7 +44,7 @@ export function fetchRegister(data: Api.Auth.RegisterParams) {
  */
 export function fetchGetUserInfo() {
   return request.get<Api.Auth.UserInfo>({
-    url: '/api/auth/userinfo'
+    url: '/api/auth/user/info'
     // 自定义请求头
     // headers: {
     //   'X-Custom-Header': 'your-custom-value'
@@ -70,17 +70,6 @@ export function fetchCaptcha(scene = 'login') {
   return request.get<Api.Auth.CaptchaResponse>({
     url: '/api/auth/captcha',
     params: { scene }
-  })
-}
-
-/**
- * 校验验证码，获取一次性 proof
- * @param data 校验请求参数
- */
-export function fetchVerifyCaptcha(data: { captchaToken: string; code: string; scene?: string }) {
-  return request.post<Api.Auth.CaptchaVerifyResponse>({
-    url: '/api/auth/captcha/verify',
-    data
   })
 }
 
@@ -123,7 +112,8 @@ export async function fetchForgetPasswordEnabled(): Promise<boolean> {
 export function fetchForgotPassword(data: {
   username: string
   password: string
-  captchaProof: string
+  captchaToken: string
+  captcha: string
 }) {
   return request.post({
     url: '/api/auth/forgot-password',

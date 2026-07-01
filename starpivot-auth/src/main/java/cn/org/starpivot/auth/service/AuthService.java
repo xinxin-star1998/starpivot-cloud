@@ -64,13 +64,15 @@ public class AuthService {
         String loginLocation = LogUtils.getLoginLocation(ip);
 
         try {
-            captchaService.consumeProof(request.getCaptchaProof());
+            verifyLoginCaptcha(request);
             SysUserAuthDto userDto = verifyUserCredentials(request.getUsername(), request.getPassword());
 
             if (!AppConstants.Status.NORMAL.equals(userDto.getStatus())) {
                 recordLoginLog(request.getUsername(), ip, httpRequest, "1", "用户已停用");
                 throw new BizException(401, "用户名或密码错误");
             }
+
+            consumeLoginCaptcha(request);
 
             LoginUser user = LoginUser.builder()
                     .userId(userDto.getUserId())
@@ -204,7 +206,7 @@ public class AuthService {
         if (!isForgetPasswordEnabled()) {
             throw new BizException(403, "当前未开放忘记密码功能");
         }
-        captchaService.consumeProof(request.getCaptchaProof());
+        verifyForgotPasswordCaptcha(request);
 
         ForgotPasswordResetRequest resetRequest = new ForgotPasswordResetRequest();
         resetRequest.setUsername(request.getUsername().trim());
@@ -213,6 +215,7 @@ public class AuthService {
         if (result == null || !result.isSuccess()) {
             throw new BizException(500, result != null ? result.getMessage() : "重置失败，请稍后重试");
         }
+        consumeForgotPasswordCaptcha(request);
         // 用户不存在时也静默成功，防止账号枚举
     }
 
@@ -334,6 +337,23 @@ public class AuthService {
             loginLogRecordService.record(dto);
         } catch (Exception ignored) {
         }
+    }
+
+    private void verifyLoginCaptcha(LoginRequest request) {
+        captchaService.check(CaptchaService.SCENE_LOGIN, request.getCaptchaToken(), request.getCaptcha());
+    }
+
+    private void consumeLoginCaptcha(LoginRequest request) {
+        captchaService.consume(CaptchaService.SCENE_LOGIN, request.getCaptchaToken());
+    }
+
+    private void verifyForgotPasswordCaptcha(ForgotPasswordRequest request) {
+        captchaService.check(
+                CaptchaService.SCENE_FORGET_PASSWORD, request.getCaptchaToken(), request.getCaptcha());
+    }
+
+    private void consumeForgotPasswordCaptcha(ForgotPasswordRequest request) {
+        captchaService.consume(CaptchaService.SCENE_FORGET_PASSWORD, request.getCaptchaToken());
     }
 
     private HttpServletRequest currentRequest() {

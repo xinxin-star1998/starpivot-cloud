@@ -14,8 +14,13 @@
             {{ item.value }}
           </ElDescriptionsItem>
         </ElDescriptions>
-        <ElFormItem class="comment-field" label="审批意见" label-position="top">
-          <ElInput v-model="comment" :rows="5" placeholder="审批意见（可选）" type="textarea" />
+        <ElFormItem class="comment-field" label="审批意见" label-position="top" :required="mode === 'reject'">
+          <ElInput
+            v-model="comment"
+            :rows="5"
+            :placeholder="mode === 'reject' ? '驳回时必须填写审批意见' : '审批意见（可选）'"
+            type="textarea"
+          />
         </ElFormItem>
       </div>
 
@@ -25,6 +30,7 @@
     </div>
 
     <template #footer>
+      <ElButton v-if="bizNav" @click="goBizDetail">{{ bizNav.label }}</ElButton>
       <ElButton @click="visible = false">取消</ElButton>
       <ElButton :loading="submitting" type="primary" @click="emit('submit')">确定</ElButton>
     </template>
@@ -32,19 +38,26 @@
 </template>
 
 <script lang="ts" setup>
-  import ApprovalTimeline from '../../components/ApprovalTimeline.vue'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import ApprovalTimeline from '../../components/ApprovalTimeline.vue'
+import {resolveApprovalBizNav} from '../../utils/biz-nav'
 
-  interface TaskMetaItem {
+interface TaskMetaItem {
     label: string
     value?: string
   }
 
-  defineProps<{
+  const props = defineProps<{
     title?: string
+    mode?: 'approve' | 'reject'
     submitting?: boolean
     instanceId?: number
     taskTitle?: string
     taskMeta?: TaskMetaItem[]
+    bizModule?: string
+    bizType?: string
+    bizKey?: string
   }>()
 
   const visible = defineModel<boolean>('visible', { default: false })
@@ -54,6 +67,19 @@
     submit: []
     closed: []
   }>()
+
+  const router = useRouter()
+
+  const bizNav = computed(() =>
+    resolveApprovalBizNav(props.bizModule, props.bizType, props.bizKey)
+  )
+
+  function goBizDetail() {
+    const nav = bizNav.value
+    if (!nav) return
+    visible.value = false
+    router.push({ path: nav.path, query: nav.query })
+  }
 </script>
 
 <style lang="scss" scoped>

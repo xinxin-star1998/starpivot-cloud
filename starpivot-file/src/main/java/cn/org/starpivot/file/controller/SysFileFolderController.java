@@ -1,7 +1,7 @@
 package cn.org.starpivot.file.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.domain.DeleteRequest;
+import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;

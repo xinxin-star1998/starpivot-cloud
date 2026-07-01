@@ -10,36 +10,23 @@ import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.domain.vo.PortalHomeBlockVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalHomeProductVo;
+import cn.org.starpivot.mall.portal.domain.vo.PortalSeckillPageVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalSeckillSessionVo;
-import cn.org.starpivot.mall.sms.entity.SmsHomeSubject;
-import cn.org.starpivot.mall.sms.entity.SmsHomeSubjectSpu;
-import cn.org.starpivot.mall.sms.entity.SmsSeckillPromotion;
-import cn.org.starpivot.mall.sms.entity.SmsSeckillSession;
-import cn.org.starpivot.mall.sms.entity.SmsSeckillSkuRelation;
-import cn.org.starpivot.mall.sms.mapper.SmsHomeSubjectMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsHomeSubjectSpuMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsSeckillPromotionMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsSeckillSessionMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsSeckillSkuRelationMapper;
+import cn.org.starpivot.mall.portal.service.PortalSeckillStockService;
+import cn.org.starpivot.mall.sms.entity.*;
+import cn.org.starpivot.mall.sms.mapper.*;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -56,6 +43,7 @@ public class PortalHomeMarketingLoader {
     private final SmsSeckillSkuRelationMapper smsSeckillSkuRelationMapper;
     private final SmsHomeSubjectMapper smsHomeSubjectMapper;
     private final SmsHomeSubjectSpuMapper smsHomeSubjectSpuMapper;
+    private final PortalSeckillStockService portalSeckillStockService;
 
     public List<PortalHomeBlockVo> loadHomeBlocks() {
         List<PortalHomeBlockVo> blocks = new ArrayList<>(4);
@@ -91,7 +79,8 @@ public class PortalHomeMarketingLoader {
         }
         block.setTitle(StringUtils.hasText(subject.getTitle()) ? subject.getTitle() : subject.getName());
         block.setSubTitle(subject.getSubTitle());
-        block.setUrl(subject.getUrl());
+        block.setRefId(subject.getId());
+        block.setUrl(StringUtils.hasText(subject.getUrl()) ? subject.getUrl() : "/portal/subject/" + subject.getId());
         block.setCoverImg(normalizeImg(subject.getImg()));
         block.setProducts(listSubjectProducts(subject.getId()));
         return block;
@@ -130,6 +119,7 @@ public class PortalHomeMarketingLoader {
 
         block.setSessions(sessionVos);
         block.setActiveSessionId(activeSessionId);
+        block.setUrl("/portal/seckill");
         Long selectedSessionId = activeSessionId;
         PortalSeckillSessionVo active = sessionVos.stream()
                 .filter(item -> Objects.equals(item.getId(), selectedSessionId))
@@ -175,10 +165,14 @@ public class PortalHomeMarketingLoader {
     }
 
     private List<PortalHomeProductVo> buildSeckillProducts(List<SmsSeckillSkuRelation> relations) {
+        return buildSeckillProducts(relations, MODULE_PRODUCT_LIMIT);
+    }
+
+    private List<PortalHomeProductVo> buildSeckillProducts(List<SmsSeckillSkuRelation> relations, Integer limit) {
         if (CollectionUtils.isEmpty(relations)) {
             return List.of();
         }
-        List<SmsSeckillSkuRelation> limited = relations.stream().limit(MODULE_PRODUCT_LIMIT).toList();
+        List<SmsSeckillSkuRelation> limited = limit == null ? relations : relations.stream().limit(limit).toList();
         List<Long> skuIds = limited.stream()
                 .map(SmsSeckillSkuRelation::getSkuId)
                 .filter(Objects::nonNull)
@@ -214,6 +208,28 @@ public class PortalHomeMarketingLoader {
             products.add(product);
         }
         return products;
+    }
+
+    private void enrichSeckillStock(
+            Long promotionId,
+            Long sessionId,
+            List<PortalHomeProductVo> products,
+            List<SmsSeckillSkuRelation> relations) {
+        if (promotionId == null || sessionId == null || CollectionUtils.isEmpty(products)) {
+            return;
+        }
+        Map<Long, SmsSeckillSkuRelation> relationMap = relations.stream()
+                .filter(r -> r.getSkuId() != null)
+                .collect(Collectors.toMap(SmsSeckillSkuRelation::getSkuId, r -> r, (a, b) -> a));
+        for (PortalHomeProductVo product : products) {
+            SmsSeckillSkuRelation relation = relationMap.get(product.getSkuId());
+            if (relation == null) {
+                continue;
+            }
+            product.setSeckillLimit(relation.getSeckillLimit());
+            product.setSeckillStockRemain(
+                    portalSeckillStockService.getRemainStock(promotionId, sessionId, product.getSkuId()));
+        }
     }
 
     private List<PortalHomeProductVo> listNewestProducts() {
@@ -413,5 +429,57 @@ public class PortalHomeMarketingLoader {
 
     private String firstNonBlank(String primary, String fallback) {
         return StringUtils.hasText(primary) ? primary : fallback;
+    }
+
+    public PortalSeckillPageVo loadSeckillPage(Long sessionId) {
+        PortalSeckillPageVo page = new PortalSeckillPageVo();
+        page.setTitle("限时秒杀");
+        page.setSubTitle("整点场 · 抢完即止");
+
+        List<SmsSeckillSession> sessions = smsSeckillSessionMapper.selectList(
+                Wrappers.<SmsSeckillSession>lambdaQuery()
+                        .eq(SmsSeckillSession::getStatus, 1)
+                        .orderByAsc(SmsSeckillSession::getStartTime)
+                        .orderByAsc(SmsSeckillSession::getId));
+        if (CollectionUtils.isEmpty(sessions)) {
+            return page;
+        }
+
+        SmsSeckillPromotion promotion = findActivePromotion();
+        Map<Long, List<SmsSeckillSkuRelation>> relationMap = loadSeckillRelationMap(promotion);
+
+        LocalTime now = LocalTime.now();
+        List<PortalSeckillSessionVo> sessionVos = new ArrayList<>();
+        Long activeSessionId = null;
+        for (SmsSeckillSession session : sessions) {
+            PortalSeckillSessionVo sessionVo = toSessionVo(session, now);
+            sessionVos.add(sessionVo);
+            if (activeSessionId == null && !"ended".equals(sessionVo.getState())) {
+                activeSessionId = sessionVo.getId();
+            }
+        }
+        if (activeSessionId == null) {
+            activeSessionId = sessionVos.get(0).getId();
+        }
+
+        Long selectedSessionId = sessionId != null ? sessionId : activeSessionId;
+        Long finalSelectedSessionId = selectedSessionId;
+        boolean validSession = sessionVos.stream()
+                .anyMatch(item -> Objects.equals(item.getId(), finalSelectedSessionId));
+        if (!validSession) {
+            selectedSessionId = activeSessionId;
+        }
+
+        page.setSessions(sessionVos);
+        page.setActiveSessionId(selectedSessionId);
+        if (promotion != null && selectedSessionId != null) {
+            page.setPromotionId(promotion.getId());
+            List<SmsSeckillSkuRelation> relations = relationMap.getOrDefault(selectedSessionId, List.of());
+            portalSeckillStockService.warmup(promotion.getId(), relations);
+            List<PortalHomeProductVo> products = buildSeckillProducts(relations, null);
+            enrichSeckillStock(promotion.getId(), selectedSessionId, products, relations);
+            page.setProducts(products);
+        }
+        return page;
     }
 }

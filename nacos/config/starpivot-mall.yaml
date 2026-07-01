@@ -21,6 +21,26 @@ starpivot:
   mall:
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     mock-pay-enabled: ${MALL_MOCK_PAY_ENABLED:false}
+    order:
+      default-freight: ${MALL_ORDER_DEFAULT_FREIGHT:10.00}
+      integration-yuan-rate: ${MALL_INTEGRATION_YUAN_RATE:0.01}
+      integration-max-rate: ${MALL_INTEGRATION_MAX_RATE:0.50}
+    seckill:
+      max-requests-per-second: ${MALL_SECKILL_MAX_RPS:10}
+      unpaid-lock-minutes: ${MALL_SECKILL_UNPAID_LOCK_MINUTES:5}
+    elasticsearch:
+      enabled: ${MALL_ES_ENABLED:false}
+      uris: ${MALL_ES_URIS:http://127.0.0.1:9200}
+      index-name: ${MALL_ES_INDEX:mall_product}
+      reindex-on-startup: ${MALL_ES_REINDEX_ON_STARTUP:false}
+    portal-auth:
+      sms:
+        mock-enabled: ${MALL_PORTAL_SMS_MOCK:true}
+        mock-code: ${MALL_PORTAL_SMS_MOCK_CODE:123456}
+      wechat:
+        enabled: ${MALL_WECHAT_ENABLED:false}
+        mock-enabled: ${MALL_WECHAT_MOCK:true}
+        redirect-uri: ${MALL_WECHAT_REDIRECT_URI:http://localhost:3000/portal/login/wechat/callback}
     alipay:
       enabled: ${MALL_ALIPAY_ENABLED:false}
       app-id: ${MALL_ALIPAY_APP_ID:}
@@ -29,6 +49,15 @@ starpivot:
       gateway-url: ${MALL_ALIPAY_GATEWAY_URL:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
       notify-url: ${MALL_ALIPAY_NOTIFY_URL:}
       return-url: ${MALL_ALIPAY_RETURN_URL:}
+    wxpay:
+      enabled: ${MALL_WXPAY_ENABLED:false}
+      mock-enabled: ${MALL_WXPAY_MOCK:true}
+      app-id: ${MALL_WXPAY_APP_ID:}
+      mch-id: ${MALL_WXPAY_MCH_ID:}
+      api-v3-key: ${MALL_WXPAY_API_V3_KEY:}
+      merchant-serial-number: ${MALL_WXPAY_MERCHANT_SERIAL:}
+      private-key: ${MALL_WXPAY_PRIVATE_KEY:}
+      notify-url: ${MALL_WXPAY_NOTIFY_URL:}
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml

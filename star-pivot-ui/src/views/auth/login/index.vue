@@ -73,23 +73,11 @@
                     />
                   </template>
                 </ElInput>
-                <div class="captcha-image-wrapper">
-                  <img
-                    v-if="captchaImage"
-                    :src="captchaImage"
-                    alt="验证码"
-                    class="captcha-image"
-                    @click="refreshCaptcha"
-                    :class="{ 'opacity-50': loadingCaptcha }"
-                  />
-                  <div v-else class="captcha-placeholder" @click="refreshCaptcha">
-                    <ArtSvgIcon icon="ri:refresh-line" class="text-lg" />
-                    <span>获取验证码</span>
-                  </div>
-                  <div v-if="loadingCaptcha" class="captcha-loading">
-                    <div class="loading-spinner"></div>
-                  </div>
-                </div>
+                <CaptchaImage
+                  :image="captchaImage"
+                  :loading="loadingCaptcha"
+                  @refresh="refreshCaptcha(clearCaptchaInput)"
+                />
               </div>
             </ElFormItem>
 
@@ -126,19 +114,20 @@
 </template>
 
 <script setup lang="ts">
-  import AppConfig from '@/config'
-  import { useUserStore } from '@/store/modules/user'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { useI18n } from 'vue-i18n'
-  import { HttpError } from '@/utils/http/error'
-  import { fetchCaptcha, fetchLogin, fetchVerifyCaptcha } from '@/api/auth'
-  import { isRegisterEnabled } from '@/utils/auth/register-config'
-  import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
-  import { logger } from '@/utils/sys/logger'
-  import { useCommon } from '@/hooks'
-  import { useRoute, useRouter } from 'vue-router'
+import AppConfig from '@/config'
+import {useUserStore} from '@/store/modules/user'
+import {useSettingStore} from '@/store/modules/setting'
+import {useI18n} from 'vue-i18n'
+import {HttpError} from '@/utils/http/error'
+import {fetchLogin} from '@/api/auth'
+import {isRegisterEnabled} from '@/utils/auth/register-config'
+import {ElNotification, type FormInstance, type FormRules} from 'element-plus'
+import {logger} from '@/utils/sys/logger'
+import {useCaptcha, useCommon} from '@/hooks'
+import {useRoute, useRouter} from 'vue-router'
+import CaptchaImage from '@/components/core/views/login/CaptchaImage.vue'
 
-  defineOptions({ name: 'Login' })
+defineOptions({ name: 'Login' })
 
   const { t, locale } = useI18n()
   const formKey = ref(0)
@@ -161,16 +150,16 @@
   const formData = reactive({
     username: '',
     password: '',
-    // 默认勾选记住密码
     rememberPassword: true,
-    /** 当前验证码 token，由服务端生成 */
-    captchaToken: '',
     captcha: ''
   })
 
-  const captchaImage = ref('')
-  const loadingCaptcha = ref(false)
-  const captchaError = ref('')
+  const { captchaToken, captchaImage, loadingCaptcha, captchaError, refreshCaptcha, handleCaptchaFailure } =
+    useCaptcha('login')
+
+  const clearCaptchaInput = () => {
+    formData.captcha = ''
+  }
 
   const rules = computed<FormRules>(() => ({
     username: [{ required: true, message: t('login.placeholder.username'), trigger: 'blur' }],
@@ -197,30 +186,20 @@
 
       captchaError.value = ''
 
-      // 先校验验证码，获取一次性 proof
-      if (!formData.captchaToken) {
+      if (!captchaToken.value) {
         captchaError.value = '请先获取验证码'
         return
       }
 
-      // 立即设置 loading 状态，防止重复点击
       loading.value = true
 
-      const verifyRes = await fetchVerifyCaptcha({
-        captchaToken: formData.captchaToken,
-        code: formData.captcha,
-        scene: 'login'
-      })
-
-      const captchaProof = verifyRes.captchaProof
-
-      // 登录请求
       const { username, password } = formData
 
       const response = await fetchLogin({
         username,
         password,
-        captchaProof,
+        captchaToken: captchaToken.value,
+        captcha: formData.captcha,
         rememberPassword: formData.rememberPassword
       })
 
@@ -282,16 +261,8 @@
     } catch (error) {
       // 处理 HttpError
       if (error instanceof HttpError) {
-        // 处理验证码错误
         if (error.code === 401 && error.message.includes('验证码')) {
-          captchaError.value = error.message
-          refreshCaptcha()
-        }
-        // 处理账户锁定错误（423）
-        else if (error.code === 423) {
-          // 账户锁定错误，HTTP拦截器已经显示了错误消息，这里不需要额外处理
-          // 但可以刷新验证码，让用户重新尝试
-          refreshCaptcha()
+          handleCaptchaFailure(error.message, clearCaptchaInput)
         }
       } else {
         // 处理非 HttpError
@@ -299,22 +270,6 @@
       }
     } finally {
       loading.value = false
-    }
-  }
-
-  // 获取验证码
-  const refreshCaptcha = async () => {
-    loadingCaptcha.value = true
-    captchaError.value = ''
-
-    try {
-      const response = await fetchCaptcha()
-      formData.captchaToken = response.captchaToken
-      captchaImage.value = response.captchaImage
-    } catch (error) {
-      logger.error('获取验证码失败:', error)
-    } finally {
-      loadingCaptcha.value = false
     }
   }
 
@@ -352,7 +307,6 @@
         }
         localStorage.setItem(LOGIN_INFO_STORAGE_KEY, JSON.stringify(loginInfo))
       } else {
-        // 如果用户取消记住密码，清除本地存储中的登录信息
         localStorage.removeItem(LOGIN_INFO_STORAGE_KEY)
       }
     } catch (error) {
@@ -368,7 +322,7 @@
     } catch {
       registerEnabled.value = false
     }
-    refreshCaptcha()
+    refreshCaptcha(clearCaptchaInput)
   })
 
   // 登录成功提示

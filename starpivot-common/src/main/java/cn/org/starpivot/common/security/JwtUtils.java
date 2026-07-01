@@ -356,4 +356,17 @@ public final class JwtUtils {
             return error;
         }
     }
+
+    /**
+     * 净化 JWT 字符串用于 Redis 黑名单键，移除非法字符以防键注入。
+     *
+     * @param token 原始 JWT 令牌
+     * @return 净化后的令牌字符串
+     */
+    public static String sanitizeTokenForBlacklist(String token) {
+        if (token == null) {
+            return "";
+        }
+        return token.replaceAll("[^a-zA-Z0-9._\\-=]", "");
+    }
 }

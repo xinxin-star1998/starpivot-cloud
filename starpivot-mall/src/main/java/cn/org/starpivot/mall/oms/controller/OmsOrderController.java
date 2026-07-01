@@ -49,7 +49,7 @@ public class OmsOrderController {
      * @return 分页查询结果
      */
     @Operation(summary = "订单分页列表")
-    @PostMapping("/list")
+    @PostMapping("/orderPageList")
     @PreAuthorize("hasAuthority('mall:order:query')")
     public Result<PageResponse<OmsOrderVo>> pageList(@RequestBody OmsOrderReqBo reqBo) {
         return Result.success(omsOrderService.pageList(reqBo));

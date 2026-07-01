@@ -20,7 +20,7 @@ export interface PaymentListParams extends Api.Common.CommonSearchParams {
 
 export function fetchPaymentList(params: PaymentListParams) {
   return request.post<Api.Common.PaginatedResponse<PaymentVo>>({
-    url: '/api/mall/payment/list',
+    url: '/api/mall/payment/paymentPageList',
     data: params
   })
 }

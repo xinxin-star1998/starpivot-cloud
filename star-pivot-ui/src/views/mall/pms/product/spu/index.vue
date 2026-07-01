@@ -1,8 +1,8 @@
-<!-- 商品维护（SPU 列表，与 manager 共用） -->
+<!-- SPU 管理：分类树 + SPU 列表（对齐谷粒「spu管理」） -->
 <script setup lang="ts">
-  import ProductIndex from '../index.vue'
+import ProductIndex from '../index.vue'
 
-  defineOptions({ name: 'SpuManager' })
+defineOptions({ name: 'SpuManager' })
 </script>
 
 <template>

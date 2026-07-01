@@ -1,5 +1,6 @@
 package cn.org.starpivot.auth.service;
 
+import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.SecurityConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class TokenBlacklistService {
         }
 
         try {
-            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + sanitizeToken(token);
+            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + JwtUtils.sanitizeTokenForBlacklist(token);
             redisTemplate.opsForValue().set(
                     key,
                     String.valueOf(System.currentTimeMillis()), // 存储时间戳以便跟踪
@@ -66,7 +67,7 @@ public class TokenBlacklistService {
         }
 
         try {
-            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + sanitizeToken(token);
+            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + JwtUtils.sanitizeTokenForBlacklist(token);
             Boolean exists = redisTemplate.hasKey(key);
             boolean isBlacklisted = Boolean.TRUE.equals(exists);
 
@@ -93,7 +94,7 @@ public class TokenBlacklistService {
         }
 
         try {
-            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + sanitizeToken(token);
+            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + JwtUtils.sanitizeTokenForBlacklist(token);
             redisTemplate.delete(key);
             log.debug("Token removed from blacklist: {}", key);
         } catch (Exception e) {
@@ -110,16 +111,5 @@ public class TokenBlacklistService {
     public void cleanupExpiredEntries() {
         // 注意：在Redis中，过期键会自动删除，无需手动清理
         log.info("Blacklist cleanup completed (auto-expiry handles cleanup)");
-    }
-
-    /**
-     * 对令牌进行安全处理，移除非法字符以防 Redis 键注入。
-     *
-     * @param token 原始 JWT 令牌
-     * @return 净化后的令牌字符串
-     */
-    private String sanitizeToken(String token) {
-        // 移除可能的恶意字符，只保留字母数字和标准JWT字符
-        return token.replaceAll("[^a-zA-Z0-9._\\-=]", "");
     }
 }

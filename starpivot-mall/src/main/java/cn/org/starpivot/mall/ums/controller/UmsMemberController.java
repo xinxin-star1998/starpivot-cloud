@@ -54,7 +54,7 @@ public class UmsMemberController {
      * @return 分页查询结果
      */
     @Operation(summary = "会员分页列表")
-    @PostMapping("/list")
+    @PostMapping("/memberPageList")
     @PreAuthorize("hasAuthority('mall:member:query')")
     public Result<PageResponse<MemberVo>> pageList(@RequestBody MemberReqBo reqBo) {
         return Result.success(umsMemberService.pageList(reqBo));

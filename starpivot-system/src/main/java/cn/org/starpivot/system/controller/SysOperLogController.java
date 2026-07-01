@@ -46,8 +46,8 @@ public class SysOperLogController {
      */
     @Log(title = "操作日志")
     @PreAuthorize("hasAuthority('system:operlog:query')")
-    @PostMapping("/pageList")
-    public Result<PageResponse<OperLogVO>> pageList(@RequestBody OperLogReqBo operLogReqBo) {
+    @PostMapping("/operLogPageList")
+    public Result<PageResponse<OperLogVO>> list(@RequestBody OperLogReqBo operLogReqBo) {
         return Result.success(sysOperLogService.pageList(operLogReqBo));
     }
 
@@ -78,7 +78,7 @@ public class SysOperLogController {
      */
     @Log(title = "删除操作日志", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:operlog:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeOperLog")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         boolean success = sysOperLogService.removeByIds(validateIds(deleteRequest.getIds()));
         return success ? Result.success("删除成功") : Result.error("删除失败");

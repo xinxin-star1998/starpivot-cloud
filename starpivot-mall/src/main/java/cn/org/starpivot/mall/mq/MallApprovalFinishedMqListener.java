@@ -4,6 +4,8 @@ package cn.org.starpivot.mall.mq;
 import cn.org.starpivot.api.approval.dto.ApprovalFinishedMessage;
 import cn.org.starpivot.api.event.MqQueueNames;
 import cn.org.starpivot.mall.oms.service.OmsOrderReturnApprovalService;
+import cn.org.starpivot.mall.pms.service.PmsSpuApprovalService;
+import cn.org.starpivot.mall.sms.service.SmsCouponApprovalService;
 import cn.org.starpivot.mall.wms.service.WmsPurchaseApprovalService;
 import cn.org.starpivot.mq.config.RabbitListenerConfiguration;
 import cn.org.starpivot.mq.core.MessageEnvelope;
@@ -20,109 +22,59 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-
-
 /**
-
  * 消费审批完结事件，回写商城业务状态。
-
  */
-
 @Slf4j
-
 @Component
-
 @ConditionalOnProperty(prefix = "starpivot.mq", name = "enabled", havingValue = "true")
-
 public class MallApprovalFinishedMqListener extends AbstractMqListener<ApprovalFinishedMessage> {
 
-
-
     private final WmsPurchaseApprovalService purchaseApprovalService;
-
     private final OmsOrderReturnApprovalService returnApprovalService;
-
-
+    private final SmsCouponApprovalService couponApprovalService;
+    private final PmsSpuApprovalService spuApprovalService;
 
     public MallApprovalFinishedMqListener(MqMessageConverter messageConverter,
-
                                           ObjectProvider<IdempotentChecker> idempotentCheckerProvider,
-
                                           WmsPurchaseApprovalService purchaseApprovalService,
-
-                                          OmsOrderReturnApprovalService returnApprovalService) {
-
+                                          OmsOrderReturnApprovalService returnApprovalService,
+                                          SmsCouponApprovalService couponApprovalService,
+                                          PmsSpuApprovalService spuApprovalService) {
         super(messageConverter, idempotentCheckerProvider);
-
         this.purchaseApprovalService = purchaseApprovalService;
-
         this.returnApprovalService = returnApprovalService;
-
+        this.couponApprovalService = couponApprovalService;
+        this.spuApprovalService = spuApprovalService;
     }
-
-
 
     @RabbitListener(
-
             queues = MqQueueNames.MALL_APPROVAL_FINISHED,
-
             ackMode = "MANUAL",
-
             containerFactory = RabbitListenerConfiguration.LISTENER_CONTAINER_FACTORY)
-
     public void onMessage(Message message, Channel channel) throws IOException {
-
         handleMessage(message, channel, ApprovalFinishedMessage.class, this::dispatch);
-
     }
-
-
 
     @Override
-
     protected String resolveIdempotentKey(Message message, MessageEnvelope<ApprovalFinishedMessage> envelope) {
-
         ApprovalFinishedMessage payload = envelope.getPayload();
-
         if (payload != null && payload.getInstanceId() != null && payload.getResult() != null) {
-
             return "approval:finished:" + payload.getInstanceId() + ":" + payload.getResult();
-
         }
-
         return super.resolveIdempotentKey(message, envelope);
-
     }
-
-
 
     private void dispatch(ApprovalFinishedMessage msg) {
+        String bizModule = msg.getBizModule();
+        String bizType = msg.getBizType();
+        String bizKey = msg.getBizKey();
+        String result = msg.getResult();
+        String comment = msg.getComment();
 
-        purchaseApprovalService.handleApprovalFinished(
-
-                msg.getBizModule(),
-
-                msg.getBizType(),
-
-                msg.getBizKey(),
-
-                msg.getResult(),
-
-                msg.getComment());
-
-        returnApprovalService.handleApprovalFinished(
-
-                msg.getBizModule(),
-
-                msg.getBizType(),
-
-                msg.getBizKey(),
-
-                msg.getResult(),
-
-                msg.getComment());
-
+        purchaseApprovalService.handleApprovalFinished(bizModule, bizType, bizKey, result, comment);
+        returnApprovalService.handleApprovalFinished(bizModule, bizType, bizKey, result, comment);
+        couponApprovalService.handleApprovalFinished(bizModule, bizType, bizKey, result, comment);
+        spuApprovalService.handleApprovalFinished(bizModule, bizType, bizKey, result, comment);
     }
-
 }
-

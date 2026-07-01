@@ -9,6 +9,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,18 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/approval/task")
 @RequiredArgsConstructor
+@Tag(name = "审批任务", description = "待办、已办、通过、驳回")
 public class ApTaskController {
 
     private final ApTaskService taskService;
 
     @PreAuthorize("hasAuthority('approval:task:query')")
-    @PostMapping("/todo/list")
+    @PostMapping("/todoTaskPageList")
     public Result<PageResponse<ApTaskVo>> todoList(@RequestBody ApTaskQueryDto query) {
         return Result.success(taskService.todoList(query, requireUserId()));
     }
 
     @PreAuthorize("hasAuthority('approval:task:query')")
-    @PostMapping("/done/list")
+    @PostMapping("/doneTaskPageList")
     public Result<PageResponse<ApTaskVo>> doneList(@RequestBody ApTaskQueryDto query) {
         return Result.success(taskService.doneList(query, requireUserId()));
     }

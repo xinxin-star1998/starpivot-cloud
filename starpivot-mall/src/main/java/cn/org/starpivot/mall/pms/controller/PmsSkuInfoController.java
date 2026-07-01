@@ -52,7 +52,7 @@ public class PmsSkuInfoController {
      * @return 分页查询结果
      */
     @Operation(summary = "SKU 分页列表")
-    @PostMapping("/list")
+    @PostMapping("/skuPageList")
     @PreAuthorize("hasAuthority('mall:product:query')")
     public Result<PageResponse<SkuVo>> pageList(@RequestBody SkuReqBo reqBo) {
         return Result.success(pmsSkuInfoService.getSkuPageList(reqBo));
@@ -138,7 +138,7 @@ public class PmsSkuInfoController {
      */
     @Log(title = "删除SKU", businessType = BusinessType.DELETE)
     @Operation(summary = "删除 SKU", description = "请求体 ids 为 SKU 主键列表")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSku")
     @PreAuthorize("hasAuthority('mall:product:edit')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

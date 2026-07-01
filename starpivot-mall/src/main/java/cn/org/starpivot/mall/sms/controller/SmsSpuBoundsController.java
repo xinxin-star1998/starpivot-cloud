@@ -53,7 +53,7 @@ public class SmsSpuBoundsController {
      * @return 分页查询结果
      */
     @Operation(summary = "SPU积分分页列表")
-    @PostMapping("/list")
+    @PostMapping("/spuBoundsPageList")
     @PreAuthorize("hasAuthority('mall:bounds:list')")
     public Result<PageResponse<SpuBoundsVo>> pageList(@RequestBody SpuBoundsReqBo reqBo) {
         return Result.success(smsSpuBoundsService.pageList(reqBo));
@@ -123,7 +123,7 @@ public class SmsSpuBoundsController {
      */
     @Log(title = "删除SPU积分", businessType = BusinessType.DELETE)
     @Operation(summary = "删除SPU积分")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSpuBounds")
     @PreAuthorize("hasAuthority('mall:bounds:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

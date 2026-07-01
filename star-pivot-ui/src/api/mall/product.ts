@@ -1,4 +1,5 @@
 import request from '@/utils/http'
+import { canSubmitMallAudit } from '@/utils/mall/audit-status'
 
 /** SPU VO（pms_spu_info + 关联数据） */
 export interface MallProductVo {
@@ -9,6 +10,8 @@ export interface MallProductVo {
   brandId?: number
   weight?: number | string
   publishStatus?: number
+  approvalInstanceId?: number
+  auditStatus?: string
   createTime?: string
   updateTime?: string
   /** 列表封面（图集默认或首张） */
@@ -80,7 +83,7 @@ export interface MallProductSavePayload {
 
 export function fetchMallProductList(params: MallProductListParams) {
   return request.post<Api.Common.PaginatedResponse<MallProductVo>>({
-    url: '/api/mall/product/list',
+    url: '/api/mall/product/productPageList',
     data: params
   })
 }
@@ -109,17 +112,28 @@ export function fetchMallProductUpdate(data: MallProductSavePayload) {
 
 export function fetchMallProductRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/product/remove',
+    url: '/api/mall/product/removeProduct',
     data: { ids },
     showSuccessMessage: true
   })
 }
 
-/** SPU 上架/下架：publishStatus 0-下架 1-上架 */
+/** SPU 上架/下架：publishStatus 0-下架 1-上架（上架需先走审批） */
 export function fetchMallProductPublishStatus(id: number, publishStatus: 0 | 1) {
   return request.put<void>({
     url: '/api/mall/product/publish-status',
     data: { id, publishStatus },
     showSuccessMessage: true
   })
+}
+
+export function fetchMallProductSubmitApproval(id: number) {
+  return request.post<void>({
+    url: `/api/mall/product/${id}/submit-approval`,
+    showSuccessMessage: true
+  })
+}
+
+export function canSubmitProductAudit(row: Pick<MallProductVo, 'publishStatus' | 'auditStatus'>) {
+  return row.publishStatus !== 1 && canSubmitMallAudit(row.auditStatus)
 }

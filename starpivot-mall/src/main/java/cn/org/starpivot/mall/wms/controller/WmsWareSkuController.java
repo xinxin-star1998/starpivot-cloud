@@ -49,7 +49,7 @@ public class WmsWareSkuController
      * @return 分页结果
      */
     @PreAuthorize("hasAuthority('mall:sku:query')")
-    @PostMapping("/list")
+    @PostMapping("/wareSkuPageList")
     public Result<PageResponse<WmsWareSkuVO>> list(@RequestBody WmsWareSkuQueryDTO queryDTO)
     {
         PageResponse<WmsWareSkuVO> page = wmsWareSkuService.selectWmsWareSkuPage(queryDTO);
@@ -115,7 +115,7 @@ public class WmsWareSkuController
      * @return 操作结果
      */
     @PreAuthorize("hasAuthority('mall:sku:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeWareSku")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest)
     {
         List<Long> idList = deleteRequest.getIds();

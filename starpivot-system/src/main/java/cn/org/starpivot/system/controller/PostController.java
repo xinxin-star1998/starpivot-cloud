@@ -46,7 +46,7 @@ public class PostController {
      * @return 岗位分页结果
      */
     @PreAuthorize("hasAuthority('system:post:query')")
-    @PostMapping("/list")
+    @PostMapping("/postPageList")
     public Result<PageResponse<PostVO>> list(@RequestBody PostQueryDTO queryDTO) {
         return Result.success(postService.selectPostPage(queryDTO));
     }
@@ -121,7 +121,7 @@ public class PostController {
      */
     @Log(title = "删除岗位", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:post:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removePost")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         if (deleteRequest.getIds() == null || deleteRequest.getIds().isEmpty()) {
             throw new BizException(ErrorCode.PARAM_INVALID, "删除ID不能为空");

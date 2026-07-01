@@ -46,6 +46,12 @@
             <if test="req.brandId != null">
                 AND s.brand_id = #{req.brandId}
             </if>
+            <if test="req.minPrice != null">
+                AND s.price &gt;= #{req.minPrice}
+            </if>
+            <if test="req.maxPrice != null">
+                AND s.price &lt;= #{req.maxPrice}
+            </if>
         </where>
         ORDER BY s.sku_id DESC
     </select>

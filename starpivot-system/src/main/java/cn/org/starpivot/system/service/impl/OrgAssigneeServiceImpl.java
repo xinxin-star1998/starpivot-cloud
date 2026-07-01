@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,11 +53,31 @@ public class OrgAssigneeServiceImpl implements OrgAssigneeService {
         if (userId == null) {
             return "";
         }
-        SysUser user = userMapper.selectById(userId);
-        if (user == null) {
-            return String.valueOf(userId);
+        return displayNames(List.of(userId)).getOrDefault(userId, String.valueOf(userId));
+    }
+
+    @Override
+    public Map<Long, String> displayNames(List<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Map.of();
         }
-        return StringUtils.hasText(user.getNickName()) ? user.getNickName() : user.getUserName();
+        List<Long> distinct = userIds.stream().filter(Objects::nonNull).distinct().toList();
+        if (distinct.isEmpty()) {
+            return Map.of();
+        }
+        List<SysUser> users = userMapper.selectBatchIds(distinct);
+        Map<Long, String> result = new HashMap<>();
+        for (SysUser user : users) {
+            if (user.getUserId() == null) {
+                continue;
+            }
+            result.put(user.getUserId(),
+                    StringUtils.hasText(user.getNickName()) ? user.getNickName() : user.getUserName());
+        }
+        for (Long userId : distinct) {
+            result.putIfAbsent(userId, String.valueOf(userId));
+        }
+        return result;
     }
 
     private Long requireStarter(Long starterId) {

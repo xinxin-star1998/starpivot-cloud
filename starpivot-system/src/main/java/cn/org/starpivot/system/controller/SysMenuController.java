@@ -87,7 +87,7 @@ public class SysMenuController {
      */
     @Log(title = "删除菜单", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:menu:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeMenu")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         boolean success = sysMenuService.deleteMenuByIds(validateIds(deleteRequest.getIds()));
         return success ? Result.success("删除菜单成功") : Result.error("删除菜单失败");

@@ -52,7 +52,7 @@ public class WmsWareOrderTaskController {
      * @return 分页查询结果
      */
     @Operation(summary = "库存工作单分页列表")
-    @PostMapping("/list")
+    @PostMapping("/wareTaskPageList")
     @PreAuthorize("hasAuthority('mall:task:list')")
     public Result<PageResponse<WareOrderTaskVo>> pageList(@RequestBody WareOrderTaskReqBo reqBo) {
         return Result.success(wmsWareOrderTaskService.pageList(reqBo));

@@ -7,10 +7,13 @@ import cn.org.starpivot.approval.domain.dto.ApTemplateQueryDto;
 import cn.org.starpivot.approval.domain.dto.ApTemplateSaveDto;
 import cn.org.starpivot.approval.domain.entity.ApTemplate;
 import cn.org.starpivot.approval.domain.entity.ApTemplateBind;
+import cn.org.starpivot.approval.domain.entity.ApTemplateRoute;
 import cn.org.starpivot.approval.domain.entity.ApTemplateStep;
 import cn.org.starpivot.approval.domain.vo.ApTemplateDetailVo;
+import cn.org.starpivot.approval.domain.vo.ApTemplateRouteVo;
 import cn.org.starpivot.approval.mapper.ApTemplateBindMapper;
 import cn.org.starpivot.approval.mapper.ApTemplateMapper;
+import cn.org.starpivot.approval.mapper.ApTemplateRouteMapper;
 import cn.org.starpivot.approval.mapper.ApTemplateStepMapper;
 import cn.org.starpivot.approval.service.ApTemplateService;
 import cn.org.starpivot.approval.service.engine.TemplateResolver;
@@ -25,7 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +39,7 @@ public class ApTemplateServiceImpl implements ApTemplateService {
 
     private final ApTemplateMapper templateMapper;
     private final ApTemplateStepMapper stepMapper;
+    private final ApTemplateRouteMapper routeMapper;
     private final ApTemplateBindMapper bindMapper;
     private final TemplateResolver templateResolver;
 
@@ -57,6 +64,7 @@ public class ApTemplateServiceImpl implements ApTemplateService {
         ApTemplateDetailVo vo = new ApTemplateDetailVo();
         vo.setTemplate(template);
         vo.setSteps(templateResolver.loadSteps(templateId));
+        vo.setRoutes(loadRouteVos(templateId, vo.getSteps()));
         return vo;
     }
 
@@ -77,6 +85,7 @@ public class ApTemplateServiceImpl implements ApTemplateService {
             template.setUpdateTime(now);
             templateMapper.updateById(template);
             stepMapper.delete(new LambdaQueryWrapper<ApTemplateStep>().eq(ApTemplateStep::getTemplateId, template.getTemplateId()));
+            routeMapper.delete(new LambdaQueryWrapper<ApTemplateRoute>().eq(ApTemplateRoute::getTemplateId, template.getTemplateId()));
         } else {
             template = new ApTemplate();
             template.setTemplateCode(dto.getTemplateCode());
@@ -89,6 +98,7 @@ public class ApTemplateServiceImpl implements ApTemplateService {
             template.setCreateTime(now);
             templateMapper.insert(template);
         }
+        Map<String, Long> stepCodeToId = new HashMap<>();
         for (ApTemplateSaveDto.ApTemplateStepDto stepDto : dto.getSteps()) {
             ApTemplateStep step = new ApTemplateStep();
             step.setTemplateId(template.getTemplateId());
@@ -100,10 +110,64 @@ public class ApTemplateServiceImpl implements ApTemplateService {
             step.setApproveMode(StringUtils.hasText(stepDto.getApproveMode())
                     ? stepDto.getApproveMode() : ApprovalConstants.APPROVE_MODE_ANY);
             step.setSkipExpression(stepDto.getSkipExpression());
+            step.setTimeoutHours(stepDto.getTimeoutHours());
+            step.setTimeoutAction(StringUtils.hasText(stepDto.getTimeoutAction())
+                    ? stepDto.getTimeoutAction() : ApprovalConstants.TIMEOUT_ACTION_REJECT);
             step.setCreateTime(now);
             stepMapper.insert(step);
+            stepCodeToId.put(step.getStepCode(), step.getStepId());
         }
+        saveRoutes(template.getTemplateId(), dto.getRoutes(), stepCodeToId);
         return template.getTemplateId();
+    }
+
+    private void saveRoutes(Long templateId, List<ApTemplateSaveDto.ApTemplateRouteDto> routes,
+                            Map<String, Long> stepCodeToId) {
+        if (routes == null || routes.isEmpty()) {
+            return;
+        }
+        for (ApTemplateSaveDto.ApTemplateRouteDto routeDto : routes) {
+            if (!StringUtils.hasText(routeDto.getFromStepCode()) || !StringUtils.hasText(routeDto.getToStepCode())) {
+                throw new BizException(ErrorCode.PARAM_INVALID, "路由的起止步骤编码不能为空");
+            }
+            Long fromStepId = stepCodeToId.get(routeDto.getFromStepCode().trim());
+            Long toStepId = stepCodeToId.get(routeDto.getToStepCode().trim());
+            if (fromStepId == null || toStepId == null) {
+                throw new BizException(ErrorCode.PARAM_INVALID, "路由引用了不存在的步骤编码");
+            }
+            ApTemplateRoute route = new ApTemplateRoute();
+            route.setTemplateId(templateId);
+            route.setFromStepId(fromStepId);
+            route.setToStepId(toStepId);
+            route.setPriority(routeDto.getPriority() != null ? routeDto.getPriority() : 0);
+            route.setConditionExpr(routeDto.getConditionExpr());
+            routeMapper.insert(route);
+        }
+    }
+
+    private List<ApTemplateRouteVo> loadRouteVos(Long templateId, List<ApTemplateStep> steps) {
+        Map<Long, ApTemplateStep> stepById = steps.stream()
+                .collect(Collectors.toMap(ApTemplateStep::getStepId, s -> s, (a, b) -> a));
+        List<ApTemplateRoute> routes = routeMapper.selectList(new LambdaQueryWrapper<ApTemplateRoute>()
+                .eq(ApTemplateRoute::getTemplateId, templateId)
+                .orderByAsc(ApTemplateRoute::getFromStepId, ApTemplateRoute::getPriority));
+        return routes.stream().map(route -> {
+            ApTemplateRouteVo vo = new ApTemplateRouteVo();
+            vo.setRouteId(route.getRouteId());
+            vo.setPriority(route.getPriority());
+            vo.setConditionExpr(route.getConditionExpr());
+            ApTemplateStep from = stepById.get(route.getFromStepId());
+            ApTemplateStep to = stepById.get(route.getToStepId());
+            if (from != null) {
+                vo.setFromStepCode(from.getStepCode());
+                vo.setFromStepName(from.getStepName());
+            }
+            if (to != null) {
+                vo.setToStepCode(to.getStepCode());
+                vo.setToStepName(to.getStepName());
+            }
+            return vo;
+        }).toList();
     }
 
     @Override

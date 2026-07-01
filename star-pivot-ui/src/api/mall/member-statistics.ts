@@ -29,7 +29,7 @@ export interface MemberStatisticsListParams extends Api.Common.CommonSearchParam
 
 export function fetchMemberStatisticsList(params: MemberStatisticsListParams) {
   return request.post<Api.Common.PaginatedResponse<MemberStatisticsVo>>({
-    url: '/api/mall/member-statistics/list',
+    url: '/api/mall/member-statistics/memberStatisticsPageList',
     data: params
   })
 }

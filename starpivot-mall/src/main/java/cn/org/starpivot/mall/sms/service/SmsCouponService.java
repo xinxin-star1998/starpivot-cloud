@@ -45,4 +45,9 @@ public interface SmsCouponService {
      * 更新发布状态（上架/下架）。
      */
     void updatePublishStatus(Long id, Integer publish);
+
+    /**
+     * 校验优惠券是否满足发布条件（提交审批前调用）。
+     */
+    void assertPublishable(Long id);
 }

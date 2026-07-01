@@ -1,4 +1,13 @@
-import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
+import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
+
+const CACHE_TTL_MS = 5 * 60 * 1000
+
+let categoryNameMapCache: { data: Record<number, string>; expiresAt: number } | null = null
+
+/** 清除类目名称缓存（类目变更后调用） */
+export function invalidateCategoryNameMapCache(): void {
+  categoryNameMapCache = null
+}
 
 /** 将分类树展平为 catId -> name */
 export function buildCategoryNameMap(
@@ -25,9 +34,15 @@ export function getCategoryDisplayName(map: Record<number, string>, catId?: numb
 
 /** 拉取完整类目树并构建 id -> name 映射 */
 export async function fetchCategoryNameMap(): Promise<Record<number, string>> {
+  const now = Date.now()
+  if (categoryNameMapCache && categoryNameMapCache.expiresAt > now) {
+    return categoryNameMapCache.data
+  }
   try {
     const tree = await fetchMallCategoryTree()
-    return buildCategoryNameMap(tree || [])
+    const data = buildCategoryNameMap(tree || [])
+    categoryNameMapCache = { data, expiresAt: now + CACHE_TTL_MS }
+    return data
   } catch {
     return {}
   }

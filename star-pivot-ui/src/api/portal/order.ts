@@ -1,10 +1,26 @@
 import request from '@/utils/http'
 import type {
-  PortalOrder,
-  PortalOrderQueryParams,
-  PortalOrderSubmitPayload,
-  PortalOrderSubmitResult
+    PortalOrder,
+    PortalOrderPriceTrial,
+    PortalOrderPriceTrialPayload,
+    PortalOrderQueryParams,
+    PortalOrderSubmitPayload,
+    PortalOrderSubmitResult,
+    PortalOrderSubmitToken
 } from './types'
+
+export function fetchPortalOrderSubmitToken() {
+  return request.get<PortalOrderSubmitToken>({
+    url: '/api/portal/order/submit-token'
+  })
+}
+
+export function fetchPortalOrderPriceTrial(data: PortalOrderPriceTrialPayload) {
+  return request.post<PortalOrderPriceTrial>({
+    url: '/api/portal/order/price-trial',
+    data
+  })
+}
 
 export function fetchPortalOrderSubmit(data: PortalOrderSubmitPayload) {
   return request.post<PortalOrderSubmitResult>({
@@ -16,8 +32,14 @@ export function fetchPortalOrderSubmit(data: PortalOrderSubmitPayload) {
 
 export function fetchPortalOrderList(params: PortalOrderQueryParams) {
   return request.post<Api.Common.PaginatedResponse<PortalOrder>>({
-    url: '/api/portal/order/list',
+    url: '/api/portal/order/portalOrderPageList',
     data: params
+  })
+}
+
+export function fetchPortalOrderStatusCounts() {
+  return request.get<Record<string, number>>({
+    url: '/api/portal/order/status-counts'
   })
 }
 

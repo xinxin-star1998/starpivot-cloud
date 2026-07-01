@@ -41,6 +41,11 @@
             {{ detail.publish === 1 ? '已发布' : '未发布' }}
           </ElTag>
         </ElDescriptionsItem>
+        <ElDescriptionsItem label="审批状态">
+          <ElTag :type="auditTagType(detail.auditStatus)" size="small">
+            {{ MALL_AUDIT_STATUS_MAP[detail.auditStatus || ''] || detail.auditStatus || '-' }}
+          </ElTag>
+        </ElDescriptionsItem>
         <ElDescriptionsItem :span="2" label="备注">{{ detail.note || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem v-if="detail.couponImg" :span="2" label="券图片">
           <ElImage
@@ -54,6 +59,12 @@
           <span v-else class="image-loading">加载中...</span>
         </ElDescriptionsItem>
       </ElDescriptions>
+
+      <ApprovalTimeline
+        v-if="detail.approvalInstanceId"
+        :instance-id="detail.approvalInstanceId"
+        class="mb-4"
+      />
 
       <template v-if="detail.useType === 2 && detail.spuList?.length">
         <h4 class="section-title">关联商品</h4>
@@ -79,17 +90,24 @@
       <div v-if="showActions" class="drawer-actions">
         <ElButton
           v-if="hasAuth('mall:coupon:edit')"
-          type="primary"
           @click="emit('edit', detail.id)"
         >
           编辑
         </ElButton>
         <ElButton
-          v-if="hasAuth('mall:coupon:edit')"
-          :type="detail.publish === 1 ? 'warning' : 'success'"
+          v-if="hasAuth('mall:coupon:edit') && detail.publish !== 1 && canSubmitCouponAudit(detail)"
+          :loading="submittingApproval"
+          type="primary"
+          @click="handleSubmitApproval"
+        >
+          提交审批
+        </ElButton>
+        <ElButton
+          v-if="hasAuth('mall:coupon:edit') && detail.publish === 1"
+          type="warning"
           @click="handleTogglePublish"
         >
-          {{ detail.publish === 1 ? '下架' : '发布' }}
+          下架
         </ElButton>
       </div>
     </template>
@@ -97,28 +115,32 @@
 </template>
 
 <script lang="ts" setup>
-  import { ElMessageBox } from 'element-plus'
-  import {
-    COUPON_TYPE_OPTIONS,
-    COUPON_USE_TYPE_OPTIONS,
-    type CouponVo,
-    fetchCouponById,
-    fetchCouponPublishStatus
-  } from '@/api/mall/coupon'
-  import { fetchMemberLevelList, type MemberLevelVo } from '@/api/mall/member-level'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import {
-    COUPON_PHASE_STATUS_MAP,
-    COUPON_RUN_STATUS_MAP,
-    formatCouponDateRange,
-    formatCouponMoney,
-    getCouponClaimStatus,
-    getCouponRunStatus,
-    getCouponUseStatus
-  } from '@/utils/mall/coupon'
-  import { resolveGoodsImageDisplayUrl } from '@/utils/mall/goods-image-url'
+import {ElMessageBox} from 'element-plus'
+import {
+  canSubmitCouponAudit,
+  COUPON_TYPE_OPTIONS,
+  COUPON_USE_TYPE_OPTIONS,
+  type CouponVo,
+  fetchCouponById,
+  fetchCouponPublishStatus,
+  fetchCouponSubmitApproval
+} from '@/api/mall/coupon'
+import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
+import {MALL_AUDIT_STATUS_MAP} from '@/utils/mall/audit-status'
+import {fetchMemberLevelList, type MemberLevelVo} from '@/api/mall/member-level'
+import {useAuth} from '@/hooks/core/useAuth'
+import {
+  COUPON_PHASE_STATUS_MAP,
+  COUPON_RUN_STATUS_MAP,
+  formatCouponDateRange,
+  formatCouponMoney,
+  getCouponClaimStatus,
+  getCouponRunStatus,
+  getCouponUseStatus
+} from '@/utils/mall/coupon'
+import {resolveGoodsImageDisplayUrl} from '@/utils/mall/goods-image-url'
 
-  interface Props {
+interface Props {
     visible: boolean
     couponId?: number
     showActions?: boolean
@@ -143,6 +165,7 @@
   })
 
   const loading = ref(false)
+  const submittingApproval = ref(false)
   const detail = ref<CouponVo | null>(null)
   const imageUrl = ref('')
   const levelOptions = ref<MemberLevelVo[]>([])
@@ -201,19 +224,32 @@
 
   const handleTogglePublish = async () => {
     if (!detail.value?.id) return
-    const published = detail.value.publish === 1
-    const nextPublish = (published ? 0 : 1) as 0 | 1
-    const action = published ? '下架' : '发布'
     await ElMessageBox.confirm(
-      `确定${action}优惠券「${detail.value.couponName}」吗？${
-        published ? '下架后用户将无法继续领取。' : ''
-      }`,
-      `${action}优惠券`,
+      `确定下架优惠券「${detail.value.couponName}」吗？下架后用户将无法继续领取。`,
+      '下架优惠券',
       { type: 'warning' }
     )
-    await fetchCouponPublishStatus(detail.value.id, nextPublish)
-    detail.value = { ...detail.value, publish: nextPublish }
+    await fetchCouponPublishStatus(detail.value.id, 0)
+    detail.value = { ...detail.value, publish: 0, auditStatus: 'DRAFT' }
     emit('submit')
+  }
+
+  const handleSubmitApproval = async () => {
+    if (!detail.value?.id) return
+    await ElMessageBox.confirm(
+      `确定提交优惠券「${detail.value.couponName}」发布审批吗？`,
+      '提交审批',
+      { type: 'info' }
+    )
+    submittingApproval.value = true
+    try {
+      await fetchCouponSubmitApproval(detail.value.id)
+      const refreshed = await fetchCouponById(detail.value.id)
+      detail.value = refreshed
+      emit('submit')
+    } finally {
+      submittingApproval.value = false
+    }
   }
 </script>
 

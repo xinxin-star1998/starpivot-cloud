@@ -8,10 +8,11 @@ import cn.org.starpivot.approval.domain.entity.ApTemplate;
 import cn.org.starpivot.approval.domain.entity.ApTemplateBind;
 import cn.org.starpivot.approval.domain.vo.ApTemplateDetailVo;
 import cn.org.starpivot.approval.service.ApTemplateService;
-import cn.org.starpivot.common.domain.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.security.SecurityContextUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,12 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/approval/template")
 @RequiredArgsConstructor
+@Tag(name = "审批模板", description = "模板维护、发布、业务绑定")
 public class ApTemplateController {
 
     private final ApTemplateService templateService;
 
     @PreAuthorize("hasAuthority('approval:template:query')")
-    @PostMapping("/list")
+    @PostMapping("/templatePageList")
     public Result<PageResponse<ApTemplate>> list(@RequestBody ApTemplateQueryDto query) {
         return Result.success(templateService.pageList(query));
     }
@@ -57,7 +59,7 @@ public class ApTemplateController {
     }
 
     @PreAuthorize("hasAuthority('approval:bind:edit')")
-    @PostMapping("/bind/list")
+    @PostMapping("/templateBindPageList")
     public Result<PageResponse<ApTemplateBind>> bindList(@RequestBody ApTemplateBindQueryDto query) {
         return Result.success(templateService.pageBindList(query));
     }
@@ -70,7 +72,7 @@ public class ApTemplateController {
     }
 
     @PreAuthorize("hasAuthority('approval:bind:edit')")
-    @DeleteMapping("/bind/remove")
+    @DeleteMapping("/removeTemplateBind")
     public Result<Void> removeBind(@RequestBody DeleteRequest request) {
         templateService.deleteBind(request.getIds());
         return Result.success();

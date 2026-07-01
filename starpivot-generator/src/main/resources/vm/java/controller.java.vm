@@ -51,7 +51,7 @@ public class ${ClassName}Controller
      * @return 列表结果
      */
     @PreAuthorize("hasAuthority('${permissionPrefix}:query')")
-    @PostMapping("/list")
+    @PostMapping("/${businessName}PageList")
 #if($table.crud || $table.sub)
     public Result<PageResponse<${ClassName}VO>> list(@Valid @RequestBody ${ClassName}ReqPageBo ${className}ReqPageBo)
     {
@@ -115,7 +115,7 @@ public class ${ClassName}Controller
      * @return 操作结果
      */
     @PreAuthorize("hasAuthority('${permissionPrefix}:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/remove${BusinessName}")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest)
     {
         List<${pkColumn.javaType}> idList = deleteRequest.getIds();

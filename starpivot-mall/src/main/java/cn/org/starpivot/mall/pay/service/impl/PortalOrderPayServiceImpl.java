@@ -13,6 +13,7 @@ import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.service.PortalCouponService;
+import cn.org.starpivot.mall.portal.service.PortalMemberRewardService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import cn.org.starpivot.mall.wms.domain.dto.WmsStockDeductionLine;
 import cn.org.starpivot.mall.wms.service.WmsWareOrderTaskService;
@@ -39,6 +40,7 @@ public class PortalOrderPayServiceImpl implements PortalOrderPayService {
     private final PmsSkuInfoMapper pmsSkuInfoMapper;
     private final WmsWareOrderTaskService wmsWareOrderTaskService;
     private final PortalCouponService portalCouponService;
+    private final PortalMemberRewardService portalMemberRewardService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -98,6 +100,7 @@ public class PortalOrderPayServiceImpl implements PortalOrderPayService {
         wmsWareOrderTaskService.createFinishedRecordForPaidOrder(order.getId(), deductions);
         incrementSkuSaleCount(order.getId());
         portalCouponService.confirmUsed(order.getId());
+        portalMemberRewardService.grantOnPaid(order);
         saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_WAIT_DELIVER, order.getMemberUsername(), historyNote);
         return true;
     }

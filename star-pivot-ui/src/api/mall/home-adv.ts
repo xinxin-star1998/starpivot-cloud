@@ -37,7 +37,7 @@ export interface HomeAdvSavePayload {
 
 export function fetchHomeAdvList(params: HomeAdvListParams) {
   return request.post<Api.Common.PaginatedResponse<HomeAdvVo>>({
-    url: '/api/mall/home-adv/list',
+    url: '/api/mall/home-adv/homeAdvPageList',
     data: params
   })
 }
@@ -66,7 +66,7 @@ export function fetchHomeAdvUpdate(data: HomeAdvSavePayload) {
 
 export function fetchHomeAdvRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/home-adv/remove',
+    url: '/api/mall/home-adv/removeHomeAdv',
     data: { ids },
     showSuccessMessage: true
   })

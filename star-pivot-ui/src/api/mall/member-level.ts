@@ -27,8 +27,8 @@ export interface MemberLevelSavePayload {
 }
 
 export function fetchMemberLevelList() {
-  return request.get<MemberLevelVo[]>({
-    url: '/api/mall/member-level/list'
+  return request.post<MemberLevelVo[]>({
+    url: '/api/mall/member-level/memberLevelPageList'
   })
 }
 
@@ -68,7 +68,7 @@ export function fetchMemberLevelUpdate(data: MemberLevelSavePayload) {
 
 export function fetchMemberLevelRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/member-level/remove',
+    url: '/api/mall/member-level/removeMemberLevel',
     data: { ids },
     showSuccessMessage: true
   })

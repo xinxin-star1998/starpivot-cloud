@@ -8,6 +8,8 @@ public final class MallApprovalConstants {
     public static final String BIZ_MODULE = "mall";
     public static final String BIZ_TYPE_PURCHASE = "purchase";
     public static final String BIZ_TYPE_RETURN = "return";
+    public static final String BIZ_TYPE_COUPON = "coupon";
+    public static final String BIZ_TYPE_SPU = "spu";
 
     private MallApprovalConstants() {
     }
@@ -20,6 +22,14 @@ public final class MallApprovalConstants {
         return bizKey(BIZ_TYPE_RETURN, returnId);
     }
 
+    public static String couponBizKey(Long couponId) {
+        return bizKey(BIZ_TYPE_COUPON, couponId);
+    }
+
+    public static String spuBizKey(Long spuId) {
+        return bizKey(BIZ_TYPE_SPU, spuId);
+    }
+
     private static String bizKey(String bizType, Long id) {
         return BIZ_MODULE + ":" + bizType + ":" + id;
     }
@@ -30,6 +40,14 @@ public final class MallApprovalConstants {
 
     public static Long parseReturnId(String bizKey) {
         return parseBizId(bizKey, BIZ_TYPE_RETURN);
+    }
+
+    public static Long parseCouponId(String bizKey) {
+        return parseBizId(bizKey, BIZ_TYPE_COUPON);
+    }
+
+    public static Long parseSpuId(String bizKey) {
+        return parseBizId(bizKey, BIZ_TYPE_SPU);
     }
 
     private static Long parseBizId(String bizKey, String expectedType) {

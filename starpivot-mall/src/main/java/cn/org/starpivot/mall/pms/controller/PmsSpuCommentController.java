@@ -7,8 +7,10 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
+import cn.org.starpivot.mall.pms.domain.bo.CommentReplyBo;
 import cn.org.starpivot.mall.pms.domain.bo.CommentReqBo;
 import cn.org.starpivot.mall.pms.domain.bo.CommentShowStatusBo;
+import cn.org.starpivot.mall.pms.domain.vo.CommentReplyVo;
 import cn.org.starpivot.mall.pms.domain.vo.CommentVo;
 import cn.org.starpivot.mall.pms.service.PmsSpuCommentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +55,7 @@ public class PmsSpuCommentController {
      * @return 分页查询结果
      */
     @Operation(summary = "评论分页列表")
-    @PostMapping("/list")
+    @PostMapping("/commentPageList")
     @PreAuthorize("hasAuthority('mall:comment:list')")
     public Result<PageResponse<CommentVo>> pageList(@RequestBody CommentReqBo reqBo) {
         return Result.success(pmsSpuCommentService.pageList(reqBo));
@@ -95,12 +97,28 @@ public class PmsSpuCommentController {
      */
     @Log(title = "删除评论", businessType = BusinessType.DELETE)
     @Operation(summary = "删除评论", description = "请求体 ids 为评论主键列表")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeComment")
     @PreAuthorize("hasAuthority('mall:comment:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());
         pmsSpuCommentService.removeByIds(ids);
         return Result.success("删除成功");
+    }
+
+    @Log(title = "回复评论", businessType = BusinessType.INSERT)
+    @Operation(summary = "商家回复评论")
+    @PostMapping("/reply")
+    @PreAuthorize("hasAuthority('mall:comment:edit')")
+    public Result<?> reply(@Valid @RequestBody CommentReplyBo bo) {
+        pmsSpuCommentService.reply(bo);
+        return Result.success("回复成功");
+    }
+
+    @Operation(summary = "评论回复列表")
+    @GetMapping("/{id}/replies")
+    @PreAuthorize("hasAuthority('mall:comment:query')")
+    public Result<List<CommentReplyVo>> replies(@PathVariable("id") Long id) {
+        return Result.success(pmsSpuCommentService.listReplies(id));
     }
 
     private List<Long> validateIds(List<Long> ids) {

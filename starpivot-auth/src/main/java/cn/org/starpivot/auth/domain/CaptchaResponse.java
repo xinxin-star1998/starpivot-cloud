@@ -20,6 +20,6 @@ public class CaptchaResponse {
     /** 验证码唯一令牌，校验时需回传 */
     private String captchaToken;
 
-    /** Base64 编码的 JPEG 图片，格式为 {@code data:image/jpeg;base64,...} */
+    /** Base64 编码的 PNG 图片，格式为 {@code data:image/png;base64,...} */
     private String captchaImage;
 }

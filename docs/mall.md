@@ -44,10 +44,10 @@
 | 25 | 分类维护 | `/mall/pms/category/index` | `/mall/category` | ✅ |
 | 26 | 品牌列表 | `/mall/pms/brand/index` | `/mall/brand` | ✅ |
 | 29~31 | 属性分组/规格/销售 | `/mall/pms/group/index` 等 | `/mall/group`、`/mall/attr` | ✅ |
-| 180 | spu管理 | `/mall/pms/product/spu/index` | `/mall/product` | ✅（复用 SPU 列表） |
-| 181 | 发布商品 | `/mall/pms/product/publish/index` | — | ✅（跳转 `/mall/product/add`） |
-| 182 | 商品管理 | `/mall/pms/product/manager/index` | `/mall/product` | ✅（复用 SPU 列表） |
-| 281 | SKU 管理 | `/mall/pms/sku/index` | `/mall/sku` | ✅ |
+| 141 | spu管理 | `/mall/pms/product/spu/index` | `/mall/product` | ✅ SPU 列表 + 分类树 |
+| 142 | 发布商品 | `/mall/pms/product/publish/index` | — | ✅ 跳转 `/mall/product/add` 发布向导 |
+| 143 | 商品管理 | `/mall/pms/product/manager/index` | `/mall/sku` | ✅ SKU 只读检索（无操作按钮） |
+| 144 | ~~SKU 管理~~ | `/mall/pms/sku/index` | `/mall/sku` | 已隐藏，与 143 合并 |
 
 动态路由（无菜单）：`/mall/product/add`、`/mall/product/edit/:id` → `pms/product/modules/addSpu`
 

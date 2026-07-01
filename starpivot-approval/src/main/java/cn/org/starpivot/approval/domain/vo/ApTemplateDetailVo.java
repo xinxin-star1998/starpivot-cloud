@@ -11,4 +11,5 @@ public class ApTemplateDetailVo {
 
     private ApTemplate template;
     private List<ApTemplateStep> steps;
+    private List<ApTemplateRouteVo> routes;
 }

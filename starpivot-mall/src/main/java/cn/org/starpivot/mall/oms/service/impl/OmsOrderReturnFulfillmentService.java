@@ -12,6 +12,7 @@ import cn.org.starpivot.mall.oms.mapper.OmsOrderReturnApplyMapper;
 import cn.org.starpivot.mall.oms.service.OmsOrderStockService;
 import cn.org.starpivot.mall.oms.service.OmsRefundProcessService;
 import cn.org.starpivot.mall.portal.PortalConstants;
+import cn.org.starpivot.mall.portal.service.PortalMemberRewardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ public class OmsOrderReturnFulfillmentService {
     private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
     private final OmsOrderStockService omsOrderStockService;
     private final OmsRefundProcessService omsRefundProcessService;
+    private final PortalMemberRewardService portalMemberRewardService;
 
     @Transactional(rollbackFor = Exception.class)
     public void completeReturn(Long applyId) {
@@ -51,6 +53,7 @@ public class OmsOrderReturnFulfillmentService {
 
         BigDecimal refundAmount = apply.getReturnAmount() != null ? apply.getReturnAmount() : order.getPayAmount();
         omsRefundProcessService.createRefundForReturn(order, apply, refundAmount);
+        portalMemberRewardService.clawbackOnReturn(order, apply);
 
         apply.setStatus(OmsConstants.RETURN_STATUS_COMPLETED);
         apply.setReceiveTime(LocalDateTime.now());

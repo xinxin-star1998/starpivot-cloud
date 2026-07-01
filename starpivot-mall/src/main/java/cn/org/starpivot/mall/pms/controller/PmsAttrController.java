@@ -61,7 +61,7 @@ public class PmsAttrController {
      */
     @PreAuthorize(
             "hasAnyAuthority('mall:base:query', 'mall:sale:query', 'mall:product:query', 'mall:product:add', 'mall:product:edit')")
-    @PostMapping("/list")
+    @PostMapping("/attrPageList")
     public Result<PageResponse<PmsAttrVO>> list(@RequestBody PmsAttrQueryDTO queryDTO) {
         PageResponse<PmsAttrVO> page = pmsAttrService.selectPmsAttrPage(queryDTO);
         return Result.success(page);
@@ -116,7 +116,7 @@ public class PmsAttrController {
      */
     @Log(title = "删除商品属性", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAnyAuthority('mall:base:delete', 'mall:sale:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeAttr")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> idList = deleteRequest.getIds();
         if (idList == null || idList.isEmpty()) {

@@ -1,12 +1,12 @@
 import request from '@/utils/http'
-import type { RedisCacheInfo, CacheKeyInfo, CacheContentInfo } from '@/types/api/monitor'
+import type {CacheContentInfo, CacheKeyInfo, RedisCacheInfo} from '@/types/api/monitor'
 
 /**
  * 获取缓存列表
  */
 export function fetchGetCacheList() {
   return request.get<RedisCacheInfo[]>({
-    url: '/api/monitor/cache/list'
+    url: '/api/monitor/cache/cachePageList'
   })
 }
 

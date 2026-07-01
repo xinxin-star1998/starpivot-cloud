@@ -68,7 +68,7 @@ export function fetchMallCategoryUpdate(data: MallCategorySavePayload) {
 
 export function fetchMallCategoryRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/category/remove',
+    url: '/api/mall/category/removeCategory',
     data: { ids },
     showSuccessMessage: true
   })

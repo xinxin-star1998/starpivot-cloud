@@ -1,7 +1,7 @@
 package cn.org.starpivot.system.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.domain.DeleteRequest;
+import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
@@ -50,7 +50,7 @@ public class SysNoticeController
      * @return 分页结果
      */
     @PreAuthorize("hasAuthority('system:notice:query')")
-    @PostMapping("/list")
+    @PostMapping("/noticePageList")
     public Result<PageResponse<SysNoticeVO>> noticePageList(@RequestBody SysNoticeQueryDTO queryDTO)
     {
         PageResponse<SysNoticeVO> page = sysNoticeService.selectSysNoticePage(queryDTO);

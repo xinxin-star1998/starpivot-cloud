@@ -31,16 +31,25 @@ public class MallSecurityConfig {
                                 "/internal/**",
                                 "/actuator/**",
                                 "/doc.html",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/health",
                                 "/portal/home/**",
                                 "/portal/product/**",
+                                "/portal/subject/**",
+                                "/portal/seckill/**",
+                                "/portal/comment/commentPageList",
+                                "/portal/comment/can-comment/**",
+                                "/portal/comment/summary/**",
                                 "/portal/region/**",
                                 "/portal/member/register",
                                 "/portal/member/login",
-                                "/portal/pay/alipay/notify"
+                                "/portal/auth/config",
+                                "/portal/auth/sms/**",
+                                "/portal/auth/login/password",
+                                "/portal/auth/wechat/**",
+                                "/portal/pay/alipay/notify",
+                                "/portal/pay/wx/notify"
                         ).permitAll()
                         .anyRequest().authenticated());
         return http.build();

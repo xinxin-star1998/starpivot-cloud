@@ -36,7 +36,7 @@ export interface MemberSavePayload {
 
 export function fetchMemberList(params: MemberListParams) {
   return request.post<Api.Common.PaginatedResponse<MemberVo>>({
-    url: '/api/mall/member/list',
+    url: '/api/mall/member/memberPageList',
     data: params
   })
 }

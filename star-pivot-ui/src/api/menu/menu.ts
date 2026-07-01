@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { MenuFormData } from '@/views/system/menu/types'
+import type {MenuFormData} from '@/views/system/menu/types'
 
 // 后端菜单实体类型
 export interface SysMenu {
@@ -113,7 +113,7 @@ export function fetchDeleteMenu(menuIds: number | number[]) {
   // 统一转换为数组格式
   const ids = Array.isArray(menuIds) ? menuIds : [menuIds]
   return request.del({
-    url: '/api/sys/menu/delete',
+    url: '/api/sys/menu/removeMenu',
     data: { ids }
   })
 }

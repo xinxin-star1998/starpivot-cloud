@@ -48,4 +48,10 @@ public class PortalHomeProductVo {
      * promo Price
      */
     private BigDecimal promoPrice;
+
+    /** 秒杀剩余库存（仅秒杀场景） */
+    private Integer seckillStockRemain;
+
+    /** 秒杀限购（仅秒杀场景） */
+    private Integer seckillLimit;
 }

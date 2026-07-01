@@ -11,6 +11,7 @@ import cn.org.starpivot.mall.sms.domain.bo.CouponPublishBo;
 import cn.org.starpivot.mall.sms.domain.bo.CouponReqBo;
 import cn.org.starpivot.mall.sms.domain.bo.CouponSaveBo;
 import cn.org.starpivot.mall.sms.domain.vo.CouponVo;
+import cn.org.starpivot.mall.sms.service.SmsCouponApprovalService;
 import cn.org.starpivot.mall.sms.service.SmsCouponService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,6 +47,7 @@ import java.util.List;
 public class SmsCouponController {
 
     private final SmsCouponService smsCouponService;
+    private final SmsCouponApprovalService smsCouponApprovalService;
 
     /**
      * 优惠券分页列表。
@@ -54,7 +56,7 @@ public class SmsCouponController {
      * @return 分页查询结果
      */
     @Operation(summary = "优惠券分页列表")
-    @PostMapping("/list")
+    @PostMapping("/couponPageList")
     @PreAuthorize("hasAuthority('mall:coupon:list')")
     public Result<PageResponse<CouponVo>> pageList(@RequestBody CouponReqBo reqBo) {
         return Result.success(smsCouponService.pageList(reqBo));
@@ -103,6 +105,15 @@ public class SmsCouponController {
         return Result.success("修改成功");
     }
 
+    @Log(title = "提交优惠券发布审批", businessType = BusinessType.UPDATE)
+    @Operation(summary = "提交优惠券发布审批")
+    @PostMapping("/{id}/submit-approval")
+    @PreAuthorize("hasAuthority('mall:coupon:edit')")
+    public Result<?> submitApproval(@PathVariable("id") Long id) {
+        smsCouponApprovalService.submitApproval(id);
+        return Result.success("已提交审批");
+    }
+
     /**
      * 更新优惠券发布状态。
      *
@@ -126,7 +137,7 @@ public class SmsCouponController {
      */
     @Log(title = "删除优惠券", businessType = BusinessType.DELETE)
     @Operation(summary = "删除优惠券")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeCoupon")
     @PreAuthorize("hasAuthority('mall:coupon:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

@@ -4,12 +4,15 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
+import cn.org.starpivot.mall.pms.domain.bo.CommentReplyBo;
 import cn.org.starpivot.mall.pms.domain.bo.CommentReqBo;
+import cn.org.starpivot.mall.pms.domain.vo.CommentReplyVo;
 import cn.org.starpivot.mall.pms.domain.vo.CommentVo;
 import cn.org.starpivot.mall.pms.entity.PmsCommentReplay;
 import cn.org.starpivot.mall.pms.entity.PmsSpuComment;
 import cn.org.starpivot.mall.pms.mapper.PmsCommentReplayMapper;
 import cn.org.starpivot.mall.pms.mapper.PmsSpuCommentMapper;
+import cn.org.starpivot.mall.pms.service.PmsCommentReplayService;
 import cn.org.starpivot.mall.pms.service.PmsSpuCommentService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -42,12 +45,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PmsSpuCommentServiceImpl implements PmsSpuCommentService {
 
+    private static final int COMMENT_TYPE_REVIEW = 0;
+
     private final PmsSpuCommentMapper pmsSpuCommentMapper;
     private final PmsCommentReplayMapper pmsCommentReplayMapper;
+    private final PmsCommentReplayService pmsCommentReplayService;
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CommentVo> pageList(CommentReqBo reqBo) {
+        if (reqBo.getCommentType() == null) {
+            reqBo.setCommentType(COMMENT_TYPE_REVIEW);
+        }
         Page<PmsSpuComment> page = new Page<>(reqBo.getPageNum(), reqBo.getPageSize());
         IPage<PmsSpuComment> pageList = pmsSpuCommentMapper.selectPageList(page, reqBo);
         PageResponse<CommentVo> pageResponse = new PageResponse<>();
@@ -69,7 +78,21 @@ public class PmsSpuCommentServiceImpl implements PmsSpuCommentService {
         if (comment == null) {
             throw new BizException("评论不存在");
         }
-        return toVo(comment);
+        CommentVo vo = toVo(comment);
+        vo.setReplies(pmsCommentReplayService.listByCommentId(id));
+        return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void reply(CommentReplyBo bo) {
+        pmsCommentReplayService.adminReply(bo.getCommentId(), bo.getContent());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentReplyVo> listReplies(Long commentId) {
+        return pmsCommentReplayService.listByCommentId(commentId);
     }
 
     @Override

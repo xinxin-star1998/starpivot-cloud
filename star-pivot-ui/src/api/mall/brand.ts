@@ -29,7 +29,7 @@ export interface MallBrandSavePayload {
 
 export function fetchMallBrandList(params: MallBrandListParams) {
   return request.post<Api.Common.PaginatedResponse<MallBrandVo>>({
-    url: '/api/mall/brand/list',
+    url: '/api/mall/brand/brandPageList',
     data: params
   })
 }
@@ -58,7 +58,7 @@ export function fetchMallBrandUpdate(data: MallBrandSavePayload) {
 
 export function fetchMallBrandRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/brand/remove',
+    url: '/api/mall/brand/removeBrand',
     data: { ids },
     showSuccessMessage: true
   })

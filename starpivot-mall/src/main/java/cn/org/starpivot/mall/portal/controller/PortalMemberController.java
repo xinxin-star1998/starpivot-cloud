@@ -3,8 +3,10 @@ package cn.org.starpivot.mall.portal.controller;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.domain.bo.PortalMemberLoginBo;
+import cn.org.starpivot.mall.portal.domain.bo.PortalMemberProfileBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalMemberRegisterBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalLoginVo;
+import cn.org.starpivot.mall.portal.domain.vo.PortalMemberCenterVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalMemberVo;
 import cn.org.starpivot.mall.portal.service.PortalMemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,5 +76,19 @@ public class PortalMemberController {
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<PortalMemberVo> info() {
         return Result.success(portalMemberService.getCurrentMember());
+    }
+
+    @Operation(summary = "会员中心概览")
+    @GetMapping("/center")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<PortalMemberCenterVo> center() {
+        return Result.success(portalMemberService.getCenter());
+    }
+
+    @Operation(summary = "更新个人资料")
+    @PutMapping("/profile")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<PortalMemberVo> updateProfile(@Valid @RequestBody PortalMemberProfileBo bo) {
+        return Result.success(portalMemberService.updateProfile(bo));
     }
 }

@@ -2,18 +2,14 @@ package cn.org.starpivot.file.controller;
 
 import cn.org.starpivot.common.annotation.Log;
 import cn.org.starpivot.common.annotation.NoResponseWrapper;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.storage.FileStorageService;
 import cn.org.starpivot.common.storage.StoragePathValidator;
-import cn.org.starpivot.common.domain.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.LinkedHashMap;
@@ -53,6 +49,7 @@ public class CommonUploadController {
      */
     @Log(title = "富文本图片上传", businessType = cn.org.starpivot.common.enums.BusinessType.OTHER)
     @NoResponseWrapper
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/wangeditor")
     public Map<String, Object> uploadWangEditor(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -86,6 +83,7 @@ public class CommonUploadController {
      * @throws Exception {@link FileStorageService#getPresignedUrl} 生成失败时抛出
      */
     @GetMapping("/presigned-url")
+    @PreAuthorize("hasAuthority('file:resource:query')")
     public Result<Map<String, String>> getPresignedUrl(@RequestParam("objectName") String objectName) throws Exception {
         if (!StringUtils.hasText(objectName)) {
             return Result.error("对象路径不能为空");
@@ -109,6 +107,7 @@ public class CommonUploadController {
      * @throws Exception 单个对象生成预签名 URL 失败时抛出
      */
     @PostMapping("/presigned-urls")
+    @PreAuthorize("hasAuthority('file:resource:query')")
     public Result<Map<String, String>> getPresignedUrls(@RequestBody List<String> objectNames) throws Exception {
         if (objectNames == null || objectNames.isEmpty()) {
             return Result.success(Map.of());

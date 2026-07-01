@@ -67,7 +67,7 @@ export interface JobPageResponse<T> {
 /** 获取任务列表（分页） */
 export function fetchJobList(params: SysJobQueryParams) {
   return request.post<JobPageResponse<SysJob>>({
-    url: '/api/monitor/job/list',
+    url: '/api/monitor/job/jobPageList',
     data: params
   })
 }
@@ -98,7 +98,7 @@ export function fetchUpdateJob(data: SysJob) {
 /** 删除定时任务 */
 export function fetchDeleteJob(ids: number[]) {
   return request.del({
-    url: '/api/monitor/job',
+    url: '/api/monitor/job/removeJob',
     data: { ids }
   })
 }
@@ -121,7 +121,7 @@ export function fetchRunJobOnce(jobId: number) {
 /** 任务日志分页列表 */
 export function fetchJobLogList(params: SysJobLogQueryParams) {
   return request.post<JobPageResponse<SysJobLog>>({
-    url: '/api/monitor/job/log/list',
+    url: '/api/monitor/job/jobLogPageList',
     data: params
   })
 }

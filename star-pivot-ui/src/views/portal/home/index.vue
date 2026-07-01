@@ -42,10 +42,30 @@
       @open-link="openMarketingLink"
     />
 
+    <!-- 分类热门 -->
+    <HomeHotCategories
+      :items="hotCategories"
+      :icon-urls="hotCategoryIconUrls"
+      @select="selectHotCategory"
+    />
+
+    <PortalRecentBrowse />
+
+    <section v-if="showHomeSearch" class="portal-home__quick-search">
+      <PortalSearchBar v-model="homeSearchKeyword" placeholder="搜一搜心仪好物" @search="handleHomeSearch" />
+      <PortalSearchHints compact @select="searchFromHint" />
+    </section>
+
     <!-- 商品列表 -->
     <section class="portal-home__section">
       <div class="section-head">
-        <h2 class="section-title">精选商品</h2>
+        <div class="section-head__left">
+          <h2 class="section-title">精选商品</h2>
+          <p v-if="filterHint" class="section-filter-hint">
+            {{ filterHint }}
+            <button type="button" class="clear-filter" @click="clearFilter">清除筛选</button>
+          </p>
+        </div>
         <ElSelect v-model="sort" placeholder="排序" style="width: 140px" @change="loadProducts">
           <ElOption label="默认" value="default" />
           <ElOption label="价格升序" value="priceAsc" />
@@ -71,6 +91,7 @@
           <div class="product-card__body">
             <p class="product-card__name">{{ item.spuName }}</p>
             <p v-if="item.brandName" class="product-card__brand">{{ item.brandName }}</p>
+            <PortalProductRating :avg-star="item.avgStar" :comment-count="item.commentCount" />
             <p class="product-card__price">
               <span class="currency">¥</span>{{ formatPrice(item.price) }}
             </p>
@@ -87,22 +108,30 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchPortalHome } from '@/api/portal/home'
-  import { fetchPortalProductSearch } from '@/api/portal/product'
-  import type {
-    PortalBrandBrief,
-    PortalCategory,
-    PortalHomeBlock,
-    PortalProductListItem
-  } from '@/api/portal/types'
-  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-  import HomeCategoryNav from './components/category-nav.vue'
-  import HomeMarketingGrid from './components/marketing-grid.vue'
-  import HomeUserPanel from './components/user-panel.vue'
+import {fetchPortalHome} from '@/api/portal/home'
+import {fetchPortalProductSearch} from '@/api/portal/product'
+import type {
+  PortalBrandBrief,
+  PortalCategory,
+  PortalHomeBlock,
+  PortalHotCategory,
+  PortalProductListItem
+} from '@/api/portal/types'
+import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
+import PortalRecentBrowse from '@/views/portal/components/portal-recent-browse.vue'
+import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
+import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
+import {addPortalSearchKeyword} from '@/utils/portal/search-history'
+import HomeCategoryNav from './components/category-nav.vue'
+import HomeHotCategories from './components/hot-categories.vue'
+import HomeMarketingGrid from './components/marketing-grid.vue'
+import HomeUserPanel from './components/user-panel.vue'
 
-  defineOptions({ name: 'PortalHome' })
+defineOptions({ name: 'PortalHome' })
 
   const router = useRouter()
+  const route = useRoute()
   const loading = ref(true)
   const loadingMore = ref(false)
   const banners = ref<{ id?: number; name?: string; pic?: string; url?: string }[]>([])
@@ -111,11 +140,16 @@
   const categoryBrands = ref<Record<number, PortalBrandBrief[]>>({})
   const brandLogoUrls = ref(new Map<number, string>())
   const homeBlocks = ref<PortalHomeBlock[]>([])
+  const hotCategories = ref<PortalHotCategory[]>([])
+  const hotCategoryIconUrls = ref(new Map<string, string>())
   const marketingImageUrls = ref(new Map<string, string>())
   const products = ref<PortalProductListItem[]>([])
   const coverUrls = ref(new Map<string, string>())
   const selectedCatalogId = ref<number | undefined>()
   const selectedBrandId = ref<number | undefined>()
+  const searchKeyword = ref('')
+  const homeSearchKeyword = ref('')
+  const showHomeSearch = ref(false)
   const sort = ref('default')
   const pageNum = ref(1)
   const pageSize = 12
@@ -127,6 +161,14 @@
     )
 
   const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+
+  const filterHint = computed(() => {
+    const parts: string[] = []
+    if (searchKeyword.value) parts.push(`搜索「${searchKeyword.value}」`)
+    if (selectedCatalogId.value != null) parts.push('已选分类')
+    if (selectedBrandId.value != null) parts.push('已选品牌')
+    return parts.length ? parts.join(' · ') : ''
+  })
 
   async function resolveImages(items: { pic?: string; coverImg?: string }[], target: Ref<Map<string, string>>) {
     const keys = items.map((i) => i.pic || i.coverImg).filter(Boolean) as string[]
@@ -173,16 +215,25 @@
     map.forEach((url, key) => marketingImageUrls.value.set(key, url))
   }
 
+  async function resolveHotCategoryIcons(items: PortalHotCategory[]) {
+    const icons = items.map((item) => item.icon?.trim()).filter(Boolean) as string[]
+    if (!icons.length) return
+    const map = await resolveGoodsImageDisplayUrls(icons)
+    map.forEach((url, key) => hotCategoryIconUrls.value.set(key, url))
+  }
+
   async function loadHome() {
     const data = await fetchPortalHome()
     banners.value = data.banners || []
     categoryTree.value = data.categories || []
     categoryBrands.value = data.categoryBrands || {}
     homeBlocks.value = data.homeBlocks || []
+    hotCategories.value = data.hotCategories || []
     await Promise.all([
       resolveImages(banners.value, bannerUrls),
       resolveBrandLogos(categoryBrands.value),
-      resolveMarketingImages(homeBlocks.value)
+      resolveMarketingImages(homeBlocks.value),
+      resolveHotCategoryIcons(hotCategories.value)
     ])
   }
 
@@ -194,6 +245,7 @@
     const res = await fetchPortalProductSearch({
       pageNum: pageNum.value,
       pageSize,
+      keyword: searchKeyword.value || undefined,
       catalogId: selectedCatalogId.value,
       brandId: selectedBrandId.value,
       sort: sort.value === 'default' ? undefined : sort.value
@@ -210,24 +262,48 @@
       clearFilter()
       return
     }
-    selectedBrandId.value = undefined
-    selectedCatalogId.value = catId
-    loadProducts(true)
-    scrollToProducts()
+    router.push({ path: '/portal/search', query: { catalogId: String(catId) } })
   }
 
   function selectBrand(brandId?: number) {
     if (brandId == null) return
-    selectedCatalogId.value = undefined
-    selectedBrandId.value = brandId
-    loadProducts(true)
-    scrollToProducts()
+    router.push({ path: '/portal/search', query: { brandId: String(brandId) } })
+  }
+
+  function selectHotCategory(item: PortalHotCategory) {
+    const url = item.url?.trim()
+    if (url) {
+      if (/^https?:\/\//i.test(url)) {
+        window.open(url, '_blank', 'noopener')
+        return
+      }
+      router.push(url)
+      return
+    }
+    if (item.catId != null) {
+      router.push({ path: '/portal/search', query: { catalogId: String(item.catId) } })
+    }
   }
 
   function clearFilter() {
     selectedCatalogId.value = undefined
     selectedBrandId.value = undefined
+    searchKeyword.value = ''
+    router.replace({ path: '/portal', query: {} })
     loadProducts(true)
+  }
+
+  function applySearchKeyword(keyword: string) {
+    searchKeyword.value = keyword
+    selectedCatalogId.value = undefined
+    selectedBrandId.value = undefined
+    loadProducts(true)
+  }
+
+  function onPortalSearch(e: Event) {
+    const keyword = (e as CustomEvent<string>).detail || ''
+    applySearchKeyword(keyword)
+    scrollToProducts()
   }
 
   function scrollToProducts() {
@@ -259,146 +335,288 @@
     router.push(url)
   }
 
+  function handleHomeSearch(text: string) {
+    const keyword = text.trim()
+    if (keyword) addPortalSearchKeyword(keyword)
+    router.push({
+      path: '/portal/search',
+      query: keyword ? { keyword } : undefined
+    })
+  }
+
+  function searchFromHint(keyword: string) {
+    homeSearchKeyword.value = keyword
+    handleHomeSearch(keyword)
+  }
+
+  let homeSearchMq: MediaQueryList | null = null
+
+  function syncHomeSearchVisibility() {
+    showHomeSearch.value = homeSearchMq?.matches ?? false
+  }
+
+  watch(
+    () => route.query.keyword,
+    (kw) => {
+      const keyword = typeof kw === 'string' ? kw : ''
+      if (keyword !== searchKeyword.value) {
+        applySearchKeyword(keyword)
+      }
+    }
+  )
+
   onMounted(async () => {
+    const kw = route.query.keyword
+    if (typeof kw === 'string' && kw) {
+      searchKeyword.value = kw
+    }
+    homeSearchMq = window.matchMedia('(width <= 900px)')
+    syncHomeSearchVisibility()
+    homeSearchMq.addEventListener('change', syncHomeSearchVisibility)
+    window.addEventListener('portal-search', onPortalSearch)
     try {
       await Promise.all([loadHome(), loadProducts(true)])
     } finally {
       loading.value = false
     }
   })
+
+  onUnmounted(() => {
+    homeSearchMq?.removeEventListener('change', syncHomeSearchVisibility)
+    window.removeEventListener('portal-search', onPortalSearch)
+  })
 </script>
 
 <style scoped lang="scss">
+  @import '../styles/variables.scss';
+
   .portal-home__hero {
     position: relative;
     display: flex;
-    height: 480px;
-    background: #fff;
-    border-radius: 8px;
+    height: 460px;
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius-lg);
     overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+    margin-bottom: 20px;
+    box-shadow: var(--portal-shadow);
   }
 
   .portal-home__banner-wrap {
     flex: 1;
     min-width: 0;
-    background: #fafafa;
+    background: linear-gradient(135deg, #fafbfc 0%, #f0f2f5 100%);
   }
 
   .portal-home__banner {
-    height: 480px;
+    height: 460px;
 
     :deep(.el-carousel__container) {
-      height: 480px;
+      height: 460px;
+    }
+
+    :deep(.el-carousel__indicators) {
+      bottom: 16px;
+    }
+
+    :deep(.el-carousel__button) {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    :deep(.el-carousel__indicator.is-active .el-carousel__button) {
+      width: 24px;
+      border-radius: 4px;
+      opacity: 1;
+      background: var(--portal-primary);
     }
 
     .banner-link,
     .banner-img {
       display: block;
       width: 100%;
-      height: 480px;
+      height: 460px;
       object-fit: cover;
     }
   }
 
   .portal-home__banner-placeholder {
-    height: 480px;
+    height: 460px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
+  .portal-home__quick-search {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius-lg);
+    box-shadow: var(--portal-shadow-sm);
+  }
+
   .portal-home__section {
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 16px;
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--portal-shadow-sm);
   }
 
   .section-head {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    gap: 16px;
+
+    &__left {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   .section-title {
-    margin: 0 0 16px;
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--portal-text);
+    letter-spacing: -0.02em;
+    position: relative;
+    padding-left: 12px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 18px;
+      border-radius: 2px;
+      background: var(--portal-primary-gradient);
+    }
   }
 
-  .section-head .section-title {
-    margin-bottom: 0;
+  .section-filter-hint {
+    margin: 6px 0 0 12px;
+    font-size: 13px;
+    color: var(--portal-text-secondary);
+  }
+
+  .clear-filter {
+    margin-left: 8px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--portal-primary);
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
+    gap: 20px;
   }
 
   .product-card {
-    border: 1px solid #eee;
-    border-radius: 8px;
+    border: 1px solid var(--portal-border);
+    border-radius: var(--portal-radius);
     overflow: hidden;
     cursor: pointer;
-    transition: box-shadow 0.2s;
-    background: #fff;
+    transition: all var(--portal-transition);
+    background: var(--portal-bg-elevated);
 
     &:hover {
-      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+      transform: translateY(-4px);
+      box-shadow: var(--portal-shadow-lg);
+      border-color: transparent;
+
+      .product-card__img {
+        transform: scale(1.05);
+      }
     }
 
     &__img-wrap {
       aspect-ratio: 1;
-      background: #fafafa;
+      background: #fafbfc;
+      overflow: hidden;
     }
 
     &__img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.35s ease;
     }
 
     &__body {
-      padding: 12px;
+      padding: 14px 16px 16px;
     }
 
     &__name {
       margin: 0 0 6px;
       font-size: 14px;
-      color: #333;
-      line-height: 1.4;
+      color: var(--portal-text);
+      line-height: 1.5;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      min-height: 40px;
+      min-height: 42px;
     }
 
     &__brand {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
       font-size: 12px;
-      color: #999;
+      color: var(--portal-text-muted);
     }
 
     &__price {
       margin: 0;
-      color: #e1251b;
-      font-size: 18px;
-      font-weight: 600;
+      color: var(--portal-primary);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
 
       .currency {
         font-size: 13px;
+        margin-right: 1px;
       }
     }
   }
 
   .load-more {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 28px;
+
+    :deep(.el-button) {
+      min-width: 160px;
+      border-radius: 20px;
+    }
+  }
+
+  @media (width <= 900px) {
+    .portal-home__hero {
+      flex-direction: column;
+      height: auto;
+    }
+
+    .portal-home__banner,
+    .portal-home__banner-wrap .banner-link,
+    .portal-home__banner-wrap .banner-img,
+    .portal-home__banner-placeholder {
+      height: 220px;
+    }
+
+    .portal-home__banner :deep(.el-carousel__container) {
+      height: 220px;
+    }
   }
 </style>

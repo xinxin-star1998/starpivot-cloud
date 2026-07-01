@@ -21,6 +21,18 @@ export interface ApTemplateStep {
   assigneeValue?: string
   approveMode?: string
   skipExpression?: string
+  timeoutHours?: number
+  timeoutAction?: string
+}
+
+export interface ApTemplateRoute {
+  routeId?: number
+  fromStepCode?: string
+  fromStepName?: string
+  toStepCode?: string
+  toStepName?: string
+  priority?: number
+  conditionExpr?: string
 }
 
 export interface ApTemplateBind {
@@ -96,6 +108,7 @@ export interface ApTemplateSaveDto {
   bizModule?: string
   remark?: string
   steps: ApTemplateStep[]
+  routes?: ApTemplateRoute[]
 }
 
 export interface ApTemplateBindSaveDto {

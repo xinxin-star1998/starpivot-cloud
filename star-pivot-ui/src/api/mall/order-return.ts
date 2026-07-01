@@ -43,7 +43,7 @@ export interface ReturnListParams extends Api.Common.CommonSearchParams {
 
 export function fetchReturnList(params: ReturnListParams) {
   return request.post<Api.Common.PaginatedResponse<ReturnVo>>({
-    url: '/api/mall/order-return/list',
+    url: '/api/mall/order-return/orderReturnPageList',
     data: params
   })
 }

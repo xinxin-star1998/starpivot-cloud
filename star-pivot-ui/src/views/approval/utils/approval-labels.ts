@@ -51,7 +51,8 @@ export function recordActionLabel(action?: string) {
     APPROVE: '通过',
     REJECT: '驳回',
     WITHDRAW: '撤回',
-    SKIP: '跳过'
+    SKIP: '跳过',
+    TIMEOUT: '超时处理'
   }
   return map[action || ''] || action || '-'
 }
@@ -75,9 +76,30 @@ export const APPROVE_MODE_OPTIONS = [
   { label: '会签（全部人）', value: 'ALL' }
 ]
 
+export const TIMEOUT_ACTION_OPTIONS = [
+  { label: '超时自动驳回', value: 'AUTO_REJECT' },
+  { label: '超时自动通过', value: 'AUTO_APPROVE' }
+]
+
 export const INSTANCE_STATUS_OPTIONS = [
   { label: '审批中', value: 'RUNNING' },
   { label: '已通过', value: 'APPROVED' },
   { label: '已驳回', value: 'REJECTED' },
   { label: '已撤回', value: 'WITHDRAWN' }
+]
+
+/** 业务类型文案（商城域） */
+export function bizTypeLabel(bizType?: string) {
+  const map: Record<string, string> = {
+    purchase: '采购单',
+    return: '退货单',
+    coupon: '优惠券',
+    spu: '商品 SPU'
+  }
+  return map[bizType || ''] || bizType || '-'
+}
+
+export const BIZ_MODULE_OPTIONS = [
+  { label: '全部业务域', value: '' },
+  { label: '商城 (mall)', value: 'mall' }
 ]

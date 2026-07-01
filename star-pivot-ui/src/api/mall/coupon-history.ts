@@ -20,7 +20,7 @@ export interface CouponHistoryListParams extends Api.Common.CommonSearchParams {
 
 export function fetchCouponHistoryList(params: CouponHistoryListParams) {
   return request.post<Api.Common.PaginatedResponse<CouponHistoryVo>>({
-    url: '/api/mall/coupon-history/list',
+    url: '/api/mall/coupon-history/couponHistoryPageList',
     data: params
   })
 }

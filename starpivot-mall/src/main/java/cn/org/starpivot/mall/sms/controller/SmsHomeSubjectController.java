@@ -53,7 +53,7 @@ public class SmsHomeSubjectController {
      * @return 分页查询结果
      */
     @Operation(summary = "专题分页列表")
-    @PostMapping("/list")
+    @PostMapping("/subjectPageList")
     @PreAuthorize("hasAuthority('mall:subject:list')")
     public Result<PageResponse<HomeSubjectVo>> pageList(@RequestBody HomeSubjectReqBo reqBo) {
         return Result.success(smsHomeSubjectService.pageList(reqBo));
@@ -110,7 +110,7 @@ public class SmsHomeSubjectController {
      */
     @Log(title = "删除专题", businessType = BusinessType.DELETE)
     @Operation(summary = "删除专题")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSubject")
     @PreAuthorize("hasAuthority('mall:subject:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

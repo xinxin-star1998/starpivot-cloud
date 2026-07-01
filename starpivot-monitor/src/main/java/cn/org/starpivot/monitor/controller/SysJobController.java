@@ -42,7 +42,7 @@ public class SysJobController {
      * @return 任务分页结果
      */
     @PreAuthorize("hasAuthority('monitor:job:query')")
-    @PostMapping("/list")
+    @PostMapping("/jobPageList")
     public Result<PageResponse<SysJobVO>> list(@RequestBody SysJobQueryDTO query) {
         return Result.success(sysJobService.selectJobPage(query));
     }
@@ -95,7 +95,7 @@ public class SysJobController {
      */
     @Log(title = "删除定时任务", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('monitor:job:delete')")
-    @DeleteMapping
+    @DeleteMapping("/removeJob")
     public Result<?> remove(@RequestBody DeleteRequest request) {
         sysJobService.deleteJobByIds(validateIds(request.getIds()));
         return Result.success("删除成功");
@@ -135,7 +135,7 @@ public class SysJobController {
      * @return 日志分页结果
      */
     @PreAuthorize("hasAuthority('monitor:job:query')")
-    @PostMapping("/log/list")
+    @PostMapping("/jobLogPageList")
     public Result<PageResponse<SysJobLogVO>> logList(@RequestBody SysJobLogQueryDTO query) {
         return Result.success(sysJobService.selectJobLogPage(query));
     }

@@ -53,7 +53,7 @@ public class SmsSeckillPromotionController {
      * @return 分页查询结果
      */
     @Operation(summary = "秒杀活动分页列表")
-    @PostMapping("/list")
+    @PostMapping("/seckillPromotionPageList")
     @PreAuthorize("hasAuthority('mall:seckill:list')")
     public Result<PageResponse<SeckillPromotionVo>> pageList(@RequestBody SeckillPromotionReqBo reqBo) {
         return Result.success(smsSeckillPromotionService.pageList(reqBo));
@@ -110,7 +110,7 @@ public class SmsSeckillPromotionController {
      */
     @Log(title = "删除秒杀活动", businessType = BusinessType.DELETE)
     @Operation(summary = "删除秒杀活动")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeSeckillPromotion")
     @PreAuthorize("hasAuthority('mall:seckill:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

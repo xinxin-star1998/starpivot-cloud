@@ -53,7 +53,7 @@ public class SmsHomeAdvController {
      * @return 分页查询结果
      */
     @Operation(summary = "首页广告分页列表")
-    @PostMapping("/list")
+    @PostMapping("/homeAdvPageList")
     @PreAuthorize("hasAuthority('mall:adv:list')")
     public Result<PageResponse<HomeAdvVo>> pageList(@RequestBody HomeAdvReqBo reqBo) {
         return Result.success(smsHomeAdvService.pageList(reqBo));
@@ -110,7 +110,7 @@ public class SmsHomeAdvController {
      */
     @Log(title = "删除首页广告", businessType = BusinessType.DELETE)
     @Operation(summary = "删除首页广告")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeHomeAdv")
     @PreAuthorize("hasAuthority('mall:adv:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

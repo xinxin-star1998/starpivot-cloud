@@ -37,7 +37,7 @@ public class SecurityConfig {
      * 构建认证服务安全过滤器链。
      * <p>
      * 禁用表单登录、HTTP Basic 及默认登出；通过 {@link MicroserviceSecuritySupport} 应用 JWT 过滤器，
-     * 并对 OPTIONS、登录/注册/验证码、Swagger、Actuator 等路径放行。
+     * 并对 OPTIONS、登录/注册/验证码、Knife4j 文档、Actuator 等路径放行。
      * </p>
      *
      * @param http {@link HttpSecurity} 构建器
@@ -58,15 +58,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/login", "/refresh", "/register", "/logout",
-                                "/forgot-password", "/captcha/verify").permitAll()
+                                "/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/register/enabled", "/forgot-password/enabled",
-                                "/user/info", "/userinfo").permitAll()
+                                "/user/info").permitAll()
                         .requestMatchers(
                                 "/captcha", "/captcha/**",
                                 "/actuator/**",
                                 "/doc.html",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**"
                         ).permitAll()

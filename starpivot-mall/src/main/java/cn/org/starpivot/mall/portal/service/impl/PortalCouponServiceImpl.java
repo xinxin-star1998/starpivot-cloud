@@ -100,10 +100,12 @@ public class PortalCouponServiceImpl implements PortalCouponService {
         if (histories.isEmpty()) {
             return List.of();
         }
+        Map<Long, SmsCoupon> couponMap = loadCouponsByIds(
+                histories.stream().map(SmsCouponHistory::getCouponId).collect(Collectors.toSet()));
         LocalDateTime now = LocalDateTime.now();
         List<PortalMyCouponVo> result = new ArrayList<>();
         for (SmsCouponHistory history : histories) {
-            SmsCoupon coupon = smsCouponMapper.selectById(history.getCouponId());
+            SmsCoupon coupon = couponMap.get(history.getCouponId());
             if (coupon == null) {
                 continue;
             }
@@ -179,10 +181,12 @@ public class PortalCouponServiceImpl implements PortalCouponService {
         if (histories.isEmpty()) {
             return List.of();
         }
+        Map<Long, SmsCoupon> couponMap = loadCouponsByIds(
+                histories.stream().map(SmsCouponHistory::getCouponId).collect(Collectors.toSet()));
         List<PortalMemberCouponVo> result = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         for (SmsCouponHistory history : histories) {
-            SmsCoupon coupon = smsCouponMapper.selectById(history.getCouponId());
+            SmsCoupon coupon = couponMap.get(history.getCouponId());
             if (coupon == null || !isCouponActive(coupon, now)) {
                 continue;
             }
@@ -214,10 +218,12 @@ public class PortalCouponServiceImpl implements PortalCouponService {
         if (histories.isEmpty()) {
             return List.of();
         }
+        Map<Long, SmsCoupon> couponMap = loadCouponsByIds(
+                histories.stream().map(SmsCouponHistory::getCouponId).collect(Collectors.toSet()));
         LocalDateTime now = LocalDateTime.now();
         List<PortalCheckoutCouponVo> result = new ArrayList<>();
         for (SmsCouponHistory history : histories) {
-            SmsCoupon coupon = smsCouponMapper.selectById(history.getCouponId());
+            SmsCoupon coupon = couponMap.get(history.getCouponId());
             if (coupon == null) {
                 continue;
             }
@@ -322,6 +328,15 @@ public class PortalCouponServiceImpl implements PortalCouponService {
         }
         SmsCouponHistory history = smsCouponHistoryMapper.selectById(couponHistoryId);
         return history != null ? history.getCouponId() : null;
+    }
+
+    private Map<Long, SmsCoupon> loadCouponsByIds(Collection<Long> couponIds) {
+        if (CollectionUtils.isEmpty(couponIds)) {
+            return Map.of();
+        }
+        return smsCouponMapper.selectBatchIds(couponIds).stream()
+                .filter(coupon -> coupon.getId() != null)
+                .collect(Collectors.toMap(SmsCoupon::getId, coupon -> coupon, (left, right) -> left));
     }
 
     private SmsCouponHistory requireUnusedHistory(Long memberId, Long couponHistoryId) {

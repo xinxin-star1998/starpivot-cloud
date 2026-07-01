@@ -54,7 +54,7 @@ public class GenController {
      * @return 分页的代码生成表列表结果
      */
     @PreAuthorize("hasAuthority('tool:gen:query')")
-    @PostMapping("/list")
+    @PostMapping("/genTablePageList")
     public Result<PageResponse<GenTableVO>> list(@RequestBody GenTableQueryDTO queryDTO) {
         PageResponse<GenTableVO> page = genTableService.selectGenTablePage(queryDTO);
         return Result.success(page);
@@ -63,7 +63,7 @@ public class GenController {
      * 查询数据库列表
      */
     @PreAuthorize("hasAuthority('tool:gen:query')")
-    @PostMapping("/db/list")
+    @PostMapping("/genDbTablePageList")
     public Result<PageResponse<GenTableVO>> dbTableList(@RequestBody GenTableQueryDTO queryDTO)
     {
         PageResponse<GenTableVO> pageResponse = genTableService.selectDbTableList(queryDTO);
@@ -183,7 +183,7 @@ public class GenController {
      */
     @Log(title = "删除代码生成配置", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('tool:gen:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeGenTable")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest)
     {
         List<Long> tableIds = deleteRequest.getIds();

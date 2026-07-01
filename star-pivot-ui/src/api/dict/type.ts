@@ -46,7 +46,7 @@ export interface PageResponseResult<T> {
  */
 export function fetchGetDictTypeList(params?: DictTypeSearchParams) {
   return request.post<PageResponseResult<SysDictType>>({
-    url: '/api/sys/dict/type/list',
+    url: '/api/sys/dict/type/dictTypePageList',
     data: params || {}
   })
 }
@@ -93,7 +93,7 @@ export function fetchUpdateDictType(data: DictTypeFormData) {
  */
 export function fetchDeleteDictType(dictIds: number[]) {
   return request.del({
-    url: '/api/sys/dict/type/delete',
+    url: '/api/sys/dict/type/removeDictType',
     data: { ids: dictIds }
   })
 }

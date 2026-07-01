@@ -1,12 +1,16 @@
 package cn.org.starpivot.mall.portal.service;
 
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.mall.portal.domain.bo.PortalOrderPriceTrialBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderQueryBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
+import cn.org.starpivot.mall.portal.domain.vo.PortalOrderPriceTrialVo;
+import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitTokenVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Orderservice服务接口。
@@ -21,6 +25,12 @@ public interface PortalOrderService {
      * 提交订单。
      */
     PortalOrderSubmitVo submit(Long memberId, PortalOrderSubmitBo bo);
+
+    /** 结算页价格试算 */
+    PortalOrderPriceTrialVo priceTrial(Long memberId, PortalOrderPriceTrialBo bo);
+
+    /** 获取下单防重令牌 */
+    PortalOrderSubmitTokenVo issueSubmitToken(Long memberId);
 
     /**
      * pageMyOrders。
@@ -45,4 +55,7 @@ public interface PortalOrderService {
 
     /** 申请退货 */
     List<Long> applyReturn(Long memberId, cn.org.starpivot.mall.portal.domain.bo.PortalOrderReturnApplyBo bo);
+
+    /** 各状态订单数量（含待评价） */
+    Map<String, Integer> statusCounts(Long memberId);
 }

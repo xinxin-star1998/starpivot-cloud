@@ -1,11 +1,11 @@
 package cn.org.starpivot.gateway.filter;
 
 import cn.org.starpivot.common.domain.Result;
-import cn.org.starpivot.gateway.config.GatewayAuthProperties;
 import cn.org.starpivot.common.security.JwtProperties;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.LoginUser;
 import cn.org.starpivot.common.security.SecurityConstants;
+import cn.org.starpivot.gateway.config.GatewayAuthProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
@@ -121,7 +121,8 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
      */
     private Mono<Boolean> isBlacklisted(String token) {
         try {
-            return redisTemplate.hasKey(SecurityConstants.TOKEN_BLACKLIST_PREFIX + token);
+            String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + JwtUtils.sanitizeTokenForBlacklist(token);
+            return redisTemplate.hasKey(key);
         } catch (Exception e) {
             log.error("Error checking token blacklist status", e);
             // Redis 不可用时拒绝放行，避免已登出 Token 仍可通过网关

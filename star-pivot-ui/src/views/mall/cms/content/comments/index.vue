@@ -16,28 +16,32 @@
       />
     </ElCard>
 
-    <CommentDetailDrawer v-model:visible="detailVisible" :comment-id="currentCommentId" />
+    <CommentDetailDrawer
+      v-model:visible="detailVisible"
+      :comment-id="currentCommentId"
+      @replied="refreshData"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchCommentList,
-    fetchCommentRemove,
-    fetchCommentUpdateShowStatus,
-    COMMENT_SHOW_STATUS_MAP,
-    type CommentVo
-  } from '@/api/mall/comment'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import CommentSearch from './modules/comment-search.vue'
-  import CommentDetailDrawer from './modules/comment-detail-drawer.vue'
-  import { ElButton, ElMessageBox, ElRate, ElSpace, ElTag } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  COMMENT_SHOW_STATUS_MAP,
+  type CommentVo,
+  fetchCommentList,
+  fetchCommentRemove,
+  fetchCommentUpdateShowStatus
+} from '@/api/mall/comment'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import CommentSearch from './modules/comment-search.vue'
+import CommentDetailDrawer from './modules/comment-detail-drawer.vue'
+import {ElButton, ElMessageBox, ElRate, ElSpace, ElTag} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'CmsCommentManage' })
+defineOptions({ name: 'CmsCommentManage' })
 
   const { hasAuth } = useAuth()
 

@@ -1,6 +1,7 @@
 package cn.org.starpivot.gateway;
 
 import cn.org.starpivot.gateway.config.GatewayAuthProperties;
+import cn.org.starpivot.gateway.config.GatewayRateLimitProperties;
 import cn.org.starpivot.common.security.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,7 +33,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
         ManagementWebSecurityAutoConfiguration.class
 })
 @EnableDiscoveryClient
-@EnableConfigurationProperties({JwtProperties.class, GatewayAuthProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, GatewayAuthProperties.class, GatewayRateLimitProperties.class})
 public class StarPivotGatewayApplication {
 
     /**

@@ -47,7 +47,7 @@ public class SmsCouponHistoryController {
      * @return 分页查询结果
      */
     @Operation(summary = "优惠券发放记录分页列表")
-    @PostMapping("/list")
+    @PostMapping("/couponHistoryPageList")
     @PreAuthorize("hasAuthority('mall:coupon:history')")
     public Result<PageResponse<CouponHistoryVo>> pageList(@RequestBody CouponHistoryReqBo reqBo) {
         return Result.success(smsCouponHistoryService.pageList(reqBo));

@@ -1,9 +1,5 @@
 import request from '@/utils/http'
-import type {
-  PortalCart,
-  PortalCartAddPayload,
-  PortalCartUpdatePayload
-} from './types'
+import type {PortalCart, PortalCartAddPayload, PortalCartUpdatePayload} from './types'
 
 export function fetchPortalCart() {
   return request.get<PortalCart>({
@@ -28,7 +24,7 @@ export function fetchPortalCartUpdate(data: PortalCartUpdatePayload) {
 
 export function fetchPortalCartRemove(skuIds: number[]) {
   return request.del<void>({
-    url: '/api/portal/cart/remove',
+    url: '/api/portal/cart/removeCart',
     data: { ids: skuIds },
     showSuccessMessage: true
   })

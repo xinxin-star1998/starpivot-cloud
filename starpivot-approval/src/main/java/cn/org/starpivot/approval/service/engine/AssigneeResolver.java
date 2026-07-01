@@ -10,7 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 审批人解析（Feign 调 starpivot-system 组织数据）。
@@ -40,10 +41,29 @@ public class AssigneeResolver {
         if (userId == null) {
             return "";
         }
-        Result<String> result = sysOrgClient.displayName(userId);
-        if (result != null && result.isSuccess() && result.getData() != null) {
-            return result.getData();
+        return displayNames(List.of(userId)).getOrDefault(userId, String.valueOf(userId));
+    }
+
+    public Map<Long, String> displayNames(Collection<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
         }
-        return String.valueOf(userId);
+        List<Long> distinct = userIds.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        if (distinct.isEmpty()) {
+            return Map.of();
+        }
+        Result<Map<Long, String>> result = sysOrgClient.displayNames(distinct);
+        if (result != null && result.isSuccess() && result.getData() != null) {
+            Map<Long, String> names = new HashMap<>(result.getData());
+            for (Long userId : distinct) {
+                names.putIfAbsent(userId, String.valueOf(userId));
+            }
+            return names;
+        }
+        Map<Long, String> fallback = new HashMap<>();
+        for (Long userId : distinct) {
+            fallback.put(userId, String.valueOf(userId));
+        }
+        return fallback;
     }
 }

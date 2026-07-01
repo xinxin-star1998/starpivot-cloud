@@ -121,7 +121,7 @@ public class PmsCategoryController {
      */
     @Log(title = "删除商品分类", businessType = BusinessType.DELETE)
     @Operation(summary = "删除分类")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeCategory")
     @PreAuthorize("hasAuthority('mall:category:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

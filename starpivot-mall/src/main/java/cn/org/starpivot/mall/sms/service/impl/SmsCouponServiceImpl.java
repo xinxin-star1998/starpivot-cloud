@@ -3,6 +3,7 @@ package cn.org.starpivot.mall.sms.service.impl;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
+import cn.org.starpivot.mall.common.MallAuditStatus;
 import cn.org.starpivot.mall.pms.entity.PmsCategory;
 import cn.org.starpivot.mall.pms.entity.PmsSpuInfo;
 import cn.org.starpivot.mall.pms.mapper.PmsCategoryMapper;
@@ -186,6 +187,8 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
         entity.setUseCount(0);
 
+        entity.setAuditStatus(MallAuditStatus.DRAFT);
+
         smsCouponMapper.insert(entity);
 
         saveRelations(entity.getId(), bo);
@@ -313,9 +316,7 @@ public class SmsCouponServiceImpl implements SmsCouponService {
         }
 
         if (publish == PUBLISHED) {
-
-            validateSaveBo(toSaveBo(existing), existing);
-
+            throw new BizException("上架需先提交审批，请使用「提交审批」");
         }
 
         SmsCoupon patch = new SmsCoupon();
@@ -326,6 +327,18 @@ public class SmsCouponServiceImpl implements SmsCouponService {
 
         smsCouponMapper.updateById(patch);
 
+    }
+
+    @Override
+    public void assertPublishable(Long id) {
+        if (id == null) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "优惠券 ID 不能为空");
+        }
+        SmsCoupon existing = smsCouponMapper.selectById(id);
+        if (existing == null) {
+            throw new BizException("优惠券不存在");
+        }
+        validateSaveBo(toSaveBo(existing), existing);
     }
 
     private CouponSaveBo toSaveBo(SmsCoupon entity) {

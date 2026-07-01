@@ -10,6 +10,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/approval/instance")
 @RequiredArgsConstructor
+@Tag(name = "审批实例", description = "提交、撤回、我的申请、时间轴")
 public class ApInstanceController {
 
     private final ApInstanceService instanceService;
@@ -36,7 +38,7 @@ public class ApInstanceController {
     }
 
     @PreAuthorize("hasAuthority('approval:instance:query')")
-    @PostMapping("/mine/list")
+    @PostMapping("/mineInstancePageList")
     public Result<PageResponse<ApInstanceVo>> mineList(@RequestBody ApInstanceQueryDto query) {
         return Result.success(instanceService.mineList(query, requireUserId()));
     }

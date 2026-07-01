@@ -1,0 +1,31 @@
+// C 端商城设计变量（挂载在 .portal-layout 下，供子页面继承）
+.portal-layout {
+  --portal-primary: #ff4757;
+  --portal-primary-dark: #ee3a4a;
+  --portal-primary-light: #fff0f1;
+  --portal-primary-gradient: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+
+  --portal-accent-orange: #ff9f43;
+  --portal-accent-blue: #54a0ff;
+  --portal-accent-green: #2ed573;
+
+  --portal-bg: #f4f6f9;
+  --portal-bg-elevated: #fff;
+  --portal-text: #2d3436;
+  --portal-text-secondary: #636e72;
+  --portal-text-muted: #b2bec3;
+  --portal-border: #eef1f5;
+  --portal-border-strong: #dfe6e9;
+
+  --portal-radius-sm: 8px;
+  --portal-radius: 12px;
+  --portal-radius-lg: 16px;
+
+  --portal-shadow-sm: 0 2px 8px rgb(45 52 54 / 4%);
+  --portal-shadow: 0 4px 20px rgb(45 52 54 / 6%);
+  --portal-shadow-lg: 0 8px 32px rgb(45 52 54 / 10%);
+
+  --portal-header-height: 64px;
+  --portal-max-width: 1240px;
+  --portal-transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}

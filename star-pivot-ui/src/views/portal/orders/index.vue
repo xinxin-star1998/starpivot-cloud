@@ -1,14 +1,24 @@
 <!-- C 端我的订单 -->
 <template>
   <div v-loading="loading" class="portal-orders">
-    <h1 class="page-title">我的订单</h1>
+    <PortalPageHeader title="我的订单" subtitle="查看与管理您的全部订单" />
 
-    <ElTabs v-model="activeStatus" @tab-change="handleTabChange">
-      <ElTabPane v-for="tab in statusTabs" :key="tab.key" :label="tab.label" :name="tab.key" />
-    </ElTabs>
+    <div class="status-tabs">
+      <button
+        v-for="tab in statusTabs"
+        :key="tab.key"
+        type="button"
+        class="status-tab"
+        :class="{ active: activeStatus === tab.key }"
+        @click="activeStatus = tab.key; handleTabChange()"
+      >
+        {{ tab.label }}
+        <span v-if="tabBadge(tab.key)" class="status-tab__badge">{{ formatTabBadge(tab.key) }}</span>
+      </button>
+    </div>
 
-    <div v-if="orders.length" class="order-list">
-      <div v-for="order in orders" :key="order.id" class="order-card">
+    <div v-if="displayOrders.length" class="order-list">
+      <div v-for="order in displayOrders" :key="order.id" class="order-card">
         <div class="order-card__head">
           <span class="order-sn">{{ order.orderSn }}</span>
           <span class="order-time">{{ order.createTime }}</span>
@@ -38,6 +48,15 @@
             实付：<strong>¥{{ formatPrice(order.payAmount) }}</strong>
           </span>
           <div class="order-card__actions">
+            <ElButton
+              v-if="hasLogistics(order)"
+              size="small"
+              type="primary"
+              plain
+              @click="openLogisticsTrack(order)"
+            >
+              查看物流
+            </ElButton>
             <ElButton size="small" @click="openDetail(order.id!)">订单详情</ElButton>
             <ElButton
               v-if="order.status === 0"
@@ -56,6 +75,15 @@
             >
               取消订单
             </ElButton>
+            <ElButton
+              v-if="hasReviewableItem(order)"
+              size="small"
+              type="primary"
+              plain
+              @click="goReview(order)"
+            >
+              去评价
+            </ElButton>
           </div>
         </div>
       </div>
@@ -65,8 +93,11 @@
       </div>
     </div>
 
-    <ElEmpty v-else description="暂无订单">
-      <ElButton type="primary" @click="router.push('/portal')">去逛逛</ElButton>
+    <ElEmpty v-else :description="emptyDescription">
+      <ElButton v-if="isReviewTab" type="primary" @click="router.push('/portal/account/pending-reviews')">
+        查看待评价商品
+      </ElButton>
+      <ElButton v-else type="primary" @click="router.push('/portal')">去逛逛</ElButton>
     </ElEmpty>
 
     <ElDrawer v-model="detailVisible" title="订单详情" size="480px" destroy-on-close>
@@ -89,12 +120,34 @@
             }}{{ detailOrder.receiverRegion }}{{ detailOrder.receiverDetailAddress }}
           </p>
         </div>
+        <div v-if="hasLogistics(detailOrder)" class="detail-block detail-logistics">
+          <p><strong>物流信息</strong></p>
+          <p v-if="detailOrder.deliveryCompany">物流公司：{{ detailOrder.deliveryCompany }}</p>
+          <p class="detail-logistics__sn">
+            运单号：{{ detailOrder.deliverySn }}
+            <ElButton link type="primary" size="small" @click="copyDeliverySn(detailOrder.deliverySn!)">
+              复制
+            </ElButton>
+          </p>
+          <ElButton size="small" type="primary" plain @click="openLogisticsTrack(detailOrder)">
+            查询物流
+          </ElButton>
+        </div>
         <div class="detail-block">
           <p><strong>商品明细</strong></p>
           <div v-for="item in detailOrder.orderItemList || []" :key="item.id" class="detail-item">
             <span>{{ item.skuName }}</span>
             <span>x{{ item.skuQuantity }}</span>
             <span class="price">¥{{ formatPrice(item.realAmount) }}</span>
+            <ElButton
+              v-if="item.spuId && reviewableSpuIds.has(item.spuId)"
+              link
+              type="primary"
+              size="small"
+              @click="goReviewProduct(item.spuId)"
+            >
+              评价
+            </ElButton>
           </div>
         </div>
         <div class="detail-block detail-total">
@@ -122,26 +175,31 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    fetchPortalOrderCancel,
-    fetchPortalOrderConfirmReceive,
-    fetchPortalOrderDetail,
-    fetchPortalOrderList,
-    fetchPortalOrderMockPay
-  } from '@/api/portal/order'
-  import { fetchPortalAlipayEnabled, fetchPortalAlipayPay } from '@/api/portal/pay'
-  import type { PortalOrder, PortalOrderItem } from '@/api/portal/types'
-  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
-  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-  import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import { getPortalOrderStatusLabel, getPortalOrderStatusType } from '@/utils/portal/order-status'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import ReturnDialog from './modules/return-dialog.vue'
+import {
+  fetchPortalOrderCancel,
+  fetchPortalOrderConfirmReceive,
+  fetchPortalOrderDetail,
+  fetchPortalOrderList,
+  fetchPortalOrderMockPay,
+  fetchPortalOrderStatusCounts
+} from '@/api/portal/order'
+import {fetchPortalAlipayEnabled, fetchPortalAlipayPay} from '@/api/portal/pay'
+import {fetchPortalReviewableSpuIds} from '@/api/portal/comment'
+import type {PortalOrder, PortalOrderItem} from '@/api/portal/types'
+import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
+import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
+import {handleMutationError} from '@/utils/http/mutation'
+import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/portal/order-status'
+import {buildLogisticsTrackUrl} from '@/utils/portal/logistics'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import ReturnDialog from './modules/return-dialog.vue'
+import PortalPageHeader from '../components/portal-page-header.vue'
 
-  defineOptions({ name: 'PortalOrders' })
+defineOptions({ name: 'PortalOrders' })
 
   const router = useRouter()
+  const route = useRoute()
   const { requireLogin } = usePortalAuth()
 
   const loading = ref(true)
@@ -159,6 +217,8 @@
   const alipayEnabled = ref(false)
   const returnDialogVisible = ref(false)
   const returnOrder = ref<PortalOrder | null>(null)
+  const reviewableSpuIds = ref(new Set<number>())
+  const tabCounts = ref<Record<string, number>>({})
 
   const placeholderImg =
     'data:image/svg+xml,' +
@@ -167,17 +227,50 @@
     )
 
   const statusTabs = [
-    { key: 'all', label: '全部', status: undefined },
+    { key: 'all', label: '全部', status: undefined as number | undefined },
     { key: '0', label: '待付款', status: 0 },
     { key: '1', label: '待发货', status: 1 },
     { key: '2', label: '已发货', status: 2 },
     { key: '3', label: '已完成', status: 3 },
+    { key: 'review', label: '待评价', status: undefined as number | undefined },
     { key: '4', label: '已关闭', status: 4 }
   ]
 
-  const hasMore = computed(() => orders.value.length < total.value)
+  const isReviewTab = computed(() => activeStatus.value === 'review')
+
+  const displayOrders = computed(() => {
+    if (!isReviewTab.value) return orders.value
+    return orders.value.filter((order) => hasReviewableItem(order))
+  })
+
+  const emptyDescription = computed(() =>
+    isReviewTab.value ? '暂无待评价订单' : '暂无订单'
+  )
+
+  const hasMore = computed(() => {
+    if (isReviewTab.value) return false
+    return orders.value.length < total.value
+  })
 
   const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '0.00')
+
+  function tabBadge(key: string) {
+    if (key === 'all' || key === '4') return 0
+    return tabCounts.value[key] ?? 0
+  }
+
+  function formatTabBadge(key: string) {
+    const count = tabBadge(key)
+    return count > 99 ? '99+' : count
+  }
+
+  async function loadTabCounts() {
+    try {
+      tabCounts.value = await fetchPortalOrderStatusCounts()
+    } catch {
+      tabCounts.value = {}
+    }
+  }
 
   function currentStatusFilter() {
     const tab = statusTabs.find((t) => t.key === activeStatus.value)
@@ -186,6 +279,54 @@
 
   function previewItems(order: PortalOrder): PortalOrderItem[] {
     return (order.orderItemList || []).slice(0, 2)
+  }
+
+  function collectReviewableSpuIds(list: PortalOrder[]): number[] {
+    const ids = new Set<number>()
+    for (const order of list) {
+      if (order.status !== 2 && order.status !== 3) continue
+      for (const item of order.orderItemList || []) {
+        if (item.spuId) ids.add(item.spuId)
+      }
+    }
+    return [...ids]
+  }
+
+  async function refreshReviewableSpuIds(list: PortalOrder[]) {
+    const spuIds = collectReviewableSpuIds(list)
+    if (!spuIds.length) {
+      reviewableSpuIds.value = new Set()
+      return
+    }
+    try {
+      const res = await fetchPortalReviewableSpuIds(spuIds)
+      reviewableSpuIds.value = new Set(res.reviewableSpuIds || [])
+    } catch {
+      reviewableSpuIds.value = new Set()
+    }
+  }
+
+  function hasReviewableItem(order: PortalOrder) {
+    if (order.status !== 2 && order.status !== 3) return false
+    return (order.orderItemList || []).some(
+      (item) => item.spuId != null && reviewableSpuIds.value.has(item.spuId)
+    )
+  }
+
+  function findFirstReviewableSpuId(order: PortalOrder): number | undefined {
+    return (order.orderItemList || []).find(
+      (item) => item.spuId != null && reviewableSpuIds.value.has(item.spuId)
+    )?.spuId
+  }
+
+  function goReviewProduct(spuId: number) {
+    detailVisible.value = false
+    router.push(`/portal/product/${spuId}?review=1`)
+  }
+
+  function goReview(order: PortalOrder) {
+    const spuId = findFirstReviewableSpuId(order)
+    if (spuId) goReviewProduct(spuId)
   }
 
   async function resolveOrderImages(list: PortalOrder[]) {
@@ -197,7 +338,33 @@
     map.forEach((url, key) => coverUrls.value.set(key, url))
   }
 
+  async function loadReviewOrders() {
+    pageNum.value = 1
+    orders.value = []
+    try {
+      const [shipped, completed] = await Promise.all([
+        fetchPortalOrderList({ pageNum: 1, pageSize: 100, status: 2 }),
+        fetchPortalOrderList({ pageNum: 1, pageSize: 100, status: 3 })
+      ])
+      const merged = [...(shipped.rows || []), ...(completed.rows || [])]
+      merged.sort((a, b) => String(b.createTime || '').localeCompare(String(a.createTime || '')))
+      orders.value = merged
+      total.value = merged.length
+      await resolveOrderImages(merged)
+      await refreshReviewableSpuIds(merged)
+      await loadTabCounts()
+    } catch (error) {
+      handleMutationError(error, '加载待评价订单失败')
+      orders.value = []
+      total.value = 0
+    }
+  }
+
   async function loadOrders(reset = true) {
+    if (isReviewTab.value) {
+      await loadReviewOrders()
+      return
+    }
     if (reset) {
       pageNum.value = 1
       orders.value = []
@@ -212,6 +379,8 @@
       const rows = res.rows || []
       orders.value = reset ? rows : [...orders.value, ...rows]
       await resolveOrderImages(rows)
+      await refreshReviewableSpuIds(orders.value)
+      await loadTabCounts()
     } catch (error) {
       handleMutationError(error, '加载订单失败')
       if (reset) {
@@ -221,8 +390,21 @@
     }
   }
 
+  function syncStatusFromRoute() {
+    const status = route.query.status
+    if (typeof status === 'string' && statusTabs.some((tab) => tab.key === status)) {
+      activeStatus.value = status
+    }
+  }
+
   function handleTabChange() {
-    loadOrders(true)
+    const nextQuery = { ...route.query }
+    if (activeStatus.value === 'all') {
+      delete nextQuery.status
+    } else {
+      nextQuery.status = activeStatus.value
+    }
+    router.replace({ query: nextQuery })
   }
 
   function loadMore() {
@@ -240,6 +422,25 @@
       await resolveOrderImages([detailOrder.value])
     } catch (error) {
       handleMutationError(error, '加载订单详情失败')
+    }
+  }
+
+  function hasLogistics(order?: PortalOrder | null) {
+    if (!order?.deliverySn?.trim()) return false
+    return order.status === 2 || order.status === 3
+  }
+
+  function openLogisticsTrack(order: PortalOrder) {
+    if (!order.deliverySn?.trim()) return
+    window.open(buildLogisticsTrackUrl(order.deliverySn, order.deliveryCompany), '_blank', 'noopener')
+  }
+
+  async function copyDeliverySn(deliverySn: string) {
+    try {
+      await navigator.clipboard.writeText(deliverySn)
+      ElMessage.success('运单号已复制')
+    } catch {
+      ElMessage.info(deliverySn)
     }
   }
 
@@ -309,10 +510,12 @@
   }
 
   onMounted(async () => {
+    window.addEventListener('portal-review-changed', loadTabCounts)
     if (!requireLogin()) {
       loading.value = false
       return
     }
+    syncStatusFromRoute()
     try {
       alipayEnabled.value = await fetchPortalAlipayEnabled()
       await loadOrders(true)
@@ -320,80 +523,160 @@
       loading.value = false
     }
   })
+
+  onUnmounted(() => {
+    window.removeEventListener('portal-review-changed', loadTabCounts)
+  })
+
+  watch(
+    () => route.query.status,
+    () => {
+      if (!requireLogin()) return
+      syncStatusFromRoute()
+      loadOrders(true)
+    }
+  )
 </script>
 
 <style scoped lang="scss">
-  .page-title {
-    margin: 0 0 16px;
-    font-size: 22px;
+  @import '../styles/variables.scss';
+
+  .status-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .status-tab {
+    padding: 8px 18px;
+    border: 1px solid var(--portal-border);
+    border-radius: 20px;
+    background: var(--portal-bg-elevated);
+    color: var(--portal-text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all var(--portal-transition);
+
+    &:hover {
+      border-color: #ffb8b8;
+      color: var(--portal-primary);
+    }
+
+    &.active {
+      background: var(--portal-primary-gradient);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    &__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      margin-left: 6px;
+      padding: 0 5px;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--portal-primary);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    &.active &__badge {
+      background: rgb(255 255 255 / 25%);
+      color: #fff;
+    }
   }
 
   .order-list {
-    margin-top: 8px;
+    margin-top: 0;
   }
 
   .order-card {
-    background: #fff;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius-lg);
+    margin-bottom: 16px;
     overflow: hidden;
+    box-shadow: var(--portal-shadow-sm);
+    border: 1px solid var(--portal-border);
+    transition: box-shadow var(--portal-transition);
+
+    &:hover {
+      box-shadow: var(--portal-shadow);
+    }
 
     &__head {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 16px;
-      background: #fafafa;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 14px 20px;
+      background: #fafbfc;
+      border-bottom: 1px solid var(--portal-border);
       font-size: 13px;
 
       .order-sn {
         font-weight: 600;
-        color: #333;
+        color: var(--portal-text);
       }
 
       .order-time {
         flex: 1;
-        color: #999;
+        color: var(--portal-text-muted);
       }
     }
 
     &__items {
-      padding: 12px 16px;
+      padding: 16px 20px;
     }
 
     &__foot {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-top: 1px solid #f0f0f0;
+      padding: 14px 20px;
+      border-top: 1px solid var(--portal-border);
+      background: #fafbfc;
 
-      .pay-amount strong {
-        color: #e1251b;
-        font-size: 18px;
+      .pay-amount {
+        font-size: 14px;
+        color: var(--portal-text-secondary);
+
+        strong {
+          color: var(--portal-primary);
+          font-size: 20px;
+          font-weight: 800;
+        }
       }
     }
 
     &__actions {
       display: flex;
       gap: 8px;
+
+      :deep(.el-button) {
+        border-radius: 16px;
+      }
     }
   }
 
   .order-item-line {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 6px 0;
+    gap: 12px;
+    padding: 8px 0;
     font-size: 13px;
 
     &__img {
-      width: 48px;
-      height: 48px;
+      width: 56px;
+      height: 56px;
       object-fit: cover;
-      border-radius: 4px;
-      background: #f5f5f5;
+      border-radius: var(--portal-radius-sm);
+      background: #fafbfc;
+      border: 1px solid var(--portal-border);
     }
 
     &__name {
@@ -401,51 +684,68 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: var(--portal-text);
     }
 
     &__qty {
-      color: #999;
+      color: var(--portal-text-muted);
     }
 
     &__price {
-      color: #666;
+      color: var(--portal-text-secondary);
       min-width: 72px;
       text-align: right;
+      font-weight: 500;
     }
   }
 
   .more-hint {
     margin: 4px 0 0;
     font-size: 12px;
-    color: #999;
+    color: var(--portal-text-muted);
   }
 
   .load-more {
     text-align: center;
-    padding: 16px;
+    padding: 20px;
+
+    :deep(.el-button) {
+      border-radius: 20px;
+      min-width: 140px;
+    }
   }
 
   .detail-block {
     margin-bottom: 16px;
     font-size: 14px;
     line-height: 1.6;
-    color: #333;
+    color: var(--portal-text);
 
     p {
       margin: 4px 0;
     }
   }
 
+  .detail-logistics__sn {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
   .detail-item {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 8px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f5f5f5;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--portal-border);
     font-size: 13px;
+    flex-wrap: wrap;
 
     .price {
-      color: #e1251b;
+      color: var(--portal-primary);
+      font-weight: 600;
     }
   }
 
@@ -454,8 +754,9 @@
     font-size: 16px;
 
     strong {
-      color: #e1251b;
-      font-size: 20px;
+      color: var(--portal-primary);
+      font-size: 22px;
+      font-weight: 800;
     }
   }
 

@@ -54,7 +54,7 @@ public class WmsWareInfoController {
      * @return 分页查询结果
      */
     @Operation(summary = "仓库分页列表")
-    @PostMapping("/list")
+    @PostMapping("/wareInfoPageList")
     @PreAuthorize("hasAuthority('mall:ware:query')")
     public Result<PageResponse<WmsWareInfoVo>> pageList(@RequestBody WmsWareInfoReqBo wmsWareInfoReqBo) {
         return Result.success(wmsWareInfoService.getWmsWareInfoPageList(wmsWareInfoReqBo));
@@ -111,7 +111,7 @@ public class WmsWareInfoController {
      */
     @Log(title = "删除仓库", businessType = BusinessType.DELETE)
     @Operation(summary = "删除仓库", description = "请求体 ids 为仓库主键列表")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeWareInfo")
     @PreAuthorize("hasAuthority('mall:ware:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

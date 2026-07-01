@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 29/06/2026 19:49:01
+ Date: 01/07/2026 16:58:43
 */
 
 SET NAMES utf8mb4;
@@ -51,6 +51,28 @@ INSERT INTO `ap_instance` VALUES (3, 1, 'mall_purchase_default', 'mall', 'purcha
 INSERT INTO `ap_instance` VALUES (4, 1, 'mall_purchase_default', 'mall', 'purchase', 'mall:purchase:2', '采购单审批 #2', 1, 'APPROVED', 2, '{\"amount\": 629900.0, \"wareId\": 3}', DEFAULT, '2026-06-26 11:13:17', '2026-06-26 11:15:40');
 INSERT INTO `ap_instance` VALUES (5, 1, 'mall_purchase_default', 'mall', 'purchase', 'mall:purchase:3', '采购单审批 #3', 1, 'APPROVED', 2, '{\"amount\": 8888.0, \"wareId\": 1}', DEFAULT, '2026-06-26 14:39:53', '2026-06-26 14:42:45');
 INSERT INTO `ap_instance` VALUES (6, 1, 'mall_purchase_default', 'mall', 'purchase', 'mall:purchase:3', '采购单审批 #3', 1, 'APPROVED', 2, '{\"amount\": 8888.0, \"wareId\": 1}', DEFAULT, '2026-06-26 14:56:01', '2026-06-26 14:56:03');
+
+-- ----------------------------
+-- Table structure for ap_notification
+-- ----------------------------
+DROP TABLE IF EXISTS `ap_notification`;
+CREATE TABLE `ap_notification`  (
+  `notify_id` bigint(0) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(0) NOT NULL COMMENT '接收人',
+  `notify_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'TASK_ASSIGNED/INSTANCE_FINISHED',
+  `title` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `content` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `instance_id` bigint(0) NULL DEFAULT NULL,
+  `task_id` bigint(0) NULL DEFAULT NULL,
+  `read_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0' COMMENT '0未读 1已读',
+  `create_time` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`notify_id`) USING BTREE,
+  INDEX `idx_user_read_time`(`user_id`, `read_flag`, `create_time`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批站内通知' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of ap_notification
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for ap_record
@@ -104,21 +126,23 @@ CREATE TABLE `ap_task`  (
   `action` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'APPROVE/REJECT',
   `comment` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `create_time` datetime(0) NULL DEFAULT NULL,
+  `due_time` datetime(0) NULL DEFAULT NULL COMMENT '截止时间',
   `finish_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`task_id`) USING BTREE,
   INDEX `idx_assignee_status`(`assignee_id`, `status`) USING BTREE,
-  INDEX `idx_instance`(`instance_id`) USING BTREE
+  INDEX `idx_instance`(`instance_id`) USING BTREE,
+  INDEX `idx_status_due`(`status`, `due_time`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批待办' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_task
 -- ----------------------------
-INSERT INTO `ap_task` VALUES (1, 4, 1, 'dept_leader', '部门负责人', 1, 'DONE', 'APPROVE', '通过', '2026-06-26 11:13:17', '2026-06-26 11:13:58');
-INSERT INTO `ap_task` VALUES (2, 4, 2, 'finance', '财务审批', 1, 'DONE', 'APPROVE', '通过', '2026-06-26 11:13:58', '2026-06-26 11:15:40');
-INSERT INTO `ap_task` VALUES (3, 5, 1, 'dept_leader', '部门负责人', 1, 'DONE', 'APPROVE', 'E2E pass round 1', '2026-06-26 14:39:53', '2026-06-26 14:42:44');
-INSERT INTO `ap_task` VALUES (4, 5, 2, 'finance', '财务审批', 1, 'DONE', 'APPROVE', 'E2E pass round 2', '2026-06-26 14:42:44', '2026-06-26 14:42:45');
-INSERT INTO `ap_task` VALUES (5, 6, 1, 'dept_leader', '部门负责人', 1, 'DONE', 'APPROVE', 'e2e-approval.ps1', '2026-06-26 14:56:01', '2026-06-26 14:56:03');
-INSERT INTO `ap_task` VALUES (6, 6, 2, 'finance', '财务审批', 1, 'DONE', 'APPROVE', 'e2e-approval.ps1', '2026-06-26 14:56:03', '2026-06-26 14:56:03');
+INSERT INTO `ap_task` VALUES (1, 4, 1, 'dept_leader', '部门负责人', 1, 'DONE', 'APPROVE', '通过', '2026-06-26 11:13:17', NULL, '2026-06-26 11:13:58');
+INSERT INTO `ap_task` VALUES (2, 4, 2, 'finance', '财务审批', 1, 'DONE', 'APPROVE', '通过', '2026-06-26 11:13:58', NULL, '2026-06-26 11:15:40');
+INSERT INTO `ap_task` VALUES (3, 5, 1, 'dept_leader', '部门负责人', 1, 'DONE', 'APPROVE', 'E2E pass round 1', '2026-06-26 14:39:53', NULL, '2026-06-26 14:42:44');
+INSERT INTO `ap_task` VALUES (4, 5, 2, 'finance', '财务审批', 1, 'DONE', 'APPROVE', 'E2E pass round 2', '2026-06-26 14:42:44', NULL, '2026-06-26 14:42:45');
+INSERT INTO `ap_task` VALUES (5, 6, 1, 'dept_leader', '部门负责人', 1, 'DONE', 'APPROVE', 'e2e-approval.ps1', '2026-06-26 14:56:01', NULL, '2026-06-26 14:56:03');
+INSERT INTO `ap_task` VALUES (6, 6, 2, 'finance', '财务审批', 1, 'DONE', 'APPROVE', 'e2e-approval.ps1', '2026-06-26 14:56:03', NULL, '2026-06-26 14:56:03');
 
 -- ----------------------------
 -- Table structure for ap_template
@@ -139,13 +163,15 @@ CREATE TABLE `ap_template`  (
   PRIMARY KEY (`template_id`) USING BTREE,
   UNIQUE INDEX `uk_code_version`(`template_code`, `version`) USING BTREE,
   INDEX `idx_module_status`(`biz_module`, `status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_template
 -- ----------------------------
 INSERT INTO `ap_template` VALUES (1, 'mall_purchase_default', '采购单默认审批', 'mall', 1, 'PUBLISHED', '部门负责人→财务', 'admin', '2026-06-26 10:49:49', NULL, NULL);
 INSERT INTO `ap_template` VALUES (2, 'mall_return_default', '退货单默认审批', 'mall', 1, 'PUBLISHED', '部门负责人→财务', 'admin', '2026-06-26 10:51:32', NULL, NULL);
+INSERT INTO `ap_template` VALUES (3, 'mall_coupon_default', '优惠券发布审批', 'mall', 1, 'PUBLISHED', '运营主管→财务', 'admin', '2026-06-30 17:34:37', NULL, NULL);
+INSERT INTO `ap_template` VALUES (4, 'mall_spu_default', '商品上架审批', 'mall', 1, 'PUBLISHED', '品类负责人→质控', 'admin', '2026-06-30 17:34:37', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for ap_template_bind
@@ -162,13 +188,15 @@ CREATE TABLE `ap_template_bind`  (
   `create_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`bind_id`) USING BTREE,
   INDEX `idx_biz`(`biz_module`, `biz_type`, `status`, `priority`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板业务绑定' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板业务绑定' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_template_bind
 -- ----------------------------
 INSERT INTO `ap_template_bind` VALUES (1, 'mall', 'purchase', NULL, 'mall_purchase_default', 0, '0', '2026-06-26 10:49:49');
 INSERT INTO `ap_template_bind` VALUES (2, 'mall', 'return', NULL, 'mall_return_default', 0, '0', '2026-06-26 10:51:32');
+INSERT INTO `ap_template_bind` VALUES (3, 'mall', 'coupon', NULL, 'mall_coupon_default', 0, '0', '2026-06-30 17:34:37');
+INSERT INTO `ap_template_bind` VALUES (4, 'mall', 'spu', NULL, 'mall_spu_default', 0, '0', '2026-06-30 17:34:37');
 
 -- ----------------------------
 -- Table structure for ap_template_route
@@ -183,7 +211,7 @@ CREATE TABLE `ap_template_route`  (
   `to_step_id` bigint(0) NOT NULL,
   PRIMARY KEY (`route_id`) USING BTREE,
   INDEX `idx_tpl_from`(`template_id`, `from_step_id`, `priority`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批步骤路由' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批步骤路由' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_template_route
@@ -203,19 +231,25 @@ CREATE TABLE `ap_template_step`  (
   `assignee_value` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `approve_mode` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'ANY' COMMENT 'ANY/ALL',
   `skip_expression` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'SpEL，true 则跳过本步',
+  `timeout_hours` int(0) NULL DEFAULT NULL COMMENT '超时小时数，空表示不超时',
+  `timeout_action` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'AUTO_REJECT' COMMENT 'AUTO_REJECT/AUTO_APPROVE',
   `create_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`step_id`) USING BTREE,
   UNIQUE INDEX `uk_tpl_step_code`(`template_id`, `step_code`) USING BTREE,
   INDEX `idx_tpl_order`(`template_id`, `step_order`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板步骤' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板步骤' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_template_step
 -- ----------------------------
-INSERT INTO `ap_template_step` VALUES (1, 1, 'dept_leader', '部门负责人', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, '2026-06-26 10:49:49');
-INSERT INTO `ap_template_step` VALUES (2, 1, 'finance', '财务审批', 2, 'ROLE', 'finance', 'ANY', NULL, '2026-06-26 10:49:49');
-INSERT INTO `ap_template_step` VALUES (3, 2, 'dept_leader', '部门负责人', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, '2026-06-26 10:51:32');
-INSERT INTO `ap_template_step` VALUES (4, 2, 'finance', '财务审批', 2, 'ROLE', 'finance', 'ANY', NULL, '2026-06-26 10:51:32');
+INSERT INTO `ap_template_step` VALUES (1, 1, 'dept_leader', '部门负责人', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-26 10:49:49');
+INSERT INTO `ap_template_step` VALUES (2, 1, 'finance', '财务审批', 2, 'ROLE', 'finance', 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-26 10:49:49');
+INSERT INTO `ap_template_step` VALUES (3, 2, 'dept_leader', '部门负责人', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-26 10:51:32');
+INSERT INTO `ap_template_step` VALUES (4, 2, 'finance', '财务审批', 2, 'ROLE', 'finance', 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-26 10:51:32');
+INSERT INTO `ap_template_step` VALUES (5, 3, 'ops_leader', '运营主管', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
+INSERT INTO `ap_template_step` VALUES (6, 3, 'finance', '财务审批', 2, 'ROLE', 'finance', 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
+INSERT INTO `ap_template_step` VALUES (7, 4, 'category_leader', '品类负责人', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
+INSERT INTO `ap_template_step` VALUES (8, 4, 'quality', '质控审批', 2, 'ROLE', 'finance', 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
 
 -- ----------------------------
 -- Table structure for gen_table
@@ -244,7 +278,7 @@ CREATE TABLE `gen_table`  (
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`table_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '代码生成业务表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 30 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '代码生成业务表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of gen_table
@@ -633,7 +667,7 @@ CREATE TABLE `sys_dict_data`  (
   INDEX `idx_status`(`status`) USING BTREE,
   INDEX `idx_type_sort`(`dict_type`, `dict_sort`) USING BTREE,
   INDEX `idx_type_value`(`dict_type`, `dict_value`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 102 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '字典数据表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 101 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '字典数据表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_dict_data
@@ -851,7 +885,7 @@ CREATE TABLE `sys_file_ref`  (
   UNIQUE INDEX `uk_file_biz`(`file_id`, `biz_type`, `biz_id`) USING BTREE,
   INDEX `idx_file_id`(`file_id`) USING BTREE,
   INDEX `idx_biz`(`biz_type`, `biz_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文件业务引用计数' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文件业务引用计数' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_file_ref
@@ -937,7 +971,7 @@ CREATE TABLE `sys_logininfor`  (
   INDEX `idx_logininfor_user`(`user_name`) USING BTREE,
   INDEX `idx_logininfor_ip`(`ipaddr`) USING BTREE,
   INDEX `idx_login_user_time`(`user_name`, `login_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 499 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '系统访问记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 507 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '系统访问记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -976,6 +1010,17 @@ INSERT INTO `sys_logininfor` VALUES (496, 'admin', '0:0:0:0:0:0:0:1', '内网IP'
 INSERT INTO `sys_logininfor` VALUES (497, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-26 18:58:00');
 INSERT INTO `sys_logininfor` VALUES (498, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-29 17:06:41');
 INSERT INTO `sys_logininfor` VALUES (499, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-29 18:19:41');
+INSERT INTO `sys_logininfor` VALUES (500, 'admin', '172.19.0.1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 06:04:46');
+INSERT INTO `sys_logininfor` VALUES (501, 'admin', '172.19.0.1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 06:05:51');
+INSERT INTO `sys_logininfor` VALUES (502, 'admin', '172.19.0.1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 06:13:27');
+INSERT INTO `sys_logininfor` VALUES (503, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 15:31:23');
+INSERT INTO `sys_logininfor` VALUES (504, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 15:44:50');
+INSERT INTO `sys_logininfor` VALUES (505, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 16:13:48');
+INSERT INTO `sys_logininfor` VALUES (506, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-06-30 18:09:14');
+INSERT INTO `sys_logininfor` VALUES (507, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-07-01 11:13:07');
+INSERT INTO `sys_logininfor` VALUES (508, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-07-01 11:30:11');
+INSERT INTO `sys_logininfor` VALUES (509, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-07-01 16:18:22');
+INSERT INTO `sys_logininfor` VALUES (510, 'admin', '0:0:0:0:0:0:0:1', '内网IP', 'Chrome', 'Windows 10', '0', '登录成功', '2026-07-01 16:40:28');
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -1003,7 +1048,7 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 270 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 271 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
@@ -1150,8 +1195,8 @@ INSERT INTO `sys_menu` VALUES (139, '规格参数', 128, 2, 'base', '/mall/pms/a
 INSERT INTO `sys_menu` VALUES (140, '销售属性', 128, 3, 'sale', '/mall/pms/attr/sale/index', NULL, 'SalesAttributes', 1, 1, 'C', '0', '0', '', 'ep:present', 'admin', '2026-05-18 15:12:11', 'admin', '2026-06-23 21:14:16', '');
 INSERT INTO `sys_menu` VALUES (141, 'spu管理', 129, 1, 'spu', '/mall/pms/product/spu/index', NULL, 'SpuManager', 1, 1, 'C', '0', '0', '', 'ri:shining-2-line', 'admin', '2026-06-23 16:40:46', 'admin', '2026-06-23 21:23:25', '');
 INSERT INTO `sys_menu` VALUES (142, '发布商品', 129, 2, 'publish', '/mall/pms/product/publish/index', NULL, 'PublishSPU', 1, 1, 'C', '0', '0', '', 'heroicons-outline:annotation', 'admin', '2026-06-23 16:43:05', 'admin', '2026-06-23 21:24:37', '');
-INSERT INTO `sys_menu` VALUES (143, '商品管理', 129, 3, 'manager', '/mall/pms/product/manager/index', NULL, 'GoodsManager', 1, 1, 'C', '0', '0', '', 'ep:apple', 'admin', '2026-06-23 16:44:11', 'admin', '2026-06-23 21:25:22', '');
-INSERT INTO `sys_menu` VALUES (144, 'SKU 管理', 129, 4, 'sku', '/mall/pms/sku/index', NULL, 'PmsSkuManager', 1, 1, 'C', '0', '0', 'mall:product:list', 'mdi:barcode', 'admin', '2026-06-24 13:11:09', '', NULL, 'PMS SKU 独立管理');
+INSERT INTO `sys_menu` VALUES (143, '商品管理', 129, 3, 'manager', '/mall/pms/product/manager/index', NULL, 'GoodsManager', 1, 1, 'C', '0', '0', 'mall:product:query', 'ep:apple', 'admin', '2026-06-23 16:44:11', 'admin', '2026-06-23 21:25:22', 'SKU 只读检索（对齐谷粒商品管理）');
+INSERT INTO `sys_menu` VALUES (144, 'SKU 管理', 129, 4, 'sku', '/mall/pms/sku/index', NULL, 'PmsSkuManager', 1, 1, 'C', '1', '0', 'mall:product:list', 'mdi:barcode', 'admin', '2026-06-24 13:11:09', '', NULL, '已合并至「商品管理」');
 INSERT INTO `sys_menu` VALUES (145, '属性分组查询', 138, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:group:query', '#', 'admin', '2026-05-18 15:42:26', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (146, '属性分组新增', 138, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:group:add', '#', 'admin', '2026-05-18 15:42:26', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (147, '属性分组修改', 138, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:group:edit', '#', 'admin', '2026-05-18 15:42:26', '', NULL, '');
@@ -1174,6 +1219,7 @@ INSERT INTO `sys_menu` VALUES (163, '商品查询', 141, 1, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (164, '商品新增', 141, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (165, '商品修改', 141, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (166, '商品删除', 141, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:delete', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (306, '商品查询', 143, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, 'SKU 只读检索');
 INSERT INTO `sys_menu` VALUES (167, '仓库维护', 30, 1, 'warehouse', '/mall/wms/warehouse/index', NULL, 'WareHouse', 1, 1, 'C', '0', '0', '', 'ep:office-building', 'admin', '2026-05-19 15:29:10', 'admin', '2026-06-23 16:45:58', '仓库管理');
 INSERT INTO `sys_menu` VALUES (168, '地区管理', 30, 2, 'address', '/mall/wms/address/index', NULL, 'AddressManager', 1, 1, 'C', '0', '0', '', 'ep:position', 'admin', '2026-05-19 15:53:01', 'admin', '2026-05-22 17:39:15', '地区管理');
 INSERT INTO `sys_menu` VALUES (169, '商品库存', 30, 3, 'sku', '/mall/wms/sku/index', NULL, '', 1, 0, 'C', '0', '0', 'mall:sku:list', 'mdi:alpha-s-box-outline', 'admin', '2026-05-22 17:38:35', 'admin', '2026-05-22 17:41:05', '商品库存菜单');
@@ -1256,7 +1302,7 @@ INSERT INTO `sys_menu` VALUES (245, '等级新增', 240, 1, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (246, '等级修改', 240, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:edit', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (247, '等级删除', 240, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:delete', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (248, '首页推荐', 34, 1, 'home', '/mall/cms/content/home/index', NULL, 'HomeRecommend', 1, 1, 'C', '0', '0', 'mall:adv:list', '#', 'admin', '2026-06-23 17:18:06', 'admin', '2026-06-24 15:36:48', '');
-INSERT INTO `sys_menu` VALUES (249, '分类热门', 34, 2, 'category', '/mall/cms/content/category/index', NULL, 'CategoryHot', 1, 1, 'C', '0', '0', '', '#', 'admin', '2026-06-23 17:18:49', 'admin', '2026-06-24 15:36:48', '');
+INSERT INTO `sys_menu` VALUES (249, '分类热门', 34, 2, 'category', '/mall/cms/content/category/index', NULL, 'CategoryHot', 1, 1, 'C', '0', '0', 'mall:categoryHot:list', '#', 'admin', '2026-06-23 17:18:49', 'admin', '2026-06-24 15:36:48', '首页分类热门配置');
 INSERT INTO `sys_menu` VALUES (250, '评论管理', 34, 3, 'comments', '/mall/cms/content/comments/index', NULL, 'CommentManage', 1, 1, 'C', '0', '0', 'mall:comment:list', '#', 'admin', '2026-06-23 17:19:35', 'admin', '2026-06-24 15:36:48', '');
 INSERT INTO `sys_menu` VALUES (251, '轮播新增', 248, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (252, '轮播修改', 248, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
@@ -1272,6 +1318,9 @@ INSERT INTO `sys_menu` VALUES (261, '审批操作', 37, 2, '', '', NULL, '', 1, 
 INSERT INTO `sys_menu` VALUES (262, '提交审批', 37, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:submit', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (263, '发起查询', 38, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:query', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (264, '撤回审批', 38, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:withdraw', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (270, '审批统计', 6, 5, 'statistics', '/approval/statistics/index', NULL, 'ApprovalStatistics', 1, 1, 'C', '0', '0', 'approval:statistics:query', 'mdi:chart-bar', 'admin', '2026-06-30 18:04:12', '', NULL, '审批数据看板');
+INSERT INTO `sys_menu` VALUES (271, '登录日志', 33, 5, 'login-log', '/mall/ums/member/login-log/index', NULL, 'MemberLoginLog', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, 'C端会员登录审计');
+INSERT INTO `sys_menu` VALUES (272, '会员收藏', 33, 6, 'collect', '/mall/ums/member/collect/index', NULL, 'MemberCollect', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, '商品/专题收藏查询');
 
 -- ----------------------------
 -- Table structure for sys_menu_bak
@@ -1588,7 +1637,7 @@ CREATE TABLE `sys_notice`  (
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`notice_id`) USING BTREE,
   INDEX `idx_notice_status_create`(`status`, `create_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '通知公告表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '通知公告表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_notice
@@ -1665,7 +1714,7 @@ CREATE TABLE `sys_oper_log`  (
   INDEX `idx_operlog_time`(`oper_time`) USING BTREE,
   INDEX `idx_operlog_user`(`oper_name`) USING BTREE,
   INDEX `idx_operlog_type`(`business_type`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4872 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '操作日志记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4890 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '操作日志记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1682,6 +1731,24 @@ INSERT INTO `sys_oper_log` VALUES (4872, '修改菜单', 2, 'cn.org.starpivot.sy
 INSERT INTO `sys_oper_log` VALUES (4873, '修改菜单', 2, 'cn.org.starpivot.system.controller.SysMenuController.edit()', 'PUT', 1, 'admin', '星枢科技', '/api/v1/sys/menu', '0:0:0:0:0:0:0:1', '内网IP', '{\"menuId\":1,\"menuName\":\"系统管理\",\"orderNum\":1,\"path\":\"/system\",\"component\":\"\",\"routeName\":\"System\",\"isFrame\":1,\"isCache\":1,\"menuType\":\"M\",\"visible\":\"0\",\"status\":\"0\",\"perms\":\"\",\"icon\":\"ep:setting\",\"remark\":\"系统管理模块111\"}', '{\"code\":200,\"data\":\"修改菜单成功\",\"fail\":false,\"message\":\"操作成功\",\"success\":true}', 0, '', '2026-06-29 18:23:27', 31);
 INSERT INTO `sys_oper_log` VALUES (4874, '操作日志', 0, 'cn.org.starpivot.system.controller.SysOperLogController.pageList()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/operlog/pageList', '0:0:0:0:0:0:0:1', '内网IP', '{\"pageNum\":1,\"pageSize\":20}', '{\"code\":200,\"data\":{\"pageCount\":1,\"pageNum\":1,\"pageSize\":20,\"rows\":[{\"businessType\":2,\"costTime\":31,\"deptName\":\"星枢科技\",\"errorMsg\":\"\",\"jsonResult\":\"{\\\"code\\\":200,\\\"data\\\":\\\"修改菜单成功\\\",\\\"fail\\\":false,\\\"message\\\":\\\"操作成功\\\",\\\"success\\\":true}\",\"method\":\"cn.org.starpivot.system.controller.SysMenuController.edit()\",\"operId\":4873,\"operIp\":\"0:0:0:0:0:0:0:1\",\"operLocation\":\"内网IP\",\"operName\":\"admin\",\"operParam\":\"{\\\"menuId\\\":1,\\\"menuName\\\":\\\"系统管理\\\",\\\"orderNum\\\":1,\\\"path\\\":\\\"/system\\\",\\\"component\\\":\\\"\\\",\\\"routeName\\\":\\\"System\\\",\\\"isFrame\\\":1,\\\"isCache\\\":1,\\\"menuType\\\":\\\"M\\\",\\\"visible\\\":\\\"0\\\",\\\"status\\\":\\\"0\\\",\\\"perms\\\":\\\"\\\",\\\"icon\\\":\\\"ep:setting\\\",\\\"remark\\\":\\\"系统管理模块111\\\"}\",\"operTime\":\"2026-06-29 18:23:27\",\"operUrl\":\"/api/v1/sys/menu\",\"operatorType\":1,\"requestMethod\":\"PUT\",\"status\":0,\"title\":\"修改菜单\"},{\"businessType\":2,\"costTime\":156,\"deptName\":\"星枢科技\",\"errorMsg\":\"\",\"jsonResult\":\"{\\\"code\\\":200,\\\"data\\\":\\\"修改菜单成功\\\",\\\"fail\\\":false,\\\"message\\\":\\\"操作成功\\\",\\\"success\\\":true}\",\"method\":\"cn.org.starpivot.system.controller.SysMenuController.edit()\",\"operId\":4872,\"operIp\":\"0:0:0:0:0:0:0:1\",\"operLocation\":\"内网IP\",\"operName\":\"admin\",\"operParam\":\"{\\\"menuId\\\":1,\\\"menuName\\\":\\\"系统管理11\\\",\\\"orderNum\\\":1,\\\"path\\\":\\\"/system\\\",\\\"component\\\":\\\"\\\",\\\"routeName\\\":\\\"System\\\",\\\"isFrame\\\":1,\\\"isCache\\\":1,\\\"menuType\\\":\\\"M\\\",\\\"visible\\\":\\\"0\\\",\\\"status\\\":\\\"0\\\",\\\"perms\\\":\\\"\\\",\\\"icon\\\":\\\"ep:setting\\\",\\\"remark\\\":\\\"系统管理模块111\\\"}\",\"operTime\":\"2026-06-29 18:20:10\",\"operUrl\":\"/api/v1/sys/menu\",\"operatorType\":1,\"requestMethod\":\"PUT\",\"status\":0,\"title\":\"修改菜单\"},{\"businessType\":0,\"costTime\":31,\"deptName\":\"星枢科技\",\"errorMsg\":\"\",\"jsonResult\":\"{\\\"code\\\":200,\\\"data\\\":{\\\"pageCount\\\":2,\\\"pageNum\\\":1,\\\"pageSize\\\":20,\\\"rows\\\":[{\\\"browser\\\":\\\"Chrome\\\",\\\"infoId\\\":498,\\\"ipaddr\\\":\\\"0:0:0:0:0:0:0:1\\\",\\\"loginLocation\\\":\\\"内网IP\\\",\\\"loginTime\\\":\\\"2026-06-29 17:06:41\\\",\\\"msg\\\":\\\"登录成功\\\",\\\"os\\\":\\\"Windows 10...', 0, '', '2026-06-29 19:48:19', 141);
 INSERT INTO `sys_oper_log` VALUES (4875, '登录日志', 0, 'cn.org.starpivot.system.controller.SysLogininforController.pageList()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/logininfor/pageList', '0:0:0:0:0:0:0:1', '内网IP', '{\"pageNum\":1,\"pageSize\":20}', '{\"code\":200,\"data\":{\"pageCount\":2,\"pageNum\":1,\"pageSize\":20,\"rows\":[{\"browser\":\"Chrome\",\"infoId\":499,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-29 18:19:41\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":498,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-29 17:06:41\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":497,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 18:58:00\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":496,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 18:33:45\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Unknown\",\"infoId\":495,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 14:56:01\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Unknown\",\"infoId\":494,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 14:42:44\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Unknown\",\"infoId\":493,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 14:41:26\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Unknown\",\"infoId\":492,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 14:41:16\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Unknown\",\"infoId\":491,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 14:40:29\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Unknown\",\"infoId\":490,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 14:39:52\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userN...', 0, '', '2026-06-29 19:48:20', 21);
+INSERT INTO `sys_oper_log` VALUES (4876, '上传用户头像', 2, 'cn.org.starpivot.system.controller.AvatarController.upload()', 'POST', 1, 'admin', '星枢科技', '/api/v1/avatar/upload', '172.19.0.1', '内网IP', '[\"1\",true]', '{\"code\":200,\"data\":{\"avatarUrl\":\"/local-storage/avatar/1.jpeg\",\"presignedUrl\":\"/local-storage/avatar/1.jpeg\",\"isPresigned\":\"true\"},\"fail\":false,\"message\":\"上传成功\",\"success\":true}', 0, '', '2026-06-30 06:14:27', 130);
+INSERT INTO `sys_oper_log` VALUES (4877, '修改用户', 2, 'cn.org.starpivot.system.controller.SysUserController.updateUser()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/user/update', '172.19.0.1', '内网IP', '{\"userId\":1,\"deptId\":100,\"userName\":\"admin\",\"nickName\":\"超级管理员\",\"email\":\"******\",\"avatar\":\"/local-storage/avatar/1.jpeg\",\"phonenumber\":\"******\",\"sex\":\"0\",\"status\":\"0\",\"remark\":\"超级管理员\",\"roleIds\":[1,6],\"postIds\":[1]}', '{\"code\":200,\"fail\":false,\"message\":\"修改用户成功\",\"success\":true}', 0, '', '2026-06-30 06:14:29', 59);
+INSERT INTO `sys_oper_log` VALUES (4878, '删除用户头像', 3, 'cn.org.starpivot.system.controller.AvatarController.delete()', 'DELETE', 1, 'admin', '星枢科技', '/api/v1/avatar/delete', '0:0:0:0:0:0:0:1', '内网IP', '\"1\"', '{\"code\":200,\"data\":\"删除成功\",\"fail\":false,\"message\":\"操作成功\",\"success\":true}', 0, '', '2026-06-30 15:08:47', 482);
+INSERT INTO `sys_oper_log` VALUES (4879, '上传用户头像', 2, 'cn.org.starpivot.system.controller.AvatarController.upload()', 'POST', 1, 'admin', '星枢科技', '/api/v1/avatar/upload', '0:0:0:0:0:0:0:1', '内网IP', '[\"1\",true]', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/1.jpeg\",\"presignedUrl\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/1.jpeg?Expires=1783408131&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=pBFAtc9ZPlPTZUvVKn9axMWwQR8%3D\",\"isPresigned\":\"true\"},\"fail\":false,\"message\":\"上传成功\",\"success\":true}', 0, '', '2026-06-30 15:08:52', 189);
+INSERT INTO `sys_oper_log` VALUES (4880, '修改用户', 2, 'cn.org.starpivot.system.controller.SysUserController.updateUser()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/user/update', '0:0:0:0:0:0:0:1', '内网IP', '{\"userId\":1,\"deptId\":100,\"userName\":\"admin\",\"nickName\":\"超级管理员\",\"email\":\"******\",\"avatar\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/1.jpeg?Expires=1783408131&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=pBFAtc9ZPlPTZUvVKn9axMWwQR8%3D\",\"phonenumber\":\"******\",\"sex\":\"0\",\"status\":\"0\",\"remark\":\"超级管理员\",\"roleIds\":[1,6],\"postIds\":[1]}', '{\"code\":200,\"fail\":false,\"message\":\"修改用户成功\",\"success\":true}', 0, '', '2026-06-30 15:08:53', 69);
+INSERT INTO `sys_oper_log` VALUES (4881, '上传用户头像', 2, 'cn.org.starpivot.system.controller.AvatarController.upload()', 'POST', 1, 'admin', '星枢科技', '/api/v1/avatar/upload', '0:0:0:0:0:0:0:1', '内网IP', '[\"100\",true]', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/100.webp\",\"presignedUrl\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/100.webp?Expires=1783408143&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=gN%2FbKm%2B0F%2Fpk%2FMngsWzj3ra8TzE%3D\",\"isPresigned\":\"true\"},\"fail\":false,\"message\":\"上传成功\",\"success\":true}', 0, '', '2026-06-30 15:09:04', 82);
+INSERT INTO `sys_oper_log` VALUES (4882, '修改用户', 2, 'cn.org.starpivot.system.controller.SysUserController.updateUser()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/user/update', '0:0:0:0:0:0:0:1', '内网IP', '{\"userId\":100,\"deptId\":100,\"userName\":\"xinxin\",\"nickName\":\"超级管理员\",\"email\":\"******\",\"avatar\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/100.webp?Expires=1783408143&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=gN%2FbKm%2B0F%2Fpk%2FMngsWzj3ra8TzE%3D\",\"phonenumber\":\"******\",\"sex\":\"0\",\"status\":\"0\",\"remark\":\"超级管理员\",\"roleIds\":[1],\"postIds\":[1]}', '{\"code\":200,\"fail\":false,\"message\":\"修改用户成功\",\"success\":true}', 0, '', '2026-06-30 15:09:05', 49);
+INSERT INTO `sys_oper_log` VALUES (4883, '上传用户头像', 2, 'cn.org.starpivot.system.controller.AvatarController.upload()', 'POST', 1, 'admin', '星枢科技', '/api/v1/avatar/upload', '0:0:0:0:0:0:0:1', '内网IP', '[\"101\",true]', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp\",\"presignedUrl\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783408151&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=2%2FhBISg7Gl7GGSymG4DEIl1TdnU%3D\",\"isPresigned\":\"true\"},\"fail\":false,\"message\":\"上传成功\",\"success\":true}', 0, '', '2026-06-30 15:09:12', 84);
+INSERT INTO `sys_oper_log` VALUES (4884, '修改用户', 2, 'cn.org.starpivot.system.controller.SysUserController.updateUser()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/user/update', '0:0:0:0:0:0:0:1', '内网IP', '{\"userId\":101,\"deptId\":105,\"userName\":\"test\",\"nickName\":\"测试用户\",\"email\":\"******\",\"avatar\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783408151&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=2%2FhBISg7Gl7GGSymG4DEIl1TdnU%3D\",\"phonenumber\":\"******\",\"sex\":\"0\",\"status\":\"0\",\"remark\":\"测试用户专属\",\"roleIds\":[],\"postIds\":[]}', '{\"code\":200,\"fail\":false,\"message\":\"修改用户成功\",\"success\":true}', 0, '', '2026-06-30 15:09:13', 24);
+INSERT INTO `sys_oper_log` VALUES (4885, '删除用户头像', 3, 'cn.org.starpivot.system.controller.AvatarController.delete()', 'DELETE', 1, 'admin', '星枢科技', '/api/v1/avatar/delete', '0:0:0:0:0:0:0:1', '内网IP', '\"101\"', '{\"code\":200,\"data\":\"删除成功\",\"fail\":false,\"message\":\"操作成功\",\"success\":true}', 0, '', '2026-06-30 15:27:32', 97);
+INSERT INTO `sys_oper_log` VALUES (4886, '上传用户头像', 2, 'cn.org.starpivot.system.controller.AvatarController.upload()', 'POST', 1, 'admin', '星枢科技', '/api/v1/avatar/upload', '0:0:0:0:0:0:0:1', '内网IP', '[\"101\",true]', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp\",\"presignedUrl\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409258&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=pXajrKUFQqnFhG32Icj1u2hfwYQ%3D\",\"isPresigned\":\"true\"},\"fail\":false,\"message\":\"上传成功\",\"success\":true}', 0, '', '2026-06-30 15:27:38', 85);
+INSERT INTO `sys_oper_log` VALUES (4887, '修改用户', 2, 'cn.org.starpivot.system.controller.SysUserController.updateUser()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/user/update', '0:0:0:0:0:0:0:1', '内网IP', '{\"userId\":101,\"deptId\":105,\"userName\":\"test\",\"nickName\":\"测试用户\",\"email\":\"******\",\"avatar\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409258&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=pXajrKUFQqnFhG32Icj1u2hfwYQ%3D\",\"phonenumber\":\"******\",\"sex\":\"0\",\"status\":\"0\",\"remark\":\"测试用户专属\",\"roleIds\":[],\"postIds\":[]}', '{\"code\":200,\"fail\":false,\"message\":\"修改用户成功\",\"success\":true}', 0, '', '2026-06-30 15:27:39', 31);
+INSERT INTO `sys_oper_log` VALUES (4888, '上传用户头像', 2, 'cn.org.starpivot.system.controller.AvatarController.upload()', 'POST', 1, 'admin', '星枢科技', '/api/v1/avatar/upload', '0:0:0:0:0:0:0:1', '内网IP', '[\"101\",true]', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp\",\"presignedUrl\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409494&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=SHVtAbtjcsHfq4UAfwWjb1L8TYA%3D\",\"isPresigned\":\"true\"},\"fail\":false,\"message\":\"上传成功\",\"success\":true}', 0, '', '2026-06-30 15:31:34', 154);
+INSERT INTO `sys_oper_log` VALUES (4889, '修改用户', 2, 'cn.org.starpivot.system.controller.SysUserController.updateUser()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/user/update', '0:0:0:0:0:0:0:1', '内网IP', '{\"userId\":101,\"deptId\":105,\"userName\":\"test\",\"nickName\":\"测试用户\",\"email\":\"******\",\"avatar\":\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409494&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=SHVtAbtjcsHfq4UAfwWjb1L8TYA%3D\",\"phonenumber\":\"******\",\"sex\":\"0\",\"status\":\"0\",\"remark\":\"测试用户专属\",\"roleIds\":[],\"postIds\":[]}', '{\"code\":200,\"fail\":false,\"message\":\"修改用户成功\",\"success\":true}', 0, '', '2026-06-30 15:31:36', 30);
+INSERT INTO `sys_oper_log` VALUES (4890, '操作日志', 0, 'cn.org.starpivot.system.controller.SysOperLogController.list()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/operlog/operLogPageList', '0:0:0:0:0:0:0:1', '内网IP', '{\"pageNum\":1,\"pageSize\":20}', '{\"code\":200,\"data\":{\"pageCount\":2,\"pageNum\":1,\"pageSize\":20,\"rows\":[{\"businessType\":2,\"costTime\":30,\"deptName\":\"星枢科技\",\"errorMsg\":\"\",\"jsonResult\":\"{\\\"code\\\":200,\\\"fail\\\":false,\\\"message\\\":\\\"修改用户成功\\\",\\\"success\\\":true}\",\"method\":\"cn.org.starpivot.system.controller.SysUserController.updateUser()\",\"operId\":4889,\"operIp\":\"0:0:0:0:0:0:0:1\",\"operLocation\":\"内网IP\",\"operName\":\"admin\",\"operParam\":\"{\\\"userId\\\":101,\\\"deptId\\\":105,\\\"userName\\\":\\\"test\\\",\\\"nickName\\\":\\\"测试用户\\\",\\\"email\\\":\\\"******\\\",\\\"avatar\\\":\\\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409494&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=SHVtAbtjcsHfq4UAfwWjb1L8TYA%3D\\\",\\\"phonenumber\\\":\\\"******\\\",\\\"sex\\\":\\\"0\\\",\\\"status\\\":\\\"0\\\",\\\"remark\\\":\\\"测试用户专属\\\",\\\"roleIds\\\":[],\\\"postIds\\\":[]}\",\"operTime\":\"2026-06-30 15:31:36\",\"operUrl\":\"/api/v1/sys/user/update\",\"operatorType\":1,\"requestMethod\":\"POST\",\"status\":0,\"title\":\"修改用户\"},{\"businessType\":2,\"costTime\":154,\"deptName\":\"星枢科技\",\"errorMsg\":\"\",\"jsonResult\":\"{\\\"code\\\":200,\\\"data\\\":{\\\"avatarUrl\\\":\\\"https://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp\\\",\\\"presignedUrl\\\":\\\"http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409494&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=SHVtAbtjcsHfq4UAfwWjb1L8TYA%3D\\\",\\\"isPresigned\\\":\\\"true\\\"},\\\"fail\\\":false,\\\"message\\\":\\\"上传成功\\\",\\\"success\\\":true}\",\"method\":\"cn.org.starpivot.system.controller.AvatarController.upload()\",\"operId\":4888,\"operIp\":\"0:0:0:0:0:0:0:1\",\"operLocation\":\"内网IP\",\"operName\":\"admin\",\"operParam\":\"[\\\"101\\\",true]\",\"operTime\":\"2026-06-30 15:31:34\",\"operUrl\":\"/api/v1/avatar/upload\",\"operatorType\":1,\"requestMethod\":\"POST\",\"status\":0,\"title\":\"上传用户头像\"},{\"businessType\":2,\"costTime\":31,\"deptName\":\"星枢科技\",\"errorMsg\":\"\",\"jsonResult\":\"{\\\"code\\\":200,\\\"fail\\\":false,\\\"message\\\":\\\"修改用户成功\\\",\\\"success\\\":true}\",\"method\":\"cn.org.starpivot.system.controller.SysUserControll...', 0, '', '2026-07-01 11:08:10', 213);
+INSERT INTO `sys_oper_log` VALUES (4891, '登录日志', 0, 'cn.org.starpivot.system.controller.SysLogininforController.list()', 'POST', 1, 'admin', '星枢科技', '/api/v1/sys/logininfor/logininforPageList', '0:0:0:0:0:0:0:1', '内网IP', '{\"pageNum\":1,\"pageSize\":20}', '{\"code\":200,\"data\":{\"pageCount\":3,\"pageNum\":1,\"pageSize\":20,\"rows\":[{\"browser\":\"Chrome\",\"infoId\":506,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 18:09:14\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":505,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 16:13:48\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":504,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 15:44:50\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":503,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 15:31:23\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":502,\"ipaddr\":\"172.19.0.1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 06:13:27\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":501,\"ipaddr\":\"172.19.0.1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 06:05:51\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":500,\"ipaddr\":\"172.19.0.1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-30 06:04:46\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":499,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-29 18:19:41\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":498,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-29 17:06:41\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"browser\":\"Chrome\",\"infoId\":497,\"ipaddr\":\"0:0:0:0:0:0:0:1\",\"loginLocation\":\"内网IP\",\"loginTime\":\"2026-06-26 18:58:00\",\"msg\":\"登录成功\",\"os\":\"Windows 10\",\"status\":\"0\",\"userName\":\"admin\"},{\"brows...', 0, '', '2026-07-01 11:08:11', 22);
+INSERT INTO `sys_oper_log` VALUES (4892, '删除菜单', 3, 'cn.org.starpivot.system.controller.SysMenuController.remove()', 'DELETE', 1, 'admin', '星枢科技', '/api/v1/sys/menu/removeMenu', '0:0:0:0:0:0:0:1', '内网IP', '{\"ids\":[142]}', '', 1, '菜单ID 142 已被角色使用，不允许删除', '2026-07-01 11:10:08', 20);
+INSERT INTO `sys_oper_log` VALUES (4893, '删除菜单', 3, 'cn.org.starpivot.system.controller.SysMenuController.remove()', 'DELETE', 1, 'admin', '星枢科技', '/api/v1/sys/menu/removeMenu', '0:0:0:0:0:0:0:1', '内网IP', '{\"ids\":[142]}', '', 1, '菜单ID 142 已被角色使用，不允许删除', '2026-07-01 11:10:33', 9);
 
 -- ----------------------------
 -- Table structure for sys_post
@@ -1792,521 +1859,6 @@ CREATE TABLE `sys_role_menu`  (
 -- ----------------------------
 -- Records of sys_role_menu
 -- ----------------------------
-INSERT INTO `sys_role_menu` VALUES (397, 1, 1);
-INSERT INTO `sys_role_menu` VALUES (399, 1, 2);
-INSERT INTO `sys_role_menu` VALUES (398, 1, 3);
-INSERT INTO `sys_role_menu` VALUES (400, 1, 4);
-INSERT INTO `sys_role_menu` VALUES (405, 1, 5);
-INSERT INTO `sys_role_menu` VALUES (411, 1, 6);
-INSERT INTO `sys_role_menu` VALUES (419, 1, 8);
-INSERT INTO `sys_role_menu` VALUES (424, 1, 9);
-INSERT INTO `sys_role_menu` VALUES (429, 1, 12);
-INSERT INTO `sys_role_menu` VALUES (412, 1, 39);
-INSERT INTO `sys_role_menu` VALUES (414, 1, 40);
-INSERT INTO `sys_role_menu` VALUES (415, 1, 41);
-INSERT INTO `sys_role_menu` VALUES (406, 1, 42);
-INSERT INTO `sys_role_menu` VALUES (407, 1, 43);
-INSERT INTO `sys_role_menu` VALUES (408, 1, 44);
-INSERT INTO `sys_role_menu` VALUES (409, 1, 45);
-INSERT INTO `sys_role_menu` VALUES (416, 1, 46);
-INSERT INTO `sys_role_menu` VALUES (420, 1, 47);
-INSERT INTO `sys_role_menu` VALUES (421, 1, 48);
-INSERT INTO `sys_role_menu` VALUES (422, 1, 49);
-INSERT INTO `sys_role_menu` VALUES (423, 1, 50);
-INSERT INTO `sys_role_menu` VALUES (425, 1, 51);
-INSERT INTO `sys_role_menu` VALUES (426, 1, 52);
-INSERT INTO `sys_role_menu` VALUES (427, 1, 53);
-INSERT INTO `sys_role_menu` VALUES (428, 1, 54);
-INSERT INTO `sys_role_menu` VALUES (401, 1, 55);
-INSERT INTO `sys_role_menu` VALUES (402, 1, 56);
-INSERT INTO `sys_role_menu` VALUES (403, 1, 57);
-INSERT INTO `sys_role_menu` VALUES (404, 1, 58);
-INSERT INTO `sys_role_menu` VALUES (417, 1, 59);
-INSERT INTO `sys_role_menu` VALUES (413, 1, 60);
-INSERT INTO `sys_role_menu` VALUES (410, 1, 61);
-INSERT INTO `sys_role_menu` VALUES (430, 1, 62);
-INSERT INTO `sys_role_menu` VALUES (431, 1, 63);
-INSERT INTO `sys_role_menu` VALUES (432, 1, 64);
-INSERT INTO `sys_role_menu` VALUES (434, 1, 66);
-INSERT INTO `sys_role_menu` VALUES (435, 1, 67);
-INSERT INTO `sys_role_menu` VALUES (436, 1, 68);
-INSERT INTO `sys_role_menu` VALUES (433, 1, 69);
-INSERT INTO `sys_role_menu` VALUES (437, 1, 70);
-INSERT INTO `sys_role_menu` VALUES (445, 1, 71);
-INSERT INTO `sys_role_menu` VALUES (446, 1, 72);
-INSERT INTO `sys_role_menu` VALUES (447, 1, 73);
-INSERT INTO `sys_role_menu` VALUES (438, 1, 74);
-INSERT INTO `sys_role_menu` VALUES (439, 1, 75);
-INSERT INTO `sys_role_menu` VALUES (442, 1, 76);
-INSERT INTO `sys_role_menu` VALUES (441, 1, 77);
-INSERT INTO `sys_role_menu` VALUES (440, 1, 78);
-INSERT INTO `sys_role_menu` VALUES (443, 1, 79);
-INSERT INTO `sys_role_menu` VALUES (444, 1, 80);
-INSERT INTO `sys_role_menu` VALUES (449, 1, 81);
-INSERT INTO `sys_role_menu` VALUES (450, 1, 82);
-INSERT INTO `sys_role_menu` VALUES (451, 1, 83);
-INSERT INTO `sys_role_menu` VALUES (452, 1, 84);
-INSERT INTO `sys_role_menu` VALUES (453, 1, 85);
-INSERT INTO `sys_role_menu` VALUES (448, 1, 86);
-INSERT INTO `sys_role_menu` VALUES (418, 1, 87);
-INSERT INTO `sys_role_menu` VALUES (589, 2, 1);
-INSERT INTO `sys_role_menu` VALUES (590, 2, 4);
-INSERT INTO `sys_role_menu` VALUES (595, 2, 5);
-INSERT INTO `sys_role_menu` VALUES (601, 2, 6);
-INSERT INTO `sys_role_menu` VALUES (607, 2, 8);
-INSERT INTO `sys_role_menu` VALUES (611, 2, 9);
-INSERT INTO `sys_role_menu` VALUES (615, 2, 12);
-INSERT INTO `sys_role_menu` VALUES (602, 2, 39);
-INSERT INTO `sys_role_menu` VALUES (604, 2, 40);
-INSERT INTO `sys_role_menu` VALUES (596, 2, 42);
-INSERT INTO `sys_role_menu` VALUES (597, 2, 43);
-INSERT INTO `sys_role_menu` VALUES (598, 2, 44);
-INSERT INTO `sys_role_menu` VALUES (599, 2, 45);
-INSERT INTO `sys_role_menu` VALUES (605, 2, 46);
-INSERT INTO `sys_role_menu` VALUES (608, 2, 47);
-INSERT INTO `sys_role_menu` VALUES (609, 2, 48);
-INSERT INTO `sys_role_menu` VALUES (610, 2, 49);
-INSERT INTO `sys_role_menu` VALUES (612, 2, 51);
-INSERT INTO `sys_role_menu` VALUES (613, 2, 52);
-INSERT INTO `sys_role_menu` VALUES (614, 2, 53);
-INSERT INTO `sys_role_menu` VALUES (591, 2, 55);
-INSERT INTO `sys_role_menu` VALUES (592, 2, 56);
-INSERT INTO `sys_role_menu` VALUES (593, 2, 57);
-INSERT INTO `sys_role_menu` VALUES (594, 2, 58);
-INSERT INTO `sys_role_menu` VALUES (606, 2, 59);
-INSERT INTO `sys_role_menu` VALUES (603, 2, 60);
-INSERT INTO `sys_role_menu` VALUES (600, 2, 61);
-INSERT INTO `sys_role_menu` VALUES (616, 2, 62);
-INSERT INTO `sys_role_menu` VALUES (617, 2, 63);
-INSERT INTO `sys_role_menu` VALUES (618, 2, 64);
-INSERT INTO `sys_role_menu` VALUES (619, 2, 69);
-INSERT INTO `sys_role_menu` VALUES (620, 2, 70);
-INSERT INTO `sys_role_menu` VALUES (621, 2, 71);
-INSERT INTO `sys_role_menu` VALUES (622, 2, 72);
-INSERT INTO `sys_role_menu` VALUES (623, 2, 73);
-INSERT INTO `sys_role_menu` VALUES (624, 2, 81);
-INSERT INTO `sys_role_menu` VALUES (989, 3, 1);
-INSERT INTO `sys_role_menu` VALUES (987, 3, 5);
-INSERT INTO `sys_role_menu` VALUES (988, 3, 6);
-INSERT INTO `sys_role_menu` VALUES (990, 3, 8);
-INSERT INTO `sys_role_menu` VALUES (934, 3, 9);
-INSERT INTO `sys_role_menu` VALUES (952, 3, 12);
-INSERT INTO `sys_role_menu` VALUES (965, 3, 14);
-INSERT INTO `sys_role_menu` VALUES (933, 3, 39);
-INSERT INTO `sys_role_menu` VALUES (935, 3, 45);
-INSERT INTO `sys_role_menu` VALUES (936, 3, 46);
-INSERT INTO `sys_role_menu` VALUES (937, 3, 47);
-INSERT INTO `sys_role_menu` VALUES (938, 3, 48);
-INSERT INTO `sys_role_menu` VALUES (939, 3, 49);
-INSERT INTO `sys_role_menu` VALUES (940, 3, 50);
-INSERT INTO `sys_role_menu` VALUES (941, 3, 51);
-INSERT INTO `sys_role_menu` VALUES (942, 3, 52);
-INSERT INTO `sys_role_menu` VALUES (943, 3, 53);
-INSERT INTO `sys_role_menu` VALUES (944, 3, 54);
-INSERT INTO `sys_role_menu` VALUES (945, 3, 55);
-INSERT INTO `sys_role_menu` VALUES (946, 3, 56);
-INSERT INTO `sys_role_menu` VALUES (947, 3, 57);
-INSERT INTO `sys_role_menu` VALUES (948, 3, 58);
-INSERT INTO `sys_role_menu` VALUES (949, 3, 59);
-INSERT INTO `sys_role_menu` VALUES (950, 3, 60);
-INSERT INTO `sys_role_menu` VALUES (951, 3, 61);
-INSERT INTO `sys_role_menu` VALUES (953, 3, 62);
-INSERT INTO `sys_role_menu` VALUES (954, 3, 63);
-INSERT INTO `sys_role_menu` VALUES (955, 3, 64);
-INSERT INTO `sys_role_menu` VALUES (956, 3, 65);
-INSERT INTO `sys_role_menu` VALUES (957, 3, 66);
-INSERT INTO `sys_role_menu` VALUES (958, 3, 67);
-INSERT INTO `sys_role_menu` VALUES (959, 3, 68);
-INSERT INTO `sys_role_menu` VALUES (960, 3, 69);
-INSERT INTO `sys_role_menu` VALUES (961, 3, 70);
-INSERT INTO `sys_role_menu` VALUES (962, 3, 71);
-INSERT INTO `sys_role_menu` VALUES (963, 3, 72);
-INSERT INTO `sys_role_menu` VALUES (964, 3, 73);
-INSERT INTO `sys_role_menu` VALUES (966, 3, 74);
-INSERT INTO `sys_role_menu` VALUES (967, 3, 75);
-INSERT INTO `sys_role_menu` VALUES (968, 3, 76);
-INSERT INTO `sys_role_menu` VALUES (969, 3, 77);
-INSERT INTO `sys_role_menu` VALUES (970, 3, 78);
-INSERT INTO `sys_role_menu` VALUES (971, 3, 84);
-INSERT INTO `sys_role_menu` VALUES (972, 3, 85);
-INSERT INTO `sys_role_menu` VALUES (973, 3, 86);
-INSERT INTO `sys_role_menu` VALUES (974, 3, 87);
-INSERT INTO `sys_role_menu` VALUES (975, 3, 88);
-INSERT INTO `sys_role_menu` VALUES (976, 3, 89);
-INSERT INTO `sys_role_menu` VALUES (977, 3, 90);
-INSERT INTO `sys_role_menu` VALUES (978, 3, 91);
-INSERT INTO `sys_role_menu` VALUES (982, 3, 92);
-INSERT INTO `sys_role_menu` VALUES (979, 3, 93);
-INSERT INTO `sys_role_menu` VALUES (980, 3, 94);
-INSERT INTO `sys_role_menu` VALUES (981, 3, 95);
-INSERT INTO `sys_role_menu` VALUES (983, 3, 96);
-INSERT INTO `sys_role_menu` VALUES (984, 3, 97);
-INSERT INTO `sys_role_menu` VALUES (985, 3, 98);
-INSERT INTO `sys_role_menu` VALUES (986, 3, 99);
-INSERT INTO `sys_role_menu` VALUES (717, 4, 1);
-INSERT INTO `sys_role_menu` VALUES (718, 4, 4);
-INSERT INTO `sys_role_menu` VALUES (719, 4, 5);
-INSERT INTO `sys_role_menu` VALUES (720, 4, 6);
-INSERT INTO `sys_role_menu` VALUES (721, 4, 8);
-INSERT INTO `sys_role_menu` VALUES (722, 4, 9);
-INSERT INTO `sys_role_menu` VALUES (723, 4, 12);
-INSERT INTO `sys_role_menu` VALUES (710, 4, 45);
-INSERT INTO `sys_role_menu` VALUES (711, 4, 46);
-INSERT INTO `sys_role_menu` VALUES (712, 4, 47);
-INSERT INTO `sys_role_menu` VALUES (713, 4, 51);
-INSERT INTO `sys_role_menu` VALUES (709, 4, 55);
-INSERT INTO `sys_role_menu` VALUES (714, 4, 69);
-INSERT INTO `sys_role_menu` VALUES (715, 4, 70);
-INSERT INTO `sys_role_menu` VALUES (724, 4, 118);
-INSERT INTO `sys_role_menu` VALUES (716, 4, 119);
-INSERT INTO `sys_role_menu` VALUES (823, 5, 1);
-INSERT INTO `sys_role_menu` VALUES (824, 5, 4);
-INSERT INTO `sys_role_menu` VALUES (826, 5, 5);
-INSERT INTO `sys_role_menu` VALUES (828, 5, 6);
-INSERT INTO `sys_role_menu` VALUES (830, 5, 8);
-INSERT INTO `sys_role_menu` VALUES (832, 5, 9);
-INSERT INTO `sys_role_menu` VALUES (834, 5, 12);
-INSERT INTO `sys_role_menu` VALUES (827, 5, 45);
-INSERT INTO `sys_role_menu` VALUES (829, 5, 46);
-INSERT INTO `sys_role_menu` VALUES (831, 5, 47);
-INSERT INTO `sys_role_menu` VALUES (833, 5, 51);
-INSERT INTO `sys_role_menu` VALUES (825, 5, 55);
-INSERT INTO `sys_role_menu` VALUES (835, 5, 69);
-INSERT INTO `sys_role_menu` VALUES (836, 5, 70);
-INSERT INTO `sys_role_menu` VALUES (848, 5, 71);
-INSERT INTO `sys_role_menu` VALUES (849, 5, 72);
-INSERT INTO `sys_role_menu` VALUES (839, 5, 73);
-INSERT INTO `sys_role_menu` VALUES (840, 5, 81);
-INSERT INTO `sys_role_menu` VALUES (841, 5, 85);
-INSERT INTO `sys_role_menu` VALUES (842, 5, 92);
-INSERT INTO `sys_role_menu` VALUES (837, 5, 118);
-INSERT INTO `sys_role_menu` VALUES (838, 5, 119);
-INSERT INTO `sys_role_menu` VALUES (847, 5, 147);
-INSERT INTO `sys_role_menu` VALUES (846, 5, 148);
-INSERT INTO `sys_role_menu` VALUES (843, 5, 151);
-INSERT INTO `sys_role_menu` VALUES (844, 5, 152);
-INSERT INTO `sys_role_menu` VALUES (845, 5, 153);
-INSERT INTO `sys_role_menu` VALUES (991, 6, 1);
-INSERT INTO `sys_role_menu` VALUES (1055, 6, 2);
-INSERT INTO `sys_role_menu` VALUES (1069, 6, 3);
-INSERT INTO `sys_role_menu` VALUES (1094, 6, 4);
-INSERT INTO `sys_role_menu` VALUES (1246, 6, 5);
-INSERT INTO `sys_role_menu` VALUES (1247, 6, 6);
-INSERT INTO `sys_role_menu` VALUES (992, 6, 7);
-INSERT INTO `sys_role_menu` VALUES (997, 6, 8);
-INSERT INTO `sys_role_menu` VALUES (1007, 6, 9);
-INSERT INTO `sys_role_menu` VALUES (1017, 6, 10);
-INSERT INTO `sys_role_menu` VALUES (1022, 6, 11);
-INSERT INTO `sys_role_menu` VALUES (1027, 6, 12);
-INSERT INTO `sys_role_menu` VALUES (1036, 6, 13);
-INSERT INTO `sys_role_menu` VALUES (1043, 6, 14);
-INSERT INTO `sys_role_menu` VALUES (1049, 6, 15);
-INSERT INTO `sys_role_menu` VALUES (1037, 6, 16);
-INSERT INTO `sys_role_menu` VALUES (1040, 6, 17);
-INSERT INTO `sys_role_menu` VALUES (1056, 6, 18);
-INSERT INTO `sys_role_menu` VALUES (1070, 6, 19);
-INSERT INTO `sys_role_menu` VALUES (1071, 6, 20);
-INSERT INTO `sys_role_menu` VALUES (1072, 6, 21);
-INSERT INTO `sys_role_menu` VALUES (1076, 6, 22);
-INSERT INTO `sys_role_menu` VALUES (1078, 6, 23);
-INSERT INTO `sys_role_menu` VALUES (1096, 6, 24);
-INSERT INTO `sys_role_menu` VALUES (1097, 6, 25);
-INSERT INTO `sys_role_menu` VALUES (1102, 6, 26);
-INSERT INTO `sys_role_menu` VALUES (1107, 6, 27);
-INSERT INTO `sys_role_menu` VALUES (1129, 6, 28);
-INSERT INTO `sys_role_menu` VALUES (1108, 6, 29);
-INSERT INTO `sys_role_menu` VALUES (1115, 6, 30);
-INSERT INTO `sys_role_menu` VALUES (1122, 6, 31);
-INSERT INTO `sys_role_menu` VALUES (993, 6, 32);
-INSERT INTO `sys_role_menu` VALUES (994, 6, 33);
-INSERT INTO `sys_role_menu` VALUES (995, 6, 34);
-INSERT INTO `sys_role_menu` VALUES (996, 6, 35);
-INSERT INTO `sys_role_menu` VALUES (998, 6, 36);
-INSERT INTO `sys_role_menu` VALUES (999, 6, 37);
-INSERT INTO `sys_role_menu` VALUES (1000, 6, 38);
-INSERT INTO `sys_role_menu` VALUES (1001, 6, 39);
-INSERT INTO `sys_role_menu` VALUES (1002, 6, 40);
-INSERT INTO `sys_role_menu` VALUES (1003, 6, 41);
-INSERT INTO `sys_role_menu` VALUES (1004, 6, 42);
-INSERT INTO `sys_role_menu` VALUES (1005, 6, 43);
-INSERT INTO `sys_role_menu` VALUES (1006, 6, 44);
-INSERT INTO `sys_role_menu` VALUES (1008, 6, 45);
-INSERT INTO `sys_role_menu` VALUES (1009, 6, 46);
-INSERT INTO `sys_role_menu` VALUES (1010, 6, 47);
-INSERT INTO `sys_role_menu` VALUES (1011, 6, 48);
-INSERT INTO `sys_role_menu` VALUES (1012, 6, 49);
-INSERT INTO `sys_role_menu` VALUES (1013, 6, 50);
-INSERT INTO `sys_role_menu` VALUES (1014, 6, 51);
-INSERT INTO `sys_role_menu` VALUES (1015, 6, 52);
-INSERT INTO `sys_role_menu` VALUES (1016, 6, 53);
-INSERT INTO `sys_role_menu` VALUES (1018, 6, 54);
-INSERT INTO `sys_role_menu` VALUES (1019, 6, 55);
-INSERT INTO `sys_role_menu` VALUES (1020, 6, 56);
-INSERT INTO `sys_role_menu` VALUES (1021, 6, 57);
-INSERT INTO `sys_role_menu` VALUES (1023, 6, 58);
-INSERT INTO `sys_role_menu` VALUES (1024, 6, 59);
-INSERT INTO `sys_role_menu` VALUES (1025, 6, 60);
-INSERT INTO `sys_role_menu` VALUES (1026, 6, 61);
-INSERT INTO `sys_role_menu` VALUES (1028, 6, 62);
-INSERT INTO `sys_role_menu` VALUES (1029, 6, 63);
-INSERT INTO `sys_role_menu` VALUES (1030, 6, 64);
-INSERT INTO `sys_role_menu` VALUES (1031, 6, 65);
-INSERT INTO `sys_role_menu` VALUES (1032, 6, 66);
-INSERT INTO `sys_role_menu` VALUES (1033, 6, 67);
-INSERT INTO `sys_role_menu` VALUES (1034, 6, 68);
-INSERT INTO `sys_role_menu` VALUES (1035, 6, 69);
-INSERT INTO `sys_role_menu` VALUES (1038, 6, 70);
-INSERT INTO `sys_role_menu` VALUES (1039, 6, 71);
-INSERT INTO `sys_role_menu` VALUES (1041, 6, 72);
-INSERT INTO `sys_role_menu` VALUES (1042, 6, 73);
-INSERT INTO `sys_role_menu` VALUES (1044, 6, 74);
-INSERT INTO `sys_role_menu` VALUES (1045, 6, 75);
-INSERT INTO `sys_role_menu` VALUES (1046, 6, 76);
-INSERT INTO `sys_role_menu` VALUES (1047, 6, 77);
-INSERT INTO `sys_role_menu` VALUES (1048, 6, 78);
-INSERT INTO `sys_role_menu` VALUES (1050, 6, 79);
-INSERT INTO `sys_role_menu` VALUES (1051, 6, 80);
-INSERT INTO `sys_role_menu` VALUES (1052, 6, 81);
-INSERT INTO `sys_role_menu` VALUES (1053, 6, 82);
-INSERT INTO `sys_role_menu` VALUES (1054, 6, 83);
-INSERT INTO `sys_role_menu` VALUES (1057, 6, 84);
-INSERT INTO `sys_role_menu` VALUES (1058, 6, 85);
-INSERT INTO `sys_role_menu` VALUES (1059, 6, 86);
-INSERT INTO `sys_role_menu` VALUES (1060, 6, 87);
-INSERT INTO `sys_role_menu` VALUES (1061, 6, 88);
-INSERT INTO `sys_role_menu` VALUES (1062, 6, 89);
-INSERT INTO `sys_role_menu` VALUES (1063, 6, 90);
-INSERT INTO `sys_role_menu` VALUES (1064, 6, 91);
-INSERT INTO `sys_role_menu` VALUES (1077, 6, 92);
-INSERT INTO `sys_role_menu` VALUES (1073, 6, 93);
-INSERT INTO `sys_role_menu` VALUES (1074, 6, 94);
-INSERT INTO `sys_role_menu` VALUES (1075, 6, 95);
-INSERT INTO `sys_role_menu` VALUES (1079, 6, 96);
-INSERT INTO `sys_role_menu` VALUES (1080, 6, 97);
-INSERT INTO `sys_role_menu` VALUES (1081, 6, 98);
-INSERT INTO `sys_role_menu` VALUES (1082, 6, 99);
-INSERT INTO `sys_role_menu` VALUES (1109, 6, 100);
-INSERT INTO `sys_role_menu` VALUES (1110, 6, 101);
-INSERT INTO `sys_role_menu` VALUES (1111, 6, 102);
-INSERT INTO `sys_role_menu` VALUES (1112, 6, 103);
-INSERT INTO `sys_role_menu` VALUES (1113, 6, 104);
-INSERT INTO `sys_role_menu` VALUES (1114, 6, 105);
-INSERT INTO `sys_role_menu` VALUES (1116, 6, 106);
-INSERT INTO `sys_role_menu` VALUES (1117, 6, 107);
-INSERT INTO `sys_role_menu` VALUES (1118, 6, 108);
-INSERT INTO `sys_role_menu` VALUES (1119, 6, 109);
-INSERT INTO `sys_role_menu` VALUES (1120, 6, 110);
-INSERT INTO `sys_role_menu` VALUES (1121, 6, 111);
-INSERT INTO `sys_role_menu` VALUES (1123, 6, 112);
-INSERT INTO `sys_role_menu` VALUES (1124, 6, 113);
-INSERT INTO `sys_role_menu` VALUES (1125, 6, 114);
-INSERT INTO `sys_role_menu` VALUES (1126, 6, 115);
-INSERT INTO `sys_role_menu` VALUES (1127, 6, 116);
-INSERT INTO `sys_role_menu` VALUES (1128, 6, 117);
-INSERT INTO `sys_role_menu` VALUES (1103, 6, 118);
-INSERT INTO `sys_role_menu` VALUES (1104, 6, 119);
-INSERT INTO `sys_role_menu` VALUES (1105, 6, 120);
-INSERT INTO `sys_role_menu` VALUES (1106, 6, 121);
-INSERT INTO `sys_role_menu` VALUES (1098, 6, 122);
-INSERT INTO `sys_role_menu` VALUES (1099, 6, 123);
-INSERT INTO `sys_role_menu` VALUES (1100, 6, 124);
-INSERT INTO `sys_role_menu` VALUES (1101, 6, 125);
-INSERT INTO `sys_role_menu` VALUES (1138, 6, 131);
-INSERT INTO `sys_role_menu` VALUES (1139, 6, 132);
-INSERT INTO `sys_role_menu` VALUES (1145, 6, 133);
-INSERT INTO `sys_role_menu` VALUES (1140, 6, 134);
-INSERT INTO `sys_role_menu` VALUES (1141, 6, 135);
-INSERT INTO `sys_role_menu` VALUES (1142, 6, 136);
-INSERT INTO `sys_role_menu` VALUES (1143, 6, 137);
-INSERT INTO `sys_role_menu` VALUES (1144, 6, 138);
-INSERT INTO `sys_role_menu` VALUES (1146, 6, 139);
-INSERT INTO `sys_role_menu` VALUES (1147, 6, 140);
-INSERT INTO `sys_role_menu` VALUES (1148, 6, 141);
-INSERT INTO `sys_role_menu` VALUES (1149, 6, 142);
-INSERT INTO `sys_role_menu` VALUES (1150, 6, 143);
-INSERT INTO `sys_role_menu` VALUES (1151, 6, 144);
-INSERT INTO `sys_role_menu` VALUES (1152, 6, 145);
-INSERT INTO `sys_role_menu` VALUES (1153, 6, 146);
-INSERT INTO `sys_role_menu` VALUES (1154, 6, 147);
-INSERT INTO `sys_role_menu` VALUES (1155, 6, 148);
-INSERT INTO `sys_role_menu` VALUES (1156, 6, 149);
-INSERT INTO `sys_role_menu` VALUES (1065, 6, 150);
-INSERT INTO `sys_role_menu` VALUES (1066, 6, 151);
-INSERT INTO `sys_role_menu` VALUES (1067, 6, 152);
-INSERT INTO `sys_role_menu` VALUES (1068, 6, 153);
-INSERT INTO `sys_role_menu` VALUES (1083, 6, 169);
-INSERT INTO `sys_role_menu` VALUES (1084, 6, 170);
-INSERT INTO `sys_role_menu` VALUES (1085, 6, 171);
-INSERT INTO `sys_role_menu` VALUES (1086, 6, 172);
-INSERT INTO `sys_role_menu` VALUES (1087, 6, 173);
-INSERT INTO `sys_role_menu` VALUES (1088, 6, 174);
-INSERT INTO `sys_role_menu` VALUES (1089, 6, 175);
-INSERT INTO `sys_role_menu` VALUES (1090, 6, 176);
-INSERT INTO `sys_role_menu` VALUES (1091, 6, 177);
-INSERT INTO `sys_role_menu` VALUES (1092, 6, 178);
-INSERT INTO `sys_role_menu` VALUES (1093, 6, 179);
-INSERT INTO `sys_role_menu` VALUES (1130, 6, 180);
-INSERT INTO `sys_role_menu` VALUES (1135, 6, 181);
-INSERT INTO `sys_role_menu` VALUES (1136, 6, 182);
-INSERT INTO `sys_role_menu` VALUES (1157, 6, 183);
-INSERT INTO `sys_role_menu` VALUES (1160, 6, 184);
-INSERT INTO `sys_role_menu` VALUES (1161, 6, 185);
-INSERT INTO `sys_role_menu` VALUES (1162, 6, 186);
-INSERT INTO `sys_role_menu` VALUES (1165, 6, 187);
-INSERT INTO `sys_role_menu` VALUES (1166, 6, 188);
-INSERT INTO `sys_role_menu` VALUES (1171, 6, 189);
-INSERT INTO `sys_role_menu` VALUES (1172, 6, 190);
-INSERT INTO `sys_role_menu` VALUES (1177, 6, 191);
-INSERT INTO `sys_role_menu` VALUES (1182, 6, 192);
-INSERT INTO `sys_role_menu` VALUES (1186, 6, 193);
-INSERT INTO `sys_role_menu` VALUES (1191, 6, 194);
-INSERT INTO `sys_role_menu` VALUES (1196, 6, 195);
-INSERT INTO `sys_role_menu` VALUES (1200, 6, 196);
-INSERT INTO `sys_role_menu` VALUES (1201, 6, 197);
-INSERT INTO `sys_role_menu` VALUES (1205, 6, 198);
-INSERT INTO `sys_role_menu` VALUES (1208, 6, 199);
-INSERT INTO `sys_role_menu` VALUES (1209, 6, 200);
-INSERT INTO `sys_role_menu` VALUES (1211, 6, 201);
-INSERT INTO `sys_role_menu` VALUES (1213, 6, 202);
-INSERT INTO `sys_role_menu` VALUES (1214, 6, 203);
-INSERT INTO `sys_role_menu` VALUES (1217, 6, 204);
-INSERT INTO `sys_role_menu` VALUES (1221, 6, 205);
-INSERT INTO `sys_role_menu` VALUES (1222, 6, 206);
-INSERT INTO `sys_role_menu` VALUES (1223, 6, 207);
-INSERT INTO `sys_role_menu` VALUES (1224, 6, 208);
-INSERT INTO `sys_role_menu` VALUES (1228, 6, 209);
-INSERT INTO `sys_role_menu` VALUES (1229, 6, 210);
-INSERT INTO `sys_role_menu` VALUES (1095, 6, 280);
-INSERT INTO `sys_role_menu` VALUES (1137, 6, 281);
-INSERT INTO `sys_role_menu` VALUES (1202, 6, 282);
-INSERT INTO `sys_role_menu` VALUES (1203, 6, 283);
-INSERT INTO `sys_role_menu` VALUES (1204, 6, 284);
-INSERT INTO `sys_role_menu` VALUES (1206, 6, 285);
-INSERT INTO `sys_role_menu` VALUES (1207, 6, 286);
-INSERT INTO `sys_role_menu` VALUES (1167, 6, 287);
-INSERT INTO `sys_role_menu` VALUES (1168, 6, 288);
-INSERT INTO `sys_role_menu` VALUES (1169, 6, 289);
-INSERT INTO `sys_role_menu` VALUES (1215, 6, 290);
-INSERT INTO `sys_role_menu` VALUES (1216, 6, 291);
-INSERT INTO `sys_role_menu` VALUES (1163, 6, 292);
-INSERT INTO `sys_role_menu` VALUES (1158, 6, 293);
-INSERT INTO `sys_role_menu` VALUES (1131, 6, 294);
-INSERT INTO `sys_role_menu` VALUES (1132, 6, 295);
-INSERT INTO `sys_role_menu` VALUES (1133, 6, 296);
-INSERT INTO `sys_role_menu` VALUES (1134, 6, 297);
-INSERT INTO `sys_role_menu` VALUES (1225, 6, 298);
-INSERT INTO `sys_role_menu` VALUES (1226, 6, 299);
-INSERT INTO `sys_role_menu` VALUES (1227, 6, 300);
-INSERT INTO `sys_role_menu` VALUES (1230, 6, 301);
-INSERT INTO `sys_role_menu` VALUES (1231, 6, 302);
-INSERT INTO `sys_role_menu` VALUES (1232, 6, 303);
-INSERT INTO `sys_role_menu` VALUES (1159, 6, 304);
-INSERT INTO `sys_role_menu` VALUES (1183, 6, 305);
-INSERT INTO `sys_role_menu` VALUES (1184, 6, 306);
-INSERT INTO `sys_role_menu` VALUES (1185, 6, 307);
-INSERT INTO `sys_role_menu` VALUES (1192, 6, 308);
-INSERT INTO `sys_role_menu` VALUES (1193, 6, 309);
-INSERT INTO `sys_role_menu` VALUES (1194, 6, 310);
-INSERT INTO `sys_role_menu` VALUES (1195, 6, 311);
-INSERT INTO `sys_role_menu` VALUES (1187, 6, 312);
-INSERT INTO `sys_role_menu` VALUES (1188, 6, 313);
-INSERT INTO `sys_role_menu` VALUES (1189, 6, 314);
-INSERT INTO `sys_role_menu` VALUES (1190, 6, 315);
-INSERT INTO `sys_role_menu` VALUES (1178, 6, 316);
-INSERT INTO `sys_role_menu` VALUES (1179, 6, 317);
-INSERT INTO `sys_role_menu` VALUES (1180, 6, 318);
-INSERT INTO `sys_role_menu` VALUES (1181, 6, 319);
-INSERT INTO `sys_role_menu` VALUES (1197, 6, 320);
-INSERT INTO `sys_role_menu` VALUES (1198, 6, 321);
-INSERT INTO `sys_role_menu` VALUES (1199, 6, 322);
-INSERT INTO `sys_role_menu` VALUES (1173, 6, 323);
-INSERT INTO `sys_role_menu` VALUES (1174, 6, 324);
-INSERT INTO `sys_role_menu` VALUES (1175, 6, 325);
-INSERT INTO `sys_role_menu` VALUES (1176, 6, 326);
-INSERT INTO `sys_role_menu` VALUES (1210, 6, 327);
-INSERT INTO `sys_role_menu` VALUES (1212, 6, 328);
-INSERT INTO `sys_role_menu` VALUES (1218, 6, 329);
-INSERT INTO `sys_role_menu` VALUES (1219, 6, 330);
-INSERT INTO `sys_role_menu` VALUES (1220, 6, 331);
-INSERT INTO `sys_role_menu` VALUES (1164, 6, 332);
-INSERT INTO `sys_role_menu` VALUES (1170, 6, 333);
-INSERT INTO `sys_role_menu` VALUES (1233, 6, 334);
-INSERT INTO `sys_role_menu` VALUES (1234, 6, 335);
-INSERT INTO `sys_role_menu` VALUES (1237, 6, 336);
-INSERT INTO `sys_role_menu` VALUES (1239, 6, 337);
-INSERT INTO `sys_role_menu` VALUES (1243, 6, 338);
-INSERT INTO `sys_role_menu` VALUES (1235, 6, 339);
-INSERT INTO `sys_role_menu` VALUES (1236, 6, 340);
-INSERT INTO `sys_role_menu` VALUES (1238, 6, 341);
-INSERT INTO `sys_role_menu` VALUES (1240, 6, 342);
-INSERT INTO `sys_role_menu` VALUES (1241, 6, 343);
-INSERT INTO `sys_role_menu` VALUES (1242, 6, 344);
-INSERT INTO `sys_role_menu` VALUES (1244, 6, 345);
-INSERT INTO `sys_role_menu` VALUES (1245, 6, 346);
-INSERT INTO `sys_role_menu` VALUES (549, 100, 1);
-INSERT INTO `sys_role_menu` VALUES (550, 100, 4);
-INSERT INTO `sys_role_menu` VALUES (551, 100, 5);
-INSERT INTO `sys_role_menu` VALUES (552, 100, 6);
-INSERT INTO `sys_role_menu` VALUES (553, 100, 8);
-INSERT INTO `sys_role_menu` VALUES (554, 100, 9);
-INSERT INTO `sys_role_menu` VALUES (555, 100, 12);
-INSERT INTO `sys_role_menu` VALUES (538, 100, 45);
-INSERT INTO `sys_role_menu` VALUES (539, 100, 46);
-INSERT INTO `sys_role_menu` VALUES (540, 100, 47);
-INSERT INTO `sys_role_menu` VALUES (541, 100, 51);
-INSERT INTO `sys_role_menu` VALUES (537, 100, 55);
-INSERT INTO `sys_role_menu` VALUES (542, 100, 69);
-INSERT INTO `sys_role_menu` VALUES (543, 100, 70);
-INSERT INTO `sys_role_menu` VALUES (560, 100, 71);
-INSERT INTO `sys_role_menu` VALUES (561, 100, 72);
-INSERT INTO `sys_role_menu` VALUES (547, 100, 73);
-INSERT INTO `sys_role_menu` VALUES (557, 100, 74);
-INSERT INTO `sys_role_menu` VALUES (558, 100, 75);
-INSERT INTO `sys_role_menu` VALUES (559, 100, 76);
-INSERT INTO `sys_role_menu` VALUES (545, 100, 78);
-INSERT INTO `sys_role_menu` VALUES (546, 100, 79);
-INSERT INTO `sys_role_menu` VALUES (548, 100, 81);
-INSERT INTO `sys_role_menu` VALUES (556, 100, 118);
-INSERT INTO `sys_role_menu` VALUES (544, 100, 119);
-INSERT INTO `sys_role_menu` VALUES (510, 101, 1);
-INSERT INTO `sys_role_menu` VALUES (511, 101, 4);
-INSERT INTO `sys_role_menu` VALUES (513, 101, 5);
-INSERT INTO `sys_role_menu` VALUES (515, 101, 6);
-INSERT INTO `sys_role_menu` VALUES (518, 101, 8);
-INSERT INTO `sys_role_menu` VALUES (520, 101, 9);
-INSERT INTO `sys_role_menu` VALUES (522, 101, 12);
-INSERT INTO `sys_role_menu` VALUES (514, 101, 45);
-INSERT INTO `sys_role_menu` VALUES (516, 101, 46);
-INSERT INTO `sys_role_menu` VALUES (519, 101, 47);
-INSERT INTO `sys_role_menu` VALUES (521, 101, 51);
-INSERT INTO `sys_role_menu` VALUES (512, 101, 55);
-INSERT INTO `sys_role_menu` VALUES (523, 101, 69);
-INSERT INTO `sys_role_menu` VALUES (524, 101, 70);
-INSERT INTO `sys_role_menu` VALUES (532, 101, 71);
-INSERT INTO `sys_role_menu` VALUES (533, 101, 72);
-INSERT INTO `sys_role_menu` VALUES (534, 101, 73);
-INSERT INTO `sys_role_menu` VALUES (527, 101, 74);
-INSERT INTO `sys_role_menu` VALUES (528, 101, 75);
-INSERT INTO `sys_role_menu` VALUES (530, 101, 76);
-INSERT INTO `sys_role_menu` VALUES (529, 101, 78);
-INSERT INTO `sys_role_menu` VALUES (531, 101, 79);
-INSERT INTO `sys_role_menu` VALUES (535, 101, 81);
-INSERT INTO `sys_role_menu` VALUES (536, 101, 85);
-INSERT INTO `sys_role_menu` VALUES (517, 101, 94);
-INSERT INTO `sys_role_menu` VALUES (525, 101, 118);
-INSERT INTO `sys_role_menu` VALUES (526, 101, 119);
-INSERT INTO `sys_role_menu` VALUES (587, 102, 1);
-INSERT INTO `sys_role_menu` VALUES (577, 102, 4);
-INSERT INTO `sys_role_menu` VALUES (588, 102, 5);
-INSERT INTO `sys_role_menu` VALUES (580, 102, 6);
-INSERT INTO `sys_role_menu` VALUES (583, 102, 8);
-INSERT INTO `sys_role_menu` VALUES (585, 102, 9);
-INSERT INTO `sys_role_menu` VALUES (579, 102, 45);
-INSERT INTO `sys_role_menu` VALUES (581, 102, 46);
-INSERT INTO `sys_role_menu` VALUES (584, 102, 47);
-INSERT INTO `sys_role_menu` VALUES (586, 102, 51);
-INSERT INTO `sys_role_menu` VALUES (578, 102, 55);
-INSERT INTO `sys_role_menu` VALUES (582, 102, 94);
 
 -- ----------------------------
 -- Table structure for sys_user
@@ -2357,10 +1909,10 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 100, 'admin', '超级管理员', '00', 'admin@163.com', '18888888888', '0', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/1.jpeg?Expires=1783048146&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=jgilFZQxATghw3MXDLaAOB3uQGI%3D', '$2a$10$h9dX1p1v.cRRPymoWCbZOOQPqMoVQZ9W.R5u6.wCJ5rm6Ru2ORYsS', '0', '0', '0:0:0:0:0:0:0:1', '2025-12-29 22:16:38', '2026-06-23 10:11:22', 'admin', '2025-12-28 13:46:34', 'admin', '2026-06-26 11:09:10', '超级管理员');
+INSERT INTO `sys_user` VALUES (1, 100, 'admin', '超级管理员', '00', 'admin@163.com', '18888888888', '0', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/1.jpeg?Expires=1783408131&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=pBFAtc9ZPlPTZUvVKn9axMWwQR8%3D', '$2a$10$h9dX1p1v.cRRPymoWCbZOOQPqMoVQZ9W.R5u6.wCJ5rm6Ru2ORYsS', '0', '0', '0:0:0:0:0:0:0:1', '2025-12-29 22:16:38', '2026-06-23 10:11:22', 'admin', '2025-12-28 13:46:34', 'admin', '2026-06-30 15:08:52', '超级管理员');
 INSERT INTO `sys_user` VALUES (2, 105, 'user', '用户管理员', '00', 'user@qq.com', '15666666666', '1', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/2.webp?Expires=1771492975&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=crgqBsWiZLm6O%2BvLufm%2BJF4wYd4%3D', '$2a$12$eYocwR0zs3iWKl7gsvHVQ.KLDTWvXqecm.29aXPi3IAF.mmkARVR.', '0', '0', '0:0:0:0:0:0:0:1', '2025-12-29 22:08:54', '2025-12-28 13:46:34', 'admin', '2025-12-28 13:46:34', 'admin', '2026-02-12 17:22:56', '测试员--用户管理员');
-INSERT INTO `sys_user` VALUES (100, 100, 'xinxin', '超级管理员', '00', '123@qq.com', '18888888888', '0', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/100.webp?Expires=1782644082&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=YPyC7cyIxywkJNq7xAx%2FP9VTEEU%3D', '$2a$10$eFW.co7zyXl//sJwjqxFHuL.sx4vn2AaX2LJmIjF/KMTvh841WJry', '0', '0', '', NULL, '2026-06-09 19:00:12', 'admin', '2026-01-04 15:34:36', 'admin', '2026-06-21 18:54:47', '超级管理员');
-INSERT INTO `sys_user` VALUES (101, 105, 'test', '测试用户', '00', '123@qq.com', '18825454547', '0', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1782644112&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=2aoAfJKRl3FTfax6CJAsmw%2BHtfE%3D', '$2a$10$YdqAWweActfkWOaWEjz9p.bBWqNWVdT9EQ2OHcUODgFg.f3ma13Va', '0', '0', '', NULL, NULL, 'admin', '2026-01-04 16:50:12', 'admin', '2026-06-21 18:55:13', '测试用户专属');
+INSERT INTO `sys_user` VALUES (100, 100, 'xinxin', '超级管理员', '00', '123@qq.com', '18888888888', '0', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/100.webp?Expires=1783408143&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=gN%2FbKm%2B0F%2Fpk%2FMngsWzj3ra8TzE%3D', '$2a$10$eFW.co7zyXl//sJwjqxFHuL.sx4vn2AaX2LJmIjF/KMTvh841WJry', '0', '0', '', NULL, '2026-06-09 19:00:12', 'admin', '2026-01-04 15:34:36', 'admin', '2026-06-30 15:09:05', '超级管理员');
+INSERT INTO `sys_user` VALUES (101, 105, 'test', '测试用户', '00', '123@qq.com', '18825454547', '0', 'http://star-pivot.oss-cn-beijing.aliyuncs.com/avatar/101.webp?Expires=1783409494&OSSAccessKeyId=LTAI5tG8uSJeTeuRYEY4x3nG&Signature=SHVtAbtjcsHfq4UAfwWjb1L8TYA%3D', '$2a$10$YdqAWweActfkWOaWEjz9p.bBWqNWVdT9EQ2OHcUODgFg.f3ma13Va', '0', '0', '', NULL, NULL, 'admin', '2026-01-04 16:50:12', 'admin', '2026-06-30 15:31:36', '测试用户专属');
 
 -- ----------------------------
 -- Table structure for sys_user_post
@@ -2374,14 +1926,14 @@ CREATE TABLE `sys_user_post`  (
   UNIQUE INDEX `idx_user_post`(`user_id`, `post_id`) USING BTREE,
   UNIQUE INDEX `uk_user_post`(`user_id`, `post_id`) USING BTREE,
   INDEX `idx_post_id`(`post_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 217 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户与岗位关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 220 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户与岗位关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user_post
 -- ----------------------------
-INSERT INTO `sys_user_post` VALUES (216, 1, 1);
+INSERT INTO `sys_user_post` VALUES (218, 1, 1);
 INSERT INTO `sys_user_post` VALUES (195, 2, 2);
-INSERT INTO `sys_user_post` VALUES (215, 100, 1);
+INSERT INTO `sys_user_post` VALUES (219, 100, 1);
 INSERT INTO `sys_user_post` VALUES (201, 102, 4);
 INSERT INTO `sys_user_post` VALUES (192, 113, 4);
 INSERT INTO `sys_user_post` VALUES (190, 114, 4);
@@ -2407,21 +1959,11 @@ CREATE TABLE `sys_user_role`  (
   INDEX `idx_role_id`(`role_id`) USING BTREE,
   INDEX `idx_user_role_user`(`user_id`) USING BTREE,
   INDEX `idx_user_role_role`(`role_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 239 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户与角色关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 244 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户与角色关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user_role
 -- ----------------------------
-INSERT INTO `sys_user_role` VALUES (237, 1, 1);
-INSERT INTO `sys_user_role` VALUES (238, 1, 6);
-INSERT INTO `sys_user_role` VALUES (211, 2, 2);
-INSERT INTO `sys_user_role` VALUES (235, 100, 1);
-INSERT INTO `sys_user_role` VALUES (215, 114, 4);
-INSERT INTO `sys_user_role` VALUES (216, 115, 3);
-INSERT INTO `sys_user_role` VALUES (217, 115, 5);
-INSERT INTO `sys_user_role` VALUES (222, 116, 1);
-INSERT INTO `sys_user_role` VALUES (224, 117, 2);
-INSERT INTO `sys_user_role` VALUES (228, 118, 2);
-INSERT INTO `sys_user_role` VALUES (230, 119, 2);
+INSERT INTO `sys_user_role` VALUES (1, 1, 1);
 
 SET FOREIGN_KEY_CHECKS = 1;

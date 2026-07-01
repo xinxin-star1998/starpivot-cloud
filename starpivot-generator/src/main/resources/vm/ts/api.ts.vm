@@ -52,7 +52,7 @@ export function fetchGet${BusinessName}List(params: ${BusinessName}SearchParams)
 #else
   return request.post<Api.Common.PaginatedResponse<${BusinessName}>>({
 #end
-    url: '/api/${moduleName}/${businessName}/list',
+    url: '/api/${moduleName}/${businessName}/${businessName}PageList',
     data: params
   })
 }
@@ -91,7 +91,7 @@ export function fetchUpdate${BusinessName}(data: ${BusinessName}) {
  */
 export function fetchDelete${BusinessName}(${pkColumn.javaField}s: number[]) {
   return request.del({
-    url: '/api/${moduleName}/${businessName}/delete',
+    url: '/api/${moduleName}/${businessName}/remove${BusinessName}',
     data: { ids: ${pkColumn.javaField}s }
   })
 }

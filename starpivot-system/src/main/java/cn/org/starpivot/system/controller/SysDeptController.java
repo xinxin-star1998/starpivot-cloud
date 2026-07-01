@@ -100,7 +100,7 @@ public class SysDeptController {
      */
     @Log(title = "删除部门", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:dept:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeDept")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         boolean success = deptService.deleteDeptByIds(validateIds(deleteRequest.getIds()));
         return success ? Result.success("删除部门成功") : Result.error("删除部门失败");

@@ -426,21 +426,23 @@ public interface ApprovalClient {
 
 | 功能 | 方法 | 路径 | 权限建议 |
 |------|------|------|----------|
-| 模板分页 | POST | `/template/list` | `approval:template:query` |
+| 模板分页 | POST | `/template/templatePageList` | `approval:template:query` |
 | 模板详情（含步骤） | GET | `/template/{id}` | `approval:template:query` |
 | 保存模板+步骤 | POST | `/template/save` | `approval:template:edit` |
 | 发布 | POST | `/template/{id}/publish` | `approval:template:publish` |
 | 停用 | POST | `/template/{id}/disable` | `approval:template:edit` |
-| 绑定规则 CRUD | POST | `/template/bind/list` 等 | `approval:bind:edit` |
+| 绑定规则分页 | POST | `/template/templateBindPageList` | `approval:bind:edit` |
+| 保存绑定规则 | POST | `/template/bind/save` | `approval:bind:edit` |
+| 删除绑定规则 | DELETE | `/template/removeTemplateBind` | `approval:bind:edit` |
 
 ### 8.2 实例与任务（业务 + 审批人）
 
 | 功能 | 方法 | 路径 | 权限建议 |
 |------|------|------|----------|
 | 提交审批 | POST | `/instance/submit` | `approval:instance:submit`（管理端）；业务服务走 §8.2.1 |
-| 待办列表 | POST | `/task/todo/list` | `approval:task:query` |
-| 已办列表 | POST | `/task/done/list` | `approval:task:query` |
-| 我发起的 | POST | `/instance/mine/list` | `approval:instance:query` |
+| 待办列表 | POST | `/task/todoTaskPageList` | `approval:task:query` |
+| 已办列表 | POST | `/task/doneTaskPageList` | `approval:task:query` |
+| 我发起的 | POST | `/instance/mineInstancePageList` | `approval:instance:query` |
 | 通过 | POST | `/task/approve` | `approval:task:action` |
 | 驳回 | POST | `/task/reject` | `approval:task:action` |
 | 撤回 | POST | `/instance/{id}/withdraw` | `approval:instance:withdraw` |

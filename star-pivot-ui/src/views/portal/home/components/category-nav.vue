@@ -86,9 +86,9 @@
 </template>
 
 <script setup lang="ts">
-  import type { PortalBrandBrief, PortalCategory } from '@/api/portal/types'
+import type {PortalBrandBrief, PortalCategory} from '@/api/portal/types'
 
-  defineOptions({ name: 'PortalHomeCategoryNav' })
+defineOptions({ name: 'PortalHomeCategoryNav' })
 
   const props = defineProps<{
     categories: PortalCategory[]
@@ -159,50 +159,62 @@
 </script>
 
 <style scoped lang="scss">
+  @import '../../styles/variables.scss';
+
   .category-nav {
-    width: 190px;
+    width: 200px;
     flex-shrink: 0;
-    background: #fff;
-    border-right: 1px solid #f0f0f0;
+    background: linear-gradient(180deg, #2d3436 0%, #3d4f5f 100%);
     z-index: 2;
   }
 
   .category-nav__list {
     list-style: none;
     margin: 0;
-    padding: 4px 0;
-    max-height: 480px;
+    padding: 8px 0;
+    max-height: 460px;
     overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgb(255 255 255 / 20%);
+      border-radius: 2px;
+    }
   }
 
   .category-nav__item {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 9px 12px;
+    padding: 10px 16px;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all var(--portal-transition);
+    border-left: 3px solid transparent;
 
     &:hover,
     &.active {
-      background: #f7f7f7;
+      background: rgb(255 255 255 / 8%);
+      border-left-color: var(--portal-primary);
     }
 
     &.active .category-nav__name {
-      color: #e1251b;
+      color: #fff;
     }
   }
 
   .category-nav__name {
     font-size: 14px;
     font-weight: 600;
-    color: #333;
+    color: rgb(255 255 255 / 92%);
     line-height: 1.3;
   }
 
   .category-nav__hint {
-    font-size: 12px;
-    color: #999;
+    font-size: 11px;
+    color: rgb(255 255 255 / 45%);
     line-height: 1.3;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -211,13 +223,13 @@
 
   .category-mega {
     position: absolute;
-    left: 190px;
+    left: 200px;
     top: 0;
     bottom: 0;
-    right: 190px;
-    background: #fff;
-    border-left: 1px solid #f0f0f0;
-    box-shadow: 4px 0 12px rgb(0 0 0 / 6%);
+    right: 200px;
+    background: var(--portal-bg-elevated);
+    border-left: 1px solid var(--portal-border);
+    box-shadow: var(--portal-shadow);
     display: flex;
     z-index: 10;
     overflow: hidden;
@@ -269,7 +281,7 @@
     }
 
     &:hover {
-      color: #e1251b;
+      color: var(--portal-primary);
     }
   }
 
@@ -277,8 +289,8 @@
     width: 180px;
     flex-shrink: 0;
     padding: 16px 12px;
-    border-left: 1px solid #f5f5f5;
-    background: #fafafa;
+    border-left: 1px solid var(--portal-border);
+    background: #fafbfc;
   }
 
   .category-mega__brands-title {
@@ -307,7 +319,7 @@
     transition: border-color 0.15s;
 
     &:hover {
-      border-color: #e1251b;
+      border-color: var(--portal-primary);
     }
   }
 

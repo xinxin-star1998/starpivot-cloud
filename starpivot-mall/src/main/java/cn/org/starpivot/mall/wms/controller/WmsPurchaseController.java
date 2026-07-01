@@ -55,7 +55,7 @@ public class WmsPurchaseController {
      * @return 分页查询结果
      */
     @Operation(summary = "采购单分页列表")
-    @PostMapping("/list")
+    @PostMapping("/purchasePageList")
     @PreAuthorize("hasAuthority('mall:purchase:list')")
     public Result<PageResponse<PurchaseVo>> pageList(@RequestBody PurchaseReqBo reqBo) {
         return Result.success(wmsPurchaseService.pageList(reqBo));
@@ -68,7 +68,7 @@ public class WmsPurchaseController {
      * @return 分页查询结果
      */
     @Operation(summary = "未领取采购单列表")
-    @PostMapping("/unreceive/list")
+    @PostMapping("/unreceivePurchasePageList")
     @PreAuthorize("hasAuthority('mall:purchase:list')")
     public Result<PageResponse<PurchaseVo>> unreceiveList(@RequestBody PurchaseReqBo reqBo) {
         return Result.success(wmsPurchaseService.unreceivePageList(reqBo));
@@ -148,7 +148,7 @@ public class WmsPurchaseController {
      * @return 分页查询结果
      */
     @Operation(summary = "采购需求分页列表")
-    @PostMapping("/detail/list")
+    @PostMapping("/purchaseDetailPageList")
     @PreAuthorize("hasAuthority('mall:purchase:item')")
     public Result<PageResponse<PurchaseDetailVo>> detailPageList(@RequestBody PurchaseDetailReqBo reqBo) {
         return Result.success(wmsPurchaseService.detailPageList(reqBo));
@@ -177,7 +177,7 @@ public class WmsPurchaseController {
      */
     @Log(title = "删除采购需求", businessType = BusinessType.DELETE)
     @Operation(summary = "删除采购需求")
-    @DeleteMapping("/detail/remove")
+    @DeleteMapping("/removePurchaseDetail")
     @PreAuthorize("hasAuthority('mall:purchase:item')")
     public Result<?> removeDetail(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = deleteRequest.getIds();

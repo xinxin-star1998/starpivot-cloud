@@ -1,10 +1,9 @@
 package cn.org.starpivot.mall.wms.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.enums.BusinessType;
-import cn.org.starpivot.common.entity.AppConstants;
-import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.entity.DeleteRequest;
+import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.wms.domain.bo.AddressVO;
@@ -138,7 +137,7 @@ public class AddressController {
      */
     @Log(title = "删除省市区", businessType = BusinessType.DELETE)
     @Operation(summary = "删除省市区", description = "请求体 ids 为地址主键列表")
-    @DeleteMapping("/remove")
+    @DeleteMapping("/removeAddress")
     @PreAuthorize("hasAuthority('mall:address:delete')")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());

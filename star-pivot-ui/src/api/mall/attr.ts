@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import { fetchExcelExport, fetchExcelImport, fetchExcelTemplate } from '@/api/common/excel'
+import {fetchExcelExport, fetchExcelImport, fetchExcelTemplate} from '@/api/common/excel'
 
 /** 商品属性 */
 export interface MallAttr {
@@ -34,7 +34,7 @@ export interface MallAttrSearchParams {
 
 export function fetchGetAttrList(params: MallAttrSearchParams) {
   return request.post<Api.Common.PaginatedResponse<MallAttr>>({
-    url: '/api/mall/attr/list',
+    url: '/api/mall/attr/attrPageList',
     data: params
   })
 }
@@ -61,7 +61,7 @@ export function fetchUpdateAttr(data: MallAttr) {
 
 export function fetchDeleteAttr(attrIds: number[]) {
   return request.del({
-    url: '/api/mall/attr/delete',
+    url: '/api/mall/attr/removeAttr',
     data: { ids: attrIds }
   })
 }

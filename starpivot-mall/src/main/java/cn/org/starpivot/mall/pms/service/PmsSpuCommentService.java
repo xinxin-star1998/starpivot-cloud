@@ -1,7 +1,9 @@
 package cn.org.starpivot.mall.pms.service;
 
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.mall.pms.domain.bo.CommentReplyBo;
 import cn.org.starpivot.mall.pms.domain.bo.CommentReqBo;
+import cn.org.starpivot.mall.pms.domain.vo.CommentReplyVo;
 import cn.org.starpivot.mall.pms.domain.vo.CommentVo;
 
 import java.util.List;
@@ -34,4 +36,8 @@ public interface PmsSpuCommentService {
      * 批量删除。
      */
     void removeByIds(List<Long> ids);
+
+    void reply(CommentReplyBo bo);
+
+    List<CommentReplyVo> listReplies(Long commentId);
 }

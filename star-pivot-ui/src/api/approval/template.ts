@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { ApTemplate, ApTemplateBind, ApTemplateBindSaveDto, ApTemplateSaveDto } from './types'
+import type { ApTemplate, ApTemplateBind, ApTemplateBindSaveDto, ApTemplateRoute, ApTemplateSaveDto } from './types'
 
 export interface ApTemplateQuery {
   templateCode?: string
@@ -20,11 +20,12 @@ export interface ApTemplateBindQuery {
 export interface ApTemplateDetailVo {
   template?: ApTemplate
   steps?: ApTemplateSaveDto['steps']
+  routes?: ApTemplateRoute[]
 }
 
 export function fetchApprovalTemplateList(data: ApTemplateQuery) {
   return request.post<{ total: number; rows: ApTemplate[] }>({
-    url: '/api/approval/template/list',
+    url: '/api/approval/template/templatePageList',
     data
   })
 }
@@ -56,7 +57,7 @@ export function fetchApprovalTemplateDisable(id: number) {
 
 export function fetchApprovalBindList(data: ApTemplateBindQuery) {
   return request.post<{ total: number; rows: ApTemplateBind[] }>({
-    url: '/api/approval/template/bind/list',
+    url: '/api/approval/template/templateBindPageList',
     data
   })
 }
@@ -70,7 +71,7 @@ export function fetchApprovalBindSave(data: ApTemplateBindSaveDto) {
 
 export function fetchApprovalBindRemove(ids: number[]) {
   return request.del({
-    url: '/api/approval/template/bind/remove',
+    url: '/api/approval/template/removeTemplateBind',
     data: { ids }
   })
 }

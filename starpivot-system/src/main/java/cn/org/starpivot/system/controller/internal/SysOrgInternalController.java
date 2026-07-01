@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Hidden
 @RestController
@@ -25,5 +26,10 @@ public class SysOrgInternalController {
     @GetMapping("/user/{userId}/display-name")
     public Result<String> displayName(@PathVariable Long userId) {
         return Result.success(orgAssigneeService.displayName(userId));
+    }
+
+    @PostMapping("/users/display-names")
+    public Result<Map<Long, String>> displayNames(@RequestBody List<Long> userIds) {
+        return Result.success(orgAssigneeService.displayNames(userIds));
     }
 }

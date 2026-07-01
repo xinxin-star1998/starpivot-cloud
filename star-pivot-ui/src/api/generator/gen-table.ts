@@ -14,14 +14,14 @@ interface ApiResult<T = any> {
  */
 export function fetchGetGenTableList(params: Api.Generator.GenTableSearchParams) {
   return request.post<Api.Generator.GenTableList>({
-    url: '/api/tool/gen/list',
+    url: '/api/tool/gen/genTablePageList',
     data: params
   })
 }
 // 获取数据库列表
 export function fetchGetDbList(params: Api.Generator.GenTableSearchParams) {
   return request.post<Api.Generator.GenTableList>({
-    url: '/api/tool/gen/db/list',
+    url: '/api/tool/gen/genDbTablePageList',
     data: params
   })
 }
@@ -76,7 +76,7 @@ export function fetchEditSave(genTable: GenTableEditPayload) {
  */
 export function fetchDeleteTable(tableIds: number[]) {
   return request.del<ApiResult<void>>({
-    url: '/api/tool/gen/delete',
+    url: '/api/tool/gen/removeGenTable',
     data: { ids: tableIds },
     showSuccessMessage: true
   })

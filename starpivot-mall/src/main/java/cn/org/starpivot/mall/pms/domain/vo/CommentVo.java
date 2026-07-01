@@ -3,6 +3,8 @@ package cn.org.starpivot.mall.pms.domain.vo;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /** 商品评论 VO（pms_spu_comment） */
 
@@ -98,4 +100,6 @@ public class CommentVo {
      * 类型
      */
     private Integer commentType;
+
+    private List<CommentReplyVo> replies = new ArrayList<>();
 }

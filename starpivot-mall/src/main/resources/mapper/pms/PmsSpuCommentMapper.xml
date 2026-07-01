@@ -7,6 +7,7 @@
             id,
             sku_id,
             spu_id,
+            member_id,
             spu_name,
             member_nick_name,
             star,
@@ -37,7 +38,25 @@
             <if test="req.star != null">
                 AND star = #{req.star}
             </if>
+            <if test="req.memberId != null">
+                AND member_id = #{req.memberId}
+            </if>
+            <if test="req.commentType != null">
+                AND comment_type = #{req.commentType}
+            </if>
         </where>
         ORDER BY create_time DESC, id DESC
+    </select>
+
+    <select id="selectSummaryBySpuIds" resultType="java.util.HashMap">
+        SELECT spu_id AS spuId, COUNT(1) AS total, AVG(star) AS avgStar
+        FROM pms_spu_comment
+        WHERE show_status = 1
+          AND (comment_type IS NULL OR comment_type = 0)
+          AND spu_id IN
+        <foreach collection="spuIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        GROUP BY spu_id
     </select>
 </mapper>

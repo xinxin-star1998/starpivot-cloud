@@ -52,7 +52,7 @@ public class SysRoleController {
      */
     @Operation(summary = "分页查询角色")
     @PreAuthorize("hasAuthority('system:role:query')")
-    @PostMapping("/list")
+    @PostMapping("/rolePageList")
     public Result<PageResponse<SysRole>> list(@RequestBody RoleQueryDTO roleQueryDTO) {
         return Result.success(sysRoleService.selectRoleList(roleQueryDTO));
     }
@@ -104,7 +104,7 @@ public class SysRoleController {
      */
     @Log(title = "修改角色", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('system:role:edit')")
-    @PutMapping("updateRole")
+    @PutMapping("/updateRole")
     public Result<?> edit(@Valid @RequestBody RoleDTO roleDTO) {
         boolean success = sysRoleService.updateRole(roleDTO);
         return success ? Result.success("修改角色成功") : Result.error("修改角色失败");
@@ -118,7 +118,7 @@ public class SysRoleController {
      */
     @Log(title = "删除角色", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:role:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeRole")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         boolean success = sysRoleService.deleteRoleByIds(validateIds(deleteRequest.getIds()));
         return success ? Result.success("删除角色成功") : Result.error("删除角色失败");

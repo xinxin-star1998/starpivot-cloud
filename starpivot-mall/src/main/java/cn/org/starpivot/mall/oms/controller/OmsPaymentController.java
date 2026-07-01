@@ -47,7 +47,7 @@ public class OmsPaymentController {
      * @return 分页查询结果
      */
     @Operation(summary = "支付流水分页列表")
-    @PostMapping("/list")
+    @PostMapping("/paymentPageList")
     @PreAuthorize("hasAnyAuthority('mall:payment:list', 'mall:payment:query')")
     public Result<PageResponse<PaymentVo>> pageList(@RequestBody PaymentReqBo reqBo) {
         return Result.success(omsPaymentInfoService.pageList(reqBo));

@@ -65,7 +65,7 @@ export function fetchDeleteDept(deptIds: number | number[]) {
   // 统一转换为数组格式
   const ids = Array.isArray(deptIds) ? deptIds : [deptIds]
   return request.del({
-    url: '/api/sys/dept/delete',
+    url: '/api/sys/dept/removeDept',
     data: { ids }
   })
 }

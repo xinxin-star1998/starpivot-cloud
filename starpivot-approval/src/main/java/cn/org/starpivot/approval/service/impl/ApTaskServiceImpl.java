@@ -11,6 +11,8 @@ import cn.org.starpivot.approval.mapper.ApTaskMapper;
 import cn.org.starpivot.approval.service.ApTaskService;
 import cn.org.starpivot.approval.service.engine.PipelineEngine;
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.exception.ErrorCode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +54,10 @@ public class ApTaskServiceImpl implements ApTaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void reject(ApTaskActionDto dto, Long operatorId) {
-        pipelineEngine.reject(dto.getTaskId(), dto.getComment(), operatorId);
+        if (!StringUtils.hasText(dto.getComment()) || dto.getComment().isBlank()) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "驳回时必须填写审批意见");
+        }
+        pipelineEngine.reject(dto.getTaskId(), dto.getComment().trim(), operatorId);
     }
 
     private PageResponse<ApTaskVo> pageTasks(ApTaskQueryDto query, Long assigneeId, String status) {

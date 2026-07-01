@@ -22,7 +22,7 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
-  type-aliases-package: cn.org.starpivot.mall.pms.domain,cn.org.starpivot.mall.pms.entity,cn.org.starpivot.mall.oms.entity,cn.org.starpivot.mall.sms.entity,cn.org.starpivot.mall.ums.entity,cn.org.starpivot.mall.wms.entity
+  type-aliases-package: cn.org.starpivot.mall.pms.domain,cn.org.starpivot.mall.pms.entity,cn.org.starpivot.mall.oms.entity,cn.org.starpivot.mall.sms.entity,cn.org.starpivot.mall.ums.entity,cn.org.starpivot.mall.wms.entity,cn.org.starpivot.mall.portal.auth.entity
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
@@ -38,6 +38,29 @@ starpivot:
     mock-pay-enabled: ${MALL_MOCK_PAY_ENABLED:true}
     stock-lock-scan-ms: ${MALL_STOCK_LOCK_SCAN_MS:60000}
     order-lifecycle-scan-ms: ${MALL_ORDER_LIFECYCLE_SCAN_MS:300000}
+    portal-auth:
+      sms:
+        mock-enabled: ${MALL_PORTAL_SMS_MOCK:true}
+        mock-code: ${MALL_PORTAL_SMS_MOCK_CODE:123456}
+        code-ttl-seconds: 300
+        send-interval-seconds: 60
+        daily-limit-per-mobile: 10
+        daily-limit-per-ip: 50
+      password:
+        max-fail-count: 5
+        lock-minutes: 30
+      wechat:
+        enabled: ${MALL_WECHAT_ENABLED:false}
+        mock-enabled: ${MALL_WECHAT_MOCK:true}
+        redirect-uri: ${MALL_WECHAT_REDIRECT_URI:http://localhost:3000/portal/login/wechat/callback}
+        app-id: ${MALL_WECHAT_APP_ID:}
+        app-secret: ${MALL_WECHAT_APP_SECRET:}
+        mode: ${MALL_WECHAT_MODE:open}
+        auto-register: true
+        mock-code: mock_wx
+        mock-union-id: mock_union_001
+        mock-open-id: mock_open_001
+        mock-nickname: 微信测试用户
     alipay:
       enabled: ${MALL_ALIPAY_ENABLED:false}
       app-id: ${MALL_ALIPAY_APP_ID:}

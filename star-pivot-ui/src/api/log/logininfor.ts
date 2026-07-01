@@ -1,16 +1,12 @@
 import request from '@/utils/http'
-import type {
-  LogininforListItem,
-  LogininforSearchParams,
-  LogininforList
-} from '@/types/api/logininfor'
+import type {LogininforList, LogininforListItem, LogininforSearchParams} from '@/types/api/logininfor'
 
 /**
  * 获取登录日志列表（分页）
  */
 export function fetchGetLogininforList(params: LogininforSearchParams) {
   return request.post<LogininforList>({
-    url: '/api/sys/logininfor/pageList',
+    url: '/api/sys/logininfor/logininforPageList',
     params
   })
 }
@@ -29,7 +25,7 @@ export function fetchGetLogininforById(infoId: number) {
  */
 export function fetchDeleteLogininfor(infoIds: number[]) {
   return request.del({
-    url: '/api/sys/logininfor/delete',
+    url: '/api/sys/logininfor/removeLogininfor',
     data: { ids: infoIds }
   })
 }

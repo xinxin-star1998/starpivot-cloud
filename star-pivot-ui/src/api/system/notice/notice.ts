@@ -30,7 +30,7 @@ export interface NoticeSearchParams {
  */
 export function fetchGetNoticeList(params: NoticeSearchParams) {
   return request.post<Api.Common.PaginatedResponse<Notice>>({
-    url: '/api/notice/list',
+    url: '/api/notice/noticePageList',
     data: params
   })
 }

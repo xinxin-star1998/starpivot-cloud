@@ -66,8 +66,11 @@ public class PortalProductListVo {
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    /**
-     * 创建时间
-     */
     private LocalDateTime createTime;
+
+    /** 评价总数（已展示） */
+    private Long commentCount;
+
+    /** 平均评分 */
+    private BigDecimal avgStar;
 }

@@ -98,30 +98,33 @@
 </template>
 
 <script setup lang="ts">
-  import { h, nextTick } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { watchDebounced } from '@vueuse/core'
-  import { RefreshRight } from '@element-plus/icons-vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchMallProductList,
-    fetchMallProductPublishStatus,
-    fetchMallProductRemove,
-    type MallProductVo
-  } from '@/api/mall/product'
-  import { fetchMallCategoryChildren, type MallCategoryTreeNode } from '@/api/mall/category'
-  import { fetchCategoryNameMap, getCategoryDisplayName } from '@/utils/mall/category-tree'
-  import { fetchBrandNameMap, getBrandDisplayName } from '@/utils/mall/brand-map'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ProductSearch from './modules/product-search.vue'
-  import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+import {h, nextTick, onMounted} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {watchDebounced} from '@vueuse/core'
+import {RefreshRight} from '@element-plus/icons-vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  canSubmitProductAudit,
+  fetchMallProductList,
+  fetchMallProductPublishStatus,
+  fetchMallProductRemove,
+  fetchMallProductSubmitApproval,
+  type MallProductVo
+} from '@/api/mall/product'
+import {MALL_AUDIT_STATUS_MAP} from '@/utils/mall/audit-status'
+import {fetchMallCategoryChildren, type MallCategoryTreeNode} from '@/api/mall/category'
+import {fetchCategoryNameMap, getCategoryDisplayName} from '@/utils/mall/category-tree'
+import {fetchBrandNameMap, getBrandDisplayName} from '@/utils/mall/brand-map'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ProductSearch from './modules/product-search.vue'
+import {ElImage, ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
+import {handleMutationError} from '@/utils/http/mutation'
+import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
 
-  defineOptions({ name: 'MallProduct' })
+defineOptions({ name: 'MallProduct' })
 
   const coverImgDisplayUrls = ref<Map<string, string>>(new Map())
   const coverImgVersion = ref(0)
@@ -141,6 +144,7 @@
 
   const { hasAuth } = useAuth()
   const router = useRouter()
+  const route = useRoute()
 
   const searchForm = ref({
     spuName: undefined as string | undefined,
@@ -173,6 +177,10 @@
     const [catMap, brandMap] = await Promise.all([fetchCategoryNameMap(), fetchBrandNameMap()])
     categoryNameMap.value = catMap
     brandNameMap.value = brandMap
+    const raw = route.query.openId
+    if (raw && /^\d+$/.test(String(raw))) {
+      router.push({ path: `/mall/product/edit/${raw}` })
+    }
   })
 
   const formatWeight = (row: MallProductVo) => {
@@ -270,25 +278,53 @@
             return h(ElTag, { type: on ? 'success' : 'info' }, () => (on ? '上架' : '下架'))
           }
         },
+        {
+          prop: 'auditStatus',
+          label: '审批状态',
+          width: 100,
+          formatter: (row: MallProductVo) => {
+            const label = MALL_AUDIT_STATUS_MAP[row.auditStatus || ''] || row.auditStatus || '-'
+            const type =
+              row.auditStatus === 'APPROVED'
+                ? 'success'
+                : row.auditStatus === 'REJECTED'
+                  ? 'danger'
+                  : row.auditStatus === 'PENDING'
+                    ? 'warning'
+                    : 'info'
+            return h(ElTag, { type, size: 'small' }, () => label)
+          }
+        },
         { prop: 'createTime', label: '创建时间', width: 170 },
         { prop: 'updateTime', label: '更新时间', width: 170 },
         {
           prop: 'operation',
           label: '操作',
-          width: 240,
+          width: 280,
           fixed: 'right',
           formatter: (row: MallProductVo) => {
             const actions: ReturnType<typeof h>[] = []
             if (hasAuth('mall:product:edit')) {
               const onShelf = row.publishStatus === 1
-              actions.push(
-                h(ArtButtonTable, {
-                  label: onShelf ? '下架' : '上架',
-                  icon: onShelf ? 'ri:arrow-down-circle-line' : 'ri:arrow-up-circle-line',
-                  iconClass: onShelf ? 'bg-warning/12 text-warning' : 'bg-success/12 text-success',
-                  onClick: () => togglePublishStatus(row)
-                })
-              )
+              if (onShelf) {
+                actions.push(
+                  h(ArtButtonTable, {
+                    label: '下架',
+                    icon: 'ri:arrow-down-circle-line',
+                    iconClass: 'bg-warning/12 text-warning',
+                    onClick: () => togglePublishStatus(row)
+                  })
+                )
+              } else if (canSubmitProductAudit(row)) {
+                actions.push(
+                  h(ArtButtonTable, {
+                    label: '提交审批',
+                    icon: 'ri:shield-check-line',
+                    iconClass: 'bg-primary/12 text-primary',
+                    onClick: () => submitProductApproval(row)
+                  })
+                )
+              }
               actions.push(
                 h(ArtButtonTable, {
                   label: '编辑',
@@ -296,6 +332,16 @@
                   onClick: () => goEditSpu(row)
                 })
               )
+              if (row.id != null) {
+                actions.push(
+                  h(ArtButtonTable, {
+                    label: 'SKU',
+                    icon: 'mdi:barcode',
+                    iconClass: 'bg-info/12 text-info',
+                    onClick: () => goSkuList(row)
+                  })
+                )
+              }
             }
             if (hasAuth('mall:product:delete')) {
               actions.push(
@@ -487,21 +533,38 @@
     router.push({ path: `/mall/product/edit/${row.id}` })
   }
 
+  const goSkuList = (row: MallProductVo) => {
+    if (row.id == null) return
+    router.push({ name: 'GoodsManager', query: { spuId: String(row.id) } })
+  }
+
   const togglePublishStatus = async (row: MallProductVo) => {
     if (row.id == null) return
-    const onShelf = row.publishStatus === 1
-    const nextStatus = (onShelf ? 0 : 1) as 0 | 1
-    const action = onShelf ? '下架' : '上架'
     try {
       await ElMessageBox.confirm(
-        `确定${action} SPU「${row.spuName || row.id}」吗？${onShelf ? '下架后其 SKU 将不再出现在 SKU 列表中。' : ''}`,
-        `${action}商品`,
+        `确定下架 SPU「${row.spuName || row.id}」吗？下架后其 SKU 将不再出现在 SKU 列表中。`,
+        '下架商品',
         { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
       )
-      await fetchMallProductPublishStatus(row.id!, nextStatus)
+      await fetchMallProductPublishStatus(row.id!, 0)
       refreshData()
     } catch (error) {
-      handleMutationError(error, `${action}失败`)
+      handleMutationError(error, '下架失败')
+    }
+  }
+
+  const submitProductApproval = async (row: MallProductVo) => {
+    if (row.id == null) return
+    try {
+      await ElMessageBox.confirm(
+        `确定提交 SPU「${row.spuName || row.id}」上架审批吗？`,
+        '提交审批',
+        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' }
+      )
+      await fetchMallProductSubmitApproval(row.id!)
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '提交审批失败')
     }
   }
 

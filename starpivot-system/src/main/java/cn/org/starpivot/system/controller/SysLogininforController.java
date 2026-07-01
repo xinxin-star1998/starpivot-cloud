@@ -46,8 +46,8 @@ public class SysLogininforController {
      */
     @Log(title = "登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:query')")
-    @PostMapping("/pageList")
-    public Result<PageResponse<LogininforVO>> pageList(@RequestBody LogininforReqBo logininforReqBo) {
+    @PostMapping("/logininforPageList")
+    public Result<PageResponse<LogininforVO>> list(@RequestBody LogininforReqBo logininforReqBo) {
         return Result.success(sysLogininforService.pageList(logininforReqBo));
     }
 
@@ -78,7 +78,7 @@ public class SysLogininforController {
      */
     @Log(title = "删除登录日志", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:logininfor:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeLogininfor")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         boolean success = sysLogininforService.removeByIds(validateIds(deleteRequest.getIds()));
         return success ? Result.success("删除成功") : Result.error("删除失败");

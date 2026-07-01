@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 组织架构查询 Feign 客户端（审批人解析等）。
@@ -24,4 +25,7 @@ public interface SysOrgClient {
 
     @GetMapping("/internal/org/user/{userId}/display-name")
     Result<String> displayName(@PathVariable("userId") Long userId);
+
+    @PostMapping("/internal/org/users/display-names")
+    Result<Map<Long, String>> displayNames(@RequestBody List<Long> userIds);
 }

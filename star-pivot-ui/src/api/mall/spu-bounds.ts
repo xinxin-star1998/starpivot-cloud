@@ -23,7 +23,7 @@ export interface SpuBoundsSavePayload {
 
 export function fetchSpuBoundsList(params: SpuBoundsListParams) {
   return request.post<Api.Common.PaginatedResponse<SpuBoundsVo>>({
-    url: '/api/mall/spu-bounds/list',
+    url: '/api/mall/spu-bounds/spuBoundsPageList',
     data: params
   })
 }
@@ -52,7 +52,7 @@ export function fetchSpuBoundsUpdate(data: SpuBoundsSavePayload) {
 
 export function fetchSpuBoundsRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/spu-bounds/remove',
+    url: '/api/mall/spu-bounds/removeSpuBounds',
     data: { ids },
     showSuccessMessage: true
   })

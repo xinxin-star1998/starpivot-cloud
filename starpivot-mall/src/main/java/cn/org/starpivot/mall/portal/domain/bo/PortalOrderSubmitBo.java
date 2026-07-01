@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.portal.domain.bo;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -55,4 +56,11 @@ public class PortalOrderSubmitBo {
 
     /** 使用的优惠券领取记录 ID（sms_coupon_history.id） */
     private Long couponHistoryId;
+
+    /** 使用积分数量，null/0 表示不使用 */
+    private Integer useIntegration;
+
+    /** 下单防重令牌（GET /portal/order/submit-token 获取） */
+    @NotBlank(message = "订单提交令牌不能为空")
+    private String orderToken;
 }

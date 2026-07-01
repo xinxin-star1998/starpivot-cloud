@@ -41,6 +41,11 @@ public class PmsSpuComment {
     private Long spuId;
 
     /**
+     * 会员 ID（C 端评价写入）
+     */
+    private Long memberId;
+
+    /**
      * spu名称
      */
     private String spuName;

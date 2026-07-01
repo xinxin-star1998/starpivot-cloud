@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,6 +99,11 @@ public class ApInstanceServiceImpl implements ApInstanceService {
                         && !ApprovalConstants.ACTION_WITHDRAW.equals(r.getAction()))
                 .collect(Collectors.groupingBy(ApRecord::getStepCode));
 
+        Map<Long, String> displayNameMap = loadDisplayNameMap(instance, records, tasks);
+        Map<Long, Integer> stepOrderMap = steps.stream()
+                .filter(step -> step.getStepId() != null && step.getStepOrder() != null)
+                .collect(Collectors.toMap(ApTemplateStep::getStepId, ApTemplateStep::getStepOrder, (a, b) -> a));
+
         ApprovalTimelineVo vo = new ApprovalTimelineVo();
         vo.setInstanceId(instance.getInstanceId());
         vo.setTitle(instance.getTitle());
@@ -115,16 +117,35 @@ public class ApInstanceServiceImpl implements ApInstanceService {
             ApprovalTimelineVo.TimelineStepVo stepVo = new ApprovalTimelineVo.TimelineStepVo();
             stepVo.setStepCode(step.getStepCode());
             stepVo.setStepName(step.getStepName());
-            stepVo.setStatus(resolveStepStatus(step, instance, tasks, records));
-            stepVo.setAssignees(resolveAssigneeNames(step, instance, tasks));
-            stepVo.setRecords(buildRecords(recordsByStep.getOrDefault(step.getStepCode(), List.of())));
+            stepVo.setStatus(resolveStepStatus(step, instance, tasks, records, stepOrderMap));
+            stepVo.setAssignees(resolveAssigneeNames(step, tasks, displayNameMap));
+            stepVo.setRecords(buildRecords(recordsByStep.getOrDefault(step.getStepCode(), List.of()), displayNameMap));
             stepVos.add(stepVo);
         }
         vo.setSteps(stepVos);
         return vo;
     }
 
-    private String resolveStepStatus(ApTemplateStep step, ApInstance instance, List<ApTask> tasks, List<ApRecord> records) {
+    private Map<Long, String> loadDisplayNameMap(ApInstance instance, List<ApRecord> records, List<ApTask> tasks) {
+        Set<Long> userIds = new HashSet<>();
+        if (instance.getStarterId() != null) {
+            userIds.add(instance.getStarterId());
+        }
+        for (ApRecord record : records) {
+            if (record.getOperatorId() != null) {
+                userIds.add(record.getOperatorId());
+            }
+        }
+        for (ApTask task : tasks) {
+            if (task.getAssigneeId() != null) {
+                userIds.add(task.getAssigneeId());
+            }
+        }
+        return assigneeResolver.displayNames(userIds);
+    }
+
+    private String resolveStepStatus(ApTemplateStep step, ApInstance instance, List<ApTask> tasks,
+                                     List<ApRecord> records, Map<Long, Integer> stepOrderMap) {
         boolean skipped = records.stream()
                 .anyMatch(r -> step.getStepCode().equals(r.getStepCode())
                         && ApprovalConstants.ACTION_SKIP.equals(r.getAction()));
@@ -138,7 +159,8 @@ public class ApInstanceServiceImpl implements ApInstanceService {
         if (stepTasks.stream().anyMatch(t -> ApprovalConstants.TASK_DONE.equals(t.getStatus()))) {
             return "DONE";
         }
-        if (instance.getCurrentStepId() != null && step.getStepOrder() > findStepOrder(instance.getCurrentStepId(), step.getTemplateId())) {
+        if (instance.getCurrentStepId() != null
+                && step.getStepOrder() > stepOrderMap.getOrDefault(instance.getCurrentStepId(), Integer.MAX_VALUE)) {
             return "CANCELLED";
         }
         if (ApprovalConstants.INSTANCE_RUNNING.equals(instance.getStatus())
@@ -149,29 +171,24 @@ public class ApInstanceServiceImpl implements ApInstanceService {
         return stepTasks.isEmpty() ? "CANCELLED" : "DONE";
     }
 
-    private int findStepOrder(Long stepId, Long templateId) {
-        return templateResolver.loadSteps(templateId).stream()
-                .filter(s -> s.getStepId().equals(stepId))
-                .map(ApTemplateStep::getStepOrder)
-                .findFirst()
-                .orElse(Integer.MAX_VALUE);
-    }
-
-    private List<String> resolveAssigneeNames(ApTemplateStep step, ApInstance instance, List<ApTask> tasks) {
+    private List<String> resolveAssigneeNames(ApTemplateStep step, List<ApTask> tasks,
+                                               Map<Long, String> displayNameMap) {
         return tasks.stream()
                 .filter(t -> step.getStepId().equals(t.getStepId()))
                 .filter(t -> ApprovalConstants.TASK_PENDING.equals(t.getStatus()))
-                .map(t -> assigneeResolver.displayName(t.getAssigneeId()))
+                .map(t -> displayNameMap.getOrDefault(t.getAssigneeId(), String.valueOf(t.getAssigneeId())))
                 .distinct()
                 .toList();
     }
 
-    private List<ApprovalTimelineVo.TimelineRecordVo> buildRecords(List<ApRecord> records) {
+    private List<ApprovalTimelineVo.TimelineRecordVo> buildRecords(List<ApRecord> records,
+                                                                   Map<Long, String> displayNameMap) {
         return records.stream()
                 .sorted(Comparator.comparing(ApRecord::getCreateTime))
                 .map(r -> {
                     ApprovalTimelineVo.TimelineRecordVo item = new ApprovalTimelineVo.TimelineRecordVo();
-                    item.setOperatorName(assigneeResolver.displayName(r.getOperatorId()));
+                    item.setOperatorName(displayNameMap.getOrDefault(r.getOperatorId(),
+                            String.valueOf(r.getOperatorId())));
                     item.setAction(r.getAction());
                     item.setComment(r.getComment());
                     item.setTime(r.getCreateTime());

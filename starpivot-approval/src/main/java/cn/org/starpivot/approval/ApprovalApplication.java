@@ -7,11 +7,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = "cn.org.starpivot")
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "cn.org.starpivot.api")
 @EnableConfigurationProperties(JwtProperties.class)
+@EnableScheduling
 @MapperScan({
         "cn.org.starpivot.approval.mapper",
         "cn.org.starpivot.common.security.mapper"

@@ -78,9 +78,9 @@
 </template>
 
 <script setup lang="ts">
-  import type { PortalHomeBlock, PortalHomeProduct, PortalSeckillSession } from '@/api/portal/types'
+import type {PortalHomeBlock, PortalHomeProduct, PortalSeckillSession} from '@/api/portal/types'
 
-  defineOptions({ name: 'PortalHomeMarketingGrid' })
+defineOptions({ name: 'PortalHomeMarketingGrid' })
 
   const props = defineProps<{
     blocks: PortalHomeBlock[]
@@ -139,38 +139,60 @@
 </script>
 
 <style scoped lang="scss">
+  @import '../../styles/variables.scss';
+
   .marketing-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 16px;
+    margin-bottom: 20px;
   }
 
   .marketing-card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 14px;
-    min-height: 220px;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius);
+    padding: 16px;
+    min-height: 230px;
+    box-shadow: var(--portal-shadow-sm);
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--portal-border);
+    transition: box-shadow var(--portal-transition);
+
+    &:hover {
+      box-shadow: var(--portal-shadow);
+    }
 
     &--seckill {
+      background: linear-gradient(180deg, #fff5f5 0%, #fff 40%);
+
       .marketing-card__title {
-        color: #e1251b;
+        color: var(--portal-primary);
       }
     }
 
-    &--new .marketing-card__title {
-      color: #333;
+    &--new {
+      background: linear-gradient(180deg, #f8f9fb 0%, #fff 40%);
+
+      .marketing-card__title {
+        color: var(--portal-text);
+      }
     }
 
-    &--budget .marketing-card__title {
-      color: #f08420;
+    &--budget {
+      background: linear-gradient(180deg, #fff8f0 0%, #fff 40%);
+
+      .marketing-card__title {
+        color: var(--portal-accent-orange);
+      }
     }
 
-    &--subject .marketing-card__title {
-      color: #2f9bff;
+    &--subject {
+      background: linear-gradient(180deg, #f0f7ff 0%, #fff 40%);
+
+      .marketing-card__title {
+        color: var(--portal-accent-blue);
+      }
     }
   }
 
@@ -203,7 +225,7 @@
     text-decoration: none;
 
     &:hover {
-      color: #e1251b;
+      color: var(--portal-primary);
     }
   }
 
@@ -225,12 +247,12 @@
     transition: all 0.15s;
 
     &.active {
-      border-color: #e1251b;
-      background: #fff5f5;
+      border-color: var(--portal-primary);
+      background: var(--portal-primary-light);
     }
 
     &.ongoing.active .seckill-tab__label {
-      color: #e1251b;
+      color: var(--portal-primary);
     }
 
     &__time {
@@ -284,7 +306,7 @@
       line-height: 1.2;
 
       .promo {
-        color: #e1251b;
+        color: var(--portal-primary);
         font-size: 14px;
         font-weight: 700;
       }

@@ -144,8 +144,8 @@ public class GenExternalServiceImpl implements GenExternalService {
                 session,
                 query.getTableName(),
                 query.getTableComment(),
-                query.getPageNum(),
-                query.getPageSize());
+                Math.toIntExact(query.getPageNum()),
+                Math.toIntExact(query.getPageSize()));
         PageResponse<GenTable> page = new PageResponse<>();
         page.setTotal(total);
         page.setRows(rows);

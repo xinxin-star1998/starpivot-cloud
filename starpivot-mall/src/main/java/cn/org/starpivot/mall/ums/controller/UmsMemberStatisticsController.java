@@ -52,7 +52,7 @@ public class UmsMemberStatisticsController {
      * @return 分页查询结果
      */
     @Operation(summary = "会员统计分页列表")
-    @PostMapping("/list")
+    @PostMapping("/memberStatisticsPageList")
     @PreAuthorize("hasAuthority('mall:member:statistics')")
     public Result<PageResponse<MemberStatisticsVo>> pageList(@RequestBody MemberStatisticsReqBo reqBo) {
         return Result.success(umsMemberStatisticsService.pageList(reqBo));

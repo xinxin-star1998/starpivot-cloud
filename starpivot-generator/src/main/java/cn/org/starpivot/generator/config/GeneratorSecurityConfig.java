@@ -45,7 +45,6 @@ public class GeneratorSecurityConfig {
                         .requestMatchers(
                                 "/actuator/**",
                                 "/doc.html",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**"
                         ).permitAll()

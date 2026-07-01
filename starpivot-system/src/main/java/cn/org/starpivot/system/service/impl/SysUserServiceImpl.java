@@ -483,8 +483,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      */
     @Override
     public List<SysUserExcel> listForExport(UserReqBo userReqBo) {
-        userReqBo.setPageNum(1);
-        userReqBo.setPageSize(5000);
+        userReqBo.setPageNum(1L);
+        userReqBo.setPageSize(5000L);
         PageResponse<UserVO> pageResponse = this.pageList(userReqBo);
         List<UserVO> userList = pageResponse.getRows();
         if (userList == null) {

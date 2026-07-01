@@ -1,10 +1,13 @@
 <!-- C 端结算页 -->
 <template>
   <div v-loading="loading" class="portal-checkout">
-    <h1 class="page-title">确认订单</h1>
+    <PortalPageHeader title="确认订单" subtitle="请核对收货信息与商品清单" />
 
     <section class="panel">
-      <h3>收货地址</h3>
+      <div class="panel__title">
+        <ArtSvgIcon icon="ri:map-pin-line" />
+        <h3>收货地址</h3>
+      </div>
       <div v-if="addresses.length" class="address-list">
         <div
           v-for="addr in addresses"
@@ -25,7 +28,10 @@
     </section>
 
     <section class="panel">
-      <h3>优惠券</h3>
+      <div class="panel__title">
+        <ArtSvgIcon icon="ri:coupon-3-line" />
+        <h3>优惠券</h3>
+      </div>
       <div v-if="checkoutCoupons.length" class="coupon-row">
         <ElSelect
           v-model="selectedCouponHistoryId"
@@ -48,20 +54,61 @@
     </section>
 
     <section class="panel">
-      <h3>商品清单</h3>
-      <div v-for="item in checkoutItems" :key="item.skuId" class="checkout-item">
+      <div class="panel__title">
+        <ArtSvgIcon icon="ri:shopping-bag-3-line" />
+        <h3>商品清单</h3>
+      </div>
+      <div v-for="item in displayItems" :key="item.skuId" class="checkout-item">
         <span class="checkout-item__name">{{ item.skuTitle }}</span>
         <span class="checkout-item__qty">x{{ item.quantity }}</span>
         <span class="checkout-item__price"
-          >¥{{ formatPrice((item.price || 0) * (item.quantity || 0)) }}</span
+          >¥{{ formatPrice(item.lineAmount ?? (item.price || 0) * (item.quantity || 0)) }}</span
         >
       </div>
       <div class="checkout-total">
+        <p v-if="priceTrial && priceTrial.promotionAmount > 0" class="checkout-discount">
+          促销优惠：-¥{{ formatPrice(priceTrial.promotionAmount) }}
+        </p>
         <p v-if="couponDiscount > 0" class="checkout-discount"
           >优惠券：-¥{{ formatPrice(couponDiscount) }}</p
         >
+        <p v-if="integrationDiscount > 0" class="checkout-discount"
+          >积分抵扣：-¥{{ formatPrice(integrationDiscount) }}（{{ useIntegrationInput }} 积分）</p
+        >
+        <p v-if="freightAmount > 0" class="checkout-freight">运费：¥{{ formatPrice(freightAmount) }}</p>
+        <p v-else-if="priceTrial?.freeFreight" class="checkout-freight checkout-freight--free">免运费</p>
         应付：<strong>¥{{ formatPrice(payAmount) }}</strong>
       </div>
+    </section>
+
+    <section v-if="maxUsableIntegration > 0" class="panel">
+      <div class="panel__title">
+        <ArtSvgIcon icon="ri:coin-line" />
+        <h3>积分抵扣</h3>
+      </div>
+      <p class="integration-hint">
+        可用 {{ availableIntegration }} 积分，本单最多可用 {{ maxUsableIntegration }} 积分
+      </p>
+      <ElInputNumber
+        v-model="useIntegrationInput"
+        :min="0"
+        :max="maxUsableIntegration"
+        :step="100"
+        controls-position="right"
+        @change="onIntegrationChange"
+      />
+    </section>
+
+    <section class="panel">
+      <div class="panel__title">
+        <ArtSvgIcon icon="ri:wallet-3-line" />
+        <h3>支付方式</h3>
+      </div>
+      <ElRadioGroup v-model="selectedPayType">
+        <ElRadio v-if="alipayEnabled" :value="1">支付宝</ElRadio>
+        <ElRadio v-if="wxPayEnabled" :value="2">微信支付</ElRadio>
+        <ElRadio v-if="!alipayEnabled && !wxPayEnabled" :value="1">在线支付（Mock）</ElRadio>
+      </ElRadioGroup>
     </section>
 
     <div class="submit-bar">
@@ -84,31 +131,7 @@
         <ElFormItem label="手机号" prop="phone">
           <ElInput v-model="addressForm.phone" />
         </ElFormItem>
-        <ElFormItem label="省份" prop="province">
-          <ElSelect v-model="regionCodes[0]" placeholder="省" @change="onProvinceChange">
-            <ElOption v-for="p in provinces" :key="p.code" :label="p.name" :value="p.code!" />
-          </ElSelect>
-        </ElFormItem>
-        <ElFormItem label="城市" prop="city">
-          <ElSelect
-            v-model="regionCodes[1]"
-            placeholder="市"
-            :disabled="!cities.length"
-            @change="onCityChange"
-          >
-            <ElOption v-for="c in cities" :key="c.code" :label="c.name" :value="c.code!" />
-          </ElSelect>
-        </ElFormItem>
-        <ElFormItem label="区/县" prop="region">
-          <ElSelect
-            v-model="regionCodes[2]"
-            placeholder="区/县"
-            :disabled="!districts.length"
-            @change="onDistrictChange"
-          >
-            <ElOption v-for="d in districts" :key="d.code" :label="d.name" :value="d.code!" />
-          </ElSelect>
-        </ElFormItem>
+        <PortalRegionFields ref="regionFieldsRef" :form="addressForm" />
         <ElFormItem label="详细地址" prop="detailAddress">
           <ElInput v-model="addressForm.detailAddress" type="textarea" :rows="2" />
         </ElFormItem>
@@ -129,41 +152,83 @@
       :close-on-click-modal="false"
     >
       <p>订单号：{{ lastOrderSn }}</p>
-      <p v-if="alipayEnabled">请使用支付宝完成支付</p>
+      <p v-if="alipayEnabled && selectedPayType === 1">请使用支付宝完成支付</p>
+      <p v-else-if="wxPayEnabled && selectedPayType === 2">请使用微信扫码完成支付</p>
       <p v-else>请完成支付（开发环境可使用 Mock 支付）</p>
       <template #footer>
         <ElButton @click="router.push('/portal')">返回首页</ElButton>
-        <ElButton v-if="alipayEnabled" :loading="paying" type="primary" @click="handleAlipayPay">
+        <ElButton
+          v-if="alipayEnabled && selectedPayType === 1"
+          :loading="paying"
+          type="primary"
+          @click="handleAlipayPay"
+        >
           支付宝支付
         </ElButton>
-        <ElButton v-else :loading="paying" type="primary" @click="handleMockPay"
-          >Mock 支付</ElButton
+        <ElButton
+          v-else-if="wxPayEnabled && selectedPayType === 2"
+          :loading="paying"
+          type="primary"
+          @click="handleWxPay"
         >
+          微信扫码支付
+        </ElButton>
+        <ElButton v-else :loading="paying" type="primary" @click="handleMockPay">Mock 支付</ElButton>
+      </template>
+    </ElDialog>
+
+    <ElDialog
+      v-model="wxPayDialogVisible"
+      title="微信扫码支付"
+      width="360px"
+      :close-on-click-modal="false"
+      @closed="wxCodeUrl = ''"
+    >
+      <p class="wx-pay-sn">订单号：{{ lastOrderSn }}</p>
+      <div v-if="wxCodeUrl" class="wx-pay-qr">
+        <QrcodeVue :value="wxCodeUrl" :size="220" level="M" />
+      </div>
+      <p v-if="wxPayMock" class="wx-pay-mock-hint">开发 Mock 模式，点击下方按钮模拟支付成功</p>
+      <template #footer>
+        <ElButton @click="wxPayDialogVisible = false">关闭</ElButton>
+        <ElButton v-if="wxPayMock" :loading="paying" type="primary" @click="handleWxMockConfirm">
+          Mock 确认支付
+        </ElButton>
+        <ElButton v-else type="primary" @click="router.push('/portal/orders')">我已完成支付</ElButton>
       </template>
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { fetchPortalAddressList, fetchPortalAddressSave } from '@/api/portal/address'
-  import { fetchPortalCart } from '@/api/portal/cart'
-  import { fetchPortalCouponCheckout } from '@/api/portal/coupon'
-  import { fetchPortalOrderMockPay, fetchPortalOrderSubmit } from '@/api/portal/order'
-  import { fetchPortalAlipayEnabled, fetchPortalAlipayPay } from '@/api/portal/pay'
-  import { fetchPortalRegionChildren } from '@/api/portal/region'
-  import type {
-    PortalAddress,
-    PortalCartItem,
-    PortalCheckoutCoupon,
-    PortalRegion
-  } from '@/api/portal/types'
-  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
-  import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
-  import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {fetchPortalAddressList, fetchPortalAddressSave} from '@/api/portal/address'
+import {fetchPortalCart} from '@/api/portal/cart'
+import {fetchPortalCouponCheckout} from '@/api/portal/coupon'
+import {
+  fetchPortalOrderMockPay,
+  fetchPortalOrderPriceTrial,
+  fetchPortalOrderSubmit,
+  fetchPortalOrderSubmitToken
+} from '@/api/portal/order'
+import {
+  fetchPortalAlipayEnabled,
+  fetchPortalAlipayPay,
+  fetchPortalWxMockPay,
+  fetchPortalWxNativePay,
+  fetchPortalWxPayEnabled
+} from '@/api/portal/pay'
+import type {PortalAddress, PortalCartItem, PortalCheckoutCoupon, PortalOrderPriceTrial} from '@/api/portal/types'
+import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
+import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
+import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import PortalPageHeader from '../components/portal-page-header.vue'
+import PortalRegionFields from '../components/portal-region-fields.vue'
+import QrcodeVue from 'qrcode.vue'
 
-  defineOptions({ name: 'PortalCheckout' })
+defineOptions({ name: 'PortalCheckout' })
 
   const route = useRoute()
   const router = useRouter()
@@ -181,10 +246,20 @@
   const lastOrderId = ref<number>()
   const lastOrderSn = ref('')
   const alipayEnabled = ref(false)
+  const wxPayEnabled = ref(false)
+  const wxPayMock = ref(false)
+  const selectedPayType = ref(1)
+  const orderToken = ref('')
+  const wxPayDialogVisible = ref(false)
+  const wxCodeUrl = ref('')
   const checkoutCoupons = ref<PortalCheckoutCoupon[]>([])
   const selectedCouponHistoryId = ref<number>()
+  const priceTrial = ref<PortalOrderPriceTrial | null>(null)
+  const useIntegrationInput = ref(0)
+  const priceTrialLoading = ref(false)
 
   const formRef = ref<FormInstance>()
+  const regionFieldsRef = ref<InstanceType<typeof PortalRegionFields>>()
   const addressForm = reactive({
     name: '',
     phone: '',
@@ -203,13 +278,31 @@
     detailAddress: [{ required: true, message: '请输入详细地址', trigger: 'blur' }]
   }
 
-  const regionCodes = ref<[string, string, string]>(['', '', ''])
-  const provinces = ref<PortalRegion[]>([])
-  const cities = ref<PortalRegion[]>([])
-  const districts = ref<PortalRegion[]>([])
+  const displayItems = computed(() => {
+    if (priceTrial.value?.lines?.length) {
+      return priceTrial.value.lines.map((line) => ({
+        skuId: line.skuId,
+        skuTitle: line.skuTitle || `SKU ${line.skuId}`,
+        quantity: line.quantity,
+        lineAmount: line.lineAmount,
+        price: line.unitPrice
+      }))
+    }
+    return checkoutItems.value
+  })
 
-  const totalAmount = computed(() =>
-    checkoutItems.value.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
+  const couponDiscount = computed(() => priceTrial.value?.couponAmount ?? 0)
+  const integrationDiscount = computed(() => priceTrial.value?.integrationAmount ?? 0)
+  const freightAmount = computed(() => priceTrial.value?.freightAmount ?? 0)
+  const payAmount = computed(() => priceTrial.value?.payAmount ?? 0)
+  const availableIntegration = computed(() => priceTrial.value?.availableIntegration ?? 0)
+  const maxUsableIntegration = computed(() => priceTrial.value?.maxUsableIntegration ?? 0)
+  const canSubmit = computed(
+    () =>
+      !!selectedAddressId.value &&
+      checkoutItems.value.length > 0 &&
+      !!orderToken.value &&
+      !submitting.value
   )
 
   const selectedCoupon = computed(() =>
@@ -227,20 +320,27 @@
     return `${base} · ${coupon.unusableReason || '不可用'}`
   }
 
-  const couponDiscount = computed(() => {
-    const coupon = selectedCoupon.value
-    if (!coupon || !coupon.usable) return 0
-    const min = coupon.minPoint || 0
-    if (totalAmount.value < min) return 0
-    return Math.min(coupon.amount || 0, totalAmount.value)
-  })
-
-  const payAmount = computed(() => Math.max(totalAmount.value - couponDiscount.value, 0))
-  const canSubmit = computed(
-    () => !!selectedAddressId.value && checkoutItems.value.length > 0 && !submitting.value
-  )
-
   const formatPrice = (p: number) => p.toFixed(2)
+
+  async function refreshPriceTrial() {
+    if (!checkoutItems.value.length) {
+      priceTrial.value = null
+      return
+    }
+    priceTrialLoading.value = true
+    try {
+      priceTrial.value = await fetchPortalOrderPriceTrial({
+        useCart: true,
+        couponHistoryId: selectedCouponHistoryId.value,
+        useIntegration: useIntegrationInput.value || undefined
+      })
+      if (priceTrial.value.useIntegration != null) {
+        useIntegrationInput.value = priceTrial.value.useIntegration
+      }
+    } finally {
+      priceTrialLoading.value = false
+    }
+  }
 
   async function loadCoupons() {
     if (!checkoutItems.value.length) {
@@ -267,16 +367,15 @@
 
   function onCouponChange() {
     const coupon = selectedCoupon.value
-    if (!coupon) return
-    if (!coupon.usable) {
+    if (coupon && !coupon.usable) {
       ElMessage.warning(coupon.unusableReason || '当前优惠券不可使用')
       selectedCouponHistoryId.value = undefined
-      return
     }
-    if (couponDiscount.value <= 0) {
-      ElMessage.warning('当前订单不满足该优惠券使用条件')
-      selectedCouponHistoryId.value = undefined
-    }
+    refreshPriceTrial()
+  }
+
+  function onIntegrationChange() {
+    refreshPriceTrial()
   }
 
   async function loadData() {
@@ -287,34 +386,7 @@
     const defaultAddr = addrList.find((a) => a.defaultStatus === 1) || addrList[0]
     selectedAddressId.value = defaultAddr?.id
     await loadCoupons()
-  }
-
-  async function loadProvinces() {
-    provinces.value = await fetchPortalRegionChildren('0')
-  }
-
-  async function onProvinceChange(code: string) {
-    const p = provinces.value.find((x) => x.code === code)
-    addressForm.province = p?.name || ''
-    addressForm.city = ''
-    addressForm.region = ''
-    regionCodes.value[1] = ''
-    regionCodes.value[2] = ''
-    cities.value = code ? await fetchPortalRegionChildren(code) : []
-    districts.value = []
-  }
-
-  async function onCityChange(code: string) {
-    const c = cities.value.find((x) => x.code === code)
-    addressForm.city = c?.name || ''
-    addressForm.region = ''
-    regionCodes.value[2] = ''
-    districts.value = code ? await fetchPortalRegionChildren(code) : []
-  }
-
-  function onDistrictChange(code: string) {
-    const d = districts.value.find((x) => x.code === code)
-    addressForm.region = d?.name || ''
+    await refreshPriceTrial()
   }
 
   async function saveAddress() {
@@ -330,19 +402,30 @@
     }
   }
 
+  async function refreshSubmitToken() {
+    const tokenResult = await fetchPortalOrderSubmitToken()
+    orderToken.value = tokenResult.orderToken
+  }
+
   async function handleSubmit() {
-    if (!selectedAddressId.value) return
+    if (!selectedAddressId.value || !orderToken.value) return
     submitting.value = true
     try {
       const result = await fetchPortalOrderSubmit({
         addressId: selectedAddressId.value,
         useCart: true,
-        couponHistoryId: selectedCouponHistoryId.value
+        couponHistoryId: selectedCouponHistoryId.value,
+        useIntegration: useIntegrationInput.value || undefined,
+        payType: selectedPayType.value,
+        orderToken: orderToken.value
       })
       lastOrderId.value = result.orderId
       lastOrderSn.value = result.orderSn
       payDialogVisible.value = true
       notifyPortalCartChanged()
+      await refreshSubmitToken()
+    } catch {
+      await refreshSubmitToken()
     } finally {
       submitting.value = false
     }
@@ -364,6 +447,35 @@
     }
   }
 
+  async function handleWxPay() {
+    if (!lastOrderId.value) return
+    paying.value = true
+    try {
+      const result = await fetchPortalWxNativePay(lastOrderId.value)
+      wxCodeUrl.value = result.codeUrl
+      wxPayMock.value = !!result.mock
+      payDialogVisible.value = false
+      wxPayDialogVisible.value = true
+    } catch (err) {
+      ElMessage.error(err instanceof Error ? err.message : '微信下单失败')
+    } finally {
+      paying.value = false
+    }
+  }
+
+  async function handleWxMockConfirm() {
+    if (!lastOrderId.value) return
+    paying.value = true
+    try {
+      await fetchPortalWxMockPay(lastOrderId.value)
+      wxPayDialogVisible.value = false
+      ElMessage.success('支付成功')
+      router.push('/portal/orders')
+    } finally {
+      paying.value = false
+    }
+  }
+
   async function handleMockPay() {
     if (!lastOrderId.value) return
     paying.value = true
@@ -378,7 +490,9 @@
   }
 
   watch(addressDialogVisible, (visible) => {
-    if (visible) loadProvinces()
+    if (visible) {
+      regionFieldsRef.value?.resetRegionPicker()
+    }
   })
 
   onMounted(async () => {
@@ -388,7 +502,16 @@
     }
     try {
       await loadData()
-      alipayEnabled.value = await fetchPortalAlipayEnabled()
+      const [alipay, wx] = await Promise.all([fetchPortalAlipayEnabled(), fetchPortalWxPayEnabled()])
+      alipayEnabled.value = alipay
+      wxPayEnabled.value = wx.enabled
+      wxPayMock.value = wx.mock
+      if (alipay) {
+        selectedPayType.value = 1
+      } else if (wx.enabled) {
+        selectedPayType.value = 2
+      }
+      await refreshSubmitToken()
       if (!checkoutItems.value.length && route.query.direct !== '1') {
         ElMessage.warning('请先勾选要结算的商品')
         router.replace('/portal/cart')
@@ -400,20 +523,33 @@
 </script>
 
 <style scoped lang="scss">
-  .page-title {
-    margin: 0 0 16px;
-    font-size: 22px;
-  }
+  @import '../styles/variables.scss';
 
   .panel {
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius-lg);
+    padding: 24px;
     margin-bottom: 16px;
+    box-shadow: var(--portal-shadow-sm);
+    border: 1px solid var(--portal-border);
 
-    h3 {
-      margin: 0 0 16px;
-      font-size: 16px;
+    &__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+
+      svg {
+        font-size: 20px;
+        color: var(--portal-primary);
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--portal-text);
+      }
     }
   }
 
@@ -425,26 +561,33 @@
   }
 
   .address-card {
-    border: 2px solid #eee;
-    border-radius: 8px;
-    padding: 12px 16px;
+    border: 2px solid var(--portal-border);
+    border-radius: var(--portal-radius);
+    padding: 14px 16px;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: all var(--portal-transition);
+    position: relative;
+
+    &:hover {
+      border-color: #ffb8b8;
+    }
 
     &.active {
-      border-color: #e1251b;
-      background: #fffafa;
+      border-color: var(--portal-primary);
+      background: var(--portal-primary-light);
+      box-shadow: 0 0 0 1px var(--portal-primary) inset;
     }
 
     &__user {
       margin: 0 0 6px;
       font-weight: 600;
+      color: var(--portal-text);
     }
 
     &__detail {
       margin: 0 0 8px;
       font-size: 13px;
-      color: #666;
+      color: var(--portal-text-secondary);
       line-height: 1.5;
     }
   }
@@ -453,20 +596,26 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid #f5f5f5;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--portal-border);
     font-size: 14px;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
 
     &__name {
       flex: 1;
+      color: var(--portal-text);
     }
 
     &__qty {
-      color: #999;
+      color: var(--portal-text-muted);
     }
 
     &__price {
-      color: #e1251b;
+      color: var(--portal-primary);
+      font-weight: 600;
       min-width: 80px;
       text-align: right;
     }
@@ -475,18 +624,57 @@
   .checkout-total {
     text-align: right;
     padding-top: 16px;
+    margin-top: 8px;
+    border-top: 1px dashed var(--portal-border);
     font-size: 16px;
 
     .checkout-discount {
       margin: 0 0 8px;
       font-size: 14px;
-      color: #67c23a;
+      color: var(--portal-accent-green);
+    }
+
+    .checkout-freight {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--portal-text-secondary);
+
+      &--free {
+        color: var(--portal-accent-green);
+      }
     }
 
     strong {
-      color: #e1251b;
-      font-size: 22px;
+      color: var(--portal-primary);
+      font-size: 24px;
+      font-weight: 800;
     }
+  }
+
+  .integration-hint {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--portal-text-muted);
+  }
+
+  .wx-pay-sn {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: var(--portal-text-secondary);
+    text-align: center;
+  }
+
+  .wx-pay-qr {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .wx-pay-mock-hint {
+    margin: 0;
+    font-size: 13px;
+    color: var(--portal-accent-orange);
+    text-align: center;
   }
 
   .coupon-row {
@@ -496,20 +684,32 @@
   .coupon-hint {
     margin: 8px 0 0;
     font-size: 13px;
-    color: #e6a23c;
+    color: var(--portal-accent-orange);
   }
 
   .coupon-empty {
     margin: 0;
     font-size: 14px;
-    color: #999;
+    color: var(--portal-text-muted);
   }
 
   .submit-bar {
-    background: #fff;
-    border-radius: 8px;
-    padding: 16px 20px;
+    background: var(--portal-bg-elevated);
+    border-radius: var(--portal-radius-lg);
+    padding: 20px 24px;
     display: flex;
     justify-content: flex-end;
+    box-shadow: var(--portal-shadow-sm);
+    border: 1px solid var(--portal-border);
+    position: sticky;
+    bottom: 16px;
+
+    :deep(.el-button) {
+      min-width: 160px;
+      border-radius: 24px;
+      font-weight: 600;
+      background: var(--portal-primary-gradient);
+      border: none;
+    }
   }
 </style>

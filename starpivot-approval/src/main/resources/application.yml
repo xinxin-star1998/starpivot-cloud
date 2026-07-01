@@ -32,3 +32,6 @@ starpivot:
     version: ${API_VERSION:v1}
   security:
     authority-strategy: menu-permission
+  approval:
+    timeout-scan-ms: 60000
+    timeout-batch-size: 50

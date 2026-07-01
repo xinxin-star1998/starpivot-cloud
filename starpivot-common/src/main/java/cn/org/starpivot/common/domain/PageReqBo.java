@@ -18,10 +18,10 @@ public class PageReqBo {
     /** 当前页码，从 1 开始 */
     @Min(value = 1, message = "页码不能小于1")
     @Max(value = MAX_PAGE_NUM, message = "页码不能超过" + MAX_PAGE_NUM)
-    private Integer pageNum = 1;
+    private Long pageNum = 1L;
 
     /** 每页记录数 */
     @Min(value = 1, message = "每页数量不能小于1")
     @Max(value = MAX_PAGE_SIZE, message = "每页数量不能超过" + MAX_PAGE_SIZE)
-    private Integer pageSize = 10;
+    private Long pageSize = 10L;
 }

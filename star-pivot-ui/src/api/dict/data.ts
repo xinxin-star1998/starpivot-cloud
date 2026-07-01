@@ -65,7 +65,7 @@ export function fetchGetDictDataByType(dictType: string) {
  */
 export function fetchGetDictDataList(params?: DictDataSearchParams) {
   return request.post<PageResponseResult<SysDictData>>({
-    url: '/api/sys/dict/data/list',
+    url: '/api/sys/dict/data/dictDataPageList',
     data: params || {}
   })
 }
@@ -104,7 +104,7 @@ export function fetchUpdateDictData(data: DictDataFormData) {
  */
 export function fetchDeleteDictData(dictCodes: number[]) {
   return request.del({
-    url: '/api/sys/dict/data/delete',
+    url: '/api/sys/dict/data/removeDictData',
     data: { ids: dictCodes }
   })
 }

@@ -4,11 +4,13 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
+import cn.org.starpivot.mall.common.MallAuditStatus;
 import cn.org.starpivot.mall.pms.domain.bo.ProductReqBo;
 import cn.org.starpivot.mall.pms.domain.bo.ProductSaveBo;
 import cn.org.starpivot.mall.pms.domain.vo.*;
 import cn.org.starpivot.mall.pms.entity.*;
 import cn.org.starpivot.mall.pms.mapper.*;
+import cn.org.starpivot.mall.pms.search.PmsProductSearchSyncService;
 import cn.org.starpivot.mall.pms.service.PmsSpuInfoService;
 import cn.org.starpivot.mall.pms.support.MallFileRefSupport;
 import cn.org.starpivot.mall.wms.service.WmsWareSkuService;
@@ -55,6 +57,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
     private final PmsCommentReplayMapper pmsCommentReplayMapper;
     private final WmsWareSkuService wmsWareSkuService;
     private final MallFileRefSupport mallFileRefSupport;
+    private final PmsProductSearchSyncService productSearchSyncService;
 
     @Override
     @Transactional(readOnly = true)
@@ -107,9 +110,14 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         LocalDateTime now = LocalDateTime.now();
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        if (entity.getPublishStatus() == null) {
+            entity.setPublishStatus(0);
+        }
+        entity.setAuditStatus(MallAuditStatus.DRAFT);
         pmsSpuInfoMapper.insert(entity);
         saveSpuRelations(entity.getId(), bo, true);
         syncProductFileRefs(entity.getId());
+        productSearchSyncService.syncPublishedSpu(entity.getId());
     }
 
     @Override
@@ -129,6 +137,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         removeSpuRelations(bo.getId());
         saveSpuRelations(bo.getId(), bo, false);
         syncProductFileRefs(bo.getId());
+        productSearchSyncService.syncPublishedSpu(bo.getId());
     }
 
     /**
@@ -149,6 +158,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         for (Long spuId : spuIds) {
             unbindProductFileRefs(spuId);
             removeSpuRelations(spuId);
+            productSearchSyncService.removeSpu(spuId);
         }
         pmsSpuInfoMapper.delete(Wrappers.<PmsSpuInfo>lambdaQuery().in(PmsSpuInfo::getId, spuIds));
     }
@@ -166,9 +176,17 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         if (existing == null) {
             throw new BizException("商品不存在");
         }
+        if (publishStatus == 1) {
+            throw new BizException("上架需先提交审批，请使用「提交审批」");
+        }
         existing.setPublishStatus(publishStatus);
         existing.setUpdateTime(LocalDateTime.now());
         pmsSpuInfoMapper.updateById(existing);
+        if (publishStatus == 0) {
+            productSearchSyncService.removeSpu(id);
+        } else {
+            productSearchSyncService.syncPublishedSpu(id);
+        }
     }
 
     private void copySpuMainFields(ProductSaveBo bo, PmsSpuInfo entity) {

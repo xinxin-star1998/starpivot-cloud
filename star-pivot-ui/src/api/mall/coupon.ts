@@ -1,4 +1,5 @@
 import request from '@/utils/http'
+import {canSubmitMallAudit} from '@/utils/mall/audit-status'
 
 export interface CouponSpuVo {
   id?: number
@@ -33,6 +34,8 @@ export interface CouponVo {
   code?: string
   memberLevel?: number
   publish?: number
+  approvalInstanceId?: number
+  auditStatus?: string
   spuList?: CouponSpuVo[]
   categoryList?: CouponCategoryVo[]
 }
@@ -70,7 +73,7 @@ export interface CouponSavePayload {
 
 export function fetchCouponList(params: CouponListParams) {
   return request.post<Api.Common.PaginatedResponse<CouponVo>>({
-    url: '/api/mall/coupon/list',
+    url: '/api/mall/coupon/couponPageList',
     data: params
   })
 }
@@ -99,7 +102,7 @@ export function fetchCouponUpdate(data: CouponSavePayload) {
 
 export function fetchCouponRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/coupon/remove',
+    url: '/api/mall/coupon/removeCoupon',
     data: { ids },
     showSuccessMessage: true
   })
@@ -111,6 +114,17 @@ export function fetchCouponPublishStatus(id: number, publish: 0 | 1) {
     data: { id, publish },
     showSuccessMessage: true
   })
+}
+
+export function fetchCouponSubmitApproval(id: number) {
+  return request.post<void>({
+    url: `/api/mall/coupon/${id}/submit-approval`,
+    showSuccessMessage: true
+  })
+}
+
+export function canSubmitCouponAudit(row: Pick<CouponVo, 'publish' | 'auditStatus'>) {
+  return row.publish !== 1 && canSubmitMallAudit(row.auditStatus)
 }
 
 export const COUPON_PUBLISH_OPTIONS = [

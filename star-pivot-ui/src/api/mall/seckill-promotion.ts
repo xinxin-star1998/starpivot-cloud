@@ -47,7 +47,7 @@ export interface SeckillPromotionSavePayload {
 
 export function fetchSeckillPromotionList(params: SeckillPromotionListParams) {
   return request.post<Api.Common.PaginatedResponse<SeckillPromotionVo>>({
-    url: '/api/mall/seckill-promotion/list',
+    url: '/api/mall/seckill-promotion/seckillPromotionPageList',
     data: params
   })
 }
@@ -76,7 +76,7 @@ export function fetchSeckillPromotionUpdate(data: SeckillPromotionSavePayload) {
 
 export function fetchSeckillPromotionRemove(ids: number[]) {
   return request.del<void>({
-    url: '/api/mall/seckill-promotion/remove',
+    url: '/api/mall/seckill-promotion/removeSeckillPromotion',
     data: { ids },
     showSuccessMessage: true
   })

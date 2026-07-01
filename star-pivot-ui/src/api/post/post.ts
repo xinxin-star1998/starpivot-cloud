@@ -21,7 +21,7 @@ export interface SysPost {
  */
 export function fetchGetPostList(params: Api.Post.PostSearchParams) {
   return request.post<Api.Post.PostList>({
-    url: '/api/sys/post/list',
+    url: '/api/sys/post/postPageList',
     data: params
   })
 }
@@ -69,7 +69,7 @@ export function fetchUpdatePost(data: SysPost) {
  */
 export function fetchDeletePost(postIds: number[]) {
   return request.del({
-    url: '/api/sys/post/delete',
+    url: '/api/sys/post/removePost',
     data: { ids: postIds }
   })
 }

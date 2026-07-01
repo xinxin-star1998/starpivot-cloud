@@ -27,6 +27,17 @@ public class ApTemplateSaveDto {
     @NotNull(message = "steps 不能为空")
     private List<ApTemplateStepDto> steps;
 
+    /** 步骤间条件路由（可选） */
+    private List<ApTemplateRouteDto> routes;
+
+    @Data
+    public static class ApTemplateRouteDto {
+        private String fromStepCode;
+        private String toStepCode;
+        private Integer priority;
+        private String conditionExpr;
+    }
+
     @Data
     public static class ApTemplateStepDto {
         private Long stepId;
@@ -41,5 +52,7 @@ public class ApTemplateSaveDto {
         private String assigneeValue;
         private String approveMode;
         private String skipExpression;
+        private Integer timeoutHours;
+        private String timeoutAction;
     }
 }

@@ -6,6 +6,10 @@ export { useCommon } from './core/useCommon'
 // 权限控制
 export { useAuth } from './core/useAuth'
 
+// 图形验证码
+export { useCaptcha } from './core/useCaptcha'
+export type { CaptchaScene } from './core/useCaptcha'
+
 // 字典数据管理
 export { useDict } from './core/useDict'
 

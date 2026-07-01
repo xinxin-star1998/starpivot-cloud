@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import { fetchExcelExport, fetchExcelImport, fetchExcelTemplate } from '@/api/common/excel'
+import {fetchExcelExport, fetchExcelImport, fetchExcelTemplate} from '@/api/common/excel'
 
 /**
  * 属性分组实体类型
@@ -31,7 +31,7 @@ export interface GroupSearchParams {
  */
 export function fetchGetGroupList(params: GroupSearchParams) {
   return request.post<Api.Common.PaginatedResponse<Group>>({
-    url: '/api/mall/group/list',
+    url: '/api/mall/group/attrGroupPageList',
     data: params
   })
 }
@@ -70,7 +70,7 @@ export function fetchUpdateGroup(data: Group) {
  */
 export function fetchDeleteGroup(attrGroupIds: number[]) {
   return request.del({
-    url: '/api/mall/group/delete',
+    url: '/api/mall/group/removeAttrGroup',
     data: { ids: attrGroupIds }
   })
 }

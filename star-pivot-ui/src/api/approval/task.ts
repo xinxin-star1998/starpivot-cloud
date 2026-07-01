@@ -11,14 +11,14 @@ export interface ApTaskQuery {
 
 export function fetchApprovalTodoList(data: ApTaskQuery) {
   return request.post<{ total: number; rows: ApTaskVo[] }>({
-    url: '/api/approval/task/todo/list',
+    url: '/api/approval/task/todoTaskPageList',
     data
   })
 }
 
 export function fetchApprovalDoneList(data: ApTaskQuery) {
   return request.post<{ total: number; rows: ApTaskVo[] }>({
-    url: '/api/approval/task/done/list',
+    url: '/api/approval/task/doneTaskPageList',
     data
   })
 }

@@ -48,7 +48,7 @@ export interface UserSearchParams {
  */
 export function fetchGetUserList(params: UserSearchParams) {
   return request.post<Api.Common.PaginatedResponse<User>>({
-    url: '/api/demo/user/list',
+    url: '/api/demo/user/userPageList',
     data: params
   })
 }
@@ -87,7 +87,7 @@ export function fetchUpdateUser(data: User) {
  */
 export function fetchDeleteUser(ids: number[]) {
   return request.del({
-    url: '/api/demo/user/delete',
+    url: '/api/demo/user/removeUser',
     data: { ids: ids }
   })
 }

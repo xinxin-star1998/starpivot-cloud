@@ -23,6 +23,10 @@ public final class ApprovalConstants {
     public static final String ACTION_REJECT = "REJECT";
     public static final String ACTION_WITHDRAW = "WITHDRAW";
     public static final String ACTION_SKIP = "SKIP";
+    public static final String ACTION_TIMEOUT = "TIMEOUT";
+
+    public static final String TIMEOUT_ACTION_REJECT = "AUTO_REJECT";
+    public static final String TIMEOUT_ACTION_APPROVE = "AUTO_APPROVE";
 
     public static final String APPROVE_MODE_ANY = "ANY";
     public static final String APPROVE_MODE_ALL = "ALL";

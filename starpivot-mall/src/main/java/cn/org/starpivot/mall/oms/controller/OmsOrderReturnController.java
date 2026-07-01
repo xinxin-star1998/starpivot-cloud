@@ -48,7 +48,7 @@ public class OmsOrderReturnController {
      * @return 分页查询结果
      */
     @Operation(summary = "退货申请分页列表")
-    @PostMapping("/list")
+    @PostMapping("/orderReturnPageList")
     @PreAuthorize("hasAuthority('mall:return:query')")
     public Result<PageResponse<ReturnVo>> pageList(@RequestBody ReturnReqBo reqBo) {
         return Result.success(omsOrderReturnApplyService.pageList(reqBo));

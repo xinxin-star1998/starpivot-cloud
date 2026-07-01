@@ -65,8 +65,8 @@ public class SysUserController {
      */
     @Operation(summary = "分页查询用户")
     @PreAuthorize("hasAuthority('system:user:query')")
-    @PostMapping("/pageList")
-    public Result<PageResponse<UserVO>> pageList(@RequestBody UserReqBo userReqBo) {
+    @PostMapping("/userPageList")
+    public Result<PageResponse<UserVO>> list(@RequestBody UserReqBo userReqBo) {
         return Result.success(sysUserService.pageList(userReqBo));
     }
 
@@ -132,7 +132,7 @@ public class SysUserController {
     @Log(title = "删除用户", businessType = BusinessType.DELETE)
     @Operation(summary = "删除用户")
     @PreAuthorize("hasAuthority('system:user:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeUser")
     public Result<Void> remove(@RequestBody DeleteRequest deleteRequest) {
         String errorMsg = sysUserService.canDeleteUsers(deleteRequest.getIds());
         if (errorMsg != null) {

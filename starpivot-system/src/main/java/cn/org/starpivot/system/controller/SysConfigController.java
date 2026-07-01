@@ -43,7 +43,7 @@ public class SysConfigController {
      * @return 参数配置分页结果
      */
     @PreAuthorize("hasAuthority('system:config:query')")
-    @PostMapping("/list")
+    @PostMapping("/configPageList")
     public Result<PageResponse<SysConfigVO>> list(@RequestBody SysConfigQueryDTO queryDTO) {
         return Result.success(sysConfigService.selectSysConfigPage(queryDTO));
     }
@@ -96,7 +96,7 @@ public class SysConfigController {
      */
     @Log(title = "删除参数", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:config:delete')")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/removeConfig")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
         if (deleteRequest.getIds() == null || deleteRequest.getIds().isEmpty()) {
             throw new BizException(ErrorCode.PARAM_INVALID, "删除ID不能为空");

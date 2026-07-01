@@ -46,7 +46,6 @@ public class MonitorSecurityConfig {
                                 "/actuator/**",
                                 "/druid/**",
                                 "/doc.html",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**"
                         ).permitAll()
