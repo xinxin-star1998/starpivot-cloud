@@ -73,7 +73,7 @@ public class AvatarController {
         if (currentUserId.equals(targetId)) {
             return true;
         }
-        return hasUserManagePermission();
+        return isSuperAdmin() || hasUserManagePermission();
     }
 
     private boolean hasPermissionToModifyUser(String targetUserId) {

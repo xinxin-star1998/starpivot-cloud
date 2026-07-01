@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service;
 
+import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.system.domain.entity.SysRole;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,13 @@ public class PermissionService {
         Long userId = SecurityContextUtils.getUserId();
         if (userId == null) {
             return false;
+        }
+        if (AppConstants.ADMIN_USER_ID.equals(userId)) {
+            return true;
+        }
+        List<SysRole> roles = sysUserService.getRolesByUserId(userId);
+        if (roles != null && roles.stream().anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()))) {
+            return true;
         }
         return sysUserService.getMenuByUserId(userId).stream()
                 .map(menu -> menu.getPerms())
