@@ -2,26 +2,46 @@
   <ElDialog
     v-model="visible"
     :title="dialogType === 'add' ? '新增角色' : '编辑角色'"
-    width="30%"
+    width="800px"
     align-center
+    class="role-edit-dialog"
     @close="handleClose"
   >
-    <ElForm ref="roleForm" :model="form" :rules="rules" label-width="120px">
-      <ElFormItem label="角色名称" prop="roleName">
-        <ElInput v-model="form.roleName" placeholder="请输入角色名称" />
-      </ElFormItem>
-      <ElFormItem label="角色编码" prop="roleKey">
-        <ElInput v-model="form.roleKey" placeholder="请输入角色编码" />
-      </ElFormItem>
-      <ElFormItem label="显示顺序" prop="roleSort">
-        <ElInput v-model="form.roleSort" placeholder="请输入显示顺序" />
-      </ElFormItem>
-      <ElFormItem label="备注" prop="description">
-        <ElInput v-model="form.remark" type="textarea" :rows="3" placeholder="请输入角色描述" />
-      </ElFormItem>
-      <ElFormItem label="状态">
-        <ElSwitch v-model="statusSwitch" />
-      </ElFormItem>
+    <ElForm ref="roleForm" :model="form" :rules="rules" label-width="100px">
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="角色名称" prop="roleName">
+            <ElInput v-model="form.roleName" placeholder="请输入角色名称" />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="角色编码" prop="roleKey">
+            <ElInput v-model="form.roleKey" placeholder="请输入角色编码" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="显示顺序" prop="roleSort">
+            <ElInput v-model="form.roleSort" placeholder="请输入显示顺序" />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="状态">
+            <ElSwitch v-model="statusSwitch" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow :gutter="20">
+        <ElCol :span="24">
+          <ElFormItem label="备注" prop="description">
+            <ElInput v-model="form.remark" type="textarea" :rows="2" placeholder="请输入角色描述" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
       <ElFormItem label="菜单权限">
         <div class="permission-tree-wrapper">
           <!-- 控制选项 -->
@@ -72,14 +92,13 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchAddRole, fetchUpdateRole } from '@/api/role/role'
-  import { fetchGetMenuTree, type SysMenu } from '@/api/menu/menu'
-  import { fetchGetRoleMenus } from '@/api/role/role'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { useCheckableTree } from '@/composables/useCheckableTree'
+import type {FormInstance, FormRules} from 'element-plus'
+import {fetchAddRole, fetchGetRoleMenus, fetchUpdateRole} from '@/api/role/role'
+import {fetchGetMenuTree, type SysMenu} from '@/api/menu/menu'
+import {useSettingStore} from '@/store/modules/setting'
+import {useCheckableTree} from '@/composables/useCheckableTree'
 
-  type RoleListItem = Api.SystemManage.RoleListItem
+type RoleListItem = Api.SystemManage.RoleListItem
 
   interface Props {
     modelValue: boolean
@@ -206,7 +225,7 @@
         menuTreeData.value = []
         isLoadingMenuTree.value = false
         if (menuTreeContainerRef.value) {
-          menuTreeContainerRef.value.style.height = 'auto'
+          menuTreeContainerRef.value.style.height = ''
         }
       }
     }
@@ -251,13 +270,11 @@
         // 如果是编辑模式，加载已选中的菜单
         if (props.dialogType === 'edit' && form.roleId) {
           await loadRoleMenuIds()
-          // 等待选中状态更新
           await nextTick()
         }
-        // 延迟调整容器高度，确保 DOM 完全渲染
-        setTimeout(() => {
-          menuTree.adjustContainerHeight()
-        }, 100)
+        if (menuTreeContainerRef.value) {
+          menuTreeContainerRef.value.style.height = ''
+        }
       }
     } catch (error) {
       // API 调用失败的错误已在 HTTP 拦截器中统一处理并显示错误消息
@@ -422,11 +439,15 @@
 </script>
 
 <style scoped lang="scss">
-  :deep(.el-dialog) {
+  :deep(.role-edit-dialog.el-dialog) {
+    display: flex;
+    flex-direction: column;
+    max-height: 88vh;
     overflow: hidden;
     border-radius: 16px;
 
     .el-dialog__header {
+      flex-shrink: 0;
       padding: 20px 24px;
       margin: 0;
       background: linear-gradient(
@@ -444,12 +465,15 @@
     }
 
     .el-dialog__body {
-      max-height: 60vh;
-      padding: 24px;
+      flex: 1;
+      min-height: 0;
+      padding: 20px 24px !important;
+      overflow-x: hidden;
       overflow-y: auto;
     }
 
     .el-dialog__footer {
+      flex-shrink: 0;
       padding: 16px 24px;
       background-color: var(--art-gray-50);
       border-top: 1px solid var(--art-card-border);
@@ -471,6 +495,16 @@
     }
   }
 
+  :deep(.el-row .el-form-item) {
+    width: 100%;
+    margin-bottom: 18px;
+  }
+
+  :deep(.el-form-item__content) {
+    flex: 1;
+    min-width: 0;
+  }
+
   :deep(.el-button) {
     padding: 10px 24px;
     font-weight: 500;
@@ -483,27 +517,27 @@
   }
 
   .permission-tree-wrapper {
+    width: 100%;
+
     .permission-controls {
       display: flex;
-      gap: 20px;
+      flex-wrap: wrap;
+      gap: 12px 20px;
       padding-bottom: 12px;
       margin-bottom: 12px;
       color: var(--el-text-color-primary);
       border-bottom: 1px solid var(--el-border-color-lighter);
-      transition: color 0.3s ease;
     }
 
     .permission-tree-container {
-      height: auto;
-      min-height: 100px;
-      max-height: 600px;
-      padding: 16px;
+      width: 100%;
+      height: 240px !important;
+      max-height: 240px !important;
+      padding: 12px 16px;
       overflow: auto;
       border: 1px solid var(--el-border-color-lighter);
       border-radius: 8px;
-      transition:
-        height 0.3s ease,
-        background-color 0.3s ease;
+      box-sizing: border-box;
 
       &.light-bg {
         background: var(--default-box-color);
@@ -516,6 +550,9 @@
   }
 
   :deep(.el-tree) {
+    width: 100%;
+    min-width: 0;
+
     .el-tree-node__content {
       height: 36px;
       border-radius: 6px;

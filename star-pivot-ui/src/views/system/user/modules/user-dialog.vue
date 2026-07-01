@@ -2,7 +2,7 @@
   <ElDialog
     v-model="dialogVisible"
     :title="dialogType === 'add' ? '添加用户' : '编辑用户'"
-    width="40%"
+    width="720px"
     align-center
   >
     <ElForm
@@ -12,80 +12,170 @@
       label-width="80px"
       aria-label="用户信息表单"
     >
-      <ElFormItem label="用户名" prop="username">
-        <ElInput v-model="formData.userName" placeholder="请输入用户名" />
-      </ElFormItem>
-      <ElFormItem label="用户密码" prop="username" v-if="dialogType === 'add'">
-        <ElInput v-model="formData.password" placeholder="请输入用户密码" />
-      </ElFormItem>
-      <ElFormItem label="用户昵称" prop="nickName">
-        <ElInput v-model="formData.nickName" placeholder="请输入用户昵称" />
-      </ElFormItem>
-      <ElFormItem label="邮箱" prop="email">
-        <ElInput v-model="formData.email" placeholder="请输入邮箱" />
-      </ElFormItem>
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="用户名" prop="userName">
+            <ElInput v-model="formData.userName" placeholder="请输入用户名" />
+          </ElFormItem>
+        </ElCol>
+        <ElCol v-if="dialogType === 'add'" :xs="24" :sm="12">
+          <ElFormItem label="用户密码" prop="password">
+            <ElInput
+              v-model="formData.password"
+              type="password"
+              show-password
+              placeholder="请输入用户密码"
+            />
+          </ElFormItem>
+        </ElCol>
+        <ElCol v-else :xs="24" :sm="12">
+          <ElFormItem label="用户昵称" prop="nickName">
+            <ElInput v-model="formData.nickName" placeholder="请输入用户昵称" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
 
-      <ElFormItem label="头像">
-        <art-avatar-upload
-          ref="avatarUploadRef"
-          v-model="formData.avatar"
-          :user-id="formData.userId"
-          :size="100"
-          :auto-upload="dialogType === 'edit'"
-          use-presigned-url
-        />
-      </ElFormItem>
+      <ElRow v-if="dialogType === 'add'" :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="用户昵称" prop="nickName">
+            <ElInput v-model="formData.nickName" placeholder="请输入用户昵称" />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="邮箱" prop="email">
+            <ElInput v-model="formData.email" placeholder="请输入邮箱" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
 
-      <ElFormItem label="手机号" prop="phone">
-        <ElInput v-model="formData.phonenumber" placeholder="请输入手机号" />
-      </ElFormItem>
-      <ElFormItem label="性别" prop="gender">
-        <ElRadioGroup v-model="formData.sex">
-          <ElRadio :value="'0'">男</ElRadio>
-          <ElRadio :value="'1'">女</ElRadio>
-          <ElRadio :value="'2'">未知</ElRadio>
-        </ElRadioGroup>
-      </ElFormItem>
-      <ElFormItem label="状态" prop="status">
-        <ElRadioGroup v-model="formData.status">
-          <ElRadio :value="'0'">启用</ElRadio>
-          <ElRadio :value="'1'">禁用</ElRadio>
-        </ElRadioGroup>
-      </ElFormItem>
-      <ElFormItem label="角色" prop="role">
-        <ElSelect v-model="formData.roleIds" multiple>
-          <ElOption
-            v-for="role in roleList"
-            :key="role.roleCode"
-            :value="role.roleCode"
-            :label="role.roleName"
-          />
-        </ElSelect>
-      </ElFormItem>
-      <ElFormItem label="岗位" prop="post">
-        <ElSelect v-model="formData.postIds" multiple>
-          <ElOption
-            v-for="post in postList"
-            :key="post.postId"
-            :value="post.postId?.toString()"
-            :label="post.postName"
-          />
-        </ElSelect>
-      </ElFormItem>
-      <ElFormItem label="部门" prop="deptId">
-        <ElTreeSelect
-          v-model="formData.deptId"
-          :data="deptTreeData"
-          :props="deptTreeProps"
-          placeholder="请选择部门"
-          clearable
-          check-strictly
-          :render-after-expand="false"
-        />
-      </ElFormItem>
-      <ElFormItem label="备注" prop="remark">
-        <ElInput type="textarea" v-model="formData.remark" placeholder="请输入备注" />
-      </ElFormItem>
+      <ElRow v-else :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="邮箱" prop="email">
+            <ElInput v-model="formData.email" placeholder="请输入邮箱" />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="手机号" prop="phonenumber">
+            <ElInput v-model="formData.phonenumber" placeholder="请输入手机号" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow :gutter="20">
+        <ElCol :span="24">
+          <ElFormItem label="头像">
+            <art-avatar-upload
+              ref="avatarUploadRef"
+              v-model="formData.avatar"
+              :user-id="formData.userId"
+              :size="100"
+              :auto-upload="dialogType === 'edit'"
+              use-presigned-url
+            />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow v-if="dialogType === 'add'" :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="手机号" prop="phonenumber">
+            <ElInput v-model="formData.phonenumber" placeholder="请输入手机号" />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="性别" prop="sex">
+            <ElRadioGroup v-model="formData.sex">
+              <ElRadio :value="'0'">男</ElRadio>
+              <ElRadio :value="'1'">女</ElRadio>
+              <ElRadio :value="'2'">未知</ElRadio>
+            </ElRadioGroup>
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow :gutter="20">
+        <ElCol v-if="dialogType === 'edit'" :xs="24" :sm="12">
+          <ElFormItem label="性别" prop="sex">
+            <ElRadioGroup v-model="formData.sex">
+              <ElRadio :value="'0'">男</ElRadio>
+              <ElRadio :value="'1'">女</ElRadio>
+              <ElRadio :value="'2'">未知</ElRadio>
+            </ElRadioGroup>
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="状态" prop="status">
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio :value="'0'">启用</ElRadio>
+              <ElRadio :value="'1'">禁用</ElRadio>
+            </ElRadioGroup>
+          </ElFormItem>
+        </ElCol>
+        <ElCol v-if="dialogType === 'add'" :xs="24" :sm="12">
+          <ElFormItem label="部门" prop="deptId">
+            <ElTreeSelect
+              v-model="formData.deptId"
+              :data="deptTreeData"
+              :props="deptTreeProps"
+              placeholder="请选择部门"
+              clearable
+              check-strictly
+              :render-after-expand="false"
+            />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="角色" prop="roleIds">
+            <ElSelect v-model="formData.roleIds" multiple>
+              <ElOption
+                v-for="role in roleList"
+                :key="role.roleCode"
+                :value="role.roleCode"
+                :label="role.roleName"
+              />
+            </ElSelect>
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="岗位" prop="postIds">
+            <ElSelect v-model="formData.postIds" multiple>
+              <ElOption
+                v-for="post in postList"
+                :key="post.postId"
+                :value="post.postId?.toString()"
+                :label="post.postName"
+              />
+            </ElSelect>
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow v-if="dialogType === 'edit'" :gutter="20">
+        <ElCol :xs="24" :sm="12">
+          <ElFormItem label="部门" prop="deptId">
+            <ElTreeSelect
+              v-model="formData.deptId"
+              :data="deptTreeData"
+              :props="deptTreeProps"
+              placeholder="请选择部门"
+              clearable
+              check-strictly
+              :render-after-expand="false"
+            />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+
+      <ElRow :gutter="20">
+        <ElCol :span="24">
+          <ElFormItem label="备注" prop="remark">
+            <ElInput type="textarea" v-model="formData.remark" placeholder="请输入备注" />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
     </ElForm>
     <template #footer>
       <div class="dialog-footer">
@@ -97,17 +187,16 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage } from 'element-plus'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElTreeSelect } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
-  import { fetchGetRoleSelect } from '@/api/role/role'
-  import { fetchGetPostSelect } from '@/api/post/post'
-  import { fetchGetDeptTree, type SysDept } from '@/api/dept/dept'
-  import { fetchAddUser, fetchUpdateUser, fetchGetUserById } from '@/api/user/user'
-  import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage, ElTreeSelect} from 'element-plus'
+import {useUserStore} from '@/store/modules/user'
+import {fetchGetRoleSelect} from '@/api/role/role'
+import {fetchGetPostSelect} from '@/api/post/post'
+import {fetchGetDeptTree, type SysDept} from '@/api/dept/dept'
+import {fetchAddUser, fetchGetUserById, fetchUpdateUser} from '@/api/user/user'
+import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
 
-  // 角色列表项类型（扩展 RoleListItem，添加 roleCode 字段）
+// 角色列表项类型（扩展 RoleListItem，添加 roleCode 字段）
   type RoleOption = Api.SystemManage.RoleListItem & { roleCode: string }
 
   interface Props {
