@@ -4,7 +4,7 @@
 
 version: '1.0'
 name: ci-pipeline
-displayName: StarPivot CI
+displayName: 星枢云持续集成
 
 triggers:
   push:
@@ -34,7 +34,7 @@ stages:
     steps:
       - step: build@maven
         name: maven_build
-        displayName: Maven 编译测试
+        displayName: Maven编译测试
         jdkVersion: 17
         mavenVersion: 3.6.3
         commands:
@@ -48,7 +48,7 @@ stages:
     steps:
       - step: build@nodejs
         name: build_ui
-        displayName: star-pivot-ui 构建
+        displayName: 管理端前端构建
         nodeVersion: 20.19.0
         commands:
           - npm install -g pnpm@9
@@ -62,20 +62,20 @@ stages:
     steps:
       - step: build@nodejs
         name: build_mp
-        displayName: star-pivot-mp H5 构建
+        displayName: 小程序H5构建
         nodeVersion: 20.19.0
         commands:
           - cd star-pivot-mp && npm ci
           - cd star-pivot-mp && npm run build:h5
 
   - stage: quality
-    displayName: 代码质量（可选）
+    displayName: 代码质量扫描
     strategy: naturally
     trigger: manual
     steps:
       - step: build@maven
         name: sonar_scan
-        displayName: SonarQube 扫描
+        displayName: SonarQube扫描
         jdkVersion: 17
         mavenVersion: 3.6.3
         commands:
