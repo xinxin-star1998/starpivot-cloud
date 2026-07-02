@@ -27,7 +27,8 @@ variables:
   HUSKY: '0'
 
 stages:
-  - stage: backend
+  - stage:
+    name: backend
     displayName: 后端构建
     strategy: fast
     trigger: auto
@@ -41,7 +42,8 @@ stages:
           - mvn ${MAVEN_OPTS} clean package -DskipTests
           - mvn ${MAVEN_OPTS} test
 
-  - stage: frontend-ui
+  - stage:
+    name: frontend_ui
     displayName: 管理端前端
     strategy: fast
     trigger: auto
@@ -55,7 +57,8 @@ stages:
           - cd star-pivot-ui && CI=true HUSKY=0 pnpm install --frozen-lockfile
           - cd star-pivot-ui && CI=true pnpm run build
 
-  - stage: frontend-mp
+  - stage:
+    name: frontend_mp
     displayName: 小程序前端
     strategy: fast
     trigger: auto
@@ -68,7 +71,8 @@ stages:
           - cd star-pivot-mp && npm ci
           - cd star-pivot-mp && npm run build:h5
 
-  - stage: quality
+  - stage:
+    name: quality
     displayName: 代码质量扫描
     strategy: naturally
     trigger: manual
