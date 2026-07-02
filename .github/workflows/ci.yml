@@ -51,6 +51,7 @@ jobs:
       run:
         working-directory: star-pivot-ui
     env:
+      CI: 'true'
       HUSKY: '0'
     steps:
       - name: Checkout

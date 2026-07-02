@@ -10,7 +10,7 @@
     "dev": "vite --open",
     "build": "vite build",
     "serve": "vite preview",
-    "prepare": "cd .. && star-pivot-ui\\node_modules\\.bin\\husky.cmd .husky",
+    "prepare": "node -e \"if (process.env.CI === 'true' || process.env.HUSKY === '0') process.exit(0); require('child_process').execSync('husky ../.husky', { stdio: 'inherit' })\"",
     "lint": "eslint",
     "fix": "eslint --fix",
     "commitlint": "commitlint --config commitlint.config.cjs --from HEAD~1 --to HEAD --verbose",
