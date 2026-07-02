@@ -2,53 +2,128 @@
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else-if="center">
-      <view class="profile card">
-        <image class="avatar" :src="center.member.header || defaultAvatar" mode="aspectFill" />
-        <view class="meta">
-          <text class="name">{{ center.member.nickname || center.member.username || '会员' }}</text>
-          <text v-if="center.levelName" class="level">{{ center.levelName }}</text>
-          <text class="sub">{{ center.member.mobile || '未绑定手机' }}</text>
-          <view class="points">
-            <text>积分 {{ center.member.integration ?? 0 }}</text>
-            <text>成长 {{ center.member.growth ?? 0 }}</text>
+      <view class="jd-header">
+        <view class="header-inner">
+          <view class="profile" @click="goProfile">
+            <image class="avatar" :src="center.member.header || defaultAvatar" mode="aspectFill" />
+            <view class="meta">
+              <text class="name">{{ center.member.nickname || center.member.username || '京东用户' }}</text>
+              <text v-if="center.levelName" class="level">{{ center.levelName }}</text>
+              <text v-else class="sub">{{ center.member.mobile || '点击完善资料' }}</text>
+            </view>
+            <text class="profile-arrow">›</text>
+          </view>
+          <view class="assets">
+            <view class="asset-item">
+              <text class="asset-num">{{ center.member.integration ?? 0 }}</text>
+              <text class="asset-label">京豆</text>
+            </view>
+            <view class="asset-item">
+              <text class="asset-num">{{ center.couponCount ?? 0 }}</text>
+              <text class="asset-label">优惠券</text>
+            </view>
+            <view class="asset-item">
+              <text class="asset-num">{{ center.member.growth ?? 0 }}</text>
+              <text class="asset-label">成长值</text>
+            </view>
           </view>
         </view>
-        <button size="mini" class="edit-btn" @click="goProfile">编辑资料</button>
       </view>
 
-      <view class="stats card">
-        <view class="stat" @click="goOrders()">
-          <text class="num">{{ center.orderCount ?? 0 }}</text>
-          <text class="label">订单</text>
+      <view class="order-card">
+        <view class="card-head" @click="goOrders()">
+          <text class="card-title">我的订单</text>
+          <text class="card-more">全部订单 ›</text>
         </view>
-        <view class="stat" @click="goCoupons">
-          <text class="num">{{ center.couponCount ?? 0 }}</text>
-          <text class="label">优惠券</text>
-        </view>
-        <view class="stat" @click="goFavorites">
-          <text class="num">{{ center.collectCount ?? 0 }}</text>
-          <text class="label">收藏</text>
-        </view>
-        <view class="stat" @click="goReviews">
-          <text class="num">{{ center.pendingReviewCount ?? 0 }}</text>
-          <text class="label">待评价</text>
+        <view class="order-icons">
+          <view class="order-icon" @click="goOrders(0)">
+            <text class="icon">💳</text>
+            <text class="label">待付款</text>
+            <text v-if="badgeCount('0')" class="badge">{{ badgeCount('0') }}</text>
+          </view>
+          <view class="order-icon" @click="goOrders(1)">
+            <text class="icon">📦</text>
+            <text class="label">待发货</text>
+            <text v-if="badgeCount('1')" class="badge">{{ badgeCount('1') }}</text>
+          </view>
+          <view class="order-icon" @click="goOrders(2)">
+            <text class="icon">🚚</text>
+            <text class="label">待收货</text>
+            <text v-if="badgeCount('2')" class="badge">{{ badgeCount('2') }}</text>
+          </view>
+          <view class="order-icon" @click="goReviews">
+            <text class="icon">💬</text>
+            <text class="label">待评价</text>
+            <text v-if="badgeCount('review')" class="badge">{{ badgeCount('review') }}</text>
+          </view>
+          <view class="order-icon" @click="goAfterSales">
+            <text class="icon">↩</text>
+            <text class="label">退换/售后</text>
+          </view>
         </view>
       </view>
 
-      <view class="menu card">
-        <view class="menu-item" @click="goOrders()">全部订单</view>
-        <view class="menu-item" @click="goOrders(0)">待付款</view>
-        <view class="menu-item" @click="goFavorites">我的收藏</view>
-        <view class="menu-item" @click="goCoupons">优惠券</view>
-        <view class="menu-item" @click="goReviews">评价中心</view>
-        <view class="menu-item" @click="goAddresses">收货地址</view>
-        <view class="menu-item" @click="goHistory">浏览足迹</view>
-        <view class="menu-item" @click="goSecurity">账号安全</view>
-        <view class="menu-item" @click="handleLogout" v-if="isLogin()">退出登录</view>
+      <view class="tool-card">
+        <view class="tool-grid">
+          <view class="tool-item" @click="goFavorites">
+            <text class="tool-icon">❤</text>
+            <text class="tool-label">商品收藏</text>
+          </view>
+          <view class="tool-item" @click="goHistory">
+            <text class="tool-icon">👣</text>
+            <text class="tool-label">浏览记录</text>
+          </view>
+          <view class="tool-item" @click="goCoupons">
+            <text class="tool-icon">🎫</text>
+            <text class="tool-label">优惠券</text>
+          </view>
+          <view class="tool-item" @click="goAddresses">
+            <text class="tool-icon">📍</text>
+            <text class="tool-label">收货地址</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="menu-card">
+        <view class="menu-item" @click="goSecurity">
+          <text class="menu-text">账号安全</text>
+          <text class="menu-arrow">›</text>
+        </view>
+        <view class="menu-item" @click="goReviews">
+          <text class="menu-text">评价中心</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+
+      <view v-if="isLogin()" class="logout-wrap">
+        <button class="logout-btn" @click="handleLogout">退出登录</button>
       </view>
     </template>
-    <view v-else class="card guest" @click="goLogin">
-      <text>点击登录</text>
+
+    <view v-else class="guest-page">
+      <view class="jd-header guest-header">
+        <view class="guest-profile" @click="goLogin">
+          <view class="guest-avatar">👤</view>
+          <view class="guest-meta">
+            <text class="guest-title">登录 / 注册</text>
+            <text class="guest-desc">登录享更多优惠</text>
+          </view>
+          <text class="profile-arrow">›</text>
+        </view>
+      </view>
+      <view class="order-card">
+        <view class="card-head" @click="goLogin">
+          <text class="card-title">我的订单</text>
+          <text class="card-more">请先登录 ›</text>
+        </view>
+        <view class="order-icons">
+          <view class="order-icon" @click="goLogin"><text class="icon">💳</text><text class="label">待付款</text></view>
+          <view class="order-icon" @click="goLogin"><text class="icon">📦</text><text class="label">待发货</text></view>
+          <view class="order-icon" @click="goLogin"><text class="icon">🚚</text><text class="label">待收货</text></view>
+          <view class="order-icon" @click="goLogin"><text class="icon">💬</text><text class="label">待评价</text></view>
+          <view class="order-icon" @click="goLogin"><text class="icon">↩</text><text class="label">退换/售后</text></view>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -57,12 +132,32 @@
 import {onShow} from '@dcloudio/uni-app'
 import {ref} from 'vue'
 import {fetchMemberCenter} from '@/api/member'
+import {fetchOrderStatusCounts} from '@/api/order'
 import type {PortalMemberCenter} from '@/api/types'
 import {clearSession, isLogin} from '@/stores/member'
 
 const loading = ref(false)
 const center = ref<PortalMemberCenter | null>(null)
+const statusCounts = ref<Record<string, number>>({})
 const defaultAvatar = 'https://img.yzcdn.cn/vant/cat.jpeg'
+
+function badgeCount(key: string) {
+  const n = statusCounts.value[key] || 0
+  if (n <= 0) return ''
+  return n > 99 ? '99+' : String(n)
+}
+
+async function loadStatusCounts() {
+  if (!isLogin()) {
+    statusCounts.value = {}
+    return
+  }
+  try {
+    statusCounts.value = await fetchOrderStatusCounts()
+  } catch {
+    statusCounts.value = {}
+  }
+}
 
 async function refresh() {
   if (!isLogin()) {
@@ -72,6 +167,7 @@ async function refresh() {
   loading.value = true
   try {
     center.value = await fetchMemberCenter()
+    await loadStatusCounts()
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   } finally {
@@ -93,35 +189,28 @@ function goOrders(status?: number) {
 }
 
 function goAddresses() {
-  if (!isLogin()) {
-    goLogin()
-    return
-  }
+  if (!isLogin()) { goLogin(); return }
   uni.navigateTo({ url: '/pages/account/addresses/index' })
 }
 
 function goFavorites() {
-  if (!isLogin()) {
-    goLogin()
-    return
-  }
+  if (!isLogin()) { goLogin(); return }
   uni.navigateTo({ url: '/pages/account/favorites/index' })
 }
 
 function goCoupons() {
-  if (!isLogin()) {
-    goLogin()
-    return
-  }
+  if (!isLogin()) { goLogin(); return }
   uni.navigateTo({ url: '/pages/coupons/index' })
 }
 
 function goReviews() {
-  if (!isLogin()) {
-    goLogin()
-    return
-  }
+  if (!isLogin()) { goLogin(); return }
   uni.navigateTo({ url: '/pages/account/reviews/index' })
+}
+
+function goAfterSales() {
+  if (!isLogin()) { goLogin(); return }
+  uni.navigateTo({ url: '/pages/orders/index?afterSale=1' })
 }
 
 function goProfile() {
@@ -129,18 +218,12 @@ function goProfile() {
 }
 
 function goHistory() {
-  if (!isLogin()) {
-    goLogin()
-    return
-  }
+  if (!isLogin()) { goLogin(); return }
   uni.navigateTo({ url: '/pages/account/history/index' })
 }
 
 function goSecurity() {
-  if (!isLogin()) {
-    goLogin()
-    return
-  }
+  if (!isLogin()) { goLogin(); return }
   uni.navigateTo({ url: '/pages/account/security/index' })
 }
 
@@ -153,99 +236,270 @@ function handleLogout() {
 onShow(refresh)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
-  padding: 24rpx;
   min-height: 100vh;
-  background: #f5f5f5;
+  padding-bottom: 40rpx;
+  background: $sp-bg-page;
 }
-.card {
-  margin-bottom: 24rpx;
-  padding: 32rpx;
-  background: #fff;
-  border-radius: 16rpx;
+
+.jd-header {
+  padding: calc(env(safe-area-inset-top) + 24rpx) 24rpx 48rpx;
+  background: linear-gradient(180deg, $sp-primary 0%, $sp-primary-dark 100%);
 }
+
+.header-inner {
+  position: relative;
+}
+
 .profile {
   display: flex;
-  gap: 24rpx;
   align-items: center;
+  gap: 20rpx;
 }
+
 .avatar {
-  width: 120rpx;
-  height: 120rpx;
+  width: 112rpx;
+  height: 112rpx;
   border-radius: 50%;
-  background: #f5f5f5;
+  border: 3rpx solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
 }
+
 .meta {
   flex: 1;
+  min-width: 0;
 }
+
 .name {
   display: block;
   font-size: 34rpx;
-  font-weight: 600;
+  font-weight: 700;
+  color: #fff;
 }
+
 .level {
   display: inline-block;
   margin-top: 8rpx;
-  padding: 4rpx 12rpx;
-  font-size: 22rpx;
-  color: #1677ff;
-  background: #e6f4ff;
-  border-radius: 8rpx;
+  padding: 2rpx 12rpx;
+  font-size: 20rpx;
+  color: $sp-gold;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4rpx;
 }
+
 .sub {
   display: block;
   margin-top: 8rpx;
-  font-size: 26rpx;
-  color: #999;
-}
-.points {
-  display: flex;
-  gap: 24rpx;
-  margin-top: 12rpx;
   font-size: 24rpx;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
 }
-.edit-btn {
-  background: #f5f5f5;
-  color: #333;
+
+.profile-arrow {
+  font-size: 36rpx;
+  color: rgba(255, 255, 255, 0.7);
 }
-.stats {
+
+.assets {
   display: flex;
   justify-content: space-around;
-  padding: 28rpx 16rpx;
+  margin-top: 32rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
 }
-.stat {
+
+.asset-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
+  gap: 6rpx;
 }
-.num {
-  font-size: 36rpx;
+
+.asset-num {
+  font-size: 32rpx;
   font-weight: 700;
-  color: #333;
+  color: #fff;
 }
-.label {
+
+.asset-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.order-card,
+.tool-card,
+.menu-card {
+  margin: 16rpx;
+  background: #fff;
+  border-radius: $sp-radius-md;
+}
+
+.order-card {
+  margin-top: -24rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 24rpx 8rpx;
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $sp-text;
+}
+
+.card-more {
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
+
+.order-icons {
+  display: flex;
+  justify-content: space-around;
+  padding: 16rpx 8rpx 28rpx;
+}
+
+.order-icon {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.badge {
+  position: absolute;
+  top: -4rpx;
+  right: 8rpx;
+  min-width: 28rpx;
+  padding: 0 8rpx;
+  font-size: 18rpx;
+  line-height: 28rpx;
+  text-align: center;
+  color: #fff;
+  background: $sp-accent;
+  border-radius: 999rpx;
+}
+
+.order-icon .icon {
+  font-size: 44rpx;
+}
+
+.order-icon .label {
+  font-size: 22rpx;
+  color: $sp-text-secondary;
+}
+
+.tool-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16rpx 0;
+}
+
+.tool-item {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  padding: 20rpx 0;
+}
+
+.tool-icon {
+  font-size: 40rpx;
+}
+
+.tool-label {
+  font-size: 22rpx;
+  color: $sp-text-secondary;
+}
+
 .menu-item {
-  padding: 28rpx 0;
-  font-size: 30rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid $sp-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
-.menu-item:last-child {
-  border-bottom: none;
+
+.menu-text {
+  font-size: 28rpx;
+  color: $sp-text;
 }
-.guest {
-  text-align: center;
-  color: #1677ff;
-  font-size: 30rpx;
+
+.menu-arrow {
+  font-size: 28rpx;
+  color: #ccc;
 }
+
+.logout-wrap {
+  padding: 0 16rpx;
+  margin-top: 8rpx;
+}
+
+.logout-btn {
+  background: #fff;
+  color: $sp-text-secondary;
+  border-radius: $sp-radius-md;
+  font-size: 28rpx;
+  border: none;
+
+  &::after {
+    border: none;
+  }
+}
+
+.guest-header {
+  padding-bottom: 32rpx;
+}
+
+.guest-profile {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.guest-avatar {
+  width: 112rpx;
+  height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+.guest-meta {
+  flex: 1;
+}
+
+.guest-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.guest-desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .hint {
-  padding: 80rpx;
+  padding: 120rpx;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
 }
 </style>

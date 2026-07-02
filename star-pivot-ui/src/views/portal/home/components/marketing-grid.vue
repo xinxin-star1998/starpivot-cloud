@@ -139,7 +139,6 @@ defineOptions({ name: 'PortalHomeMarketingGrid' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .marketing-grid {
     display: grid;

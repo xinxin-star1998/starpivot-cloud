@@ -40,12 +40,20 @@ starpivot:
     order-lifecycle-scan-ms: ${MALL_ORDER_LIFECYCLE_SCAN_MS:300000}
     portal-auth:
       sms:
-        mock-enabled: ${MALL_PORTAL_SMS_MOCK:true}
+        mock-enabled: ${MALL_PORTAL_SMS_MOCK:false}
         mock-code: ${MALL_PORTAL_SMS_MOCK_CODE:123456}
         code-ttl-seconds: 300
         send-interval-seconds: 60
         daily-limit-per-mobile: 10
         daily-limit-per-ip: 50
+        aliyun:
+          enabled: ${MALL_PORTAL_SMS_ALIYUN_ENABLED:true}
+          access-key-id: ${MALL_PORTAL_SMS_ALIYUN_ACCESS_KEY_ID:${OSS_ACCESS_KEY_ID:}}
+          access-key-secret: ${MALL_PORTAL_SMS_ALIYUN_ACCESS_KEY_SECRET:${OSS_ACCESS_KEY_SECRET:}}
+          sign-name: ${MALL_PORTAL_SMS_ALIYUN_SIGN_NAME:速通互联验证码}
+          template-code: ${MALL_PORTAL_SMS_ALIYUN_TEMPLATE_CODE:100001}
+          scheme-name: ${MALL_PORTAL_SMS_ALIYUN_SCHEME_NAME:}
+          verify-mode: ${MALL_PORTAL_SMS_ALIYUN_VERIFY_MODE:redis}
       password:
         max-fail-count: 5
         lock-minutes: 30

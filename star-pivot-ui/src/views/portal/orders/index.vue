@@ -539,7 +539,6 @@ defineOptions({ name: 'PortalOrders' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .status-tabs {
     display: flex;

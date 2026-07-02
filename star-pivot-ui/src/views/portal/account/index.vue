@@ -244,7 +244,6 @@ defineOptions({ name: 'PortalAccount' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .profile-card {
     display: flex;

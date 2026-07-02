@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else>
-      <view class="panel">
-        <view class="panel-title">收货地址</view>
+      <view class="panel address-panel">
+        <view class="panel-title">收货信息</view>
         <view v-if="addresses.length" class="address-list">
           <view
             v-for="addr in addresses"
@@ -12,15 +12,19 @@
             :class="{ active: selectedAddressId === addr.id }"
             @click="selectedAddressId = addr.id"
           >
-            <text class="user">{{ addr.name }} {{ addr.phone }}</text>
+            <view class="addr-top">
+              <text class="user">{{ addr.name }}</text>
+              <text class="phone">{{ addr.phone }}</text>
+              <text v-if="addr.defaultStatus === 1" class="tag">默认</text>
+            </view>
             <text class="detail">
               {{ addr.province }}{{ addr.city }}{{ addr.region }}{{ addr.detailAddress }}
             </text>
-            <text v-if="addr.defaultStatus === 1" class="tag">默认</text>
+            <text v-if="selectedAddressId === addr.id" class="check-mark">✓</text>
           </view>
         </view>
         <view v-else class="hint">暂无收货地址，请先添加</view>
-        <button class="link-btn" @click="goAddresses">管理收货地址</button>
+        <button class="link-btn" @click="goAddresses">+ 新增 / 管理地址</button>
       </view>
 
       <view class="panel">
@@ -55,7 +59,11 @@
         </text>
       </view>
 
-      <view class="panel">
+      <view class="panel goods-panel">
+        <view class="shop-row">
+          <text class="shop-tag">自营</text>
+          <text class="shop-name">StarPivot商城</text>
+        </view>
         <view class="panel-title">商品清单</view>
         <view v-for="item in displayLines" :key="item.skuId" class="line-item">
           <text class="line-name">{{ item.skuTitle }}</text>
@@ -78,7 +86,10 @@
     </template>
 
     <view class="submit-bar">
-      <text class="amount">¥{{ formatPrice(priceTrial?.payAmount || 0) }}</text>
+      <view class="submit-left">
+        <text class="submit-label">合计：</text>
+        <text class="amount"><text class="yen">¥</text>{{ formatPrice(priceTrial?.payAmount || 0) }}</text>
+      </view>
       <button class="submit-btn" :loading="submitting" :disabled="!canSubmit" @click="handleSubmit">
         提交订单
       </button>
@@ -334,97 +345,147 @@ onLoad((query) => {
 onShow(loadData)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
   min-height: 100vh;
-  padding-bottom: 160rpx;
-  background: #f5f5f5;
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+  background: $sp-bg-page;
 }
 .panel {
   margin: 16rpx;
   padding: 24rpx;
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-md;
 }
 .panel-title {
   margin-bottom: 16rpx;
-  font-size: 30rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $sp-text;
+}
+.shop-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 16rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid $sp-border;
+}
+.shop-tag {
+  padding: 2rpx 8rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background: $sp-primary;
+  border-radius: 4rpx;
+}
+.shop-name {
+  font-size: 26rpx;
   font-weight: 600;
 }
 .address-card {
   position: relative;
   margin-bottom: 16rpx;
   padding: 20rpx;
-  border: 2rpx solid #eee;
-  border-radius: 12rpx;
+  border: 2rpx solid $sp-border;
+  border-radius: $sp-radius-sm;
 }
 .address-card.active {
-  border-color: #1677ff;
-  background: #f0f7ff;
+  border-color: $sp-primary;
+  background: $sp-primary-light;
+}
+.addr-top {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 .user {
-  display: block;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 700;
+}
+.phone {
+  font-size: 26rpx;
+  color: $sp-text-secondary;
 }
 .detail {
   display: block;
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   font-size: 26rpx;
-  color: #666;
+  color: $sp-text-secondary;
+  line-height: 1.5;
 }
 .tag {
+  padding: 2rpx 10rpx;
+  font-size: 20rpx;
+  color: $sp-primary;
+  border: 1rpx solid $sp-primary;
+  border-radius: 4rpx;
+}
+.check-mark {
   position: absolute;
-  top: 20rpx;
   right: 20rpx;
-  font-size: 22rpx;
-  color: #e64545;
+  bottom: 20rpx;
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #fff;
+  background: $sp-primary;
+  border-radius: 50%;
 }
 .link-btn {
   margin-top: 8rpx;
   font-size: 26rpx;
-  color: #1677ff;
+  color: $sp-primary;
   background: transparent;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 .coupon-picker {
   padding: 20rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 28rpx;
 }
 .line-item {
   display: flex;
   gap: 12rpx;
-  padding: 12rpx 0;
+  padding: 16rpx 0;
   font-size: 26rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid $sp-border;
 }
 .line-name {
   flex: 1;
 }
 .line-qty {
-  color: #999;
+  color: $sp-text-muted;
 }
 .line-price {
-  color: #e64545;
+  color: $sp-accent;
+  font-weight: 600;
 }
 .total-row {
   display: flex;
   flex-direction: column;
   gap: 8rpx;
   margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid $sp-border;
   font-size: 26rpx;
-  color: #666;
+  color: $sp-text-secondary;
 }
 .pay {
   font-size: 32rpx;
-  font-weight: 700;
-  color: #e64545;
+  font-weight: 800;
+  color: $sp-accent;
 }
 .note-input {
   padding: 16rpx 20rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 28rpx;
 }
 .submit-bar {
@@ -432,37 +493,66 @@ onShow(loadData)
   right: 0;
   bottom: 0;
   left: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom));
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
   background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.08);
+}
+.submit-left {
+  display: flex;
+  align-items: baseline;
+  gap: 4rpx;
+}
+.submit-label {
+  font-size: 26rpx;
+  color: $sp-text-secondary;
 }
 .amount {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #e64545;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: $sp-accent;
+}
+.yen {
+  font-size: 26rpx;
 }
 .submit-btn {
   min-width: 240rpx;
+  height: 80rpx;
+  line-height: 80rpx;
   margin: 0;
-  background: #1677ff;
+  padding: 0 40rpx;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
-  border-radius: 999rpx;
+  border-radius: $sp-radius-pill;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 8rpx 20rpx rgba(225, 37, 27, 0.25);
+
+  &::after {
+    border: none;
+  }
+
+  &[disabled] {
+    opacity: 0.45;
+    box-shadow: none;
+  }
 }
 .hint,
 .hint-inline {
   padding: 16rpx 0;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
   font-size: 26rpx;
 }
 .integration-hint {
   display: block;
   margin-bottom: 16rpx;
   font-size: 24rpx;
-  color: #666;
+  color: $sp-text-secondary;
 }
 .integration-row {
   display: flex;
@@ -473,22 +563,27 @@ onShow(loadData)
   flex: 1;
   padding: 16rpx 20rpx;
   text-align: center;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 28rpx;
 }
 .step-btn {
   margin: 0;
   padding: 0 24rpx;
   font-size: 26rpx;
-  background: #f5f5f5;
-  color: #333;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  color: $sp-text;
+  border-radius: $sp-radius-sm;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 .integration-discount {
   display: block;
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: #e64545;
+  color: $sp-accent;
 }
 </style>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="tabs">
       <text class="tab" :class="{ active: tab === 'pending' }" @click="tab = 'pending'; load()">待评价</text>
@@ -108,52 +108,65 @@ async function submitPending(idx: number, item: PortalPendingReview) {
 onShow(load)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
   min-height: 100vh;
-  padding: 24rpx;
-  background: #f5f5f5;
+  padding: 16rpx;
+  background: $sp-bg-page;
 }
 .tabs {
   display: flex;
-  margin-bottom: 24rpx;
+  margin-bottom: 16rpx;
   background: #fff;
-  border-radius: 12rpx;
+  border-radius: $sp-radius-md;
+  overflow: hidden;
 }
 .tab {
   flex: 1;
   padding: 24rpx;
   text-align: center;
   font-size: 28rpx;
-  color: #666;
+  color: $sp-text-secondary;
+  position: relative;
 }
 .tab.active {
-  color: #1677ff;
-  font-weight: 600;
-  background: #e6f4ff;
+  color: $sp-primary;
+  font-weight: 700;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48rpx;
+    height: 4rpx;
+    background: $sp-primary;
+    border-radius: 2rpx;
+  }
 }
 .card {
   margin-bottom: 16rpx;
   padding: 24rpx;
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-md;
 }
 .name {
   display: block;
   font-size: 28rpx;
-  font-weight: 500;
+  font-weight: 600;
 }
 .sub {
   display: block;
   margin-top: 8rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
 .stars {
   margin: 16rpx 0;
 }
 .star {
-  font-size: 36rpx;
+  font-size: 40rpx;
   color: #ddd;
   margin-right: 8rpx;
 }
@@ -164,15 +177,21 @@ textarea {
   width: 100%;
   min-height: 120rpx;
   padding: 16rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 26rpx;
   box-sizing: border-box;
 }
 .btn {
   margin-top: 16rpx;
-  background: #1677ff;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
+  border-radius: $sp-radius-pill;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 .content {
   display: block;
@@ -183,11 +202,11 @@ textarea {
   display: block;
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
 .hint {
   padding: 80rpx 0;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
 }
 </style>

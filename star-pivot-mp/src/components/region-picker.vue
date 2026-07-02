@@ -1,18 +1,24 @@
-<template>
+﻿<template>
   <view class="region-picker">
     <picker :range="provinces" range-key="name" @change="onProvinceChange">
-      <view class="picker-cell" :class="{ placeholder: !modelValue.province }">
-        {{ modelValue.province || '请选择省份' }}
+      <view class="picker-cell" :class="{ filled: !!modelValue.province }">
+        <text class="cell-label">省份</text>
+        <text class="cell-value">{{ modelValue.province || '请选择省份' }}</text>
+        <text class="arrow">›</text>
       </view>
     </picker>
     <picker :range="cities" range-key="name" :disabled="!modelValue.province" @change="onCityChange">
-      <view class="picker-cell" :class="{ placeholder: !modelValue.city }">
-        {{ modelValue.city || '请选择城市' }}
+      <view class="picker-cell" :class="{ filled: !!modelValue.city, disabled: !modelValue.province }">
+        <text class="cell-label">城市</text>
+        <text class="cell-value">{{ modelValue.city || '请选择城市' }}</text>
+        <text class="arrow">›</text>
       </view>
     </picker>
     <picker :range="districts" range-key="name" :disabled="!modelValue.city" @change="onDistrictChange">
-      <view class="picker-cell" :class="{ placeholder: !modelValue.region }">
-        {{ modelValue.region || '请选择区县' }}
+      <view class="picker-cell" :class="{ filled: !!modelValue.region, disabled: !modelValue.city }">
+        <text class="cell-label">区县</text>
+        <text class="cell-value">{{ modelValue.region || '请选择区县' }}</text>
+        <text class="arrow">›</text>
       </view>
     </picker>
   </view>
@@ -95,19 +101,52 @@ watch(
 onMounted(loadProvinces)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .region-picker {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 12rpx;
 }
+
 .picker-cell {
-  padding: 20rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  background: $sp-bg-page;
+  border: 2rpx solid transparent;
+  border-radius: $sp-radius-sm;
   font-size: 28rpx;
+
+  &.filled {
+    background: $sp-primary-light;
+    border-color: rgba(225, 37, 27, 0.15);
+
+    .cell-value {
+      color: $sp-text;
+      font-weight: 500;
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
 }
-.picker-cell.placeholder {
-  color: #999;
+
+.cell-label {
+  width: 72rpx;
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: $sp-text-secondary;
+}
+
+.cell-value {
+  flex: 1;
+  color: $sp-text-muted;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #ccc;
 }
 </style>

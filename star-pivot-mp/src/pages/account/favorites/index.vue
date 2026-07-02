@@ -1,15 +1,21 @@
-<template>
+﻿<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
-    <view v-else-if="!items.length" class="hint">暂无收藏</view>
-    <view v-else>
-      <view v-for="item in items" :key="item.spuId" class="card" @click="goDetail(item.spuId)">
-        <image class="pic" :src="imageSrc(item.spuImg)" mode="aspectFill" />
-        <view class="info">
-          <text class="name">{{ item.spuName }}</text>
-          <text class="price">¥{{ item.price }}</text>
+    <view v-else-if="!items.length" class="empty">
+      <text class="empty-icon">❤</text>
+      <text class="empty-text">暂无收藏商品</text>
+    </view>
+    <view v-else class="grid">
+      <view v-for="item in items" :key="item.spuId" class="card">
+        <image class="pic" :src="imageSrc(item.spuImg)" mode="aspectFill" @click="goDetail(item.spuId)" />
+        <view class="info" @click="goDetail(item.spuId)">
+          <view class="name-wrap">
+            <text class="self-tag">自营</text>
+            <text class="name">{{ item.spuName }}</text>
+          </view>
+          <text class="price"><text class="yen">¥</text>{{ item.price }}</text>
         </view>
-        <button size="mini" @click.stop="remove(item.spuId!)">取消收藏</button>
+        <button class="remove-btn" size="mini" @click.stop="remove(item.spuId!)">取消收藏</button>
       </view>
     </view>
   </view>
@@ -25,7 +31,6 @@ import {isLogin} from '@/stores/member'
 
 const loading = ref(false)
 const items = ref<PortalCollectItem[]>([])
-
 const { imageSrc, prefetchImages } = useGoodsImages()
 
 async function loadList() {
@@ -63,43 +68,94 @@ function goDetail(spuId?: number) {
 onShow(loadList)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
   min-height: 100vh;
   padding: 16rpx;
-  background: #f5f5f5;
+  background: $sp-bg-page;
 }
-.card {
+
+.grid {
   display: flex;
+  flex-wrap: wrap;
   gap: 16rpx;
-  align-items: center;
-  margin-bottom: 16rpx;
-  padding: 20rpx;
+}
+
+.card {
+  width: calc(50% - 8rpx);
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-md;
+  overflow: hidden;
 }
+
 .pic {
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 12rpx;
-  background: #f5f5f5;
+  width: 100%;
+  height: 340rpx;
+  background: #f8f8f8;
 }
+
 .info {
-  flex: 1;
+  padding: 12rpx 16rpx;
 }
+
+.self-tag {
+  display: inline-block;
+  padding: 2rpx 6rpx;
+  margin-right: 6rpx;
+  font-size: 18rpx;
+  color: #fff;
+  background: $sp-primary;
+  border-radius: 4rpx;
+  vertical-align: top;
+}
+
 .name {
-  display: block;
-  font-size: 28rpx;
+  font-size: 24rpx;
+  line-height: 1.4;
+  color: $sp-text;
 }
+
 .price {
   display: block;
   margin-top: 8rpx;
-  color: #e64545;
-  font-weight: 600;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: $sp-accent;
 }
-.hint {
+
+.yen {
+  font-size: 22rpx;
+}
+
+.remove-btn {
+  display: block;
+  width: calc(100% - 32rpx);
+  margin: 0 16rpx 16rpx;
+  color: $sp-text-secondary;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-pill;
+  border: none;
+  font-size: 22rpx;
+
+  &::after {
+    border: none;
+  }
+}
+
+.hint,
+.empty {
   padding: 120rpx 0;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
+}
+
+.empty-icon {
+  display: block;
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
 }
 </style>

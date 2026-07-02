@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view v-if="!addresses.length && !showForm" class="empty">
       <text>暂无收货地址</text>
@@ -166,17 +166,17 @@ async function remove(id?: number) {
 onShow(loadList)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
   min-height: 100vh;
-  padding: 24rpx;
-  background: #f5f5f5;
+  padding: 16rpx;
+  background: $sp-bg-page;
 }
 .card {
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
   padding: 24rpx;
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-md;
 }
 .head {
   display: flex;
@@ -185,26 +185,42 @@ onShow(loadList)
 }
 .name {
   font-size: 30rpx;
-  font-weight: 600;
+  font-weight: 700;
 }
 .phone {
   font-size: 28rpx;
-  color: #666;
+  color: $sp-text-secondary;
 }
 .tag {
-  font-size: 22rpx;
-  color: #e64545;
+  padding: 2rpx 10rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background: $sp-primary;
+  border-radius: 4rpx;
 }
 .detail {
   display: block;
   margin-top: 12rpx;
   font-size: 26rpx;
-  color: #666;
+  color: $sp-text-secondary;
+  line-height: 1.5;
 }
 .actions {
   display: flex;
   gap: 12rpx;
   margin-top: 16rpx;
+
+  button {
+    margin: 0;
+    color: $sp-text-secondary;
+    background: $sp-bg-page;
+    border-radius: $sp-radius-pill;
+    border: none;
+
+    &::after {
+      border: none;
+    }
+  }
 }
 .field {
   margin-bottom: 20rpx;
@@ -218,14 +234,15 @@ onShow(loadList)
   display: block;
   margin-bottom: 8rpx;
   font-size: 26rpx;
-  color: #666;
+  font-weight: 600;
+  color: $sp-text;
 }
 input,
 textarea {
   width: 100%;
   padding: 16rpx 20rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 28rpx;
   box-sizing: border-box;
 }
@@ -236,22 +253,37 @@ textarea {
   display: flex;
   gap: 16rpx;
   margin-top: 24rpx;
+
+  button {
+    flex: 1;
+    margin: 0;
+    border-radius: $sp-radius-pill;
+    border: none;
+
+    &::after {
+      border: none;
+    }
+  }
 }
 .btn-primary {
-  flex: 1;
-  background: #1677ff;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
 }
 .empty {
   padding: 120rpx 0;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
 }
 .btn,
 .btn-add {
   margin-top: 24rpx;
-  background: #1677ff;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
-  border-radius: 12rpx;
+  border-radius: $sp-radius-pill;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

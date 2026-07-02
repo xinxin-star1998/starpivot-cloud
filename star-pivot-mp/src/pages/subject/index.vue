@@ -1,11 +1,11 @@
-<template>
+﻿<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else>
       <image v-if="subject.coverImg" class="banner" :src="imageSrc(subject.coverImg)" mode="aspectFill" />
       <view class="header">
         <text class="title">{{ subject.title || subject.name || '专题活动' }}</text>
-        <text class="sub">{{ subject.subTitle }}</text>
+        <text v-if="subject.subTitle" class="sub">{{ subject.subTitle }}</text>
         <button
           v-if="subjectId"
           size="mini"
@@ -13,17 +13,20 @@
           :loading="collectLoading"
           @click="toggleCollect"
         >
-          {{ collected ? '已收藏专题' : '收藏专题' }}
+          {{ collected ? '已收藏' : '收藏专题' }}
         </button>
       </view>
 
       <view v-if="!products.length" class="hint">暂无商品</view>
-      <view v-else class="list">
+      <view v-else class="grid">
         <view v-for="item in products" :key="item.id" class="card" @click="goDetail(item.id)">
           <image class="pic" :src="imageSrc(cover(item))" mode="aspectFill" />
           <view class="info">
-            <text class="name">{{ item.spuName }}</text>
-            <text class="price">¥{{ item.price }}</text>
+            <view class="name-wrap">
+              <text class="self-tag">自营</text>
+              <text class="name">{{ item.spuName }}</text>
+            </view>
+            <text class="price"><text class="yen">¥</text>{{ item.price }}</text>
           </view>
         </view>
         <view v-if="hasMore" class="load-more">
@@ -142,11 +145,11 @@ onShareAppMessage(() =>
 )
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
   min-height: 100vh;
   padding-bottom: 120rpx;
-  background: #f5f5f5;
+  background: $sp-bg-page;
 }
 .banner {
   width: 100%;
@@ -159,68 +162,96 @@ onShareAppMessage(() =>
 .title {
   display: block;
   font-size: 36rpx;
-  font-weight: 700;
+  font-weight: 800;
+  color: $sp-text;
 }
 .sub {
   display: block;
   margin-top: 8rpx;
   font-size: 26rpx;
-  color: #666;
+  color: $sp-text-secondary;
 }
 .collect-btn {
   margin-top: 16rpx;
-  background: #1677ff;
-  color: #fff;
+  background: $sp-primary-light;
+  color: $sp-primary;
+  border-radius: $sp-radius-pill;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
-.list {
-  padding: 16rpx;
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 8rpx 16rpx;
 }
 .card {
-  display: flex;
-  gap: 20rpx;
-  margin-bottom: 16rpx;
-  padding: 20rpx;
-  background: #fff;
-  border-radius: 16rpx;
+  width: 50%;
+  padding: 8rpx;
+  box-sizing: border-box;
 }
 .pic {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 12rpx;
-  background: #f5f5f5;
+  width: 100%;
+  height: 340rpx;
+  border-radius: $sp-radius-sm $sp-radius-sm 0 0;
+  background: #f8f8f8;
 }
 .info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  padding: 12rpx 16rpx 16rpx;
+  background: #fff;
+  border-radius: 0 0 $sp-radius-sm $sp-radius-sm;
+}
+.self-tag {
+  display: inline-block;
+  padding: 2rpx 6rpx;
+  margin-right: 6rpx;
+  font-size: 18rpx;
+  color: #fff;
+  background: $sp-primary;
+  border-radius: 4rpx;
+  vertical-align: top;
 }
 .name {
-  font-size: 28rpx;
+  font-size: 24rpx;
+  line-height: 1.4;
+  color: $sp-text;
 }
 .price {
+  display: block;
+  margin-top: 8rpx;
   font-size: 32rpx;
-  font-weight: 700;
-  color: #e64545;
+  font-weight: 800;
+  color: $sp-accent;
+}
+.yen {
+  font-size: 22rpx;
 }
 .hint,
 .load-more {
+  width: 100%;
   padding: 48rpx;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
 }
 .share-fab {
   position: fixed;
   right: 32rpx;
-  bottom: 48rpx;
+  bottom: calc(48rpx + env(safe-area-inset-bottom));
   width: 100rpx;
   height: 100rpx;
   line-height: 100rpx;
   padding: 0;
   font-size: 24rpx;
   color: #fff;
-  background: #1677ff;
+  background: linear-gradient(135deg, $sp-primary 0%, $sp-primary-dark 100%);
   border-radius: 50%;
-  box-shadow: 0 8rpx 24rpx rgba(22, 119, 255, 0.35);
+  box-shadow: 0 8rpx 24rpx rgba(225, 37, 27, 0.35);
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

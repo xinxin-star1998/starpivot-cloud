@@ -244,7 +244,6 @@ defineOptions({ name: 'PortalHeader' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .portal-header {
     position: sticky;

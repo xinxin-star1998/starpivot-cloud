@@ -1,5 +1,6 @@
 import {STORAGE_MEMBER_KEY, STORAGE_TOKEN_KEY} from '@/config'
 import type {PortalLoginResult, PortalMember} from '@/api/types'
+import {applyCartBadge} from '@/utils/tabbar-badge'
 
 export function getToken(): string {
   return uni.getStorageSync(STORAGE_TOKEN_KEY) || ''
@@ -26,4 +27,5 @@ export function setMember(member: PortalMember) {
 export function clearSession() {
   uni.removeStorageSync(STORAGE_TOKEN_KEY)
   uni.removeStorageSync(STORAGE_MEMBER_KEY)
+  applyCartBadge(0)
 }

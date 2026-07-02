@@ -156,20 +156,20 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchPortalAuthConfig,
-    fetchPortalSmsRegister,
-    fetchPortalSmsSend,
-    startPortalWechatOAuth
-  } from '@/api/portal/auth'
-  import { fetchPortalRegister } from '@/api/portal/member'
-  import type { PortalAuthConfig } from '@/api/portal/types'
-  import { usePortalMemberStore } from '@/store/modules/portal-member'
-  import { ElMessage } from 'element-plus'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {
+  fetchPortalAuthConfig,
+  fetchPortalSmsRegister,
+  fetchPortalSmsSend,
+  startPortalWechatOAuth
+} from '@/api/portal/auth'
+import {fetchPortalRegister} from '@/api/portal/member'
+import type {PortalAuthConfig} from '@/api/portal/types'
+import {usePortalMemberStore} from '@/store/modules/portal-member'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
-  defineOptions({ name: 'PortalRegister' })
+defineOptions({ name: 'PortalRegister' })
 
   const route = useRoute()
   const router = useRouter()
@@ -314,5 +314,5 @@
 </script>
 
 <style scoped lang="scss">
-  @import './auth-shell.scss';
+  @use './auth-shell.scss';
 </style>

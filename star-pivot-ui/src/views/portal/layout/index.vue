@@ -65,7 +65,7 @@ defineOptions({ name: 'PortalLayout' })
 </script>
 
 <style lang="scss">
-  @import '../styles/variables.scss';
+  @use '../styles/variables.scss';
 </style>
 
 <style scoped lang="scss">

@@ -159,7 +159,6 @@ defineOptions({ name: 'PortalHomeCategoryNav' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .category-nav {
     width: 200px;

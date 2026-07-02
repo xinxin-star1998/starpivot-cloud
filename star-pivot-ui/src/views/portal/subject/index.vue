@@ -184,7 +184,6 @@ defineOptions({ name: 'PortalSubject' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .portal-subject__banner {
     margin-bottom: 20px;

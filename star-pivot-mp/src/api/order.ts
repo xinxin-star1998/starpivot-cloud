@@ -52,3 +52,24 @@ export function cancelOrder(id: number) {
 export function confirmReceive(id: number) {
   return request<void>({ url: `/portal/order/${id}/receive`, method: 'PUT' })
 }
+
+export interface PortalOrderReturnApplyPayload {
+  orderId: number
+  skuId?: number
+  quantity?: number
+  items?: Array<{ skuId: number; quantity: number }>
+  reason: string
+  description?: string
+}
+
+export function applyOrderReturn(data: PortalOrderReturnApplyPayload) {
+  return request<number[]>({
+    url: '/portal/order/return',
+    method: 'POST',
+    data
+  })
+}
+
+export function fetchOrderStatusCounts() {
+  return request<Record<string, number>>({ url: '/portal/order/status-counts' })
+}

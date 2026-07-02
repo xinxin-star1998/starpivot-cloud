@@ -149,7 +149,6 @@ defineOptions({ name: 'PortalCoupons' })
 </script>
 
 <style lang="scss" scoped>
-  @import '../styles/variables.scss';
 
   .tab-switch {
     display: flex;

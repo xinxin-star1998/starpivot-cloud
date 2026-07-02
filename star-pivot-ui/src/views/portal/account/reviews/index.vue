@@ -103,7 +103,6 @@ defineOptions({ name: 'PortalReviews' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .review-list {
     display: flex;

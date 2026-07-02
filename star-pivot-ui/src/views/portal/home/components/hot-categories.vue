@@ -56,7 +56,6 @@ defineOptions({ name: 'PortalHomeHotCategories' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .hot-categories {
     background: var(--portal-bg-elevated);

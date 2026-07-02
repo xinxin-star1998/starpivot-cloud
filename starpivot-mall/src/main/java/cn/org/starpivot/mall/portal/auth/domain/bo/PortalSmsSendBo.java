@@ -12,6 +12,6 @@ public class PortalSmsSendBo {
     private String mobile;
 
     @NotBlank(message = "场景不能为空")
-    @Pattern(regexp = "^(login|bind|set_password|unbind)$", message = "场景无效")
+    @Pattern(regexp = "^(login|register|bind|set_password|unbind)$", message = "场景无效")
     private String scene;
 }

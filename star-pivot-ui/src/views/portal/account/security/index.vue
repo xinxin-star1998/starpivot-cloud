@@ -464,7 +464,6 @@ defineOptions({ name: 'PortalAccountSecurity' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .security-card {
     background: var(--portal-bg-elevated);

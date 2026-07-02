@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else>
@@ -352,29 +352,32 @@ async function submitUnbind() {
 onShow(load)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
-  padding: 24rpx;
+  padding: 16rpx;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: $sp-bg-page;
 }
 .card {
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
   padding: 24rpx;
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-md;
 }
 .section-title {
   margin-bottom: 16rpx;
+  padding-left: 12rpx;
   font-size: 30rpx;
-  font-weight: 600;
+  font-weight: 700;
+  color: $sp-text;
+  border-left: 6rpx solid $sp-primary;
 }
 .binding-item {
   display: flex;
   align-items: center;
   gap: 16rpx;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid $sp-border;
 }
 .binding-item:last-child {
   border-bottom: none;
@@ -385,7 +388,7 @@ onShow(load)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: $sp-primary-light;
   border-radius: 50%;
   font-size: 28rpx;
 }
@@ -403,23 +406,28 @@ onShow(load)
   display: block;
   margin-top: 6rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
 .tag {
   font-size: 22rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
 .tag.ok {
-  color: #52c41a;
+  color: $sp-success;
 }
 .unlink-btn {
   margin: 0;
-  color: #e64545;
-  background: #fff5f5;
+  color: $sp-primary;
+  background: $sp-primary-light;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 .action-item {
   padding: 24rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid $sp-border;
 }
 .action-item:last-child {
   border-bottom: none;
@@ -436,7 +444,7 @@ onShow(load)
   display: block;
   margin-top: 8rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
 .modal-mask {
   position: fixed;
@@ -451,21 +459,21 @@ onShow(load)
   width: 86%;
   padding: 32rpx;
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-md;
 }
 .modal-title {
   display: block;
   margin-bottom: 24rpx;
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
 }
 .input {
   width: 100%;
   margin-bottom: 16rpx;
   padding: 16rpx 20rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 28rpx;
   box-sizing: border-box;
 }
@@ -481,41 +489,53 @@ onShow(load)
 .sms-btn {
   margin: 0;
   white-space: nowrap;
-  background: #e6f4ff;
-  color: #1677ff;
+  background: $sp-primary-light;
+  color: $sp-primary;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 .mock-tip,
 .warn-tip {
   display: block;
   margin-bottom: 16rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
 .warn-tip {
-  color: #e64545;
+  color: $sp-accent;
 }
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 16rpx;
   margin-top: 8rpx;
-}
-.modal-actions button {
-  margin: 0;
+
+  button {
+    margin: 0;
+    border-radius: $sp-radius-pill;
+    border: none;
+
+    &::after {
+      border: none;
+    }
+  }
 }
 .modal-actions .primary {
-  background: #1677ff;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
 }
 .modal-actions .danger {
-  background: #e64545;
+  background: $sp-accent;
   color: #fff;
 }
 .hint,
 .hint-inline {
   padding: 40rpx 0;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
   font-size: 26rpx;
 }
 </style>

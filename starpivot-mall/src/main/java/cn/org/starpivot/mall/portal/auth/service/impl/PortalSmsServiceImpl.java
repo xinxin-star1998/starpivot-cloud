@@ -1,6 +1,7 @@
 package cn.org.starpivot.mall.portal.auth.service.impl;
 
 import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.util.LogUtils;
 import cn.org.starpivot.mall.portal.PortalMemberContext;
 import cn.org.starpivot.mall.portal.auth.PortalAuthConstants;
 import cn.org.starpivot.mall.portal.auth.config.PortalAuthProperties;
@@ -11,7 +12,6 @@ import cn.org.starpivot.mall.portal.auth.mapper.UmsMemberSmsLogMapper;
 import cn.org.starpivot.mall.portal.auth.service.PortalMemberAuthService;
 import cn.org.starpivot.mall.portal.auth.service.PortalSmsService;
 import cn.org.starpivot.mall.portal.auth.sms.SmsSender;
-import cn.org.starpivot.common.util.LogUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -66,7 +66,9 @@ public class PortalSmsServiceImpl implements PortalSmsService {
         String code = generateCode();
         String codeKey = PortalAuthConstants.smsCodeKey(scene, mobile);
         int ttl = authProperties.getSms().getCodeTtlSeconds();
-        stringRedisTemplate.opsForValue().set(codeKey, code, Duration.ofSeconds(ttl));
+        if (!smsSender.cloudVerification()) {
+            stringRedisTemplate.opsForValue().set(codeKey, code, Duration.ofSeconds(ttl));
+        }
         stringRedisTemplate.opsForValue().set(
                 intervalKey, "1", Duration.ofSeconds(authProperties.getSms().getSendIntervalSeconds()));
 
@@ -85,6 +87,10 @@ public class PortalSmsServiceImpl implements PortalSmsService {
     public void verifyAndConsume(String scene, String mobile, String code) {
         if (!StringUtils.hasText(code)) {
             throw new BizException("验证码不能为空");
+        }
+        if (smsSender.cloudVerification()) {
+            smsSender.verifyCloudCode(mobile, code.trim(), scene);
+            return;
         }
         String codeKey = PortalAuthConstants.smsCodeKey(scene, mobile);
         String cached = stringRedisTemplate.opsForValue().get(codeKey);

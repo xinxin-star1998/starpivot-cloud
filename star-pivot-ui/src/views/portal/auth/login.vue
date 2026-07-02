@@ -304,5 +304,5 @@ defineOptions({ name: 'PortalLogin' })
 </script>
 
 <style scoped lang="scss">
-  @import './auth-shell.scss';
+  @use './auth-shell.scss';
 </style>

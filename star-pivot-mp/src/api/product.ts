@@ -21,3 +21,11 @@ export function productImageRaw(item: { coverImg?: string; pic?: string; spuImg?
 export function productCover(item: { coverImg?: string; pic?: string; spuImg?: string; skuDefaultImg?: string }) {
   return productImageRaw(item)
 }
+
+export function fetchRelatedProducts(id: number, limit = 8) {
+  return request<PortalProductListItem[]>({
+    url: `/portal/product/${id}/related`,
+    data: { limit },
+    auth: false
+  })
+}

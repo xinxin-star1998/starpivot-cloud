@@ -601,7 +601,6 @@ defineOptions({ name: 'PortalProductDetail' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .back-btn {
     display: inline-flex;

@@ -69,7 +69,6 @@ defineOptions({ name: 'PortalPendingReviews' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .pending-list {
     display: flex;

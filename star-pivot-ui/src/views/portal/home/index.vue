@@ -388,7 +388,6 @@ defineOptions({ name: 'PortalHome' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .portal-home__hero {
     position: relative;

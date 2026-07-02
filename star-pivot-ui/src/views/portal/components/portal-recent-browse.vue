@@ -77,7 +77,6 @@ defineOptions({ name: 'PortalRecentBrowse' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .portal-recent-browse {
     margin-bottom: 24px;

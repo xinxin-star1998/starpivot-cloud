@@ -338,7 +338,6 @@ defineOptions({ name: 'PortalSearch' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .portal-search__layout {
     display: flex;

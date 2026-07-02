@@ -1,7 +1,17 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="header">
-      <text class="title">{{ page.title || '限时秒杀' }}</text>
+      <view class="header-main">
+        <text class="title">{{ page.title || '京东秒杀' }}</text>
+        <view v-if="sessionState === 'ongoing'" class="countdown">
+          <text class="cd-label">距结束</text>
+          <text class="cd-block">{{ countdown.h }}</text>
+          <text class="cd-sep">:</text>
+          <text class="cd-block">{{ countdown.m }}</text>
+          <text class="cd-sep">:</text>
+          <text class="cd-block">{{ countdown.s }}</text>
+        </view>
+      </view>
       <text class="sub">{{ page.subTitle || '整点场 · 抢完即止' }}</text>
     </view>
 
@@ -20,16 +30,17 @@
 
     <view v-if="loading" class="hint">加载中...</view>
     <view v-else-if="!products.length" class="hint">当前场次暂无商品</view>
-    <view v-else class="grid">
+    <view v-else class="list">
       <view v-for="item in products" :key="`${item.spuId}-${item.skuId}`" class="card">
         <image class="pic" :src="imageSrc(item.coverImg)" mode="aspectFill" />
         <view class="body">
-          <text class="name">{{ item.spuName }}</text>
-          <text v-if="item.seckillStockRemain != null" class="stock">
-            剩余 {{ item.seckillStockRemain }} 件
-          </text>
+          <view class="name-row">
+            <text class="self-tag">自营</text>
+            <text class="name">{{ item.spuName }}</text>
+          </view>
+          <text v-if="item.seckillStockRemain != null" class="stock">仅剩 {{ item.seckillStockRemain }} 件</text>
           <view class="price-row">
-            <text class="promo">¥{{ item.promoPrice ?? item.price }}</text>
+            <text class="promo"><text class="yen">¥</text>{{ item.promoPrice ?? item.price }}</text>
             <text v-if="item.promoPrice && item.price" class="origin">¥{{ item.price }}</text>
           </view>
           <button
@@ -41,6 +52,7 @@
           >
             {{ item.seckillStockRemain != null && item.seckillStockRemain <= 0 ? '已抢光' : '立即抢购' }}
           </button>
+          <button v-else size="mini" class="buy-btn disabled" disabled>未开始</button>
         </view>
       </view>
     </view>
@@ -68,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import {onShow} from '@dcloudio/uni-app'
+import {onShow, onUnload} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
 import {fetchAddressList} from '@/api/address'
 import {fetchOrderSubmitToken} from '@/api/order'
@@ -79,6 +91,32 @@ import {useGoodsImages} from '@/composables/use-goods-images'
 import {isLogin} from '@/stores/member'
 
 const loading = ref(false)
+const countdown = ref({ h: '00', m: '00', s: '00' })
+let countdownTimer: ReturnType<typeof setInterval> | null = null
+
+function padTime(n: number) {
+  return String(n).padStart(2, '0')
+}
+
+function tickCountdown() {
+  const now = new Date()
+  const next = new Date(now)
+  next.setMinutes(0, 0, 0)
+  next.setHours(now.getHours() + 1)
+  const diff = Math.max(0, next.getTime() - Date.now())
+  const totalSeconds = Math.floor(diff / 1000)
+  countdown.value = {
+    h: padTime(Math.floor(totalSeconds / 3600)),
+    m: padTime(Math.floor((totalSeconds % 3600) / 60)),
+    s: padTime(totalSeconds % 60)
+  }
+}
+
+function startCountdown() {
+  tickCountdown()
+  if (countdownTimer) clearInterval(countdownTimer)
+  countdownTimer = setInterval(tickCountdown, 1000)
+}
 const page = ref<PortalSeckillPage>({})
 const products = ref<PortalHomeProduct[]>([])
 const activeSessionId = ref<number>()
@@ -213,111 +251,188 @@ async function submitBuy() {
   }
 }
 
-onShow(() => loadPage())
+onShow(() => {
+  startCountdown()
+  loadPage()
+})
+
+onUnload(() => {
+  if (countdownTimer) clearInterval(countdownTimer)
+})
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page {
   min-height: 100vh;
   padding-bottom: 24rpx;
-  background: #f5f5f5;
+  background: $sp-bg-page;
 }
 .header {
   padding: 24rpx;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  background: linear-gradient(135deg, $sp-primary 0%, $sp-primary-dark 100%);
   color: #fff;
 }
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
 .title {
-  display: block;
   font-size: 36rpx;
+  font-weight: 800;
+  font-style: italic;
+}
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+.cd-label {
+  font-size: 22rpx;
+  opacity: 0.9;
+  margin-right: 4rpx;
+}
+.cd-block {
+  min-width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  padding: 0 6rpx;
+  text-align: center;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: $sp-primary;
+  background: #fff;
+  border-radius: 6rpx;
+}
+.cd-sep {
+  font-size: 22rpx;
   font-weight: 700;
 }
 .sub {
   display: block;
   margin-top: 8rpx;
-  font-size: 26rpx;
-  opacity: 0.9;
+  font-size: 24rpx;
+  opacity: 0.85;
 }
 .sessions {
   white-space: nowrap;
-  padding: 16rpx 24rpx;
+  padding: 16rpx;
   background: #fff;
 }
 .session-tab {
   display: inline-block;
-  margin-right: 16rpx;
-  padding: 16rpx 24rpx;
-  border: 1rpx solid #eee;
-  border-radius: 12rpx;
+  margin-right: 12rpx;
+  padding: 16rpx 28rpx;
+  border: 2rpx solid $sp-border;
+  border-radius: $sp-radius-sm;
   text-align: center;
 }
 .session-tab.active {
-  border-color: #1677ff;
-  background: #e6f4ff;
+  border-color: $sp-primary;
+  background: $sp-primary-light;
 }
 .session-tab.ongoing .label {
-  color: #1677ff;
+  color: $sp-primary;
+  font-weight: 600;
 }
 .time {
   display: block;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 700;
+  color: $sp-text;
 }
 .label {
   display: block;
   font-size: 22rpx;
-  color: #999;
+  color: $sp-text-muted;
 }
-.grid {
+.list {
   padding: 16rpx;
 }
 .card {
+  display: flex;
+  gap: 16rpx;
   margin-bottom: 16rpx;
+  padding: 16rpx;
   background: #fff;
-  border-radius: 16rpx;
-  overflow: hidden;
+  border-radius: $sp-radius-md;
 }
 .pic {
-  width: 100%;
-  height: 320rpx;
-  background: #f5f5f5;
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: $sp-radius-sm;
+  background: #f8f8f8;
+  flex-shrink: 0;
 }
 .body {
-  padding: 20rpx;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.name-row {
+  line-height: 1.45;
+}
+.self-tag {
+  display: inline-block;
+  padding: 2rpx 8rpx;
+  margin-right: 8rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background: $sp-primary;
+  border-radius: 4rpx;
+  vertical-align: top;
 }
 .name {
-  display: block;
   font-size: 28rpx;
+  color: $sp-text;
 }
 .stock {
   display: block;
   margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #999;
+  font-size: 22rpx;
+  color: $sp-accent;
 }
 .price-row {
-  margin-top: 12rpx;
+  margin-top: auto;
+  padding-top: 12rpx;
 }
 .promo {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #e64545;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: $sp-accent;
+}
+.yen {
+  font-size: 24rpx;
 }
 .origin {
   margin-left: 12rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
   text-decoration: line-through;
 }
 .buy-btn {
-  margin-top: 16rpx;
-  background: #1677ff;
+  align-self: flex-start;
+  margin-top: 12rpx;
+  padding: 0 32rpx;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
+  border-radius: $sp-radius-pill;
+  border: none;
+
+  &::after {
+    border: none;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
 }
 .hint {
   padding: 80rpx;
   text-align: center;
-  color: #999;
+  color: $sp-text-muted;
 }
 .mask {
   position: fixed;
@@ -325,17 +440,19 @@ onShow(() => loadPage())
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: flex-end;
+  z-index: 200;
 }
 .dialog {
   width: 100%;
   padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
   background: #fff;
   border-radius: 24rpx 24rpx 0 0;
 }
 .dialog-title {
   display: block;
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 700;
 }
 .dialog-name {
   display: block;
@@ -345,9 +462,9 @@ onShow(() => loadPage())
 .dialog-price {
   display: block;
   margin-top: 8rpx;
-  color: #e64545;
-  font-size: 32rpx;
-  font-weight: 700;
+  color: $sp-accent;
+  font-size: 36rpx;
+  font-weight: 800;
 }
 .field {
   display: flex;
@@ -355,12 +472,12 @@ onShow(() => loadPage())
   align-items: center;
   margin-top: 20rpx;
   padding: 16rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
   font-size: 26rpx;
 }
 .field.picker {
-  color: #333;
+  color: $sp-text;
 }
 .qty-ctrl {
   display: flex;
@@ -368,8 +485,13 @@ onShow(() => loadPage())
 }
 .submit {
   margin-top: 24rpx;
-  background: #1677ff;
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
   color: #fff;
-  border-radius: 12rpx;
+  border-radius: $sp-radius-pill;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

@@ -110,6 +110,7 @@ npm run dev:mp-weixin
 | P2（已完成） | 搜索、秒杀、优惠券、收藏、评价 | product, seckill, coupon, collect, comment |
 | P3（已完成） | 结算选券、会员中心、专题、分享 | member/center, coupon/checkout, subject |
 | P4（已完成） | 头像上传、积分抵扣、订单详情、浏览足迹、账号安全 | image/upload, order/{id}, member/auth |
+| P5（已完成） | 申请退货、物流查询、订单角标、规格弹层、相关推荐 | order/return, status-counts, product/{id}/related |
 
 ## 7. 与管理端协同
 

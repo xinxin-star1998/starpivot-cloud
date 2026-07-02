@@ -1,21 +1,40 @@
-<template>
+﻿<template>
   <view class="page">
+    <view class="hero">
+      <image class="logo" src="/static/logo.png" mode="aspectFit" />
+      <text class="title">StarPivot 商城</text>
+      <text class="subtitle">欢迎回来，开启品质购物之旅</text>
+    </view>
+
     <view class="card">
-      <button class="btn-primary" :loading="loading" @click="handleWechatLogin">微信一键登录</button>
+      <button class="btn-wechat" :loading="loading" @click="handleWechatLogin">
+        <text class="btn-icon">💬</text>
+        <text>微信一键登录</text>
+      </button>
       <text v-if="USE_MOCK_LOGIN" class="tip">开发模式：使用 Mock code 联调</text>
+    </view>
+
+    <view class="divider">
+      <view class="divider-line" />
+      <text class="divider-text">或使用手机号登录</text>
+      <view class="divider-line" />
     </view>
 
     <view class="card">
       <view class="field">
-        <input v-model="mobile" type="number" maxlength="11" placeholder="手机号" />
+        <text class="field-label">手机号</text>
+        <input v-model="mobile" type="number" maxlength="11" placeholder="请输入手机号" />
       </view>
       <view class="field row">
-        <input v-model="smsCode" type="number" maxlength="6" placeholder="验证码" />
-        <button size="mini" :disabled="countdown > 0" @click="sendCode">
+        <view class="field-grow">
+          <text class="field-label">验证码</text>
+          <input v-model="smsCode" type="number" maxlength="6" placeholder="请输入验证码" />
+        </view>
+        <button class="code-btn" size="mini" :disabled="countdown > 0" @click="sendCode">
           {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
         </button>
       </view>
-      <button class="btn-outline" :loading="smsLoading" @click="handleSmsLogin">短信登录</button>
+      <button class="btn-sms" :loading="smsLoading" @click="handleSmsLogin">短信登录</button>
     </view>
   </view>
 </template>
@@ -25,6 +44,7 @@ import {ref} from 'vue'
 import {fetchMiniProgramLogin, fetchSmsLogin, fetchSmsSend} from '@/api/auth'
 import {MOCK_MINI_LOGIN_CODE, USE_MOCK_LOGIN} from '@/config'
 import {setLogin} from '@/stores/member'
+import {refreshCartBadge} from '@/utils/tabbar-cart'
 
 const loading = ref(false)
 const smsLoading = ref(false)
@@ -55,6 +75,7 @@ async function handleWechatLogin() {
     const code = await resolveLoginCode()
     const result = await fetchMiniProgramLogin(code)
     setLogin(result)
+    refreshCartBadge()
     uni.showToast({ title: '登录成功' })
     setTimeout(() => uni.navigateBack(), 500)
   } catch (e) {
@@ -87,6 +108,7 @@ async function handleSmsLogin() {
   try {
     const result = await fetchSmsLogin(mobile.value, smsCode.value)
     setLogin(result)
+    refreshCartBadge()
     uni.showToast({ title: '登录成功' })
     setTimeout(() => uni.navigateBack(), 500)
   } catch (e) {
@@ -97,43 +119,159 @@ async function handleSmsLogin() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+
 .page {
-  padding: 24rpx;
+  min-height: 100vh;
+  padding: 0 32rpx 48rpx;
+  background: linear-gradient(180deg, $sp-primary-light 0%, $sp-bg-page 40%);
 }
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 0 48rpx;
+}
+
+.logo {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 24rpx;
+  border-radius: 28rpx;
+  box-shadow: $sp-shadow-md;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: $sp-text;
+}
+
+.subtitle {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: $sp-text-secondary;
+}
+
 .card {
   margin-bottom: 24rpx;
   padding: 32rpx;
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: $sp-radius-lg;
+  box-shadow: $sp-shadow-sm;
 }
-.btn-primary {
-  background: #07c160;
+
+.btn-wechat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  background: $sp-success;
   color: #fff;
-  border-radius: 12rpx;
+  border-radius: $sp-radius-pill;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 8rpx 20rpx rgba(7, 193, 96, 0.25);
+
+  &::after {
+    border: none;
+  }
 }
-.btn-outline {
-  margin-top: 16rpx;
-  background: #1677ff;
-  color: #fff;
-  border-radius: 12rpx;
+
+.btn-icon {
+  font-size: 36rpx;
 }
+
 .tip {
   display: block;
-  margin-top: 16rpx;
+  margin-top: 20rpx;
   font-size: 24rpx;
-  color: #999;
+  color: $sp-text-muted;
   text-align: center;
 }
-.field {
-  margin-bottom: 16rpx;
-  padding: 16rpx 20rpx;
-  background: #f5f5f5;
-  border-radius: 12rpx;
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 8rpx 0 32rpx;
 }
+
+.divider-line {
+  flex: 1;
+  height: 1rpx;
+  background: #e8e8e8;
+}
+
+.divider-text {
+  font-size: 24rpx;
+  color: $sp-text-muted;
+  white-space: nowrap;
+}
+
+.field {
+  margin-bottom: 24rpx;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $sp-text;
+}
+
+.field input {
+  padding: 20rpx 24rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-md;
+  font-size: 28rpx;
+}
+
 .field.row {
   display: flex;
   gap: 16rpx;
-  align-items: center;
+  align-items: flex-end;
+}
+
+.field-grow {
+  flex: 1;
+}
+
+.code-btn {
+  margin: 0;
+  padding: 0 24rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  background: $sp-primary-light;
+  color: $sp-primary;
+  border-radius: $sp-radius-md;
+  font-size: 24rpx;
+  border: none;
+  white-space: nowrap;
+
+  &::after {
+    border: none;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+.btn-sms {
+  margin-top: 8rpx;
+  background: linear-gradient(135deg, $sp-primary 0%, $sp-primary-dark 100%);
+  color: #fff;
+  border-radius: $sp-radius-pill;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 </style>

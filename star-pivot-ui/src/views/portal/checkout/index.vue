@@ -523,7 +523,6 @@ defineOptions({ name: 'PortalCheckout' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .panel {
     background: var(--portal-bg-elevated);

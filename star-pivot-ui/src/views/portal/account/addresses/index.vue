@@ -159,7 +159,6 @@ defineOptions({ name: 'PortalAddresses' })
 </script>
 
 <style scoped lang="scss">
-  @import '../../styles/variables.scss';
 
   .address-list {
     display: flex;

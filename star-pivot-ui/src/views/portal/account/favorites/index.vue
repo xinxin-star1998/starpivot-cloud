@@ -141,7 +141,6 @@ defineOptions({ name: 'PortalFavorites' })
 </script>
 
 <style scoped lang="scss">
-  @import '../styles/variables.scss';
 
   .collect-grid {
     display: grid;

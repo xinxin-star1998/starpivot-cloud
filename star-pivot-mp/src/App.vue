@@ -1,14 +1,20 @@
-<script setup lang="ts">
-import {onHide, onLaunch, onShow} from "@dcloudio/uni-app";
+﻿<script setup lang="ts">
+import {onLaunch, onShow} from "@dcloudio/uni-app";
+import {refreshCartBadge} from "@/utils/tabbar-cart";
 
 onLaunch(() => {
-  console.log("App Launch");
+  refreshCartBadge();
 });
+
 onShow(() => {
-  console.log("App Show");
-});
-onHide(() => {
-  console.log("App Hide");
+  refreshCartBadge();
 });
 </script>
-<style></style>
+<style lang="scss">
+page {
+  background-color: $sp-bg-page;
+  color: $sp-text;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+</style>

@@ -46,6 +46,30 @@ public class PortalAuthProperties {
         private int dailyLimitPerIp = 50;
         private boolean mockEnabled = true;
         private String mockCode = "123456";
+        private Aliyun aliyun = new Aliyun();
+
+        @Data
+        public static class Aliyun {
+            /** 是否启用阿里云号码认证短信验证码 */
+            private boolean enabled = false;
+            private String accessKeyId = "";
+            private String accessKeySecret = "";
+            private String endpoint = "dypnsapi.aliyuncs.com";
+            /** 控制台赠送签名，如「速通互联验证码」 */
+            private String signName = "";
+            /** 控制台赠送模板 CODE，如 100001 */
+            private String templateCode = "";
+            /** 方案名称，空则使用「默认方案」 */
+            private String schemeName = "";
+            private String countryCode = "86";
+            /** 模板变量 min，对应 {"code":"…","min":"5"} */
+            private int templateMinMinutes = 5;
+            /**
+             * redis：下发指定验证码，本地 Redis 校验；
+             * cloud：##code## 由阿里云生成，调用 CheckSmsVerifyCode 校验。
+             */
+            private String verifyMode = "redis";
+        }
     }
 
     @Data
