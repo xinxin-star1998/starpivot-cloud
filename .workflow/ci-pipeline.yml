@@ -23,8 +23,6 @@ triggers:
 variables:
   MAVEN_OPTS: '-B'
   SONAR_PROJECT_KEY: 'starpivot-cloud'
-  CI: 'true'
-  HUSKY: '0'
 
 stages:
   - stage:
@@ -51,11 +49,15 @@ stages:
       - step: build@nodejs
         name: build_ui
         displayName: 管理端前端构建
-        nodeVersion: 20.19.0
+        nodeVersion: 20
         commands:
+          - npm config set registry https://registry.npmmirror.com
           - npm install -g pnpm@9
-          - cd star-pivot-ui && CI=true HUSKY=0 pnpm install --frozen-lockfile
-          - cd star-pivot-ui && CI=true pnpm run build
+          - cd star-pivot-ui && export CI=true HUSKY=0 && pnpm install --frozen-lockfile && pnpm run build
+        artifacts:
+          - name: UI_ARTIFACT
+            path:
+              - star-pivot-ui/dist
 
   - stage:
     name: frontend_mp
@@ -66,10 +68,14 @@ stages:
       - step: build@nodejs
         name: build_mp
         displayName: 小程序H5构建
-        nodeVersion: 20.19.0
+        nodeVersion: 20
         commands:
-          - cd star-pivot-mp && npm ci
-          - cd star-pivot-mp && npm run build:h5
+          - npm config set registry https://registry.npmmirror.com
+          - cd star-pivot-mp && npm ci && npm run build:h5
+        artifacts:
+          - name: MP_ARTIFACT
+            path:
+              - star-pivot-mp/dist/build/h5
 
   - stage:
     name: quality
