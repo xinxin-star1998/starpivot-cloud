@@ -1,4 +1,4 @@
-# Gitee Go 持续集成流水线
+# Gitee Go 持续集成流水线（与 GitHub Actions 对齐）
 # 开通：仓库 → 流水线 / Gitee Go → 免费开通
 # 文档：https://help.gitee.com/gitee-go/
 
@@ -23,6 +23,8 @@ triggers:
 variables:
   MAVEN_OPTS: '-B'
   SONAR_PROJECT_KEY: 'starpivot-cloud'
+  CI: 'true'
+  HUSKY: '0'
 
 stages:
   - stage: backend
@@ -32,16 +34,12 @@ stages:
     steps:
       - step: build@maven
         name: maven_build
-        displayName: Maven 编译打包
+        displayName: Maven 编译测试
         jdkVersion: 17
         mavenVersion: 3.6.3
         commands:
           - mvn ${MAVEN_OPTS} clean package -DskipTests
           - mvn ${MAVEN_OPTS} test
-        artifacts:
-          - name: BACKEND_ARTIFACT
-            path:
-              - '**/target/*.jar'
 
   - stage: frontend-ui
     displayName: 管理端前端
@@ -54,16 +52,12 @@ stages:
         nodeVersion: 20.19.0
         commands:
           - npm install -g pnpm@9
-          - cd star-pivot-ui && HUSKY=0 pnpm install --frozen-lockfile
-          - cd star-pivot-ui && pnpm run build
-        artifacts:
-          - name: UI_ARTIFACT
-            path:
-              - star-pivot-ui/dist
+          - cd star-pivot-ui && CI=true HUSKY=0 pnpm install --frozen-lockfile
+          - cd star-pivot-ui && CI=true pnpm run build
 
   - stage: frontend-mp
     displayName: 小程序前端
-    strategy: naturally
+    strategy: fast
     trigger: auto
     steps:
       - step: build@nodejs
