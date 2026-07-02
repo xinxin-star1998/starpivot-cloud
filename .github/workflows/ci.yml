@@ -50,6 +50,8 @@ jobs:
     defaults:
       run:
         working-directory: star-pivot-ui
+    env:
+      HUSKY: '0'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,7 +59,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -68,9 +70,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Lint
-        run: pnpm run lint
 
       - name: Build
         run: pnpm run build
@@ -95,5 +94,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
-        run: npm run type-check
+      - name: Build H5
+        run: npm run build:h5

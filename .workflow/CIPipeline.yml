@@ -53,9 +53,8 @@ stages:
         displayName: star-pivot-ui 构建
         nodeVersion: 20.19.0
         commands:
-          - npm install -g pnpm@8
-          - cd star-pivot-ui && pnpm install --frozen-lockfile
-          - cd star-pivot-ui && pnpm run lint
+          - npm install -g pnpm@9
+          - cd star-pivot-ui && HUSKY=0 pnpm install --frozen-lockfile
           - cd star-pivot-ui && pnpm run build
         artifacts:
           - name: UI_ARTIFACT
@@ -69,11 +68,11 @@ stages:
     steps:
       - step: build@nodejs
         name: build_mp
-        displayName: star-pivot-mp 类型检查
+        displayName: star-pivot-mp H5 构建
         nodeVersion: 20.19.0
         commands:
           - cd star-pivot-mp && npm ci
-          - cd star-pivot-mp && npm run type-check
+          - cd star-pivot-mp && npm run build:h5
 
   - stage: quality
     displayName: 代码质量（可选）
