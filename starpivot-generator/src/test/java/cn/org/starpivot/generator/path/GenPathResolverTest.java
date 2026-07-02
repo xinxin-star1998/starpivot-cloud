@@ -1,4 +1,4 @@
-﻿package cn.org.starpivot.generator.path;
+package cn.org.starpivot.generator.path;
 
 import cn.org.starpivot.common.constants.GenConstants;
 import cn.org.starpivot.generator.domain.entity.GenTable;
@@ -196,4 +196,3 @@ class GenPathResolverTest {
         return table;
     }
 }
-
