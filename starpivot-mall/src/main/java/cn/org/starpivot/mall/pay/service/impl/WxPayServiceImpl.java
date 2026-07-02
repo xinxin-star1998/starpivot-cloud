@@ -4,10 +4,12 @@ import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.pay.config.WxPayProperties;
+import cn.org.starpivot.mall.pay.domain.vo.WxJsapiPayVo;
 import cn.org.starpivot.mall.pay.domain.vo.WxNativePayVo;
 import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.pay.service.WxPayService;
 import cn.org.starpivot.mall.portal.PortalConstants;
+import cn.org.starpivot.mall.portal.auth.service.PortalMemberAuthService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wechat.pay.java.core.Config;
@@ -15,6 +17,9 @@ import com.wechat.pay.java.core.RSAAutoCertificateConfig;
 import com.wechat.pay.java.core.notification.NotificationConfig;
 import com.wechat.pay.java.core.notification.NotificationParser;
 import com.wechat.pay.java.core.notification.RequestParam;
+import com.wechat.pay.java.service.payments.jsapi.JsapiServiceExtension;
+import com.wechat.pay.java.service.payments.jsapi.model.Payer;
+import com.wechat.pay.java.service.payments.jsapi.model.PrepayWithRequestPaymentResponse;
 import com.wechat.pay.java.service.payments.model.Transaction;
 import com.wechat.pay.java.service.payments.nativepay.NativePayService;
 import com.wechat.pay.java.service.payments.nativepay.model.Amount;
@@ -26,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StreamUtils;
-import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -40,6 +44,7 @@ public class WxPayServiceImpl implements WxPayService {
     private final WxPayProperties wxPayProperties;
     private final OmsOrderMapper omsOrderMapper;
     private final PortalOrderPayService portalOrderPayService;
+    private final PortalMemberAuthService memberAuthService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -90,6 +95,63 @@ public class WxPayServiceImpl implements WxPayService {
             throw ex;
         } catch (Exception ex) {
             log.error("Wx native pay failed, orderId={}", orderId, ex);
+            throw new BizException("微信下单失败：" + ex.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WxJsapiPayVo createJsapiPay(Long memberId, Long orderId) {
+        if (!isAvailable()) {
+            throw new BizException("微信支付未启用");
+        }
+        OmsOrder order = requireUnpaidOrder(memberId, orderId);
+        if (wxPayProperties.isMockAvailable()) {
+            WxJsapiPayVo vo = new WxJsapiPayVo();
+            vo.setOrderSn(order.getOrderSn());
+            vo.setMock(true);
+            vo.setTimeStamp(String.valueOf(System.currentTimeMillis() / 1000));
+            vo.setNonceStr("MOCK" + order.getOrderSn());
+            vo.setPackageValue("prepay_id=MOCK-" + order.getOrderSn());
+            vo.setSignType("RSA");
+            vo.setPaySign("MOCK_SIGN");
+            return vo;
+        }
+        String openId = memberAuthService.resolveWechatOpenId(memberId);
+        try {
+            JsapiServiceExtension jsapiService = new JsapiServiceExtension.Builder().config(buildConfig()).build();
+            com.wechat.pay.java.service.payments.jsapi.model.PrepayRequest request =
+                    new com.wechat.pay.java.service.payments.jsapi.model.PrepayRequest();
+            request.setAppid(wxPayProperties.getAppId());
+            request.setMchid(wxPayProperties.getMchId());
+            request.setDescription("StarPivot商城-" + order.getOrderSn());
+            request.setOutTradeNo(order.getOrderSn());
+            request.setNotifyUrl(wxPayProperties.getNotifyUrl());
+
+            com.wechat.pay.java.service.payments.jsapi.model.Amount amount =
+                    new com.wechat.pay.java.service.payments.jsapi.model.Amount();
+            amount.setCurrency("CNY");
+            amount.setTotal(toFen(order.getPayAmount()));
+            request.setAmount(amount);
+
+            Payer payer = new Payer();
+            payer.setOpenid(openId);
+            request.setPayer(payer);
+
+            PrepayWithRequestPaymentResponse response = jsapiService.prepayWithRequestPayment(request);
+            WxJsapiPayVo vo = new WxJsapiPayVo();
+            vo.setOrderSn(order.getOrderSn());
+            vo.setMock(false);
+            vo.setTimeStamp(response.getTimeStamp());
+            vo.setNonceStr(response.getNonceStr());
+            vo.setPackageValue(response.getPackageVal());
+            vo.setSignType(response.getSignType());
+            vo.setPaySign(response.getPaySign());
+            return vo;
+        } catch (BizException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Wx jsapi pay failed, orderId={}", orderId, ex);
             throw new BizException("微信下单失败：" + ex.getMessage());
         }
     }

@@ -5,6 +5,7 @@ import cn.org.starpivot.mall.portal.auth.PortalAuthConstants;
 import cn.org.starpivot.mall.portal.auth.PortalAuthType;
 import cn.org.starpivot.mall.portal.auth.config.PortalAuthProperties;
 import cn.org.starpivot.mall.portal.auth.domain.bo.PortalWechatLoginBo;
+import cn.org.starpivot.mall.portal.auth.domain.bo.PortalWechatMiniLoginBo;
 import cn.org.starpivot.mall.portal.auth.domain.model.PortalOAuthState;
 import cn.org.starpivot.mall.portal.auth.domain.model.WechatUserProfile;
 import cn.org.starpivot.mall.portal.auth.domain.vo.PortalWechatAuthorizeVo;
@@ -12,6 +13,7 @@ import cn.org.starpivot.mall.portal.auth.entity.UmsMemberAuth;
 import cn.org.starpivot.mall.portal.auth.service.PortalMemberAuthService;
 import cn.org.starpivot.mall.portal.auth.service.PortalTokenService;
 import cn.org.starpivot.mall.portal.auth.service.PortalWechatAuthService;
+import cn.org.starpivot.mall.portal.auth.wechat.WechatMiniProgramClient;
 import cn.org.starpivot.mall.portal.auth.wechat.WechatOAuthClient;
 import cn.org.starpivot.mall.portal.domain.vo.PortalLoginVo;
 import cn.org.starpivot.mall.ums.entity.UmsMember;
@@ -35,6 +37,7 @@ public class PortalWechatAuthServiceImpl implements PortalWechatAuthService {
 
     private final PortalAuthProperties authProperties;
     private final WechatOAuthClient wechatOAuthClient;
+    private final WechatMiniProgramClient miniProgramClient;
     private final PortalMemberAuthService memberAuthService;
     private final PortalTokenService tokenService;
     private final StringRedisTemplate stringRedisTemplate;
@@ -44,6 +47,34 @@ public class PortalWechatAuthServiceImpl implements PortalWechatAuthService {
     public boolean isWechatAvailable() {
         PortalAuthProperties.Wechat wechat = authProperties.getWechat();
         return (wechat.isEnabled() || wechat.isMockEnabled()) && wechatOAuthClient.isConfigured();
+    }
+
+    @Override
+    public boolean isMiniProgramAvailable() {
+        PortalAuthProperties.MiniProgram mini = authProperties.getMiniProgram();
+        return (mini.isEnabled() || mini.isMockEnabled()) && miniProgramClient.isConfigured();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PortalLoginVo loginByMiniProgram(PortalWechatMiniLoginBo bo, HttpServletRequest request) {
+        WechatUserProfile profile = miniProgramClient.code2Session(bo.getCode());
+        String identifier = profile.bindingIdentifier();
+
+        UmsMemberAuth existing = memberAuthService.findActiveAuth(PortalAuthType.WECHAT, identifier);
+        if (existing != null) {
+            UmsMember member = memberAuthService.requireActiveMember(existing.getMemberId());
+            memberAuthService.syncWechatProfile(member, profile);
+            memberAuthService.touchLastLogin(existing);
+            return tokenService.issueMemberToken(member, PortalAuthConstants.LOGIN_TYPE_WECHAT, request);
+        }
+
+        if (!authProperties.getMiniProgram().isAutoRegister()) {
+            throw new BizException("该微信未注册，请先注册");
+        }
+
+        UmsMember member = memberAuthService.registerByWechat(profile);
+        return tokenService.issueMemberToken(member, PortalAuthConstants.LOGIN_TYPE_AUTO_REGISTER, request);
     }
 
     @Override

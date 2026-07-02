@@ -15,6 +15,7 @@ public class PortalAuthProperties {
     private Sms sms = new Sms();
     private Password password = new Password();
     private Wechat wechat = new Wechat();
+    private MiniProgram miniProgram = new MiniProgram();
 
     @Data
     public static class Wechat {
@@ -51,5 +52,21 @@ public class PortalAuthProperties {
     public static class Password {
         private int maxFailCount = 5;
         private int lockMinutes = 30;
+    }
+
+    @Data
+    public static class MiniProgram {
+        /** 是否启用真实 jscode2session */
+        private boolean enabled = false;
+        /** 开发 Mock：无小程序凭证时可联调 */
+        private boolean mockEnabled = true;
+        private String appId = "";
+        private String appSecret = "";
+        private boolean autoRegister = true;
+        private String mockCode = "mock_mini_code";
+        private String mockUnionId = "mock_mini_union_001";
+        private String mockOpenId = "mock_mini_open_001";
+        private String mockNickname = "小程序测试用户";
+        private String mockAvatar = "";
     }
 }

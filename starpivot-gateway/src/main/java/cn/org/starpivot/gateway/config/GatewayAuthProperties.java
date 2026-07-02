@@ -85,6 +85,8 @@ public class GatewayAuthProperties {
 
             "/api/v1/portal/auth/wechat/**",
 
+            "/api/v1/portal/image/presigned-urls",
+
             "/api/v1/portal/pay/alipay/notify",
 
             "/**/actuator/**",

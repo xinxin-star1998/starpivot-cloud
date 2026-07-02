@@ -1,6 +1,6 @@
 # StarPivot Cloud
 
-星枢微服务 — 基于 **Spring Cloud Alibaba** 的企业级微服务脚手架，涵盖认证授权、系统管理、文件中心、代码生成、监控调度、商城（B 端 + C 端 Portal）与审批中台，配套 **Vue 3** 管理前端。
+星枢微服务 — 基于 **Spring Cloud Alibaba** 的企业级微服务脚手架，涵盖认证授权、系统管理、文件中心、代码生成、监控调度、商城（B 端 + C 端 Portal + 微信小程序）与审批中台，配套 **Vue 3** 管理前端。
 
 ---
 
@@ -74,7 +74,8 @@ starpivot-cloud/
 ├── starpivot-monitor/                # 监控与 Quartz 定时任务
 ├── starpivot-mall/                   # 商城 B 端 + C 端 Portal
 ├── starpivot-approval/               # 审批中台
-├── star-pivot-ui/                    # Vue 3 前端
+├── star-pivot-ui/                    # Vue 3 管理前端 + H5 Portal
+├── star-pivot-mp/                    # 微信小程序（uni-app）
 ├── nacos/config/                     # Nacos 配置模板
 ├── sql/                              # 数据库初始化脚本
 ├── docker/                           # 容器构建文件

@@ -52,6 +52,7 @@ public class PortalAuthServiceImpl implements PortalAuthService {
         vo.setPasswordLogin(true);
         vo.setSmsLogin(true);
         vo.setWechatLogin(wechatAuthService.isWechatAvailable());
+        vo.setMiniProgramLogin(wechatAuthService.isMiniProgramAvailable());
         vo.setQqLogin(false);
         vo.setSmsMockEnabled(authProperties.getSms().isMockEnabled());
         vo.setCaptchaRequired(false);

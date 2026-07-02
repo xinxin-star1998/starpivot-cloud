@@ -1,6 +1,7 @@
 package cn.org.starpivot.mall.pay.controller;
 
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.mall.pay.domain.vo.WxJsapiPayVo;
 import cn.org.starpivot.mall.pay.domain.vo.WxNativePayVo;
 import cn.org.starpivot.mall.pay.service.WxPayService;
 import cn.org.starpivot.mall.pay.service.impl.WxPayServiceImpl;
@@ -33,6 +34,7 @@ public class PortalWxPayController {
         Map<String, Object> data = new HashMap<>();
         data.put("enabled", wxPayService.isAvailable());
         data.put("mock", wxPayService.isMockMode());
+        data.put("jsapi", wxPayService.isAvailable());
         return Result.success(data);
     }
 
@@ -41,6 +43,13 @@ public class PortalWxPayController {
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<WxNativePayVo> nativePay(@PathVariable("orderId") Long orderId) {
         return Result.success(wxPayService.createNativePay(PortalMemberContext.requireMemberId(), orderId));
+    }
+
+    @Operation(summary = "发起微信 JSAPI 支付（小程序）")
+    @PostMapping("/jsapi/{orderId}")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<WxJsapiPayVo> jsapiPay(@PathVariable("orderId") Long orderId) {
+        return Result.success(wxPayService.createJsapiPay(PortalMemberContext.requireMemberId(), orderId));
     }
 
     @Operation(summary = "Mock 微信确认支付（仅 mock 模式）")

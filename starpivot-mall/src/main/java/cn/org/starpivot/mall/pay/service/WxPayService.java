@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.pay.service;
 
+import cn.org.starpivot.mall.pay.domain.vo.WxJsapiPayVo;
 import cn.org.starpivot.mall.pay.domain.vo.WxNativePayVo;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -13,6 +14,8 @@ public interface WxPayService {
     boolean isMockMode();
 
     WxNativePayVo createNativePay(Long memberId, Long orderId);
+
+    WxJsapiPayVo createJsapiPay(Long memberId, Long orderId);
 
     /** Mock 模式下模拟支付成功 */
     void mockConfirmPaid(Long memberId, Long orderId);

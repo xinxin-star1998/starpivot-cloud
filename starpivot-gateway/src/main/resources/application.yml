@@ -49,6 +49,10 @@ spring:
           uri: lb://starpivot-mall
           predicates:
             - Path=/api/${starpivot.api.version}/mall/**,/api/${starpivot.api.version}/portal/**
+        - id: starpivot-mall-local-storage
+          uri: lb://starpivot-mall
+          predicates:
+            - Path=/local-storage/**
         # 审批中台
         - id: starpivot-approval
           uri: lb://starpivot-approval
@@ -79,6 +83,9 @@ starpivot:
       - /api/${starpivot.api.version}/portal/product/**
       - /api/${starpivot.api.version}/portal/subject/**
       - /api/${starpivot.api.version}/portal/seckill/**
+      - /api/${starpivot.api.version}/portal/comment/commentPageList
+      - /api/${starpivot.api.version}/portal/comment/can-comment/**
+      - /api/${starpivot.api.version}/portal/comment/summary/**
       - /api/${starpivot.api.version}/portal/region/**
       - /api/${starpivot.api.version}/portal/member/register
       - /api/${starpivot.api.version}/portal/member/login
@@ -87,6 +94,8 @@ starpivot:
       - /api/${starpivot.api.version}/portal/auth/sms/**
       - /api/${starpivot.api.version}/portal/auth/login/password
       - /api/${starpivot.api.version}/portal/auth/wechat/**
+      - /api/${starpivot.api.version}/portal/image/presigned-urls
+      - /local-storage/**
       - /api/${starpivot.api.version}/portal/pay/alipay/notify
       - /**/actuator/**
       - /**/doc.html

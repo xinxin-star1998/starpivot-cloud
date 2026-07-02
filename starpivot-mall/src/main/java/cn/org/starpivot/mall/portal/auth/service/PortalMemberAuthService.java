@@ -1,8 +1,8 @@
 package cn.org.starpivot.mall.portal.auth.service;
 
 import cn.org.starpivot.mall.portal.auth.PortalAuthType;
-import cn.org.starpivot.mall.portal.auth.domain.vo.PortalMemberAuthVo;
 import cn.org.starpivot.mall.portal.auth.domain.model.WechatUserProfile;
+import cn.org.starpivot.mall.portal.auth.domain.vo.PortalMemberAuthVo;
 import cn.org.starpivot.mall.portal.auth.entity.UmsMemberAuth;
 import cn.org.starpivot.mall.ums.entity.UmsMember;
 
@@ -41,4 +41,7 @@ public interface PortalMemberAuthService {
     String resolveSmsMobile(Long memberId);
 
     UmsMember requireActiveMember(Long memberId);
+
+    /** 解析会员微信绑定中的 openid（JSAPI 支付用） */
+    String resolveWechatOpenId(Long memberId);
 }

@@ -1,10 +1,7 @@
 package cn.org.starpivot.mall.portal.auth.controller;
 
 import cn.org.starpivot.common.domain.Result;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalPasswordLoginBo;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalSmsLoginBo;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalSmsSendBo;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalWechatLoginBo;
+import cn.org.starpivot.mall.portal.auth.domain.bo.*;
 import cn.org.starpivot.mall.portal.auth.domain.vo.PortalAuthConfigVo;
 import cn.org.starpivot.mall.portal.auth.domain.vo.PortalSmsSendVo;
 import cn.org.starpivot.mall.portal.auth.domain.vo.PortalWechatAuthorizeVo;
@@ -76,6 +73,13 @@ public class PortalAuthController {
     public Result<PortalLoginVo> wechatLogin(@Valid @RequestBody PortalWechatLoginBo bo,
                                              HttpServletRequest request) {
         return Result.success(wechatAuthService.loginByWechat(bo, request));
+    }
+
+    @Operation(summary = "微信小程序登录")
+    @PostMapping("/wechat/mini/login")
+    public Result<PortalLoginVo> wechatMiniLogin(@Valid @RequestBody PortalWechatMiniLoginBo bo,
+                                                 HttpServletRequest request) {
+        return Result.success(wechatAuthService.loginByMiniProgram(bo, request));
     }
 
     @Operation(summary = "微信注册")

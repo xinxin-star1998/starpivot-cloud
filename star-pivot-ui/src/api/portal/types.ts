@@ -35,6 +35,7 @@ export interface PortalAuthConfig {
   passwordLogin: boolean
   smsLogin: boolean
   wechatLogin: boolean
+  miniProgramLogin?: boolean
   qqLogin: boolean
   smsMockEnabled: boolean
   captchaRequired: boolean

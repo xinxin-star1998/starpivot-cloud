@@ -49,7 +49,9 @@ public class MallSecurityConfig {
                                 "/portal/auth/login/password",
                                 "/portal/auth/wechat/**",
                                 "/portal/pay/alipay/notify",
-                                "/portal/pay/wx/notify"
+                                "/portal/pay/wx/notify",
+                                "/portal/image/presigned-urls",
+                                "/local-storage/**"
                         ).permitAll()
                         .anyRequest().authenticated());
         return http.build();

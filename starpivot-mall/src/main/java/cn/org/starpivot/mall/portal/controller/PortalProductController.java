@@ -2,6 +2,7 @@ package cn.org.starpivot.mall.portal.controller;
 
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.mall.pms.support.MallImageDisplaySupport;
 import cn.org.starpivot.mall.portal.domain.bo.PortalProductSearchBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductDetailVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductListVo;
@@ -13,22 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-/**
- * C端-商品控制器。
- * <p>
- * 商品检索与详情（仅上架商品）。
- * </p>
- * <ul>
- *   <li>{@link RestController} — REST 控制器，响应体自动序列化为 JSON</li>
- *   <li>{@link RequestMapping} — 基础路径 {@code /portal/product}</li>
- *   <li>{@link RequiredArgsConstructor} — 构造器注入服务依赖</li>
- *   <li>{@link Validated} — 启用方法级参数校验</li>
- *   <li>{@link Tag} — OpenAPI 分组「C端-商品」</li>
- * </ul>
- *
- * @see PortalProductService
- */
+import java.util.Map;
 
 @RestController
 @RequestMapping("/portal/product")
@@ -38,25 +24,14 @@ import java.util.List;
 public class PortalProductController {
 
     private final PortalProductService portalProductService;
+    private final MallImageDisplaySupport mallImageDisplaySupport;
 
-    /**
-     * 商品搜索/列表。
-     *
-     * @param bo 业务请求参数
-     * @return 分页查询结果
-     */
     @Operation(summary = "商品搜索/列表")
     @PostMapping("/search")
     public Result<PageResponse<PortalProductListVo>> search(@RequestBody PortalProductSearchBo bo) {
         return Result.success(portalProductService.search(bo));
     }
 
-    /**
-     * 商品详情。
-     *
-     * @param id 主键 ID
-     * @return 业务数据
-     */
     @Operation(summary = "商品详情")
     @GetMapping("/{id}")
     public Result<PortalProductDetailVo> detail(@PathVariable("id") Long id) {
@@ -70,5 +45,11 @@ public class PortalProductController {
             @RequestParam(value = "limit", defaultValue = "8") int limit) {
         int safeLimit = Math.max(1, Math.min(limit, 20));
         return Result.success(portalProductService.listRelated(id, safeLimit));
+    }
+
+    @Operation(summary = "批量获取商品展示图 URL（公开）")
+    @PostMapping("/presigned-urls")
+    public Result<Map<String, String>> presignedUrls(@RequestBody List<String> objectNames) {
+        return Result.success(mallImageDisplaySupport.resolveDisplayUrls(objectNames));
     }
 }

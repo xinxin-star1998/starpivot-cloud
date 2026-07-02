@@ -256,6 +256,37 @@ public class PortalMemberAuthServiceImpl implements PortalMemberAuthService {
         return member;
     }
 
+    @Override
+    public String resolveWechatOpenId(Long memberId) {
+        List<UmsMemberAuth> auths = findActiveAuthsByMemberId(memberId);
+        for (UmsMemberAuth auth : auths) {
+            if (PortalAuthType.WECHAT.getCode() != auth.getAuthType()) {
+                continue;
+            }
+            String openId = parseOpenIdFromExtra(auth.getExtraJson());
+            if (StringUtils.hasText(openId)) {
+                return openId;
+            }
+        }
+        throw new BizException("请先使用微信登录后再支付");
+    }
+
+    private static String parseOpenIdFromExtra(String extraJson) {
+        if (!StringUtils.hasText(extraJson)) {
+            return null;
+        }
+        int idx = extraJson.indexOf("\"openid\":\"");
+        if (idx < 0) {
+            return null;
+        }
+        int start = idx + "\"openid\":\"".length();
+        int end = extraJson.indexOf('"', start);
+        if (end <= start) {
+            return null;
+        }
+        return extraJson.substring(start, end);
+    }
+
     private PortalMemberAuthVo toVo(UmsMemberAuth auth) {
         PortalAuthType type = PortalAuthType.fromCode(auth.getAuthType());
         PortalMemberAuthVo vo = new PortalMemberAuthVo();

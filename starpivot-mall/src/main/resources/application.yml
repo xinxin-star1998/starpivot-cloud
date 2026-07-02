@@ -61,6 +61,16 @@ starpivot:
         mock-union-id: mock_union_001
         mock-open-id: mock_open_001
         mock-nickname: 微信测试用户
+      mini-program:
+        enabled: ${MALL_MINI_PROGRAM_ENABLED:false}
+        mock-enabled: ${MALL_MINI_PROGRAM_MOCK:true}
+        app-id: ${MALL_MINI_PROGRAM_APP_ID:}
+        app-secret: ${MALL_MINI_PROGRAM_APP_SECRET:}
+        auto-register: true
+        mock-code: mock_mini_code
+        mock-union-id: mock_mini_union_001
+        mock-open-id: mock_mini_open_001
+        mock-nickname: 小程序测试用户
     alipay:
       enabled: ${MALL_ALIPAY_ENABLED:false}
       app-id: ${MALL_ALIPAY_APP_ID:}

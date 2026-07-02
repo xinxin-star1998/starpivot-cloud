@@ -19,6 +19,7 @@ spring:
 
 starpivot:
   mall:
+    public-base-url: ${MALL_PUBLIC_BASE_URL:http://localhost:8080}
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     mock-pay-enabled: ${MALL_MOCK_PAY_ENABLED:false}
     order:
@@ -41,6 +42,13 @@ starpivot:
         enabled: ${MALL_WECHAT_ENABLED:false}
         mock-enabled: ${MALL_WECHAT_MOCK:true}
         redirect-uri: ${MALL_WECHAT_REDIRECT_URI:http://localhost:3000/portal/login/wechat/callback}
+      mini-program:
+        enabled: ${MALL_MINI_PROGRAM_ENABLED:false}
+        mock-enabled: ${MALL_MINI_PROGRAM_MOCK:true}
+        app-id: ${MALL_MINI_PROGRAM_APP_ID:}
+        app-secret: ${MALL_MINI_PROGRAM_APP_SECRET:}
+        auto-register: true
+        mock-code: mock_mini_code
     alipay:
       enabled: ${MALL_ALIPAY_ENABLED:false}
       app-id: ${MALL_ALIPAY_APP_ID:}
@@ -65,3 +73,12 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
+
+# 商品/营销图存储（与 system、file 服务共用 OSS 桶；未配置时回退本地磁盘导致小程序 404）
+oss:
+  enabled: ${OSS_ENABLED:true}
+  endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
+  access-key-id: ${OSS_ACCESS_KEY_ID:LTAI5tG8uSJeTeuRYEY4x3nG}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:UdbPwjfPHoobovEhJ9hsZ3c9sdWqGR}
+  url-prefix: ${OSS_URL_PREFIX:}
+  bucket-name: ${OSS_BUCKET_NAME:star-pivot}
