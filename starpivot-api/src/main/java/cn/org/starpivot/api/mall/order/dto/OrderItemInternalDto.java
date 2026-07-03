@@ -1,0 +1,1 @@
+package cn.org.starpivot.api.mall.order.dto;import lombok.Data;import java.io.Serializable;@Datapublic class OrderItemInternalDto implements Serializable {    private Long skuId;    private String skuName;    private Integer skuQuantity;}

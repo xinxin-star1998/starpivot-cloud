@@ -127,7 +127,7 @@ spring:
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `MQ_ENABLED` | `false`（common）/ `true`（mq-config） | 是否启用 MQ |
+| `MQ_ENABLED` | `false` | 是否启用 MQ（common 与 mq-config 一致；启用审批/登录日志等场景时设为 `true` 并 re-import） |
 | `RABBITMQ_HOST` | `127.0.0.1` | Broker 地址 |
 | `RABBITMQ_PORT` | `5672` | AMQP 端口 |
 | `RABBITMQ_USERNAME` | `admin` | 用户名 |
@@ -153,6 +153,10 @@ spring:
 | `audit.login-log.created` | `starpivot.system.login-log` | auth | system | **已接入** |
 | `audit.oper-log.created` | `starpivot.system.oper-log` | 各服务 | system | 预留 |
 | `job.oper-log.clean` | `starpivot.system.job-handler` | monitor | system | 预留 |
+| `approval.instance.finished.mall.purchase` | `starpivot.mall.approval-finished.purchase` | approval | ware | **已接入** |
+| `approval.instance.finished.mall.spu` | `starpivot.mall.approval-finished.spu` | approval | product | **已接入** |
+| `approval.instance.finished.mall.return` | `starpivot.mall.approval-finished.return` | approval | order | **已接入** |
+| `approval.instance.finished.mall.coupon` | `starpivot.mall.approval-finished.coupon` | approval | promotion | **已接入** |
 
 拓扑在 `starpivot-mq` 的 `RabbitTopologyConfiguration` 中声明，**system 启动且 MQ 启用时自动创建**。
 

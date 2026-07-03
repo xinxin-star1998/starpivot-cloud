@@ -1,0 +1,1 @@
+package cn.org.starpivot.api.mall.promotion.dto;import lombok.Data;import java.io.Serializable;import java.math.BigDecimal;@Datapublic class CouponCalculateResultDto implements Serializable {    private BigDecimal discountAmount;    private Long couponId;}

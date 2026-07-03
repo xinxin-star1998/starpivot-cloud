@@ -289,8 +289,8 @@
 
 | 项 | 值 |
 |----|-----|
-| Routing Key | `approval.instance.finished` |
-| 消费队列（mall） | `starpivot.mall.approval-finished` |
+| Routing Key（商城） | `approval.instance.finished.mall.{bizType}`（purchase / spu / return / coupon） |
+| 消费队列 | `starpivot.mall.approval-finished.purchase` → ware；`...spu` → product；`...return` → order；`...coupon` → promotion |
 | 消息体 | `ApprovalFinishedMessage`（instanceId、bizModule、bizType、bizKey、result、starterId、finishTime） |
 | result | `APPROVED` / `REJECTED` / `WITHDRAWN` |
 

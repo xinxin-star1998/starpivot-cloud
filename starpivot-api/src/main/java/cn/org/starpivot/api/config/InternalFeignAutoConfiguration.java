@@ -63,4 +63,49 @@ public class InternalFeignAutoConfiguration {
     public ApprovalInternalClientFallbackFactory approvalInternalClientFallbackFactory() {
         return new ApprovalInternalClientFallbackFactory();
     }
+
+    @Bean
+    public OrderInternalClientFallbackFactory orderInternalClientFallbackFactory() {
+        return new OrderInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public MallOrderInternalClientFallbackFactory mallOrderInternalClientFallbackFactory() {
+        return new MallOrderInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public MallStockInternalClientFallbackFactory mallStockInternalClientFallbackFactory() {
+        return new MallStockInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public MallWareInternalClientFallbackFactory mallWareInternalClientFallbackFactory() {
+        return new MallWareInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public WareInternalClientFallbackFactory wareInternalClientFallbackFactory() {
+        return new WareInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public ProductInternalClientFallbackFactory productInternalClientFallbackFactory() {
+        return new ProductInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public MemberInternalClientFallbackFactory memberInternalClientFallbackFactory() {
+        return new MemberInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public PromotionInternalClientFallbackFactory promotionInternalClientFallbackFactory() {
+        return new PromotionInternalClientFallbackFactory();
+    }
+
+    @Bean
+    public CartInternalClientFallbackFactory cartInternalClientFallbackFactory() {
+        return new CartInternalClientFallbackFactory();
+    }
 }

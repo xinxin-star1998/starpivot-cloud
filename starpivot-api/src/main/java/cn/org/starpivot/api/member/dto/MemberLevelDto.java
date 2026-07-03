@@ -17,6 +17,6 @@ public class MemberLevelDto implements Serializable {
     private Integer priviledgeSignIn;
     private String priviledgeComment;
     private String priviledgePromotion;
-    private String priviledgeMemberPrice;
-    private String priviledgeBirthday;
+    private Integer priviledgeMemberPrice;
+    private Integer priviledgeBirthday;
 }

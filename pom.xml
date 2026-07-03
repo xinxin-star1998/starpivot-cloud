@@ -82,7 +82,7 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <!-- 根项目无 main 类，跳过 spring-boot:run，避免 -pl star-pivot-controller -am 时在根上执行报错 -->
+            <!-- 根项目无 main 类，跳过 spring-boot:run，避免 -pl 某子模块 -am 时在根上执行报错 -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

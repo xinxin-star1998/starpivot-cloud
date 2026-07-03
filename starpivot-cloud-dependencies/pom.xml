@@ -318,6 +318,36 @@
             </dependency>
             <dependency>
                 <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall-common</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall-member</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall-product</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall-ware</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall-order</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-mall-promotion</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.org.starpivot</groupId>
                 <artifactId>starpivot-approval</artifactId>
                 <version>${star-pivot.version}</version>
             </dependency>

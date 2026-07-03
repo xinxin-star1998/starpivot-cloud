@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * 商城主服务订单内部接口（供 member 服务计算奖励时拉取订单上下文）。
  */
 @FeignClient(
-        name = "starpivot-mall",
+        name = "starpivot-mall-order",
         contextId = "mallOrderInternalClient",
         path = "/api/${starpivot.api.version:v1}",
         fallbackFactory = MallOrderInternalClientFallbackFactory.class)

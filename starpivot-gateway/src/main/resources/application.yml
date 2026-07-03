@@ -44,11 +44,32 @@ spring:
           uri: lb://starpivot-monitor
           predicates:
             - Path=/api/${starpivot.api.version}/monitor/**
-        # 商城服务（B 端 /mall + C 端 /portal）
-        - id: starpivot-mall
-          uri: lb://starpivot-mall
+        # 商城会员服务（C 端会员 / 认证 / 地址 / 收藏 + B 端会员管理）
+        - id: starpivot-mall-member
+          uri: lb://starpivot-mall-member
           predicates:
-            - Path=/api/${starpivot.api.version}/mall/**,/api/${starpivot.api.version}/portal/**
+            - Path=/api/${starpivot.api.version}/portal/member/**,/api/${starpivot.api.version}/portal/auth/**,/api/${starpivot.api.version}/portal/address/**,/api/${starpivot.api.version}/portal/collect/**,/api/${starpivot.api.version}/mall/member/**,/api/${starpivot.api.version}/mall/member-level/**,/api/${starpivot.api.version}/mall/member-growth/**,/api/${starpivot.api.version}/mall/member-statistics/**,/api/${starpivot.api.version}/mall/member-collect/**,/api/${starpivot.api.version}/mall/member-login-log/**
+        # 商城商品服务（PMS + ES + C 端商品/评价/图片）
+        - id: starpivot-mall-product
+          uri: lb://starpivot-mall-product
+          predicates:
+            - Path=/api/${starpivot.api.version}/portal/product/**,/api/${starpivot.api.version}/portal/image/**,/api/${starpivot.api.version}/portal/comment/**,/api/${starpivot.api.version}/mall/product/**,/api/${starpivot.api.version}/mall/sku/**,/api/${starpivot.api.version}/mall/brand/**,/api/${starpivot.api.version}/mall/category/**,/api/${starpivot.api.version}/mall/attr/**,/api/${starpivot.api.version}/mall/group/**,/api/${starpivot.api.version}/mall/comment/**,/api/${starpivot.api.version}/mall/product-search/**,/api/${starpivot.api.version}/mall/goods/**
+        # 商城仓储服务（WMS + 采购 + B 端地址 + C 端省市区）
+        - id: starpivot-mall-ware
+          uri: lb://starpivot-mall-ware
+          predicates:
+            - Path=/api/${starpivot.api.version}/mall/wareinfo/**,/api/${starpivot.api.version}/mall/ware-sku/**,/api/${starpivot.api.version}/mall/ware-task/**,/api/${starpivot.api.version}/mall/purchase/**,/api/${starpivot.api.version}/mall/address/**,/api/${starpivot.api.version}/portal/region/**
+        # 商城订单服务（OMS + 支付 + C 端购物车/订单）
+        - id: starpivot-mall-order
+          uri: lb://starpivot-mall-order
+          predicates:
+            - Path=/api/${starpivot.api.version}/portal/order/**,/api/${starpivot.api.version}/portal/cart/**,/api/${starpivot.api.version}/portal/pay/**,/api/${starpivot.api.version}/mall/order/**,/api/${starpivot.api.version}/mall/order-return/**,/api/${starpivot.api.version}/mall/order-setting/**,/api/${starpivot.api.version}/mall/payment/**,/api/${starpivot.api.version}/mall/refund/**
+        # 商城营销服务（SMS + C 端首页/优惠券/秒杀/专题）
+        - id: starpivot-mall-promotion
+          uri: lb://starpivot-mall-promotion
+          predicates:
+            - Path=/api/${starpivot.api.version}/portal/home/**,/api/${starpivot.api.version}/portal/coupon/**,/api/${starpivot.api.version}/portal/seckill/**,/api/${starpivot.api.version}/portal/subject/**,/api/${starpivot.api.version}/mall/coupon/**,/api/${starpivot.api.version}/mall/coupon-history/**,/api/${starpivot.api.version}/mall/home-adv/**,/api/${starpivot.api.version}/mall/category-hot/**,/api/${starpivot.api.version}/mall/subject/**,/api/${starpivot.api.version}/mall/member-price/**,/api/${starpivot.api.version}/mall/sku-ladder/**,/api/${starpivot.api.version}/mall/sku-full-reduction/**,/api/${starpivot.api.version}/mall/spu-bounds/**,/api/${starpivot.api.version}/mall/seckill-session/**,/api/${starpivot.api.version}/mall/seckill-promotion/**
+        # 商城静态资源 BFF（本地磁盘 /local-storage/**）
         - id: starpivot-mall-local-storage
           uri: lb://starpivot-mall
           predicates:

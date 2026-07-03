@@ -1,0 +1,1 @@
+package cn.org.starpivot.api.product.dto;import lombok.Data;import java.io.Serializable;@Datapublic class SpuDto implements Serializable {    private Long id;    private String spuName;    private Long catalogId;    private Long brandId;    private Integer publishStatus;    private String auditStatus;}

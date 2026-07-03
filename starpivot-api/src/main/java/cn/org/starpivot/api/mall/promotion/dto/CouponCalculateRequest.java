@@ -1,0 +1,1 @@
+package cn.org.starpivot.api.mall.promotion.dto;import lombok.Data;import java.io.Serializable;import java.util.List;@Datapublic class CouponCalculateRequest implements Serializable {    private Long memberId;    private Long couponHistoryId;    private List<CouponTrialItemDto> items;}

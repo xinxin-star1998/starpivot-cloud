@@ -1,0 +1,1 @@
+package cn.org.starpivot.api.product.dto;import lombok.Data;import java.io.Serializable;@Datapublic class CategoryDto implements Serializable {    private Long catId;    private String name;    private Long parentCid;    private Long catLevel;    private Long showStatus;    private Long sort;    private String icon;}

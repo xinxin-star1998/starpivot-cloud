@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -113,21 +114,20 @@ public class ApprovalFinishedPublisher {
 
 
     private void doPublish(ApprovalFinishedMessage message) {
-
+        String routingKey = resolveRoutingKey(message);
         try {
-
-            mqPublisher.publish(MqRoutingKeys.APPROVAL_INSTANCE_FINISHED,
-
-                    MqRoutingKeys.APPROVAL_INSTANCE_FINISHED, message);
-
+            mqPublisher.publish(routingKey, MqRoutingKeys.APPROVAL_INSTANCE_FINISHED, message);
         } catch (Exception ex) {
-
-            log.error("审批完结 MQ 发送失败: instanceId={}, result={}",
-
-                    message.getInstanceId(), message.getResult(), ex);
-
+            log.error("审批完结 MQ 发送失败: instanceId={}, routingKey={}, result={}",
+                    message.getInstanceId(), routingKey, message.getResult(), ex);
         }
+    }
 
+    private String resolveRoutingKey(ApprovalFinishedMessage message) {
+        if ("mall".equals(message.getBizModule()) && StringUtils.hasText(message.getBizType())) {
+            return MqRoutingKeys.mallApprovalFinished(message.getBizType());
+        }
+        return MqRoutingKeys.APPROVAL_INSTANCE_FINISHED;
     }
 
 }

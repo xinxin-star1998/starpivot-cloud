@@ -1,41 +1,38 @@
 # StarPivot 商城菜单与接口对照
 
-> 对应微服务：`starpivot-mall`  
+> 商城已拆分为 5 个领域微服务，启动与端口见 [mall-startup.md](./mall-startup.md)。  
 > 详细表设计与开发进度见 [商城开发事项](./商城开发事项.md)
 
 ## 服务信息
 
 | 项 | 值 |
 |---|---|
-| 服务名 | `starpivot-mall` |
-| 端口 | `9205`（环境变量 `SERVER_PORT`） |
+| 微服务 | `starpivot-mall-member` (9206)、`product` (9207)、`ware` (9208)、`order` (9209)、`promotion` (9212)、静态 BFF `starpivot-mall` (9205) |
+| 统一入口 | 网关 `starpivot-gateway:8080` |
 | API 前缀 | `/api/v1`（环境变量 `API_VERSION`） |
-| 业务库 | `star_pivot_mall` |
+| 业务库 | `star_pivot_mall`（各商城服务共用） |
 | 系统库 | `star_pivot`（菜单/权限） |
-| 系统库名配置 | mall 通过 `SYSTEM_DB_SCHEMA` 跨库读 RBAC，**须与 system 服务库名一致**（本地常见 `starpivot`，Docker 多为 `star_pivot`） |
+| 系统库名配置 | 商城服务通过 `SYSTEM_DB_SCHEMA` 跨库读 RBAC，**须与 system 服务库名一致**（推荐 `star_pivot`） |
 | 权限策略 | `menu-permission`（见 `docs/security/permission-strategy.md`） |
-| 接口文档 | `http://localhost:9205/api/v1/doc.html` |
+| 接口文档 | 经网关：`http://localhost:8080/api/v1/doc.html`；或直连各服务 `http://localhost:{port}/api/v1/doc.html` |
 
-> 当前已实现 **39** 个 Controller（B 端 `/api/v1/mall/...` + C 端 `/api/v1/portal/...`）。  
+> B 端 `/api/v1/mall/...` 与 C 端 `/api/v1/portal/...` 由网关按路径转发至对应微服务。  
 > 后台前端 `star-pivot-ui/src/views/mall/` 与 C 端 `views/portal/` **均已对接**。
 
-## 模块划分
+## 模块划分（按微服务）
 
-| 前缀 | 模块 | Java 包 | 说明 |
-|---|---|---|---|
-| portal | C 端商城 | `mall.portal` | 首页、商品、会员、购物车、地址、下单 |
-| pms | 商品系统 | `mall.pms` | 分类、品牌、属性、SPU/SKU、评论 |
-| wms | 仓储系统 | `mall.wms` | 仓库、库存、地区、采购、工作单 |
-| oms | 订单系统 | `mall.oms` | 订单、支付、退货、订单设置 |
-| sms | 营销中心 | `mall.sms` | 优惠券、专题、秒杀、满减/阶梯价、会员价、轮播 |
-| ums | 会员中心 | `mall.ums` | 会员、等级、积分成长、统计 |
-| — | 内容运营 | `mall.sms` / `mall.pms` | 轮播在 sms；评论在 pms |
+| 前缀 | 模块 | 微服务 | Java 包 | 说明 |
+|---|---|---|---|---|
+| portal / ums | C 端 / 会员 | member | `mall.portal` / `mall.ums` | 首页入口、会员、地址、收藏 |
+| pms | 商品系统 | product | `mall.pms` | 分类、品牌、属性、SPU/SKU、评论 |
+| wms | 仓储系统 | ware | `mall.wms` | 仓库、库存、地区、采购、工作单 |
+| oms | 订单系统 | order | `mall.oms` | 订单、支付、退货、购物车 |
+| sms | 营销中心 | promotion | `mall.sms` | 优惠券、专题、秒杀、满减/阶梯价、轮播 |
 
 ## 菜单对照（以 `star_pivot.sql` 为准）
 
 > 组件路径 = 前端 `views` 下路径（不含 `.vue`）。  
-> 菜单 ID 以 `star_pivot.sql` 的 **180~210** 为准；`init_mall_menus.sql` 仅补充 **280~303**（C 端/SKU/按钮权限），勿与 200~210 冲突。  
-> 若曾执行旧版 `init_mall_menus.sql`，请依次执行 `migrate_mall_menus_v2.sql` → `init_mall_menus.sql`。
+> 菜单 ID 以 `star_pivot.sql` 的 **180~210** 为准；`sys_menu.sql` 可补充 C 端/SKU/按钮权限。
 
 ### 商品系统 PMS（menu 24~31, 28, 281）
 

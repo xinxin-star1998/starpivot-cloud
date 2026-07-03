@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:9206}
+  port: ${SERVER_PORT:9213}
   servlet:
     context-path: /api/${starpivot.api.version}
 

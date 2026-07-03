@@ -7,14 +7,33 @@ StarPivot 微服务配置统一托管在 Nacos，本地 `application.yml` 仅保
 | Data ID | 说明 |
 |---------|------|
 | `common-config.yaml` | 公共配置：Redis、JWT、内部 Token、日志 |
+| `mq-config.yaml` | RabbitMQ（审批/MQ 消费者） |
 | `starpivot-gateway.yaml` | 网关 Redis、日志 |
 | `starpivot-auth.yaml` | 认证服务 Redis、健康检查 |
 | `starpivot-system.yaml` | 数据源、OSS、Druid |
 | `starpivot-file.yaml` | 数据源、OSS |
 | `starpivot-generator.yaml` | 数据源、代码生成参数 |
 | `starpivot-monitor.yaml` | 数据源、Druid 监控、Quartz |
+| `starpivot-approval.yaml` | 审批服务 |
+| `starpivot-mall.yaml` | 商城静态资源 BFF（本地磁盘路径） |
+| `starpivot-mall-member.yaml` | 会员服务：数据源、短信/微信登录 |
+| `starpivot-mall-product.yaml` | 商品服务：数据源、ES、OSS |
+| `starpivot-mall-ware.yaml` | 仓储服务：数据源 |
+| `starpivot-mall-order.yaml` | 订单服务：数据源、支付配置 |
+| `starpivot-mall-promotion.yaml` | 营销服务：数据源、秒杀 |
 
 Group 默认：`DEFAULT_GROUP`
+
+## 商城专用脚本
+
+| 脚本 | 说明 |
+|------|------|
+| `import-mall-config.ps1` / `.sh` | 仅发布 common + mq + `starpivot-mall*` |
+| `import-config.ps1 -Profile Mall` | 同上（Windows） |
+| `import-config.sh Mall` | 同上（Linux/macOS） |
+| `start-mall.ps1` / `.sh` | 本地批量启动商城微服务（网关需单独起） |
+
+商城启动顺序、Feign 依赖、网关路由详见 [docs/mall-startup.md](../docs/mall-startup.md)。
 
 ## 快速导入
 
@@ -35,12 +54,20 @@ $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
 3. 发布配置到 Nacos：
 
 ```powershell
-# Windows
+# Windows — 全部
 .\nacos\import-config.ps1
 
+# 仅商城微服务
+.\nacos\import-mall-config.ps1
+# 或
+.\nacos\import-config.ps1 -Profile Mall
+```
+
+```bash
 # Linux / macOS
-chmod +x nacos/import-config.sh
-./nacos/import-config.sh
+chmod +x nacos/import-config.sh nacos/import-mall-config.sh
+./nacos/import-config.sh All
+./nacos/import-mall-config.sh
 ```
 
 4. 打开 Nacos 控制台确认：http://localhost:8848/nacos（默认账号 `nacos` / `nacos`）

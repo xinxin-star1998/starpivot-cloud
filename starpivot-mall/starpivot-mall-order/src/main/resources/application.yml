@@ -1,0 +1,36 @@
+server:
+  port: ${SERVER_PORT:9209}
+  servlet:
+    context-path: /api/${starpivot.api.version}
+
+spring:
+  application:
+    name: starpivot-mall-order
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import:
+      - optional:classpath:application-nacos.yml
+      - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+  datasource:
+    url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_mall?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${MALL_DB_USERNAME:root}
+    password: ${MALL_DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: cn.org.starpivot.mall.oms.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
+
+starpivot:
+  api:
+    version: ${API_VERSION:v1}
+  mall:
+    system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
+  security:
+    authority-strategy: menu-permission

@@ -341,9 +341,13 @@ withdraw(instanceId, starterId):
 ```java
 // MqRoutingKeys
 public static final String APPROVAL_INSTANCE_FINISHED = "approval.instance.finished";
+// 商城按 bizType 路由：approval.instance.finished.mall.{purchase|spu|return|coupon}
 
-// MqQueueNames（各业务服务自建消费队列）
-public static final String MALL_APPROVAL_FINISHED = "starpivot.mall.approval-finished";
+// MqQueueNames（各商城微服务独立消费队列）
+public static final String MALL_APPROVAL_FINISHED_PURCHASE = "starpivot.mall.approval-finished.purchase";
+public static final String MALL_APPROVAL_FINISHED_SPU = "starpivot.mall.approval-finished.spu";
+public static final String MALL_APPROVAL_FINISHED_RETURN = "starpivot.mall.approval-finished.return";
+public static final String MALL_APPROVAL_FINISHED_COUPON = "starpivot.mall.approval-finished.coupon";
 ```
 
 **消息体 `ApprovalFinishedMessage`**

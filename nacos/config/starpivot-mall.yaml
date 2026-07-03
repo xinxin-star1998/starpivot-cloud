@@ -1,92 +1,9 @@
-# starpivot-mall 专属配置
+# starpivot-mall 专属配置（静态资源 BFF）
 # Nacos Data ID: starpivot-mall.yaml  |  Group: DEFAULT_GROUP
-# 商城服务连接独立库 star_pivot_mall；系统权限仍在 star_pivot
 
-spring:
-  datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: ${MALL_DB_DRIVER:com.mysql.cj.jdbc.Driver}
-    url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_mall?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
-    username: ${MALL_DB_USERNAME:root}
-    password: ${MALL_DB_PASSWORD:root}
-    druid:
-      initial-size: ${MALL_DB_INITIAL_SIZE:5}
-      min-idle: ${MALL_DB_MIN_IDLE:5}
-      max-active: ${MALL_DB_MAX_ACTIVE:20}
-      max-wait: ${MALL_DB_MAX_WAIT:60000}
-      validation-query: SELECT 1
-      test-while-idle: true
+file:
+  storage:
+    local-path: ${FILE_STORAGE_LOCAL_PATH:${user.home}/starpivot/uploads}
 
-starpivot:
-  mall:
-    public-base-url: ${MALL_PUBLIC_BASE_URL:http://localhost:8080}
-    system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
-    mock-pay-enabled: ${MALL_MOCK_PAY_ENABLED:false}
-    order:
-      default-freight: ${MALL_ORDER_DEFAULT_FREIGHT:10.00}
-      integration-yuan-rate: ${MALL_INTEGRATION_YUAN_RATE:0.01}
-      integration-max-rate: ${MALL_INTEGRATION_MAX_RATE:0.50}
-    seckill:
-      max-requests-per-second: ${MALL_SECKILL_MAX_RPS:10}
-      unpaid-lock-minutes: ${MALL_SECKILL_UNPAID_LOCK_MINUTES:5}
-    elasticsearch:
-      enabled: ${MALL_ES_ENABLED:false}
-      uris: ${MALL_ES_URIS:http://127.0.0.1:9200}
-      index-name: ${MALL_ES_INDEX:mall_product}
-      reindex-on-startup: ${MALL_ES_REINDEX_ON_STARTUP:false}
-    portal-auth:
-      sms:
-        mock-enabled: ${MALL_PORTAL_SMS_MOCK:false}
-        mock-code: ${MALL_PORTAL_SMS_MOCK_CODE:123456}
-        aliyun:
-          enabled: ${MALL_PORTAL_SMS_ALIYUN_ENABLED:true}
-          access-key-id: ${MALL_PORTAL_SMS_ALIYUN_ACCESS_KEY_ID:LTAI5tG8uSJeTeuRYEY4x3nG}
-          access-key-secret: ${MALL_PORTAL_SMS_ALIYUN_ACCESS_KEY_SECRET:UdbPwjfPHoobovEhJ9hsZ3c9sdWqGR}
-          sign-name: ${MALL_PORTAL_SMS_ALIYUN_SIGN_NAME:速通互联验证码}
-          template-code: ${MALL_PORTAL_SMS_ALIYUN_TEMPLATE_CODE:100001}
-          scheme-name: ${MALL_PORTAL_SMS_ALIYUN_SCHEME_NAME:}
-          verify-mode: ${MALL_PORTAL_SMS_ALIYUN_VERIFY_MODE:redis}
-      wechat:
-        enabled: ${MALL_WECHAT_ENABLED:false}
-        mock-enabled: ${MALL_WECHAT_MOCK:true}
-        redirect-uri: ${MALL_WECHAT_REDIRECT_URI:http://localhost:3000/portal/login/wechat/callback}
-      mini-program:
-        enabled: ${MALL_MINI_PROGRAM_ENABLED:false}
-        mock-enabled: ${MALL_MINI_PROGRAM_MOCK:true}
-        app-id: ${MALL_MINI_PROGRAM_APP_ID:}
-        app-secret: ${MALL_MINI_PROGRAM_APP_SECRET:}
-        auto-register: true
-        mock-code: mock_mini_code
-    alipay:
-      enabled: ${MALL_ALIPAY_ENABLED:false}
-      app-id: ${MALL_ALIPAY_APP_ID:}
-      private-key: ${MALL_ALIPAY_PRIVATE_KEY:}
-      alipay-public-key: ${MALL_ALIPAY_PUBLIC_KEY:}
-      gateway-url: ${MALL_ALIPAY_GATEWAY_URL:https://openapi-sandbox.dl.alipaydev.com/gateway.do}
-      notify-url: ${MALL_ALIPAY_NOTIFY_URL:}
-      return-url: ${MALL_ALIPAY_RETURN_URL:}
-    wxpay:
-      enabled: ${MALL_WXPAY_ENABLED:false}
-      mock-enabled: ${MALL_WXPAY_MOCK:true}
-      app-id: ${MALL_WXPAY_APP_ID:}
-      mch-id: ${MALL_WXPAY_MCH_ID:}
-      api-v3-key: ${MALL_WXPAY_API_V3_KEY:}
-      merchant-serial-number: ${MALL_WXPAY_MERCHANT_SERIAL:}
-      private-key: ${MALL_WXPAY_PRIVATE_KEY:}
-      notify-url: ${MALL_WXPAY_NOTIFY_URL:}
-
-mybatis-plus:
-  mapper-locations: classpath*:/mapper/**/*.xml
-  type-aliases-package: cn.org.starpivot.mall.pms.domain,cn.org.starpivot.mall.pms.entity,cn.org.starpivot.mall.oms.entity,cn.org.starpivot.mall.sms.entity,cn.org.starpivot.mall.ums.entity,cn.org.starpivot.mall.wms.entity
-  configuration:
-    map-underscore-to-camel-case: true
-    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
-
-# 商品/营销图存储（与 system、file 服务共用 OSS 桶；未配置时回退本地磁盘导致小程序 404）
 oss:
-  enabled: ${OSS_ENABLED:true}
-  endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
-  access-key-id: ${OSS_ACCESS_KEY_ID:}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
-  url-prefix: ${OSS_URL_PREFIX:}
-  bucket-name: ${OSS_BUCKET_NAME:star-pivot}
+  enabled: ${OSS_ENABLED:false}

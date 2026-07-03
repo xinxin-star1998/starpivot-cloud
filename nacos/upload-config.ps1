@@ -1,4 +1,11 @@
 # 将单个配置文件发布到 Nacos 配置中心
+#
+# 示例:
+#   .\nacos\upload-config.ps1 common-config.yaml
+#   .\nacos\upload-config.ps1 starpivot-mall-order.yaml
+#   .\nacos\import-mall-config.ps1          # 批量发布商城相关配置
+#   .\nacos\import-config.ps1 -Profile Mall # 同上（含 common + mq + starpivot-mall*）
+#
 param(
     [Parameter(Mandatory = $true, Position = 0)]
     [string]$FilePath,

@@ -79,17 +79,60 @@ public class RabbitTopologyConfiguration {
     }
 
     @Bean
-    public Queue mallApprovalFinishedQueue() {
-        return QueueBuilder.durable(MqQueueNames.MALL_APPROVAL_FINISHED)
-                .deadLetterExchange(MqExchangeNames.DLX)
-                .deadLetterRoutingKey("dlx." + MqRoutingKeys.APPROVAL_INSTANCE_FINISHED)
-                .build();
+    public Queue mallApprovalFinishedPurchaseQueue() {
+        return mallApprovalQueue(MqQueueNames.MALL_APPROVAL_FINISHED_PURCHASE, "purchase");
     }
 
     @Bean
-    public Binding mallApprovalFinishedBinding(Queue mallApprovalFinishedQueue, TopicExchange starPivotTopicExchange) {
-        return BindingBuilder.bind(mallApprovalFinishedQueue)
-                .to(starPivotTopicExchange)
-                .with(MqRoutingKeys.APPROVAL_INSTANCE_FINISHED);
+    public Queue mallApprovalFinishedSpuQueue() {
+        return mallApprovalQueue(MqQueueNames.MALL_APPROVAL_FINISHED_SPU, "spu");
+    }
+
+    @Bean
+    public Queue mallApprovalFinishedReturnQueue() {
+        return mallApprovalQueue(MqQueueNames.MALL_APPROVAL_FINISHED_RETURN, "return");
+    }
+
+    @Bean
+    public Queue mallApprovalFinishedCouponQueue() {
+        return mallApprovalQueue(MqQueueNames.MALL_APPROVAL_FINISHED_COUPON, "coupon");
+    }
+
+    @Bean
+    public Binding mallApprovalFinishedPurchaseBinding(Queue mallApprovalFinishedPurchaseQueue,
+                                                       TopicExchange starPivotTopicExchange) {
+        return mallApprovalBinding(mallApprovalFinishedPurchaseQueue, starPivotTopicExchange, "purchase");
+    }
+
+    @Bean
+    public Binding mallApprovalFinishedSpuBinding(Queue mallApprovalFinishedSpuQueue,
+                                                  TopicExchange starPivotTopicExchange) {
+        return mallApprovalBinding(mallApprovalFinishedSpuQueue, starPivotTopicExchange, "spu");
+    }
+
+    @Bean
+    public Binding mallApprovalFinishedReturnBinding(Queue mallApprovalFinishedReturnQueue,
+                                                     TopicExchange starPivotTopicExchange) {
+        return mallApprovalBinding(mallApprovalFinishedReturnQueue, starPivotTopicExchange, "return");
+    }
+
+    @Bean
+    public Binding mallApprovalFinishedCouponBinding(Queue mallApprovalFinishedCouponQueue,
+                                                     TopicExchange starPivotTopicExchange) {
+        return mallApprovalBinding(mallApprovalFinishedCouponQueue, starPivotTopicExchange, "coupon");
+    }
+
+    private Queue mallApprovalQueue(String queueName, String bizType) {
+        String routingKey = MqRoutingKeys.mallApprovalFinished(bizType);
+        return QueueBuilder.durable(queueName)
+                .deadLetterExchange(MqExchangeNames.DLX)
+                .deadLetterRoutingKey("dlx." + routingKey)
+                .build();
+    }
+
+    private Binding mallApprovalBinding(Queue queue, TopicExchange exchange, String bizType) {
+        return BindingBuilder.bind(queue)
+                .to(exchange)
+                .with(MqRoutingKeys.mallApprovalFinished(bizType));
     }
 }

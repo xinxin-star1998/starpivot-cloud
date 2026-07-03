@@ -13,7 +13,7 @@
 | gateway | 8080 | 统一入口 |
 | starpivot-auth | 9200 | 登录、验证码 |
 | starpivot-system | 9201 | 用户/角色/菜单 |
-| starpivot-approval | 9206 | 审批引擎 |
+| starpivot-approval | 9213 | 审批引擎 |
 | starpivot-mall | 9205 | 商城业务 + MQ 消费 |
 | RabbitMQ | 5672 / 15672 | 审批完结事件（建议开启） |
 | MySQL | 3307 | `star_pivot` + `star_pivot_mall` |
@@ -33,7 +33,7 @@ mysql -u root -p star_pivot       < sql/patch_approval_phase3.sql
 
 ### 1.3 MQ 与环境变量
 
-- Nacos / 环境：`MQ_ENABLED=true`（mall 需消费 `approval.instance.finished` 才能回写业务单状态）
+- Nacos / 环境：`MQ_ENABLED=true`（对应商城微服务需消费 `approval.instance.finished.mall.{bizType}` 才能回写业务单状态）
 - 各服务 `INTERNAL_SERVICE_TOKEN` 保持一致（mall 调用 approval 内部接口）
 
 ### 1.4 测试账号建议
@@ -159,7 +159,7 @@ FROM star_pivot.ap_instance
 WHERE biz_key = CONCAT('mall:purchase:', <采购单ID>);
 ```
 
-RabbitMQ 管理台 → 队列 `starpivot.mall.approval-finished`：最后一关通过后应有消息投递与 Ack。
+RabbitMQ 管理台 → 对应队列（如采购：`starpivot.mall.approval-finished.purchase`）：最后一关通过后应有消息投递与 Ack。
 
 ---
 

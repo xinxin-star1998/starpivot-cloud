@@ -4,7 +4,7 @@
 
 starpivot:
   mq:
-    enabled: ${MQ_ENABLED:true}
+    enabled: ${MQ_ENABLED:false}
 
 spring:
   rabbitmq:

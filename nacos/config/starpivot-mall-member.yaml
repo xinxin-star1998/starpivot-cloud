@@ -44,7 +44,7 @@ starpivot:
         mock-code: mock_mini_code
 
 mybatis-plus:
-  mapper-locations: classpath*:/mapper/**/*.xml
+  mapper-locations: classpath*:/mapper/ums/**/*.xml,classpath*:/mapper/pms/**/*.xml,classpath*:/mapper/oms/**/*.xml
   type-aliases-package: cn.org.starpivot.mall.ums.entity,cn.org.starpivot.mall.portal.auth.entity,cn.org.starpivot.mall.pms.entity,cn.org.starpivot.mall.sms.entity,cn.org.starpivot.mall.oms.entity
   configuration:
     map-underscore-to-camel-case: true

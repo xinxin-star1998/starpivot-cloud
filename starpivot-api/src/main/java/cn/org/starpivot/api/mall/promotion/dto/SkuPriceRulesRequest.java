@@ -1,0 +1,1 @@
+package cn.org.starpivot.api.mall.promotion.dto;import lombok.Data;import java.io.Serializable;import java.util.List;@Datapublic class SkuPriceRulesRequest implements Serializable {    private List<Long> skuIds;    /** 会员等级 ID，用于会员价；为空时不返回会员价 */    private Long memberLevelId;    /** 是否包含会员价（需等级开启会员价特权） */    private Boolean includeMemberPrice;}

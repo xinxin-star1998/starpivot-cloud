@@ -95,6 +95,27 @@ services:
       starpivot-net:
     restart: unless-stopped
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: starpivot-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      starpivot-net:
+    restart: unless-stopped
+
 # 声明全部命名卷（关键新增区块）
 volumes:
   mysql-data:
@@ -102,6 +123,7 @@ volumes:
   nacos-data:
   nacos-logs:
   rabbitmq-data:
+  es-data:
 
 networks:
   starpivot-net:
