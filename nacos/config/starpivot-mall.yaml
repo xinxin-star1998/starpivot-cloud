@@ -86,7 +86,7 @@ mybatis-plus:
 oss:
   enabled: ${OSS_ENABLED:true}
   endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
-  access-key-id: ${OSS_ACCESS_KEY_ID:LTAI5tG8uSJeTeuRYEY4x3nG}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:UdbPwjfPHoobovEhJ9hsZ3c9sdWqGR}
+  access-key-id: ${OSS_ACCESS_KEY_ID:}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
   url-prefix: ${OSS_URL_PREFIX:}
   bucket-name: ${OSS_BUCKET_NAME:star-pivot}

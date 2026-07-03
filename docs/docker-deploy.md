@@ -9,8 +9,6 @@
 ```
 docker-compose.yml        # 基础设施：Nacos / MySQL / Redis / RabbitMQ / Zipkin
 .env.local                # 本地开发参考（默认即 127.0.0.1，一般不用 export）
-scripts/docker-up.ps1     # Windows 一键启动中间件
-scripts/docker-up.sh      # Linux / macOS 一键启动中间件
 ```
 
 ---
@@ -29,7 +27,6 @@ scripts/docker-up.sh      # Linux / macOS 一键启动中间件
 ```powershell
 # 1. 基础设施
 docker compose up -d
-# 或: .\scripts\docker-up.ps1
 
 # 2. 导入 Nacos 配置（首次或配置变更后）
 $env:JWT_SECRET = "dev-local-jwt-secret-must-be-at-least-32-chars"
