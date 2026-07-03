@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.ums.mapper.UmsMemberStatisticsInfoMapper">
+
+    <select id="selectPageList" resultType="cn.org.starpivot.mall.ums.domain.vo.MemberStatisticsVo">
+        SELECT
+            s.id,
+            m.id AS member_id,
+            m.username,
+            m.nickname,
+            m.mobile,
+            IFNULL(s.consume_amount, 0) AS consume_amount,
+            IFNULL(s.coupon_amount, 0) AS coupon_amount,
+            IFNULL(s.order_count, 0) AS order_count,
+            IFNULL(s.coupon_count, 0) AS coupon_count,
+            IFNULL(s.comment_count, 0) AS comment_count,
+            IFNULL(s.return_order_count, 0) AS return_order_count,
+            IFNULL(s.login_count, 0) AS login_count,
+            IFNULL(s.attend_count, 0) AS attend_count,
+            IFNULL(s.fans_count, 0) AS fans_count,
+            IFNULL(s.collect_product_count, 0) AS collect_product_count,
+            IFNULL(s.collect_subject_count, 0) AS collect_subject_count,
+            IFNULL(s.collect_comment_count, 0) AS collect_comment_count,
+            IFNULL(s.invite_friend_count, 0) AS invite_friend_count
+        FROM ums_member m
+        LEFT JOIN ums_member_statistics_info s ON s.member_id = m.id
+        <where>
+            <if test="query.memberId != null">
+                AND m.id = #{query.memberId}
+            </if>
+            <if test="query.username != null and query.username != ''">
+                AND m.username LIKE CONCAT('%', #{query.username}, '%')
+            </if>
+            <if test="query.mobile != null and query.mobile != ''">
+                AND m.mobile LIKE CONCAT('%', #{query.mobile}, '%')
+            </if>
+        </where>
+        ORDER BY m.create_time DESC, m.id DESC
+    </select>
+
+    <select id="aggregateByMemberId" resultType="cn.org.starpivot.mall.ums.entity.UmsMemberStatisticsInfo">
+        SELECT
+            #{memberId} AS member_id,
+            IFNULL((
+                SELECT SUM(pay_amount)
+                FROM oms_order
+                WHERE member_id = #{memberId}
+                  AND (delete_status IS NULL OR delete_status = 0)
+                  AND status IN (1, 2, 3)
+            ), 0) AS consume_amount,
+            IFNULL((
+                SELECT SUM(coupon_amount)
+                FROM oms_order
+                WHERE member_id = #{memberId}
+                  AND (delete_status IS NULL OR delete_status = 0)
+                  AND status IN (1, 2, 3)
+            ), 0) AS coupon_amount,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM oms_order
+                WHERE member_id = #{memberId}
+                  AND (delete_status IS NULL OR delete_status = 0)
+                  AND status IN (1, 2, 3)
+            ), 0) AS order_count,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM sms_coupon_history
+                WHERE member_id = #{memberId}
+            ), 0) AS coupon_count,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM pms_spu_comment c
+                INNER JOIN ums_member m ON c.member_nick_name = m.nickname
+                WHERE m.id = #{memberId}
+            ), 0) AS comment_count,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM oms_order_return_apply ra
+                INNER JOIN oms_order o ON ra.order_id = o.id
+                WHERE o.member_id = #{memberId}
+            ), 0) AS return_order_count,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM ums_member_login_log
+                WHERE member_id = #{memberId}
+            ), 0) AS login_count,
+            0 AS attend_count,
+            0 AS fans_count,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM ums_member_collect_spu
+                WHERE member_id = #{memberId}
+            ), 0) AS collect_product_count,
+            IFNULL((
+                SELECT COUNT(*)
+                FROM ums_member_collect_subject
+                WHERE member_id = #{memberId}
+            ), 0) AS collect_subject_count,
+            0 AS collect_comment_count,
+            0 AS invite_friend_count
+    </select>
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.mall.pms.mapper.PmsSpuCommentMapper">
+
+    <select id="selectPageList" resultType="cn.org.starpivot.mall.pms.entity.PmsSpuComment">
+        SELECT
+            id,
+            sku_id,
+            spu_id,
+            member_id,
+            spu_name,
+            member_nick_name,
+            star,
+            member_ip,
+            create_time,
+            show_status,
+            spu_attributes,
+            likes_count,
+            reply_count,
+            resources,
+            content,
+            member_icon,
+            comment_type
+        FROM pms_spu_comment
+        <where>
+            <if test="req.spuId != null">
+                AND spu_id = #{req.spuId}
+            </if>
+            <if test="req.skuId != null">
+                AND sku_id = #{req.skuId}
+            </if>
+            <if test="req.memberNickName != null and req.memberNickName != ''">
+                AND member_nick_name LIKE CONCAT('%', #{req.memberNickName}, '%')
+            </if>
+            <if test="req.showStatus != null">
+                AND show_status = #{req.showStatus}
+            </if>
+            <if test="req.star != null">
+                AND star = #{req.star}
+            </if>
+            <if test="req.memberId != null">
+                AND member_id = #{req.memberId}
+            </if>
+            <if test="req.commentType != null">
+                AND comment_type = #{req.commentType}
+            </if>
+        </where>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <select id="selectSummaryBySpuIds" resultType="java.util.HashMap">
+        SELECT spu_id AS spuId, COUNT(1) AS total, AVG(star) AS avgStar
+        FROM pms_spu_comment
+        WHERE show_status = 1
+          AND (comment_type IS NULL OR comment_type = 0)
+          AND spu_id IN
+        <foreach collection="spuIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        GROUP BY spu_id
+    </select>
+</mapper>
