@@ -4,7 +4,7 @@
 >
 > **引擎选型**：SAS（StarPivot Approval Service）自研阶梯流水线引擎，**不采用 Flowable**。
 >
-> **详细开发规格**：表结构 DDL、引擎伪代码、MQ 契约、前端目录见 [`docs/doc/workflow-design.md`](docs/doc/workflow-design.md)。
+> **详细开发规格**：表结构 DDL、引擎伪代码、MQ 契约、前端目录见 [`docs/doc/workflow-design.md`](doc/workflow-design.md)。
 
 ---
 
@@ -308,7 +308,7 @@
 
 # 五、数据库核心表设计
 
-脚本路径：`sql/init_approval.sql`。完整 DDL 见 [`docs/doc/workflow-design.md`](docs/doc/workflow-design.md) §5。
+脚本路径：`sql/init_approval.sql`。完整 DDL 见 [`docs/doc/workflow-design.md`](doc/workflow-design.md) §5。
 
 ## 5.1 表清单
 
@@ -390,7 +390,7 @@ API 前缀：`/api/v1/approval`（经网关对外暴露）。
 
 ## 6.2.1 内部接口（Feign 直连，不经网关）
 
-路径前缀 `/api/v1/internal/approval`，由 `InternalServiceAuthFilter` 校验 `X-Internal-Token`（配置项 `starpivot.internal.token`）。详见 [`docs/security/permission-strategy.md`](docs/security/permission-strategy.md)。
+路径前缀 `/api/v1/internal/approval`，由 `InternalServiceAuthFilter` 校验 `X-Internal-Token`（配置项 `starpivot.internal.token`）。详见 [`docs/security/permission-strategy.md`](security/permission-strategy.md)。
 
 | 功能 | 方法 | 路径 | 说明 |
 |------|------|------|------|
@@ -627,9 +627,9 @@ starpivot-approval/
 
 | 文档 | 用途 |
 |------|------|
-| [`docs/doc/workflow-design.md`](docs/doc/workflow-design.md) | 开发规格书（DDL、引擎伪代码、FAQ） |
-| [`docs/doc/file-center-design.md`](docs/doc/file-center-design.md) | 中台服务落地参照 |
-| [`docs/商城开发事项.md`](docs/商城开发事项.md) | 商城模块与首批接入场景 |
+| [`docs/doc/workflow-design.md`](doc/workflow-design.md) | 开发规格书（DDL、引擎伪代码、FAQ） |
+| [`docs/doc/file-center-design.md`](doc/file-center-design.md) | 中台服务落地参照 |
+| [`docs/商城开发事项.md`](商城开发事项.md) | 商城模块与首批接入场景 |
 
 ## 11.3 旧方案对照（迁移参考）
 

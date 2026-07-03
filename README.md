@@ -480,7 +480,7 @@ Docker 中间件启动与故障排查详见 [docs/docker-deploy.md](docs/docker-
 | [docs/mall.md](docs/mall.md)                                                 | 商城菜单与接口对照      |
 | [docs/doc/mq-usage.md](docs/doc/mq-usage.md)                                 | MQ 使用说明        |
 | [docs/doc/workflow-design.md](docs/doc/workflow-design.md)                   | 审批开发规格         |
-| [Java微服务版本审批中心设计方案.md](Java微服务版本审批中心设计方案.md)                                 | 审批中心设计方案       |
+| [Java微服务版本审批中心设计方案.md](docs/Java微服务版本审批中心设计方案.md)                                 | 审批中心设计方案       |
 
 
 ---
