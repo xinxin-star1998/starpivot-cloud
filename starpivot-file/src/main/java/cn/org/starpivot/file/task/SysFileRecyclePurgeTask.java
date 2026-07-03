@@ -1,5 +1,6 @@
 package cn.org.starpivot.file.task;
 
+import cn.org.starpivot.common.annotation.DistributedScheduled;
 import cn.org.starpivot.file.config.FileCenterPurgeProperties;
 import cn.org.starpivot.file.service.ISysFileService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class SysFileRecyclePurgeTask {
     private final ISysFileService sysFileService;
     private final FileCenterPurgeProperties purgeProperties;
 
+    @DistributedScheduled(key = "file:recycle-purge", lockTtlSeconds = 3600)
     @Scheduled(cron = "${file-center.purge.cron:0 0 3 * * ?}")
     public void purgeExpiredRecycleFiles() {
         log.info("开始执行回收站物理清理任务，保留天数={}", purgeProperties.getRecycleRetentionDays());

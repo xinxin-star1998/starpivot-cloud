@@ -12,6 +12,7 @@ import cn.org.starpivot.system.domain.bo.OperLogVO;
 import cn.org.starpivot.system.domain.entity.SysOperLog;
 import cn.org.starpivot.system.service.SysOperLogService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,7 +48,7 @@ public class SysOperLogController {
     @Log(title = "操作日志")
     @PreAuthorize("hasAuthority('system:operlog:query')")
     @PostMapping("/operLogPageList")
-    public Result<PageResponse<OperLogVO>> list(@RequestBody OperLogReqBo operLogReqBo) {
+    public Result<PageResponse<OperLogVO>> list(@Valid @RequestBody OperLogReqBo operLogReqBo) {
         return Result.success(sysOperLogService.pageList(operLogReqBo));
     }
 

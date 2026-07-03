@@ -38,6 +38,16 @@ public final class MicroserviceSecuritySupport {
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
     }
 
+    /**
+     * 注册基础设施类公开端点：health/info 匿名，其余 Actuator 与 OpenAPI 按策略放行/鉴权。
+     */
+    public static void permitInfrastructureEndpoints(
+            org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
+        auth.requestMatchers(MicroserviceEndpointPatterns.PUBLIC_ACTUATOR).permitAll()
+                .requestMatchers(MicroserviceEndpointPatterns.OPENAPI).permitAll()
+                .requestMatchers("/actuator/**").authenticated();
+    }
+
     /** 各微服务声明 URL 授权规则的函数式接口 */
     @FunctionalInterface
     public interface Customizer {

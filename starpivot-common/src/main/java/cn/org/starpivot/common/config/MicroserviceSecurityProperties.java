@@ -29,6 +29,13 @@ public class MicroserviceSecurityProperties {
     private AuthorityStrategy authorityStrategy = AuthorityStrategy.ROLES_ONLY;
 
     /**
+     * 是否信任网关透传的 {@code X-User-Id} 等身份 Header。
+     * <p>
+     * 默认 {@code false}，防止绕过网关直连微服务端口时伪造身份；经网关转发且下游不带 JWT 时可设为 {@code true}。
+     */
+    private boolean trustGatewayHeaders = false;
+
+    /**
      * Spring Security 权限字符串解析策略枚举。
      *
      * @see cn.org.starpivot.common.security.RolesOnlyAuthorityResolver

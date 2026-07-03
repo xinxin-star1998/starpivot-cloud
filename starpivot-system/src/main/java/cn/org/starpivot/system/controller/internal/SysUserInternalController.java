@@ -6,13 +6,9 @@ import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.system.domain.entity.SysMenu;
 import cn.org.starpivot.system.service.SysUserService;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -60,10 +56,7 @@ public class SysUserInternalController {
      * @return 匹配成功返回用户认证 DTO，失败返回 401
      */
     @PostMapping("/verify-password")
-    public Result<SysUserAuthDto> verifyPassword(@RequestBody VerifyPasswordRequest request) {
-        if (request == null || request.getUsername() == null || request.getPassword() == null) {
-            return Result.unauthorized("用户名或密码错误");
-        }
+    public Result<SysUserAuthDto> verifyPassword(@Valid @RequestBody VerifyPasswordRequest request) {
         SysUserAuthDto user = sysUserService.verifyPassword(request.getUsername(), request.getPassword());
         if (user == null) {
             return Result.unauthorized("用户名或密码错误");

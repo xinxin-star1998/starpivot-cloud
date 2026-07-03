@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.portal.schedule;
 
+import cn.org.starpivot.common.annotation.DistributedScheduled;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ public class PortalStockLockScheduler {
 
     private final PortalStockLockService portalStockLockService;
 
+    @DistributedScheduled(key = "mall:stock-lock-release", lockTtlSeconds = 55)
     @Scheduled(fixedDelayString = "${starpivot.mall.stock-lock-scan-ms:60000}")
     public void releaseExpiredLocks() {
         portalStockLockService.releaseExpiredLocks();

@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.system;
 
+import cn.org.starpivot.api.fallback.SysLoginLogClientFallbackFactory;
 import cn.org.starpivot.api.system.dto.LoginLogDto;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(
         name = "starpivot-system",
         contextId = "sysLoginLogClient",
-        path = "/api/${starpivot.api.version:v1}")
+        path = "/api/${starpivot.api.version:v1}",
+        fallbackFactory = SysLoginLogClientFallbackFactory.class)
 public interface SysLoginLogClient {
 
     /**

@@ -12,6 +12,7 @@ import cn.org.starpivot.system.domain.bo.LogininforVO;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
 import cn.org.starpivot.system.service.SysLogininforService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,7 +48,7 @@ public class SysLogininforController {
     @Log(title = "登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:query')")
     @PostMapping("/logininforPageList")
-    public Result<PageResponse<LogininforVO>> list(@RequestBody LogininforReqBo logininforReqBo) {
+    public Result<PageResponse<LogininforVO>> list(@Valid @RequestBody LogininforReqBo logininforReqBo) {
         return Result.success(sysLogininforService.pageList(logininforReqBo));
     }
 

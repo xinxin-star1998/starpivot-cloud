@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.system;
 
+import cn.org.starpivot.api.fallback.SysOrgClientFallbackFactory;
 import cn.org.starpivot.api.system.dto.AssigneeResolveRequest;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -17,7 +18,8 @@ import java.util.Map;
 @FeignClient(
         name = "starpivot-system",
         contextId = "sysOrgClient",
-        path = "/api/${starpivot.api.version:v1}")
+        path = "/api/${starpivot.api.version:v1}",
+        fallbackFactory = SysOrgClientFallbackFactory.class)
 public interface SysOrgClient {
 
     @PostMapping("/internal/org/assignees/resolve")

@@ -2,9 +2,11 @@ package cn.org.starpivot.file.controller;
 
 import cn.org.starpivot.common.annotation.Log;
 import cn.org.starpivot.common.annotation.NoResponseWrapper;
+import cn.org.starpivot.common.domain.PresignedUrlsBo;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.storage.FileStorageService;
 import cn.org.starpivot.common.storage.StoragePathValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -108,7 +110,8 @@ public class CommonUploadController {
      */
     @PostMapping("/presigned-urls")
     @PreAuthorize("hasAuthority('file:resource:query')")
-    public Result<Map<String, String>> getPresignedUrls(@RequestBody List<String> objectNames) throws Exception {
+    public Result<Map<String, String>> getPresignedUrls(@Valid @RequestBody PresignedUrlsBo bo) throws Exception {
+        List<String> objectNames = bo.getObjectNames();
         if (objectNames == null || objectNames.isEmpty()) {
             return Result.success(Map.of());
         }

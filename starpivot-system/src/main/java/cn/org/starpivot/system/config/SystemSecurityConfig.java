@@ -1,6 +1,7 @@
 package cn.org.starpivot.system.config;
 
 import cn.org.starpivot.common.filter.MicroserviceAuthenticationFilter;
+import cn.org.starpivot.common.security.MicroserviceEndpointPatterns;
 import cn.org.starpivot.common.security.MicroserviceSecuritySupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -51,16 +52,12 @@ public class SystemSecurityConfig {
                 http,
                 microserviceAuthenticationFilter,
                 unauthorizedEntryPoint,
-                auth -> auth
-                        .requestMatchers(
-                                "/internal/**",
-                                "/actuator/**",
-                                "/doc.html",
-                                "/v3/api-docs/**",
-                                "/webjars/**",
-                                "/health"
-                        ).permitAll()
-                        .anyRequest().authenticated());
+                auth -> {
+                    auth.requestMatchers("/internal/**").permitAll()
+                            .requestMatchers(MicroserviceEndpointPatterns.HEALTH).permitAll();
+                    MicroserviceSecuritySupport.permitInfrastructureEndpoints(auth);
+                    auth.anyRequest().authenticated();
+                });
         return http.build();
     }
 }

@@ -15,6 +15,8 @@ spring:
       timeout: ${REDIS_TIMEOUT:6000ms}
   cloud:
     openfeign:
+      circuitbreaker:
+        enabled: ${FEIGN_CIRCUIT_BREAKER_ENABLED:true}
       client:
         config:
           default:
@@ -23,6 +25,15 @@ spring:
       httpclient:
         hc5:
           enabled: true
+    circuitbreaker:
+      resilience4j:
+        config:
+          default:
+            slidingWindowSize: ${FEIGN_CB_WINDOW_SIZE:10}
+            minimumNumberOfCalls: ${FEIGN_CB_MIN_CALLS:5}
+            failureRateThreshold: ${FEIGN_CB_FAILURE_RATE:50}
+            waitDurationInOpenState: ${FEIGN_CB_OPEN_DURATION:10s}
+            permittedNumberOfCallsInHalfOpenState: 3
 
 starpivot:
   api:
@@ -34,8 +45,10 @@ starpivot:
     expire: ${JWT_EXPIRE:7200000}
     refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
   internal:
-    token: ${INTERNAL_SERVICE_TOKEN:}
-    require-token: ${INTERNAL_SERVICE_TOKEN_REQUIRED:false}
+    token: ${INTERNAL_SERVICE_TOKEN:dev-internal-token}
+    require-token: ${INTERNAL_SERVICE_TOKEN_REQUIRED:true}
+  security:
+    trust-gateway-headers: ${TRUST_GATEWAY_HEADERS:false}
   scheduling:
     pool-size: ${SCHEDULING_POOL_SIZE:4}
 

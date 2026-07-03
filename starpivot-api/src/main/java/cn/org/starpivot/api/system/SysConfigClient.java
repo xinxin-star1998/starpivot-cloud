@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.system;
 
+import cn.org.starpivot.api.fallback.SysConfigClientFallbackFactory;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient(
         name = "starpivot-system",
         contextId = "sysConfigClient",
-        path = "/api/${starpivot.api.version:v1}")
+        path = "/api/${starpivot.api.version:v1}",
+        fallbackFactory = SysConfigClientFallbackFactory.class)
 public interface SysConfigClient {
 
     /**

@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.system.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
@@ -16,8 +17,10 @@ import lombok.Data;
 public class RegisterUserRequest {
 
     /** 注册用户名 */
+    @NotBlank(message = "用户名不能为空")
     private String username;
 
     /** 注册密码（明文，仅在服务间传递） */
+    @NotBlank(message = "密码不能为空")
     private String password;
 }

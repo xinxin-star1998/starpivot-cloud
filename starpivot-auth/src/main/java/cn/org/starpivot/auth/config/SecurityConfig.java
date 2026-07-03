@@ -54,22 +54,18 @@ public class SecurityConfig {
                 http,
                 microserviceAuthenticationFilter,
                 unauthorizedEntryPoint,
-                auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,
-                                "/login", "/refresh", "/register", "/logout",
-                                "/forgot-password").permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/register/enabled", "/forgot-password/enabled",
-                                "/user/info").permitAll()
-                        .requestMatchers(
-                                "/captcha", "/captcha/**",
-                                "/actuator/**",
-                                "/doc.html",
-                                "/v3/api-docs/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .anyRequest().authenticated());
+                auth -> {
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                            .requestMatchers(HttpMethod.POST,
+                                    "/login", "/refresh", "/register", "/logout",
+                                    "/forgot-password").permitAll()
+                            .requestMatchers(HttpMethod.GET,
+                                    "/register/enabled", "/forgot-password/enabled",
+                                    "/user/info").permitAll()
+                            .requestMatchers("/captcha", "/captcha/**").permitAll();
+                    MicroserviceSecuritySupport.permitInfrastructureEndpoints(auth);
+                    auth.anyRequest().authenticated();
+                });
         return http.build();
     }
 }

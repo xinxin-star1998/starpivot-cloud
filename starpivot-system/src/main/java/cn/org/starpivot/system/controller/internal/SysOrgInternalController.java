@@ -4,6 +4,7 @@ import cn.org.starpivot.api.system.dto.AssigneeResolveRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.system.service.OrgAssigneeService;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class SysOrgInternalController {
     private final OrgAssigneeService orgAssigneeService;
 
     @PostMapping("/assignees/resolve")
-    public Result<List<Long>> resolveAssignees(@RequestBody AssigneeResolveRequest request) {
+    public Result<List<Long>> resolveAssignees(@Valid @RequestBody AssigneeResolveRequest request) {
         return Result.success(orgAssigneeService.resolveAssignees(request));
     }
 

@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.system;
 
+import cn.org.starpivot.api.fallback.SysUserClientFallbackFactory;
 import cn.org.starpivot.api.system.dto.*;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -24,7 +25,8 @@ import java.util.List;
 @FeignClient(
         name = "starpivot-system",
         contextId = "sysUserClient",
-        path = "/api/${starpivot.api.version:v1}")
+        path = "/api/${starpivot.api.version:v1}",
+        fallbackFactory = SysUserClientFallbackFactory.class)
 public interface SysUserClient {
 
     /**

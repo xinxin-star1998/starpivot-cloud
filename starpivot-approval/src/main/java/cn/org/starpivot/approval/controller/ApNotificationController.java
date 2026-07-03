@@ -10,6 +10,7 @@ import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class ApNotificationController {
 
     @Operation(summary = "我的通知分页")
     @PostMapping("/notificationPageList")
-    public Result<PageResponse<ApNotificationVo>> pageList(@RequestBody ApNotificationQueryDto query) {
+    public Result<PageResponse<ApNotificationVo>> pageList(@Valid @RequestBody ApNotificationQueryDto query) {
         return Result.success(notificationService.pageList(query, requireUserId()));
     }
 

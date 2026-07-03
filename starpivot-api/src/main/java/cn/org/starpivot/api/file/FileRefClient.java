@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.file;
 
+import cn.org.starpivot.api.fallback.FileRefClientFallbackFactory;
 import cn.org.starpivot.api.file.dto.FileRefBindRequest;
 import cn.org.starpivot.api.file.dto.FileRefBizRequest;
 import cn.org.starpivot.api.file.dto.FileRefSyncRequest;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
         name = "starpivot-file",
         contextId = "fileRefClient",
-        path = "/api/${starpivot.api.version:v1}")
+        path = "/api/${starpivot.api.version:v1}",
+        fallbackFactory = FileRefClientFallbackFactory.class)
 public interface FileRefClient {
 
     @PostMapping("/internal/file/ref/bind")

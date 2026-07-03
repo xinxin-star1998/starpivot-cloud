@@ -82,7 +82,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
      * @throws BizException 同级部门名称已存在时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
     @Transactional(rollbackFor = Exception.class)
     public boolean insertDept(DeptDTO deptDTO) {
         if (!checkDeptNameUnique(deptDTO.getDeptName(), deptDTO.getParentId(), null)) {
@@ -123,7 +123,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
      * @throws BizException 部门不存在、父部门非法或名称重复时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
     @Transactional(rollbackFor = Exception.class)
     public boolean updateDept(DeptDTO deptDTO) {
         SysDept dept = this.getById(deptDTO.getDeptId());
@@ -167,7 +167,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
      * @throws BizException 存在子部门或关联用户时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteDeptByIds(List<Long> deptIds) {
         if (deptIds == null || deptIds.isEmpty()) {

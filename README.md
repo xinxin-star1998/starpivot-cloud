@@ -432,8 +432,9 @@ Docker 中间件启动与故障排查详见 [docs/docker-deploy.md](docs/docker-
 | `REDIS_HOST`                      | 127.0.0.1                                | Redis 主机                      |
 | `REDIS_PASSWORD`                  | root                                     | Redis 密码                      |
 | `JWT_SECRET`                      | （见 common-config）                        | JWT 签名密钥，至少 32 字符             |
-| `INTERNAL_SERVICE_TOKEN`          | （空）                                      | 服务间 `/internal/**` 调用 Token   |
-| `INTERNAL_SERVICE_TOKEN_REQUIRED` | false                                    | 为 true 时未配置 Token 将拒绝内部接口     |
+| `INTERNAL_SERVICE_TOKEN`          | （空）                                      | 服务间 `/internal/**` 调用 Token（**本地开发必填**） |
+| `INTERNAL_SERVICE_TOKEN_REQUIRED` | true                                    | 为 true 时未配置 Token 将拒绝内部接口     |
+| `TRUST_GATEWAY_HEADERS`           | false                                   | 为 true 时微服务信任网关透传的身份 Header（生产保持 false） |
 | `MQ_ENABLED`                      | false                                    | 是否启用 RabbitMQ（审批回调、登录日志等）     |
 | `TRACING_ENABLED`                 | true                                     | 是否启用 Zipkin 分布式追踪             |
 

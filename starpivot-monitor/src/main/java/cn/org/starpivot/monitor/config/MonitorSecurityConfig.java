@@ -41,15 +41,11 @@ public class MonitorSecurityConfig {
                 http,
                 microserviceAuthenticationFilter,
                 unauthorizedEntryPoint,
-                auth -> auth
-                        .requestMatchers(
-                                "/actuator/**",
-                                "/druid/**",
-                                "/doc.html",
-                                "/v3/api-docs/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .anyRequest().authenticated());
+                auth -> {
+                    auth.requestMatchers("/druid/**").authenticated();
+                    MicroserviceSecuritySupport.permitInfrastructureEndpoints(auth);
+                    auth.anyRequest().authenticated();
+                });
         return http.build();
     }
 }

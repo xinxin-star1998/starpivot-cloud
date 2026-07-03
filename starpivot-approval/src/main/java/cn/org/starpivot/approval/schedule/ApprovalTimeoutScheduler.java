@@ -4,6 +4,7 @@ import cn.org.starpivot.approval.constant.ApprovalConstants;
 import cn.org.starpivot.approval.domain.entity.ApTask;
 import cn.org.starpivot.approval.mapper.ApTaskMapper;
 import cn.org.starpivot.approval.service.engine.PipelineEngine;
+import cn.org.starpivot.common.annotation.DistributedScheduled;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class ApprovalTimeoutScheduler {
     @Value("${starpivot.approval.timeout-batch-size:50}")
     private int batchSize;
 
+    @DistributedScheduled(key = "approval:timeout-scan", lockTtlSeconds = 55)
     @Scheduled(fixedDelayString = "${starpivot.approval.timeout-scan-ms:60000}")
     public void scanOverdueTasks() {
         List<ApTask> overdue = taskMapper.selectList(new LambdaQueryWrapper<ApTask>()

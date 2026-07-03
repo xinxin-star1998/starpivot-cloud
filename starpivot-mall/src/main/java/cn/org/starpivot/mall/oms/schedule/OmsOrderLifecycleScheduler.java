@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.oms.schedule;
 
+import cn.org.starpivot.common.annotation.DistributedScheduled;
 import cn.org.starpivot.mall.oms.service.impl.OmsOrderLifecycleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ public class OmsOrderLifecycleScheduler {
 
     private final OmsOrderLifecycleService omsOrderLifecycleService;
 
+    @DistributedScheduled(key = "mall:order-lifecycle", lockTtlSeconds = 290)
     @Scheduled(fixedDelayString = "${starpivot.mall.order-lifecycle-scan-ms:300000}")
     public void runLifecycleTasks() {
         int confirmed = omsOrderLifecycleService.autoConfirmDeliveredOrders();

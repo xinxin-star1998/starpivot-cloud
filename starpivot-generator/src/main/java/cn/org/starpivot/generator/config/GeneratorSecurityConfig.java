@@ -41,14 +41,10 @@ public class GeneratorSecurityConfig {
                 http,
                 microserviceAuthenticationFilter,
                 unauthorizedEntryPoint,
-                auth -> auth
-                        .requestMatchers(
-                                "/actuator/**",
-                                "/doc.html",
-                                "/v3/api-docs/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .anyRequest().authenticated());
+                auth -> {
+                    MicroserviceSecuritySupport.permitInfrastructureEndpoints(auth);
+                    auth.anyRequest().authenticated();
+                });
         return http.build();
     }
 }

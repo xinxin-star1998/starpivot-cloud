@@ -11,6 +11,7 @@ import cn.org.starpivot.system.service.SysLogininforService;
 import cn.org.starpivot.system.service.SysOperLogService;
 import cn.org.starpivot.system.service.SysUserService;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -75,12 +76,12 @@ public class SysInternalController {
      * @return 注册结果（含新用户 ID）
      */
     @PostMapping("/internal/user/register")
-    public Result<RegisterUserResponse> registerUser(@RequestBody RegisterUserRequest request) {
+    public Result<RegisterUserResponse> registerUser(@Valid @RequestBody RegisterUserRequest request) {
         return Result.success(sysUserService.registerUser(request));
     }
 
     @PostMapping("/internal/user/forgot-password")
-    public Result<Boolean> resetPasswordByForgot(@RequestBody ForgotPasswordResetRequest request) {
+    public Result<Boolean> resetPasswordByForgot(@Valid @RequestBody ForgotPasswordResetRequest request) {
         boolean success = sysUserService.resetPasswordByForgot(request.getUsername(), request.getPassword());
         return Result.success(success);
     }

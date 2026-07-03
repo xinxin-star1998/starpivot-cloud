@@ -112,7 +112,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色权限字符串已存在时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
     @Transactional(rollbackFor = Exception.class)
     public boolean insertRole(RoleDTO roleDTO) {
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
@@ -150,7 +150,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色不存在、权限字符串冲突或修改超级管理员时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
     @Transactional(rollbackFor = Exception.class)
     public boolean updateRole(RoleDTO roleDTO) {
         SysRole role = this.getById(roleDTO.getRoleId());
@@ -200,7 +200,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 删除超级管理员或已被用户使用的角色时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRoleByIds(List<Long> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
@@ -253,7 +253,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色不存在或停用超级管理员时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
     public boolean changeRoleStatus(Long roleId, String status) {
         SysRole role = this.getById(roleId);
         AssertUtils.notNull(role, ErrorCode.ROLE_NOT_FOUND);

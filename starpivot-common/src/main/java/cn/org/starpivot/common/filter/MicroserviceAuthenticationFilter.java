@@ -1,11 +1,7 @@
 package cn.org.starpivot.common.filter;
 
-import cn.org.starpivot.common.security.AuthorityResolver;
-import cn.org.starpivot.common.security.JwtProperties;
-import cn.org.starpivot.common.security.JwtUtils;
-import cn.org.starpivot.common.security.LoginUser;
-import cn.org.starpivot.common.security.SecurityConstants;
-import cn.org.starpivot.common.security.TokenBlacklistChecker;
+import cn.org.starpivot.common.config.MicroserviceSecurityProperties;
+import cn.org.starpivot.common.security.*;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,6 +41,7 @@ public class MicroserviceAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProperties jwtProperties;
     private final AuthorityResolver authorityResolver;
+    private final MicroserviceSecurityProperties securityProperties;
     private final TokenBlacklistChecker tokenBlacklistChecker;
 
     /**
@@ -52,11 +49,13 @@ public class MicroserviceAuthenticationFilter extends OncePerRequestFilter {
      *
      * @param jwtProperties     JWT 配置（含密钥）
      * @param authorityResolver 权限解析策略
+     * @param securityProperties  微服务安全策略（含是否信任网关 Header）
      */
     public MicroserviceAuthenticationFilter(
             JwtProperties jwtProperties,
-            AuthorityResolver authorityResolver) {
-        this(jwtProperties, authorityResolver, null);
+            AuthorityResolver authorityResolver,
+            MicroserviceSecurityProperties securityProperties) {
+        this(jwtProperties, authorityResolver, securityProperties, null);
     }
 
     /**
@@ -64,14 +63,17 @@ public class MicroserviceAuthenticationFilter extends OncePerRequestFilter {
      *
      * @param jwtProperties           JWT 配置（含密钥）
      * @param authorityResolver         权限解析策略
+     * @param securityProperties        微服务安全策略
      * @param tokenBlacklistChecker     Token 黑名单检查器，可为 {@code null} 表示不校验黑名单
      */
     public MicroserviceAuthenticationFilter(
             JwtProperties jwtProperties,
             AuthorityResolver authorityResolver,
+            MicroserviceSecurityProperties securityProperties,
             TokenBlacklistChecker tokenBlacklistChecker) {
         this.jwtProperties = jwtProperties;
         this.authorityResolver = authorityResolver;
+        this.securityProperties = securityProperties;
         this.tokenBlacklistChecker = tokenBlacklistChecker;
     }
 
@@ -96,7 +98,8 @@ public class MicroserviceAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(token)) {
                 authenticateWithToken(token);
             }
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (SecurityContextHolder.getContext().getAuthentication() == null
+                    && securityProperties.isTrustGatewayHeaders()) {
                 authenticateWithGatewayHeaders(request);
             }
         }

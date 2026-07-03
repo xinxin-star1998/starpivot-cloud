@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.portal.controller;
 
+import cn.org.starpivot.common.domain.PresignedUrlsBo;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.storage.FileUploadVO;
 import cn.org.starpivot.mall.pms.support.GoodsImageConstants;
@@ -8,6 +9,7 @@ import cn.org.starpivot.mall.pms.support.MallImageUploadSupport;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +40,8 @@ public class PortalImageController {
 
     @Operation(summary = "批量获取商城展示图预签名 URL")
     @PostMapping("/presigned-urls")
-    public Result<Map<String, String>> presignedUrls(@RequestBody List<String> objectNames) {
+    public Result<Map<String, String>> presignedUrls(@Valid @RequestBody PresignedUrlsBo bo) {
+        List<String> objectNames = bo.getObjectNames() == null ? List.of() : bo.getObjectNames();
         return Result.success(mallImageDisplaySupport.resolveDisplayUrls(objectNames));
     }
 }

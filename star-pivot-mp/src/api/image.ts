@@ -8,7 +8,7 @@ export function fetchImagePresignedUrls(objectNames: string[]) {
   return request<Record<string, string>>({
     url: '/portal/home/presigned-urls',
     method: 'POST',
-    data: objectNames,
+    data: { objectNames },
     auth: false
   })
 }

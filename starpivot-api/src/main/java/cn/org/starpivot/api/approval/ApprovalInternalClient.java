@@ -1,6 +1,7 @@
 package cn.org.starpivot.api.approval;
 
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
+import cn.org.starpivot.api.fallback.ApprovalInternalClientFallbackFactory;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(
         name = "starpivot-approval",
         contextId = "approvalInternalClient",
-        path = "/api/${starpivot.api.version:v1}")
+        path = "/api/${starpivot.api.version:v1}",
+        fallbackFactory = ApprovalInternalClientFallbackFactory.class)
 public interface ApprovalInternalClient {
 
     @PostMapping("/internal/approval/instance/submit")

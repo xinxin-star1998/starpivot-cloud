@@ -48,15 +48,11 @@ public class FileSecurityConfig {
                 http,
                 microserviceAuthenticationFilter,
                 unauthorizedEntryPoint,
-                auth -> auth
-                        .requestMatchers(
-                                "/internal/**",
-                                "/actuator/**",
-                                "/doc.html",
-                                "/v3/api-docs/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .anyRequest().authenticated());
+                auth -> {
+                    auth.requestMatchers("/internal/**").permitAll();
+                    MicroserviceSecuritySupport.permitInfrastructureEndpoints(auth);
+                    auth.anyRequest().authenticated();
+                });
         return http.build();
     }
 }

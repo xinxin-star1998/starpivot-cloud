@@ -27,13 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 菜单管理服务实现类。
@@ -114,7 +108,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
     public boolean insertMenu(MenuDTO menuDTO) {
         if (!checkMenuNameUnique(menuDTO.getMenuName(), menuDTO.getParentId(), null)) {
             throw new BizException(ErrorCode.MENU_NAME_EXISTS, "菜单名称已存在");
@@ -150,7 +144,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
     public boolean updateMenu(MenuDTO menuDTO) {
         SysMenu menu = this.getById(menuDTO.getMenuId());
         if (menu == null) {
@@ -187,7 +181,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, allEntries = true)
+    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
     public boolean deleteMenuByIds(List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {
             return false;

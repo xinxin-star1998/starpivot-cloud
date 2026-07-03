@@ -1,11 +1,7 @@
 package cn.org.starpivot.common.config;
 
 import cn.org.starpivot.common.filter.MicroserviceAuthenticationFilter;
-import cn.org.starpivot.common.security.AuthorityResolver;
-import cn.org.starpivot.common.security.JwtProperties;
-import cn.org.starpivot.common.security.MenuPermissionAuthorityResolver;
-import cn.org.starpivot.common.security.RolesOnlyAuthorityResolver;
-import cn.org.starpivot.common.security.TokenBlacklistChecker;
+import cn.org.starpivot.common.security.*;
 import cn.org.starpivot.common.security.mapper.AuthMenuMapper;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -101,10 +97,12 @@ public class MicroserviceAuthenticationAutoConfiguration {
     public MicroserviceAuthenticationFilter microserviceAuthenticationFilter(
             JwtProperties jwtProperties,
             AuthorityResolver authorityResolver,
+            MicroserviceSecurityProperties securityProperties,
             ObjectProvider<TokenBlacklistChecker> tokenBlacklistChecker) {
         return new MicroserviceAuthenticationFilter(
                 jwtProperties,
                 authorityResolver,
+                securityProperties,
                 tokenBlacklistChecker.getIfAvailable());
     }
 }

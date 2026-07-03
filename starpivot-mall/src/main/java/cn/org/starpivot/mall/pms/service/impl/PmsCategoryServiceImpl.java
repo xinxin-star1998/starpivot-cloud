@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.pms.service.impl;
 
+import cn.org.starpivot.common.cache.SpringCacheSupport;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.pms.domain.bo.CategorySaveBo;
@@ -11,9 +12,8 @@ import cn.org.starpivot.mall.pms.service.PmsCategoryService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.cache.annotation.CacheEvict;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +33,14 @@ import java.util.stream.Collectors;
  */
 
 @Service
+@RequiredArgsConstructor
 public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCategory> implements PmsCategoryService {
 
     private static final String CACHE_TREE = "mallCategoryTree";
     private static final String CACHE_CHILDREN = "mallCategoryChildren";
+    private static final String CACHE_KEY_TREE_ALL = "all";
+
+    private final SpringCacheSupport springCacheSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -86,11 +90,6 @@ public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCa
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(
-            evict = {
-                @CacheEvict(cacheNames = CACHE_TREE, allEntries = true),
-                @CacheEvict(cacheNames = CACHE_CHILDREN, allEntries = true)
-            })
     public void addCategory(CategorySaveBo bo) {
         if (bo.getCatId() != null) {
             throw new BizException(ErrorCode.PARAM_INVALID, "新增时不要传分类ID");
@@ -122,15 +121,11 @@ public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCa
         entity.setProductUnit(bo.getProductUnit());
         entity.setProductCount(0L);
         save(entity);
+        evictAfterCategoryChange(parentCid);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(
-            evict = {
-                @CacheEvict(cacheNames = CACHE_TREE, allEntries = true),
-                @CacheEvict(cacheNames = CACHE_CHILDREN, allEntries = true)
-            })
     public void updateCategory(CategorySaveBo bo) {
         if (bo.getCatId() == null) {
             throw new BizException(ErrorCode.PARAM_INVALID, "修改时分类ID不能为空");
@@ -149,19 +144,16 @@ public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCa
         existing.setIcon(bo.getIcon());
         existing.setProductUnit(bo.getProductUnit());
         updateById(existing);
+        evictAfterCategoryChange(normalizeParentCid(existing.getParentCid()));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(
-            evict = {
-                @CacheEvict(cacheNames = CACHE_TREE, allEntries = true),
-                @CacheEvict(cacheNames = CACHE_CHILDREN, allEntries = true)
-            })
     public void removeCategories(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             throw new BizException(ErrorCode.PARAM_INVALID, "删除ID不能为空");
         }
+        Set<Long> parentIds = new LinkedHashSet<>();
         for (Long id : ids) {
             if (id == null) {
                 continue;
@@ -173,17 +165,19 @@ public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCa
             if (cnt > 0) {
                 throw new BizException("存在子分类，请先删除子分类后再删除当前分类");
             }
+            PmsCategory existing = getById(id);
+            if (existing != null) {
+                parentIds.add(normalizeParentCid(existing.getParentCid()));
+            }
+            evictCategoryChildren(id);
         }
         super.removeByIds(ids);
+        evictCategoryTree();
+        parentIds.forEach(this::evictCategoryChildren);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(
-            evict = {
-                @CacheEvict(cacheNames = CACHE_TREE, allEntries = true),
-                @CacheEvict(cacheNames = CACHE_CHILDREN, allEntries = true)
-            })
     public void updateSortBatch(List<CategorySortItemBo> items) {
         if (items == null || items.isEmpty()) {
             throw new BizException(ErrorCode.PARAM_INVALID, "排序项不能为空");
@@ -208,6 +202,28 @@ public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCa
             updates.add(entity);
         }
         updateBatchById(updates);
+        evictCategoryTree();
+        if (expectedParent != null) {
+            evictCategoryChildren(expectedParent);
+        }
+    }
+
+    private void evictAfterCategoryChange(Long parentCid) {
+        evictCategoryTree();
+        evictCategoryChildren(parentCid);
+    }
+
+    private void evictCategoryTree() {
+        springCacheSupport.evict(CACHE_TREE, CACHE_KEY_TREE_ALL);
+    }
+
+    private void evictCategoryChildren(Long parentCid) {
+        springCacheSupport.evict(CACHE_CHILDREN, childrenCacheKey(parentCid));
+    }
+
+    private static String childrenCacheKey(Long parentCid) {
+        Long normalized = normalizeParentCid(parentCid);
+        return normalized == 0L ? "0" : normalized.toString();
     }
 
     private static List<CategoryTreeVo> buildTree(List<PmsCategory> all) {

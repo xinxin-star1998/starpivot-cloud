@@ -55,7 +55,9 @@ chmod +x nacos/import-config.sh
 | `NACOS_USERNAME` | 控制台账号 | `nacos` |
 | `NACOS_PASSWORD` | 控制台密码 | `nacos` |
 | `JWT_SECRET` | JWT 签名密钥（≥32 字符） | **必填** |
-| `INTERNAL_SERVICE_TOKEN` | 服务间内部 API Token | 建议设置 |
+| `INTERNAL_SERVICE_TOKEN` | 服务间内部 API Token | **本地/生产均建议设置** |
+| `INTERNAL_SERVICE_TOKEN_REQUIRED` | 未配置 Token 时是否拒绝内部接口 | `true` |
+| `TRUST_GATEWAY_HEADERS` | 微服务是否信任网关透传身份 Header | `false`（生产保持 false） |
 | `REDIS_PASSWORD` | Redis 密码 | `root`（与 docker-compose 一致） |
 | `DB_URL` | 数据库连接 | 见各服务 yaml |
 

@@ -31,7 +31,7 @@ export function uploadGoodsImage(file: File, goodsId?: number) {
 export function fetchGoodsImagePresignedUrls(objectNames: string[]) {
   return request.post<Record<string, string>>({
     url: '/api/common/upload/presigned-urls',
-    data: objectNames,
+    data: { objectNames },
     showErrorMessage: false
   })
 }

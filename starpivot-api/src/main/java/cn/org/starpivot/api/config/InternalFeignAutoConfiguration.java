@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.config;
 
+import cn.org.starpivot.api.fallback.*;
 import cn.org.starpivot.common.config.InternalServiceProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -7,29 +8,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Feign 内部调用自动配置类。
+ * Feign 内部调用配置类。
  * <p>
- * 在 classpath 存在 OpenFeign 时，注册 {@link InternalFeignRequestInterceptor}，
- * 使服务间 Feign 调用 {@code /internal/**} 接口时自动携带内部 Token 与 TraceId。
- * <p>
- * 注解说明：
- * <ul>
- *   <li>{@link Configuration} — 声明为 Spring 配置类</li>
- *   <li>{@link ConditionalOnClass} — 仅当存在 {@code feign.RequestInterceptor} 时生效，避免无 Feign 依赖的服务启动失败</li>
- *   <li>{@link EnableConfigurationProperties} — 启用 {@link InternalServiceProperties} 配置绑定</li>
- * </ul>
+ * 通过各业务模块 {@code scanBasePackages = "cn.org.starpivot"} 扫描加载；
+ * 在 classpath 存在 OpenFeign 时注册拦截器与各 Feign Client 的 FallbackFactory。
  */
 @Configuration
 @ConditionalOnClass(name = "feign.RequestInterceptor")
 @EnableConfigurationProperties(InternalServiceProperties.class)
 public class InternalFeignAutoConfiguration {
 
-    /**
-     * 注册 Feign 请求拦截器 Bean。
-     *
-     * @param internalServiceProperties 内部服务鉴权配置（含服务间 Token）
-     * @return 自动附加 TraceId 与内部 Token 的拦截器实例
-     */
     @Bean
     public InternalFeignRequestInterceptor internalFeignRequestInterceptor(
             InternalServiceProperties internalServiceProperties) {
@@ -39,5 +27,40 @@ public class InternalFeignAutoConfiguration {
     @Bean
     public FeignAuthForwardInterceptor feignAuthForwardInterceptor() {
         return new FeignAuthForwardInterceptor();
+    }
+
+    @Bean
+    public SysUserClientFallbackFactory sysUserClientFallbackFactory() {
+        return new SysUserClientFallbackFactory();
+    }
+
+    @Bean
+    public SysConfigClientFallbackFactory sysConfigClientFallbackFactory() {
+        return new SysConfigClientFallbackFactory();
+    }
+
+    @Bean
+    public SysLoginLogClientFallbackFactory sysLoginLogClientFallbackFactory() {
+        return new SysLoginLogClientFallbackFactory();
+    }
+
+    @Bean
+    public SysOperLogClientFallbackFactory sysOperLogClientFallbackFactory() {
+        return new SysOperLogClientFallbackFactory();
+    }
+
+    @Bean
+    public SysOrgClientFallbackFactory sysOrgClientFallbackFactory() {
+        return new SysOrgClientFallbackFactory();
+    }
+
+    @Bean
+    public FileRefClientFallbackFactory fileRefClientFallbackFactory() {
+        return new FileRefClientFallbackFactory();
+    }
+
+    @Bean
+    public ApprovalInternalClientFallbackFactory approvalInternalClientFallbackFactory() {
+        return new ApprovalInternalClientFallbackFactory();
     }
 }

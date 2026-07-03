@@ -45,6 +45,8 @@ public final class CacheConstants {
     public static final String DASHBOARD = "dashboard";
     /** 外部代码生成会话 */
     public static final String GENERATOR_SESSION = "generator_session";
+    /** 定时任务分布式锁 */
+    public static final String SCHEDULE_LOCK = "schedule_lock";
 
     // ── login_tokens 子类型 ─────────────────────────────────────────────
 
@@ -116,6 +118,10 @@ public final class CacheConstants {
 
     public static String generatorSessionKey(String sessionId) {
         return GENERATOR_SESSION + ":" + sessionId;
+    }
+
+    public static String scheduleLockKey(String taskKey) {
+        return SCHEDULE_LOCK + ":" + taskKey;
     }
 
     // ── 监控页备注 ──────────────────────────────────────────────────────

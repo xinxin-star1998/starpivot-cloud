@@ -4,3 +4,4 @@ cn.org.starpivot.common.config.SecurityBeansConfiguration
 cn.org.starpivot.common.config.MicroserviceAuthenticationAutoConfiguration
 cn.org.starpivot.common.config.MybatisPlusAutoConfiguration
 cn.org.starpivot.common.config.StarPivotSchedulingAutoConfiguration
+cn.org.starpivot.common.config.DistributedScheduledAutoConfiguration

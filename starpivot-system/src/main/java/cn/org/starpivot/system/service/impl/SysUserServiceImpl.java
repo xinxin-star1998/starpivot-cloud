@@ -25,6 +25,9 @@ import cn.org.starpivot.system.mapper.UserRoleMapper;
 import cn.org.starpivot.system.service.DataScopeService;
 import cn.org.starpivot.system.service.SysUserService;
 import cn.org.starpivot.system.service.UserPermissionCacheService;
+import cn.org.starpivot.system.service.support.SysUserAuthSupport;
+import cn.org.starpivot.system.service.support.SysUserExcelSupport;
+import cn.org.starpivot.system.service.support.SysUserRelationSupport;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,7 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private final UserVOAssembler userVOAssembler;
     private final TransactionTemplate transactionTemplate;
     private final SecurityUtils securityUtils;
+    private final SysUserAuthSupport sysUserAuthSupport;
+    private final SysUserRelationSupport sysUserRelationSupport;
+    private final SysUserExcelSupport sysUserExcelSupport;
 
     /**
      * 根据用户名查询认证用用户信息（未删除用户）。
@@ -79,56 +84,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      */
     @Override
     public SysUserAuthDto getAuthByUsername(String username) {
-        SysUser user = findActiveUserByUsername(username);
-        return user == null ? null : toAuthDto(user);
+        return sysUserAuthSupport.getAuthByUsername(username);
     }
 
-    /**
-     * 校验用户名与明文密码，通过后返回认证信息。
-     *
-     * @param username    登录用户名
-     * @param rawPassword 明文密码
-     * @return 认证 DTO，用户不存在或密码错误时返回 {@code null}
-     */
     @Override
     public SysUserAuthDto verifyPassword(String username, String rawPassword) {
-        SysUser user = findActiveUserByUsername(username);
-        if (user == null || !StringUtils.hasText(rawPassword)) {
-            return null;
-        }
-        if (!securityUtils.matchesPassword(rawPassword, user.getPassword())) {
-            return null;
-        }
-        return toAuthDto(user);
-    }
-
-    /**
-     * 按用户名查询未逻辑删除的用户。
-     *
-     * @param username 登录用户名
-     * @return 用户实体，不存在时返回 {@code null}
-     */
-    private SysUser findActiveUserByUsername(String username) {
-        return sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getUserName, username)
-                .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL));
-    }
-
-    /**
-     * 将 {@link SysUser} 转换为认证服务所需的 {@link SysUserAuthDto}。
-     *
-     * @param user 用户实体
-     * @return 含角色标识的认证 DTO
-     */
-    private SysUserAuthDto toAuthDto(SysUser user) {
-        return SysUserAuthDto.builder()
-                .userId(user.getUserId())
-                .username(user.getUserName())
-                .nickName(user.getNickName())
-                .status(user.getStatus())
-                .roles(sysUserMapper.selectRoleKeysByUserId(user.getUserId()))
-                .avatar(user.getAvatar())
-                .build();
+        return sysUserAuthSupport.verifyPassword(username, rawPassword);
     }
 
     /**
@@ -245,10 +206,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         boolean success = this.save(sysUser);
         if (success && userDTO.getRoleIds() != null && !userDTO.getRoleIds().isEmpty()) {
-            insertUserRoles(sysUser.getUserId(), userDTO.getRoleIds());
+            sysUserRelationSupport.insertUserRoles(sysUser.getUserId(), userDTO.getRoleIds());
         }
         if (success && userDTO.getPostIds() != null && !userDTO.getPostIds().isEmpty()) {
-            insertUserPosts(sysUser.getUserId(), userDTO.getPostIds());
+            sysUserRelationSupport.insertUserPosts(sysUser.getUserId(), userDTO.getPostIds());
         }
         return success;
     }
@@ -301,14 +262,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             if (userDTO.getRoleIds() != null) {
                 userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userDTO.getUserId()));
                 if (!userDTO.getRoleIds().isEmpty()) {
-                    insertUserRoles(userDTO.getUserId(), userDTO.getRoleIds());
+                    sysUserRelationSupport.insertUserRoles(userDTO.getUserId(), userDTO.getRoleIds());
                 }
                 userPermissionCacheService.clearUserPermissionCacheByUserId(userDTO.getUserId());
             }
             if (userDTO.getPostIds() != null) {
                 userPostMapper.delete(new LambdaQueryWrapper<UserPost>().eq(UserPost::getUserId, userDTO.getUserId()));
                 if (!userDTO.getPostIds().isEmpty()) {
-                    insertUserPosts(userDTO.getUserId(), userDTO.getPostIds());
+                    sysUserRelationSupport.insertUserPosts(userDTO.getUserId(), userDTO.getPostIds());
                 }
             }
         }
@@ -486,25 +447,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         userReqBo.setPageNum(1L);
         userReqBo.setPageSize(5000L);
         PageResponse<UserVO> pageResponse = this.pageList(userReqBo);
-        List<UserVO> userList = pageResponse.getRows();
-        if (userList == null) {
-            return List.of();
-        }
-        List<SysUserExcel> exportList = new ArrayList<>(userList.size());
-        for (UserVO user : userList) {
-            SysUserExcel row = new SysUserExcel();
-            row.setUserName(user.getUserName());
-            row.setNickName(user.getNickName());
-            row.setEmail(user.getEmail());
-            row.setPhonenumber(user.getPhonenumber());
-            row.setSex(convertSexCodeToText(user.getSex()));
-            row.setStatus(AppConstants.Status.NORMAL.equals(user.getStatus()) ? "正常" : "停用");
-            row.setDeptId(user.getDeptId());
-            row.setDeptName(user.getDeptName());
-            row.setRemark(user.getRemark());
-            exportList.add(row);
-        }
-        return exportList;
+        return sysUserExcelSupport.toExcelRows(pageResponse.getRows());
     }
 
     /**
@@ -522,7 +465,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         int rowIndex = 1;
         for (SysUserExcel row : rows) {
             try {
-                UserDTO userDTO = buildUserDTOFromExcel(row, rowIndex);
+                UserDTO userDTO = sysUserExcelSupport.buildUserDTOFromExcel(row, rowIndex);
                 saveOrUpdateFromImport(userDTO, updateSupport, rowIndex, result);
             } catch (BizException e) {
                 result.setFailCount(result.getFailCount() + 1);
@@ -669,109 +612,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     /**
-     * 将性别编码转换为导出用中文文本。
-     *
-     * @param sexCode 性别编码（{@code 0} 男，{@code 1} 女）
-     * @return 中文描述，未知时返回「未知」
-     */
-    private String convertSexCodeToText(String sexCode) {
-        if (!StringUtils.hasText(sexCode)) {
-            return "未知";
-        }
-        return switch (sexCode) {
-            case "0" -> "男";
-            case "1" -> "女";
-            default -> "未知";
-        };
-    }
-
-    /**
-     * 将 Excel 行解析为 {@link UserDTO}，并校验必填字段。
-     *
-     * @param row      Excel 行
-     * @param rowIndex 行号（用于错误提示）
-     * @return 用户 DTO
-     * @throws BizException 行数据为空或必填项缺失时抛出
-     */
-    private UserDTO buildUserDTOFromExcel(SysUserExcel row, int rowIndex) {
-        if (row == null) {
-            throw new BizException(ErrorCode.USER_IMPORT_ROW_EMPTY, "第 " + rowIndex + " 行数据为空");
-        }
-        if (!StringUtils.hasText(row.getUserName())) {
-            throw new BizException(ErrorCode.USER_IMPORT_USERNAME_EMPTY, "第 " + rowIndex + " 行用户账号不能为空");
-        }
-        if (!StringUtils.hasText(row.getNickName())) {
-            throw new BizException(ErrorCode.USER_IMPORT_NICKNAME_EMPTY, "第 " + rowIndex + " 行用户昵称不能为空");
-        }
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUserName(row.getUserName().trim());
-        userDTO.setNickName(row.getNickName().trim());
-        if (StringUtils.hasText(row.getEmail())) {
-            userDTO.setEmail(row.getEmail().trim());
-        }
-        if (StringUtils.hasText(row.getPhonenumber())) {
-            userDTO.setPhonenumber(row.getPhonenumber().trim());
-        }
-        String sexCode = "2";
-        if (StringUtils.hasText(row.getSex())) {
-            String sexText = row.getSex().trim();
-            if ("男".equals(sexText)) {
-                sexCode = "0";
-            } else if ("女".equals(sexText)) {
-                sexCode = "1";
-            }
-        }
-        userDTO.setSex(sexCode);
-        String statusCode = AppConstants.Status.NORMAL;
-        if (StringUtils.hasText(row.getStatus())) {
-            String statusText = row.getStatus().trim();
-            if ("停用".equals(statusText) || "禁用".equals(statusText)) {
-                statusCode = AppConstants.Status.DISABLE;
-            }
-        }
-        userDTO.setStatus(statusCode);
-        userDTO.setDeptId(row.getDeptId());
-        if (StringUtils.hasText(row.getRemark())) {
-            userDTO.setRemark(row.getRemark().trim());
-        }
-        return userDTO;
-    }
-
-    /**
-     * 批量插入用户与角色的关联关系。
-     *
-     * @param userId  用户 ID
-     * @param roleIds 角色 ID 列表
-     */
-    private void insertUserRoles(Long userId, List<Long> roleIds) {
-        List<UserRole> userRoles = new ArrayList<>(roleIds.size());
-        for (Long roleId : roleIds) {
-            UserRole userRole = new UserRole();
-            userRole.setUserId(userId);
-            userRole.setRoleId(roleId);
-            userRoles.add(userRole);
-        }
-        userRoleMapper.insertBatchUserRoles(userRoles);
-    }
-
-    /**
-     * 批量插入用户与岗位的关联关系。
-     *
-     * @param userId  用户 ID
-     * @param postIds 岗位 ID 列表
-     */
-    private void insertUserPosts(Long userId, List<Long> postIds) {
-        List<UserPost> userPosts = new ArrayList<>(postIds.size());
-        for (Long postId : postIds) {
-            UserPost userPost = new UserPost();
-            userPost.setUserId(userId);
-            userPost.setPostId(postId);
-            userPosts.add(userPost);
-        }
-        userPostMapper.insertBatchUserPosts(userPosts);
-    }
-
-    /**
      * 导入单行用户：按 updateSupport 决定新增或更新，并累计导入结果。
      *
      * @param userDTO        解析后的用户 DTO
@@ -827,10 +667,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new BizException(ErrorCode.OPERATION_FAILED, "注册失败，请稍后重试");
         }
 
-        UserRole userRole = new UserRole();
-        userRole.setUserId(user.getUserId());
-        userRole.setRoleId(AppConstants.DEFAULT_REGISTER_ROLE_ID);
-        userRoleMapper.insertBatchUserRoles(List.of(userRole));
+        sysUserRelationSupport.insertUserRoles(user.getUserId(), List.of(AppConstants.DEFAULT_REGISTER_ROLE_ID));
 
         return RegisterUserResponse.builder()
                 .userId(user.getUserId())

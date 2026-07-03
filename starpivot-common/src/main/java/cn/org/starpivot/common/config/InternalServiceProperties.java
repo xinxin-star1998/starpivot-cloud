@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * </ul>
  * <p>
  * 生产环境请通过环境变量 {@code INTERNAL_SERVICE_TOKEN} 注入 {@link #token}；
- * 未配置时 {@link cn.org.starpivot.common.filter.InternalServiceAuthFilter} 跳过校验（便于本地开发）。
+ * {@link #requireToken} 默认为 {@code true}，未配置 Token 时拒绝所有内部调用。
  *
  * @see cn.org.starpivot.common.filter.InternalServiceAuthFilter
  * @see cn.org.starpivot.common.security.SecurityConstants#INTERNAL_TOKEN_HEADER
@@ -36,5 +36,5 @@ public class InternalServiceProperties {
      * <p>
      * 为 {@code true} 且 {@link #token} 为空时，所有 {@code /internal/**} 请求将被拒绝。
      */
-    private boolean requireToken = false;
+    private boolean requireToken = true;
 }

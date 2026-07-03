@@ -1,5 +1,6 @@
 package cn.org.starpivot.api.system.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.io.Serial;
@@ -22,7 +23,9 @@ public class VerifyPasswordRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** 待校验的用户名 */
+    @NotBlank(message = "用户名不能为空")
     private String username;
     /** 待校验的明文密码 */
+    @NotBlank(message = "密码不能为空")
     private String password;
 }
