@@ -143,7 +143,10 @@ export function useSpuWizardSubmit(deps: SubmitDeps) {
       publishStatus: detail.publishStatus ?? 0,
       decript: detail.decript ? [...detail.decript] : [],
       images: detail.images ? [...detail.images] : [],
-      bounds: { buyBounds: 0, growBounds: 0 }
+      bounds: {
+        buyBounds: Number(detail.bounds?.buyBounds ?? 0),
+        growBounds: Number(detail.bounds?.growBounds ?? 0)
+      }
     })
     syncCatalogPath(cid)
     if (cid == null) return

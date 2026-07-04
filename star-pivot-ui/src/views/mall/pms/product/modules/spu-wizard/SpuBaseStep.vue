@@ -49,7 +49,7 @@
           style="width: 200px"
         />
       </ElFormItem>
-      <ElFormItem label="积分设置（仅展示，不保存）">
+      <ElFormItem label="积分设置">
         <ElSpace wrap>
           <span>金币</span>
           <ElInputNumber

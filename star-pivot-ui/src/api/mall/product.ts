@@ -20,6 +20,7 @@ export interface MallProductVo {
   images?: string[]
   baseAttrs?: MallProductBaseAttr[]
   skus?: MallProductSku[]
+  bounds?: { buyBounds?: number; growBounds?: number }
 }
 
 export interface MallProductBaseAttr {
@@ -77,6 +78,7 @@ export interface MallProductSavePayload {
   images?: string[]
   baseAttrs?: MallProductBaseAttr[]
   skus?: MallProductSku[]
+  bounds?: { buyBounds?: number; growBounds?: number }
   /** 发布时默认入库仓库（仅新增商品时与 initialStock 配合） */
   defaultWareId?: number
 }

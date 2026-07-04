@@ -51,6 +51,7 @@
       ref="notifyDrawerRef"
       v-model:visible="notifyVisible"
       @navigate="openTimelineDialog"
+      @unread-change="handleNotifyUnreadChange"
     />
   </div>
 </template>
@@ -94,6 +95,16 @@ defineOptions({ name: 'ApprovalTodo' })
       notifyUnread.value = 0
     }
   }
+
+  function handleNotifyUnreadChange(count: number) {
+    notifyUnread.value = Math.max(0, Number(count) || 0)
+  }
+
+  watch(notifyVisible, (open, wasOpen) => {
+    if (!open && wasOpen) {
+      refreshNotifyCount()
+    }
+  })
 
   onMounted(() => {
     refreshNotifyCount()

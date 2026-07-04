@@ -110,4 +110,7 @@ public class ProductVo {
      * skus
      */
     private List<Skus> skus;
+
+    /** 购物赠送积分/成长值（来自 sms_spu_bounds） */
+    private Bounds bounds;
 }

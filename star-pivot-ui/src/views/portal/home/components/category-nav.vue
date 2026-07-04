@@ -163,7 +163,10 @@ defineOptions({ name: 'PortalHomeCategoryNav' })
   .category-nav {
     width: 200px;
     flex-shrink: 0;
+    align-self: stretch;
+    min-height: 480px;
     background: linear-gradient(180deg, #2d3436 0%, #3d4f5f 100%);
+    border-radius: var(--portal-radius-lg) 0 0 var(--portal-radius-lg);
     z-index: 2;
   }
 
@@ -171,7 +174,7 @@ defineOptions({ name: 'PortalHomeCategoryNav' })
     list-style: none;
     margin: 0;
     padding: 8px 0;
-    max-height: 460px;
+    max-height: 480px;
     overflow-y: auto;
 
     &::-webkit-scrollbar {

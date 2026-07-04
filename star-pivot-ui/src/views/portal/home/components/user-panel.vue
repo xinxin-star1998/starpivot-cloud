@@ -14,17 +14,17 @@
 
     <template v-if="portalStore.isLogin">
       <div class="user-panel__actions">
-        <button type="button" class="action-btn action-btn--primary" @click="router.push('/portal/orders')">
+        <button type="button" class="action-btn" @click="router.push('/portal/orders')">
           <ArtSvgIcon icon="ri:file-list-3-line" />
-          我的订单
+          <span>订单</span>
         </button>
         <button type="button" class="action-btn" @click="router.push('/portal/cart')">
           <ArtSvgIcon icon="ri:shopping-cart-2-line" />
-          购物车
+          <span>购物车</span>
         </button>
         <button type="button" class="action-btn" @click="router.push('/portal/account/security')">
           <ArtSvgIcon icon="ri:shield-user-line" />
-          账号安全
+          <span>安全</span>
         </button>
       </div>
     </template>
@@ -159,9 +159,13 @@ defineOptions({ name: 'PortalHomeUserPanel' })
   .user-panel {
     width: 200px;
     flex-shrink: 0;
-    padding: 20px 16px;
+    align-self: stretch;
+    min-height: 480px;
+    box-sizing: border-box;
+    padding: 16px 12px;
     background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
     border-left: 1px solid var(--portal-border);
+    border-radius: 0 var(--portal-radius-lg) var(--portal-radius-lg) 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -170,11 +174,11 @@ defineOptions({ name: 'PortalHomeUserPanel' })
 
   .user-panel__profile {
     width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .user-panel__avatar-wrap {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .user-panel__avatar {
@@ -241,29 +245,35 @@ defineOptions({ name: 'PortalHomeUserPanel' })
 
   .user-panel__actions {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 6px;
     width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .action-btn {
     display: flex;
+    flex: 1;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 8px 12px;
+    gap: 4px;
+    min-width: 0;
+    padding: 6px 4px;
     border: 1px solid var(--portal-border);
     border-radius: var(--portal-radius-sm);
     background: #fff;
     color: var(--portal-text-secondary);
-    font-size: 13px;
+    font-size: 11px;
     cursor: pointer;
     transition: all var(--portal-transition);
 
+    span {
+      line-height: 1.2;
+    }
+
     svg {
-      font-size: 16px;
+      font-size: 18px;
     }
 
     &:hover {
@@ -271,20 +281,13 @@ defineOptions({ name: 'PortalHomeUserPanel' })
       color: var(--portal-primary);
       background: var(--portal-primary-light);
     }
-
-    &--primary {
-      background: var(--portal-primary-light);
-      border-color: transparent;
-      color: var(--portal-primary);
-      font-weight: 600;
-    }
   }
 
   .user-panel__coupons {
     display: flex;
     gap: 6px;
     width: 100%;
-    margin: 8px 0 12px;
+    margin: 4px 0 10px;
     cursor: pointer;
   }
 
@@ -319,10 +322,10 @@ defineOptions({ name: 'PortalHomeUserPanel' })
   .user-panel__shortcuts {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 6px;
     width: 100%;
     margin-top: auto;
-    padding-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid var(--portal-border);
   }
 
@@ -330,8 +333,8 @@ defineOptions({ name: 'PortalHomeUserPanel' })
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 4px;
+    gap: 3px;
+    padding: 6px 4px;
     border-radius: var(--portal-radius-sm);
     font-size: 11px;
     color: var(--portal-text-secondary);
@@ -361,6 +364,16 @@ defineOptions({ name: 'PortalHomeUserPanel' })
     &:hover {
       color: var(--portal-primary);
       background: var(--portal-primary-light);
+    }
+  }
+
+  @media (width <= 900px) {
+    .user-panel {
+      width: 100%;
+      min-height: 0;
+      border-left: none;
+      border-top: 1px solid var(--portal-border);
+      border-radius: 0 0 var(--portal-radius-lg) var(--portal-radius-lg);
     }
   }
 </style>

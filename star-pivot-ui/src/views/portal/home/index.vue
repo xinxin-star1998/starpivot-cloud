@@ -392,10 +392,11 @@ defineOptions({ name: 'PortalHome' })
   .portal-home__hero {
     position: relative;
     display: flex;
-    height: 460px;
+    align-items: stretch;
+    min-height: 480px;
     background: var(--portal-bg-elevated);
     border-radius: var(--portal-radius-lg);
-    overflow: hidden;
+    overflow: visible;
     margin-bottom: 20px;
     box-shadow: var(--portal-shadow);
   }
@@ -403,14 +404,16 @@ defineOptions({ name: 'PortalHome' })
   .portal-home__banner-wrap {
     flex: 1;
     min-width: 0;
+    height: 480px;
+    overflow: hidden;
     background: linear-gradient(135deg, #fafbfc 0%, #f0f2f5 100%);
   }
 
   .portal-home__banner {
-    height: 460px;
+    height: 480px;
 
     :deep(.el-carousel__container) {
-      height: 460px;
+      height: 480px;
     }
 
     :deep(.el-carousel__indicators) {
@@ -435,13 +438,13 @@ defineOptions({ name: 'PortalHome' })
     .banner-img {
       display: block;
       width: 100%;
-      height: 460px;
+      height: 480px;
       object-fit: cover;
     }
   }
 
   .portal-home__banner-placeholder {
-    height: 460px;
+    height: 480px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -604,7 +607,11 @@ defineOptions({ name: 'PortalHome' })
   @media (width <= 900px) {
     .portal-home__hero {
       flex-direction: column;
-      height: auto;
+      min-height: 0;
+    }
+
+    .portal-home__banner-wrap {
+      height: 220px;
     }
 
     .portal-home__banner,

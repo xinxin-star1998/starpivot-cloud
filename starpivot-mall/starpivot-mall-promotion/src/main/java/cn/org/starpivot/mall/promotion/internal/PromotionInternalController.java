@@ -146,6 +146,31 @@ public class PromotionInternalController {
         return Result.success(map);
     }
 
+    @PutMapping("/spu-bounds/upsert")
+    public Result<Void> upsertSpuBounds(@RequestBody SpuBoundsUpsertRequest request) {
+        if (request == null || request.getSpuId() == null) {
+            return Result.badRequest("SPU ID不能为空");
+        }
+        SmsSpuBounds existing = smsSpuBoundsMapper.selectOne(
+                Wrappers.<SmsSpuBounds>lambdaQuery().eq(SmsSpuBounds::getSpuId, request.getSpuId()));
+        if (existing == null) {
+            SmsSpuBounds entity = new SmsSpuBounds();
+            entity.setSpuId(request.getSpuId());
+            entity.setBuyBounds(normalizeBounds(request.getBuyBounds()));
+            entity.setGrowBounds(normalizeBounds(request.getGrowBounds()));
+            entity.setWork(1);
+            smsSpuBoundsMapper.insert(entity);
+        } else {
+            existing.setBuyBounds(normalizeBounds(request.getBuyBounds()));
+            existing.setGrowBounds(normalizeBounds(request.getGrowBounds()));
+            if (existing.getWork() == null) {
+                existing.setWork(1);
+            }
+            smsSpuBoundsMapper.updateById(existing);
+        }
+        return Result.success();
+    }
+
     @PostMapping("/seckill/reserve")
     public Result<Boolean> reserveSeckill(@RequestBody SeckillReserveRequest request) {
         boolean ok = portalSeckillStockService.reserve(
@@ -238,6 +263,10 @@ public class PromotionInternalController {
         line.setGrowBounds(bounds.getGrowBounds());
         line.setWork(bounds.getWork());
         return line;
+    }
+
+    private BigDecimal normalizeBounds(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private PortalOrderItemBo toOrderItemBo(CouponTrialItemDto item) {

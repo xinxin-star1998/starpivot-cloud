@@ -69,6 +69,12 @@ public interface PromotionInternalClient {
 
 
 
+    @PutMapping("/internal/mall/promotion/spu-bounds/upsert")
+
+    Result<Void> upsertSpuBounds(@RequestBody SpuBoundsUpsertRequest request);
+
+
+
     @PostMapping("/internal/mall/promotion/seckill/reserve")
 
     Result<Boolean> reserveSeckill(@RequestBody SeckillReserveRequest request);

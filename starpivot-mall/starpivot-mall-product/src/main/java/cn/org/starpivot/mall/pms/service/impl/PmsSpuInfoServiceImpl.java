@@ -1,11 +1,14 @@
 package cn.org.starpivot.mall.pms.service.impl;
 
+import cn.org.starpivot.api.mall.order.dto.OrderRewardContextDto;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.mall.common.MallAuditStatus;
+import cn.org.starpivot.mall.common.PromotionFeignSupport;
 import cn.org.starpivot.mall.pms.domain.bo.ProductReqBo;
 import cn.org.starpivot.mall.pms.domain.bo.ProductSaveBo;
+import cn.org.starpivot.mall.pms.domain.vo.Bounds;
 import cn.org.starpivot.mall.pms.domain.vo.ProductVo;
 import cn.org.starpivot.mall.pms.entity.PmsSpuInfo;
 import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
@@ -17,10 +20,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +39,7 @@ import java.util.stream.Collectors;
  *
  * @see PmsSpuInfoService
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
@@ -40,6 +48,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
     private final PmsProductSearchSyncService productSearchSyncService;
     private final PmsSpuVoAssembler pmsSpuVoAssembler;
     private final PmsSpuRelationSupport pmsSpuRelationSupport;
+    private final PromotionFeignSupport promotionFeignSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,6 +81,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         }
         ProductVo vo = pmsSpuVoAssembler.toVo(spu);
         pmsSpuVoAssembler.fillSpuRelations(vo, id);
+        vo.setBounds(loadBounds(id));
         pmsSpuVoAssembler.normalizeVoImagePaths(vo);
         pmsSpuVoAssembler.fillCoverImages(Collections.singletonList(vo));
         return vo;
@@ -92,6 +102,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         entity.setAuditStatus(MallAuditStatus.DRAFT);
         pmsSpuInfoMapper.insert(entity);
         pmsSpuRelationSupport.saveSpuRelations(entity.getId(), bo, true);
+        scheduleSyncSpuBoundsAfterCommit(entity.getId(), bo);
         pmsSpuRelationSupport.syncProductFileRefs(entity.getId());
         productSearchSyncService.syncPublishedSpu(entity.getId());
     }
@@ -112,6 +123,7 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         pmsSpuRelationSupport.unbindProductFileRefs(bo.getId());
         pmsSpuRelationSupport.removeSpuRelations(bo.getId());
         pmsSpuRelationSupport.saveSpuRelations(bo.getId(), bo, false);
+        scheduleSyncSpuBoundsAfterCommit(bo.getId(), bo);
         pmsSpuRelationSupport.syncProductFileRefs(bo.getId());
         productSearchSyncService.syncPublishedSpu(bo.getId());
     }
@@ -165,5 +177,42 @@ public class PmsSpuInfoServiceImpl implements PmsSpuInfoService {
         entity.setBrandId(bo.getBrandId());
         entity.setWeight(bo.getWeight());
         entity.setPublishStatus(bo.getPublishStatus());
+    }
+
+    /** 主表事务提交后再同步积分，避免营销服务异常回滚商品保存。 */
+    private void scheduleSyncSpuBoundsAfterCommit(Long spuId, ProductSaveBo bo) {
+        if (bo.getBounds() == null) {
+            return;
+        }
+        BigDecimal buyBounds = bo.getBounds().getBuyBounds();
+        BigDecimal growBounds = bo.getBounds().getGrowBounds();
+        Runnable syncTask = () -> {
+            try {
+                promotionFeignSupport.syncSpuBounds(spuId, buyBounds, growBounds);
+            } catch (Exception ex) {
+                log.warn("SPU积分配置同步失败: spuId={}", spuId, ex);
+            }
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    syncTask.run();
+                }
+            });
+            return;
+        }
+        syncTask.run();
+    }
+
+    private Bounds loadBounds(Long spuId) {
+        OrderRewardContextDto.SpuBoundsLine line = promotionFeignSupport.findSpuBounds(spuId);
+        if (line == null) {
+            return null;
+        }
+        Bounds bounds = new Bounds();
+        bounds.setBuyBounds(line.getBuyBounds());
+        bounds.setGrowBounds(line.getGrowBounds());
+        return bounds;
     }
 }

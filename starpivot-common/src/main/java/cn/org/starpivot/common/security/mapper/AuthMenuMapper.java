@@ -28,7 +28,6 @@ public interface AuthMenuMapper {
                      INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
                      INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id
             WHERE ur.user_id = #{userId}
-              AND m.del_flag = '0'
               AND m.status = '0'
               AND m.perms IS NOT NULL
               AND m.perms <> ''

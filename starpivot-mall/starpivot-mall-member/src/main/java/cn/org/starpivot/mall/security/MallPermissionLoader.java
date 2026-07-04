@@ -26,7 +26,6 @@ public class MallPermissionLoader {
                          INNER JOIN %s.sys_role_menu rm ON m.menu_id = rm.menu_id
                          INNER JOIN %s.sys_user_role ur ON rm.role_id = ur.role_id
                 WHERE ur.user_id = ?
-                  AND m.del_flag = '0'
                   AND m.status = '0'
                   AND m.perms IS NOT NULL
                   AND m.perms <> ''
@@ -41,8 +40,7 @@ public class MallPermissionLoader {
                 """
                 SELECT DISTINCT perms
                 FROM %s.sys_menu
-                WHERE del_flag = '0'
-                  AND status = '0'
+                WHERE status = '0'
                   AND perms IS NOT NULL
                   AND perms <> ''
                 """.formatted(schema),

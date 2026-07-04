@@ -1,6 +1,7 @@
 package cn.org.starpivot.approval.controller.internal;
 
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
+import cn.org.starpivot.api.approval.vo.ApprovalTimelineVo;
 import cn.org.starpivot.approval.service.ApInstanceService;
 import cn.org.starpivot.common.domain.Result;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -28,5 +29,10 @@ public class ApInstanceInternalController {
     public Result<Void> withdraw(@PathVariable Long id) {
         instanceService.systemWithdraw(id);
         return Result.success();
+    }
+
+    @GetMapping("/{id}/timeline")
+    public Result<ApprovalTimelineVo> timeline(@PathVariable Long id) {
+        return Result.success(instanceService.timeline(id));
     }
 }

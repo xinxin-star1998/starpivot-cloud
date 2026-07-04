@@ -20,6 +20,8 @@ mybatis-plus:
 starpivot:
   security:
     authority-strategy: menu-permission
+  mq:
+    enabled: ${MQ_ENABLED:true}
   approval:
     timeout-scan-ms: 60000
     timeout-batch-size: 50

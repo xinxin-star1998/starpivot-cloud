@@ -47,6 +47,11 @@ public class PromotionInternalClientFallbackFactory implements FallbackFactory<P
             }
 
             @Override
+            public Result<Void> upsertSpuBounds(SpuBoundsUpsertRequest request) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
             public Result<Boolean> reserveSeckill(SeckillReserveRequest request) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }

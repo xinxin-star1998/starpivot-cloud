@@ -11,7 +11,7 @@ export interface SpuWizardBaseForm {
   publishStatus: number
   decript: string[]
   images: string[]
-  /** 仅向导页展示（对应 pms_spu_bounds，不落库） */
+  /** 购物赠送积分/成长值（保存至 sms_spu_bounds） */
   bounds: { buyBounds: number; growBounds: number }
   defaultWareId?: number
 }
@@ -88,7 +88,11 @@ export function buildSpuSavePayload(
     decript: base.decript.length ? base.decript : undefined,
     images: base.images.length ? base.images : undefined,
     baseAttrs: collectBaseAttrs(baseAttrCells),
-    skus: skuRows.map((row) => toSkuPayload(row))
+    skus: skuRows.map((row) => toSkuPayload(row)),
+    bounds: {
+      buyBounds: Number(base.bounds.buyBounds) || 0,
+      growBounds: Number(base.bounds.growBounds) || 0
+    }
   }
   if (base.brandId != null) payload.brandId = base.brandId
   else payload.brandId = null

@@ -34,7 +34,10 @@ import {
 } from '@/api/approval/notification'
 
 const visible = defineModel<boolean>('visible', { default: false })
-  const emit = defineEmits<{ navigate: [instanceId?: number] }>()
+  const emit = defineEmits<{
+    navigate: [instanceId?: number]
+    'unread-change': [count: number]
+  }>()
 
   const loading = ref(false)
   const items = ref<ApNotificationVo[]>([])
@@ -49,6 +52,7 @@ const visible = defineModel<boolean>('visible', { default: false })
       ])
       unreadCount.value = Number(count) || 0
       items.value = page.rows || []
+      emit('unread-change', unreadCount.value)
     } finally {
       loading.value = false
     }
@@ -63,6 +67,7 @@ const visible = defineModel<boolean>('visible', { default: false })
       await fetchApprovalNotificationRead(item.notifyId)
       item.readFlag = '1'
       unreadCount.value = Math.max(0, unreadCount.value - 1)
+      emit('unread-change', unreadCount.value)
     }
     visible.value = false
     emit('navigate', item.instanceId)
@@ -72,6 +77,7 @@ const visible = defineModel<boolean>('visible', { default: false })
     await fetchApprovalNotificationReadAll()
     unreadCount.value = 0
     items.value = items.value.map((item) => ({ ...item, readFlag: '1' }))
+    emit('unread-change', 0)
   }
 
   defineExpose({ refresh: loadData })

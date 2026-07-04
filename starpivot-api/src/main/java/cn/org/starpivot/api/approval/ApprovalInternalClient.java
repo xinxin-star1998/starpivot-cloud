@@ -1,9 +1,11 @@
 package cn.org.starpivot.api.approval;
 
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
+import cn.org.starpivot.api.approval.vo.ApprovalTimelineVo;
 import cn.org.starpivot.api.fallback.ApprovalInternalClientFallbackFactory;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,4 +25,7 @@ public interface ApprovalInternalClient {
 
     @PostMapping("/internal/approval/instance/{id}/withdraw")
     Result<Void> withdraw(@PathVariable("id") Long instanceId);
+
+    @GetMapping("/internal/approval/instance/{id}/timeline")
+    Result<ApprovalTimelineVo> timeline(@PathVariable("id") Long instanceId);
 }

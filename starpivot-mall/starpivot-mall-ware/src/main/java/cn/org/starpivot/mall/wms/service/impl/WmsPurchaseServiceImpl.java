@@ -18,6 +18,7 @@ import cn.org.starpivot.mall.wms.enums.WmsPurchaseStatusEnum;
 import cn.org.starpivot.mall.wms.mapper.WmsPurchaseDetailMapper;
 import cn.org.starpivot.mall.wms.mapper.WmsPurchaseMapper;
 import cn.org.starpivot.mall.wms.mapper.WmsWareInfoMapper;
+import cn.org.starpivot.mall.wms.service.WmsPurchaseApprovalService;
 import cn.org.starpivot.mall.wms.service.WmsPurchaseService;
 import cn.org.starpivot.mall.wms.service.WmsWareSkuService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -56,6 +57,7 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
     private final WmsWareSkuService wmsWareSkuService;
     private final ProductFeignSupport productFeignSupport;
     private final WmsWareInfoMapper wmsWareInfoMapper;
+    private final WmsPurchaseApprovalService purchaseApprovalService;
 
     @Override
     @Transactional(readOnly = true)
@@ -79,6 +81,8 @@ public class WmsPurchaseServiceImpl extends ServiceImpl<WmsPurchaseMapper, WmsPu
         if (purchase == null) {
             throw new BizException("采购单不存在");
         }
+        purchaseApprovalService.reconcileIfStale(purchase);
+        purchase = baseMapper.selectById(id);
         PurchaseVo vo = toPurchaseVo(purchase);
         ensurePurchaseSummary(vo);
         List<WmsPurchaseDetail> details = purchaseDetailMapper.listByPurchaseId(id);

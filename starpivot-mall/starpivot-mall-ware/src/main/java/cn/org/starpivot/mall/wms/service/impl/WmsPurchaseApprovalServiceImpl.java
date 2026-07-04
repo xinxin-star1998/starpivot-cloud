@@ -1,6 +1,9 @@
 package cn.org.starpivot.mall.wms.service.impl;
 
+import cn.org.starpivot.api.approval.ApprovalInternalClient;
 import cn.org.starpivot.api.approval.dto.InternalApprovalSubmitRequest;
+import cn.org.starpivot.api.approval.vo.ApprovalTimelineVo;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.common.MallApprovalConstants;
 import cn.org.starpivot.mall.common.MallApprovalSubmitter;
@@ -14,6 +17,7 @@ import cn.org.starpivot.mall.wms.service.WmsPurchaseApprovalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -31,6 +35,7 @@ public class WmsPurchaseApprovalServiceImpl implements WmsPurchaseApprovalServic
     private final WmsPurchaseMapper purchaseMapper;
     private final WmsPurchaseDetailMapper purchaseDetailMapper;
     private final MallApprovalSubmitter mallApprovalSubmitter;
+    private final ApprovalInternalClient approvalInternalClient;
 
     @Override
     public void submitApproval(Long purchaseId) {
@@ -46,6 +51,34 @@ public class WmsPurchaseApprovalServiceImpl implements WmsPurchaseApprovalServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleApprovalFinished(String bizModule, String bizType, String bizKey, String result, String comment) {
+        applyApprovalFinished(bizModule, bizType, bizKey, result, comment);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public void reconcileIfStale(WmsPurchase purchase) {
+        if (purchase == null
+                || purchase.getApprovalInstanceId() == null
+                || !MallAuditStatus.PENDING.equals(purchase.getAuditStatus())) {
+            return;
+        }
+        Result<ApprovalTimelineVo> result = approvalInternalClient.timeline(purchase.getApprovalInstanceId());
+        if (result == null || !result.isSuccess() || result.getData() == null) {
+            return;
+        }
+        String instanceStatus = result.getData().getStatus();
+        if (instanceStatus == null || instanceStatus.isBlank() || "RUNNING".equals(instanceStatus)) {
+            return;
+        }
+        applyApprovalFinished(
+                MallApprovalConstants.BIZ_MODULE,
+                MallApprovalConstants.BIZ_TYPE_PURCHASE,
+                MallApprovalConstants.purchaseBizKey(purchase.getId()),
+                instanceStatus,
+                null);
+    }
+
+    private void applyApprovalFinished(String bizModule, String bizType, String bizKey, String result, String comment) {
         if (!MallApprovalConstants.BIZ_MODULE.equals(bizModule)
                 || !MallApprovalConstants.BIZ_TYPE_PURCHASE.equals(bizType)) {
             return;
