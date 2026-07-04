@@ -49,9 +49,10 @@
 | Spring Cloud Alibaba | 2023.0.1.0 |
 | Nacos                | 2.3.x      |
 | MyBatis-Plus         | 3.5.12     |
-| Vue                  | 3.5.x      |
+| Vue                  | 3.5.x（管理端 + 小程序统一） |
 | Element Plus         | 2.11.x     |
-| Vite                 | 8.x        |
+| Vite                 | 8.x（管理端）；5.2.8（小程序，uni-app 约束） |
+| uni-app              | 3.0.0-alpha-5010420260626001 |
 
 
 ---

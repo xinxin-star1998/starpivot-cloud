@@ -58,3 +58,12 @@ VITE_USE_MOCK_LOGIN=true
 
 - 商品、库存、营销：管理端 `star-pivot-ui/views/mall` 维护
 - 小程序通过 `/api/v1/portal/**` 只读/下单，不直连 B 端 `/mall/**` API
+
+## 技术栈（与管理端对齐）
+
+| 组件 | 版本 | 说明 |
+|---|---|---|
+| Vue | 3.5.x | 与 `star-pivot-ui` 统一 |
+| TypeScript | 5.6.x | 与 `star-pivot-ui` 统一 |
+| Vite | 5.2.8 | uni-app 编译器固定版本，暂无法升至 8.x |
+| uni-app | 3.0.0-alpha-5010420260626001 | 最新 Vue3 CLI 编译器 |

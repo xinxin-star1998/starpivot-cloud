@@ -111,9 +111,9 @@ pnpm commit
 
 ## 📦 技术栈
 
-- **框架**: Vue 3.5.21
+- **框架**: Vue 3.5.x
 - **语言**: TypeScript 5.6.3
-- **构建工具**: Vite 7.1.5
+- **构建工具**: Vite 8.x
 - **UI 库**: Element Plus 2.11.2
 - **状态管理**: Pinia 3.0.3
 - **路由**: Vue Router 4.5.1
