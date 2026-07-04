@@ -12,7 +12,7 @@
  * @module utils/performance
  */
 
-import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals'
+import {type Metric, onCLS, onFCP, onINP, onLCP, onTTFB} from 'web-vitals'
 
 /** 单条性能指标数据结构 */
 export interface PerformanceMetric {

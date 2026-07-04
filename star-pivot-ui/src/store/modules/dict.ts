@@ -30,8 +30,8 @@
  * @author Art Design Pro Team
  */
 
-import { defineStore } from 'pinia'
-import { fetchGetDictDataByType, type SysDictData } from '@/api/dict/data'
+import {defineStore} from 'pinia'
+import {fetchGetDictDataByType, type SysDictData} from '@/api/dict/data'
 
 /**
  * 字典数据存储结构

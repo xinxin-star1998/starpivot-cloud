@@ -220,10 +220,10 @@
 </template>
 
 <script setup lang="ts">
-  import dayjs from 'dayjs'
-  import { CronExpressionParser } from 'cron-parser'
+import dayjs from 'dayjs'
+import {CronExpressionParser} from 'cron-parser'
 
-  interface Props {
+interface Props {
     modelValue: boolean
     value?: string
   }

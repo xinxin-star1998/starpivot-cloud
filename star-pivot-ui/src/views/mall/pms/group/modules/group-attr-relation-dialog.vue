@@ -159,16 +159,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { TableInstance } from 'element-plus'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import {
-    fetchGroupAttrRelations,
-    fetchSaveGroupAttrRelations,
-    type GroupAttrRelation
-  } from '@/api/mall/group'
-  import { formatValueSelectBrief, getAttrValueSelect } from '@/utils/mall/attr-value-select'
+import type {TableInstance} from 'element-plus'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {fetchGroupAttrRelations, fetchSaveGroupAttrRelations, type GroupAttrRelation} from '@/api/mall/group'
+import {formatValueSelectBrief, getAttrValueSelect} from '@/utils/mall/attr-value-select'
 
-  const props = defineProps<{
+const props = defineProps<{
     visible: boolean
     attrGroupId?: number
     groupName?: string

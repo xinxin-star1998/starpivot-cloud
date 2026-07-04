@@ -11,15 +11,15 @@
 </template>
 
 <script setup lang="ts">
-  import { SPU_WIZARD_KEY, useSpuWizard } from '../composables/useSpuWizard'
-  import SpuWizardToolbar from './spu-wizard/SpuWizardToolbar.vue'
-  import SpuBaseStep from './spu-wizard/SpuBaseStep.vue'
-  import SpuBaseAttrStep from './spu-wizard/SpuBaseAttrStep.vue'
-  import SpuSaleAttrStep from './spu-wizard/SpuSaleAttrStep.vue'
-  import SpuSkuStep from './spu-wizard/SpuSkuStep.vue'
-  import SpuDoneStep from './spu-wizard/SpuDoneStep.vue'
+import {SPU_WIZARD_KEY, useSpuWizard} from '../composables/useSpuWizard'
+import SpuWizardToolbar from './spu-wizard/SpuWizardToolbar.vue'
+import SpuBaseStep from './spu-wizard/SpuBaseStep.vue'
+import SpuBaseAttrStep from './spu-wizard/SpuBaseAttrStep.vue'
+import SpuSaleAttrStep from './spu-wizard/SpuSaleAttrStep.vue'
+import SpuSkuStep from './spu-wizard/SpuSkuStep.vue'
+import SpuDoneStep from './spu-wizard/SpuDoneStep.vue'
 
-  defineOptions({ name: 'MallProductAddSpu' })
+defineOptions({ name: 'MallProductAddSpu' })
 
   const wizard = useSpuWizard()
   provide(SPU_WIZARD_KEY, wizard)

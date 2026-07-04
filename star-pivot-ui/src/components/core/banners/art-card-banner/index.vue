@@ -35,10 +35,10 @@
 </template>
 
 <script setup lang="ts">
-  // 导入默认图标
-  import defaultIcon from '@imgs/3d/icon1.webp'
+// 导入默认图标
+import defaultIcon from '@imgs/3d/icon1.webp'
 
-  defineOptions({ name: 'ArtCardBanner' })
+defineOptions({ name: 'ArtCardBanner' })
 
   // 定义卡片横幅组件的属性接口
   interface CardBannerProps {

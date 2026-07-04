@@ -19,21 +19,21 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchMallSkuList, type MallSkuVo } from '@/api/mall/sku'
-  import { fetchCategoryNameMap, getCategoryDisplayName } from '@/utils/mall/category-tree'
-  import { fetchBrandNameMap, getBrandDisplayName } from '@/utils/mall/brand-map'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import SkuSearch from './modules/sku-search.vue'
-  import { ElImage } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+import {h} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchMallSkuList, type MallSkuVo} from '@/api/mall/sku'
+import {fetchCategoryNameMap, getCategoryDisplayName} from '@/utils/mall/category-tree'
+import {fetchBrandNameMap, getBrandDisplayName} from '@/utils/mall/brand-map'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import SkuSearch from './modules/sku-search.vue'
+import {ElImage} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
+import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
 
-  defineOptions({ name: 'MallSku' })
+defineOptions({ name: 'MallSku' })
 
   const skuImgDisplayUrls = ref<Map<string, string>>(new Map())
   const skuImgVersion = ref(0)

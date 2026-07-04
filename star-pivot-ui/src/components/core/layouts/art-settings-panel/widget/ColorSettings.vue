@@ -22,13 +22,13 @@
 </template>
 
 <script setup lang="ts">
-  import SectionTitle from './SectionTitle.vue'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { useSettingsConfig } from '../composables/useSettingsConfig'
-  import { useSettingsHandlers } from '../composables/useSettingsHandlers'
-  import { storeToRefs } from 'pinia'
+import SectionTitle from './SectionTitle.vue'
+import {useSettingStore} from '@/store/modules/setting'
+import {useSettingsConfig} from '../composables/useSettingsConfig'
+import {useSettingsHandlers} from '../composables/useSettingsHandlers'
+import {storeToRefs} from 'pinia'
 
-  const settingStore = useSettingStore()
+const settingStore = useSettingStore()
   const { systemThemeColor } = storeToRefs(settingStore)
   const { configOptions } = useSettingsConfig()
   const { colorHandlers } = useSettingsHandlers()

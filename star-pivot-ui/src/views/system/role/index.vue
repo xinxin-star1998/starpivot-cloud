@@ -57,24 +57,22 @@
 </template>
 
 <script setup lang="ts">
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { useI18n } from 'vue-i18n'
-  import { fetchDeleteRole, fetchGetRoleList } from '@/api/role/role'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtButtonMore, {
-    type ButtonMoreItem
-  } from '@/components/core/forms/art-button-more/index.vue'
-  import RoleSearch from './modules/role-search.vue'
-  import RoleEditDialog from './modules/role-edit-dialog.vue'
-  import AssignDataScopeDialog from './modules/assign-dataScope-dialog.vue'
-  import { ElMessageBox, ElTag } from 'element-plus'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import { useRouter } from 'vue-router'
-  import type { ColumnOption } from '@/types'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import {useI18n} from 'vue-i18n'
+import {fetchDeleteRole, fetchGetRoleList} from '@/api/role/role'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtButtonMore, {type ButtonMoreItem} from '@/components/core/forms/art-button-more/index.vue'
+import RoleSearch from './modules/role-search.vue'
+import RoleEditDialog from './modules/role-edit-dialog.vue'
+import AssignDataScopeDialog from './modules/assign-dataScope-dialog.vue'
+import {ElMessageBox, ElTag} from 'element-plus'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import {useRouter} from 'vue-router'
+import type {ColumnOption} from '@/types'
 
-  const { hasAuth } = useAuth()
+const { hasAuth } = useAuth()
   const { t } = useI18n()
 
   defineOptions({ name: 'Role' })

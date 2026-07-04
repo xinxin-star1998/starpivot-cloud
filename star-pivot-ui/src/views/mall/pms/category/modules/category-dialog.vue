@@ -48,17 +48,17 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchMallCategoryAdd,
-    fetchMallCategoryById,
-    fetchMallCategoryUpdate,
-    type MallCategorySavePayload,
-    type MallCategoryTreeNode
-  } from '@/api/mall/category'
-  import type { DialogType } from '@/types'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchMallCategoryAdd,
+  fetchMallCategoryById,
+  fetchMallCategoryUpdate,
+  type MallCategorySavePayload,
+  type MallCategoryTreeNode
+} from '@/api/mall/category'
+import type {DialogType} from '@/types'
 
-  interface ParentForAdd {
+interface ParentForAdd {
     catId: number
     name?: string
   }

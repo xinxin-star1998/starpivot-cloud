@@ -18,11 +18,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ElButton, ElDialog } from 'element-plus'
-  import { type ExternalGenScope, fetchExternalPreview } from '@/api/generator/gen-external'
-  import CodePreviewTreePanel from '@views/tools/generator/modules/code-preview-tree-panel.vue'
+import {ElButton, ElDialog} from 'element-plus'
+import {type ExternalGenScope, fetchExternalPreview} from '@/api/generator/gen-external'
+import CodePreviewTreePanel from '@views/tools/generator/modules/code-preview-tree-panel.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
     sessionId?: string
     tableName?: string

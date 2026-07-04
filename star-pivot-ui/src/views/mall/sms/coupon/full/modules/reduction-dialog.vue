@@ -60,20 +60,20 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchSkuFullReductionAdd,
-    fetchSkuFullReductionById,
-    fetchSkuFullReductionUpdate,
-    fetchSkuLadderAdd,
-    fetchSkuLadderById,
-    fetchSkuLadderUpdate,
-    type SkuFullReductionSavePayload,
-    type SkuLadderSavePayload
-  } from '@/api/mall/sku-promotion'
-  import type { DialogType } from '@/types'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchSkuFullReductionAdd,
+  fetchSkuFullReductionById,
+  fetchSkuFullReductionUpdate,
+  fetchSkuLadderAdd,
+  fetchSkuLadderById,
+  fetchSkuLadderUpdate,
+  type SkuFullReductionSavePayload,
+  type SkuLadderSavePayload
+} from '@/api/mall/sku-promotion'
+import type {DialogType} from '@/types'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     mode: 'full' | 'ladder'

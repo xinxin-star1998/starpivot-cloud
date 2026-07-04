@@ -59,19 +59,11 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    ElAlert,
-    ElBreadcrumb,
-    ElBreadcrumbItem,
-    ElButton,
-    ElDialog,
-    ElEmpty,
-    ElMessage
-  } from 'element-plus'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { type ExternalWriteDirList, fetchExternalWriteDirs } from '@/api/generator/gen-external'
+import {ElAlert, ElBreadcrumb, ElBreadcrumbItem, ElButton, ElDialog, ElEmpty, ElMessage} from 'element-plus'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {type ExternalWriteDirList, fetchExternalWriteDirs} from '@/api/generator/gen-external'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
   const emit = defineEmits<{ select: [string] }>()
 
   const loading = ref(false)

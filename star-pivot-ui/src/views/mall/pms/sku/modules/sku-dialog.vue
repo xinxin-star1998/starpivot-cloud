@@ -32,10 +32,10 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchMallSkuCreate } from '@/api/mall/sku'
+import type {FormInstance, FormRules} from 'element-plus'
+import {fetchMallSkuCreate} from '@/api/mall/sku'
 
-  interface Props {
+interface Props {
     visible: boolean
     defaultSpuId?: number
   }

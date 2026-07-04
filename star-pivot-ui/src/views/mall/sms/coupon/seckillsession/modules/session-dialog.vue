@@ -43,16 +43,16 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchSeckillSessionAdd,
-    fetchSeckillSessionById,
-    fetchSeckillSessionUpdate,
-    type SeckillSessionSavePayload
-  } from '@/api/mall/seckill-session'
-  import type { DialogType } from '@/types'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchSeckillSessionAdd,
+  fetchSeckillSessionById,
+  fetchSeckillSessionUpdate,
+  type SeckillSessionSavePayload
+} from '@/api/mall/seckill-session'
+import type {DialogType} from '@/types'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     sessionId?: number

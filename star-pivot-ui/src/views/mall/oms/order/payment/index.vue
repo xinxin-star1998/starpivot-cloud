@@ -19,13 +19,13 @@
 </template>
 
 <script setup lang="ts">
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchPaymentList, type PaymentVo } from '@/api/mall/payment'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import PaymentSearch from './modules/payment-search.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchPaymentList, type PaymentVo} from '@/api/mall/payment'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import PaymentSearch from './modules/payment-search.vue'
 
-  defineOptions({ name: 'OmsPaymentLog' })
+defineOptions({ name: 'OmsPaymentLog' })
 
   const searchForm = ref({
     orderSn: undefined as string | undefined

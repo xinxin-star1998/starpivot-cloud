@@ -22,9 +22,9 @@
 </template>
 
 <script lang="ts" setup>
-  import type { SpuWizardSkuRow } from '@/utils/mall/spu-wizard-payload'
+import type {SpuWizardSkuRow} from '@/utils/mall/spu-wizard-payload'
 
-  defineProps<{
+defineProps<{
     row: SpuWizardSkuRow
     spuImages: string[]
     getImageDisplayUrl: (objectName: string) => string

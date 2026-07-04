@@ -9,9 +9,9 @@
 </template>
 
 <script setup lang="ts">
-  import { useTransition, TransitionPresets } from '@vueuse/core'
+import {TransitionPresets, useTransition} from '@vueuse/core'
 
-  // 类型定义
+// 类型定义
   interface CountToProps {
     /** 目标值 */
     target: number

@@ -48,22 +48,22 @@
 </template>
 
 <script setup lang="ts">
-  import type { CascaderInstance, CascaderValue, FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchWmsWareInfoAdd,
-    fetchWmsWareInfoById,
-    fetchWmsWareInfoUpdate,
-    type WmsWareInfoSavePayload,
-    type WmsWareInfoVo
-  } from '@/api/mall/wareinfo'
-  import type { DialogType } from '@/types'
-  import {
-    resolveAddressCodePath,
-    WAREHOUSE_MAX_AREA_LEVEL,
-    warehouseAddressCascaderProps
-  } from '@/utils/mall/address-cascader'
+import type {CascaderInstance, CascaderValue, FormInstance, FormRules} from 'element-plus'
+import {
+  fetchWmsWareInfoAdd,
+  fetchWmsWareInfoById,
+  fetchWmsWareInfoUpdate,
+  type WmsWareInfoSavePayload,
+  type WmsWareInfoVo
+} from '@/api/mall/wareinfo'
+import type {DialogType} from '@/types'
+import {
+  resolveAddressCodePath,
+  WAREHOUSE_MAX_AREA_LEVEL,
+  warehouseAddressCascaderProps
+} from '@/utils/mall/address-cascader'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     wareData?: Partial<WmsWareInfoVo>

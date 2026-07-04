@@ -130,34 +130,34 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick } from 'vue'
-  import { watchDebounced } from '@vueuse/core'
-  import { RefreshRight } from '@element-plus/icons-vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchDeleteAttr,
-    fetchDownloadAttrImportTemplate,
-    fetchExportAttr,
-    fetchGetAttrList,
-    fetchImportAttr,
-    type MallAttr
-  } from '@/api/mall/attr'
-  import { fetchMallCategoryChildren, type MallCategoryTreeNode } from '@/api/mall/category'
-  import { fetchCategoryNameMap, getCategoryDisplayName } from '@/utils/mall/category-tree'
-  import { formatTableIconCell } from '@/utils/ui/table-icon-cell'
-  import AttrSearch from '../modules/attr-search.vue'
-  import AttrDialog from '../modules/attr-dialog.vue'
-  import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
-  import { ElMessage, ElMessageBox, ElTag, ElTooltip } from 'element-plus'
-  import { formatValueSelectBrief, getAttrValueSelect } from '@/utils/mall/attr-value-select'
-  import type { DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {nextTick} from 'vue'
+import {watchDebounced} from '@vueuse/core'
+import {RefreshRight} from '@element-plus/icons-vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  fetchDeleteAttr,
+  fetchDownloadAttrImportTemplate,
+  fetchExportAttr,
+  fetchGetAttrList,
+  fetchImportAttr,
+  type MallAttr
+} from '@/api/mall/attr'
+import {fetchMallCategoryChildren, type MallCategoryTreeNode} from '@/api/mall/category'
+import {fetchCategoryNameMap, getCategoryDisplayName} from '@/utils/mall/category-tree'
+import {formatTableIconCell} from '@/utils/ui/table-icon-cell'
+import AttrSearch from '../modules/attr-search.vue'
+import AttrDialog from '../modules/attr-dialog.vue'
+import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
+import {ElMessage, ElMessageBox, ElTag, ElTooltip} from 'element-plus'
+import {formatValueSelectBrief, getAttrValueSelect} from '@/utils/mall/attr-value-select'
+import type {DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  const props = withDefaults(
+const props = withDefaults(
     defineProps<{
       /** 0-销售属性 1-基本属性 */
       attrType: 0 | 1

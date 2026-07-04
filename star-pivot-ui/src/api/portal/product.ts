@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { PortalProductDetail, PortalProductListItem, PortalProductSearchParams } from './types'
+import type {PortalProductDetail, PortalProductListItem, PortalProductSearchParams} from './types'
 
 export function fetchPortalProductSearch(params: PortalProductSearchParams) {
   return request.post<Api.Common.PaginatedResponse<PortalProductListItem>>({

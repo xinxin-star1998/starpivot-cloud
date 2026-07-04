@@ -126,20 +126,10 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    ElCol,
-    ElDivider,
-    ElForm,
-    ElFormItem,
-    ElInput,
-    ElOption,
-    ElRow,
-    ElSelect,
-    ElTreeSelect
-  } from 'element-plus'
-  import type { GenTableColumnItem } from '@/api/generator/gen-external'
+import {ElCol, ElDivider, ElForm, ElFormItem, ElInput, ElOption, ElRow, ElSelect, ElTreeSelect} from 'element-plus'
+import type {GenTableColumnItem} from '@/api/generator/gen-external'
 
-  export interface ExternalTableMeta {
+export interface ExternalTableMeta {
     className: string
     businessName: string
     functionName: string

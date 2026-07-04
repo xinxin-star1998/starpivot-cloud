@@ -1,9 +1,9 @@
 package cn.org.starpivot.generator.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;
 import cn.org.starpivot.generator.mapper.GenTableColumnMapper;
 import cn.org.starpivot.generator.service.GenTableColumnService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

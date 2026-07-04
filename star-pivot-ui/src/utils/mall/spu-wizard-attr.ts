@@ -1,6 +1,6 @@
-import { fetchGetAttrList, type MallAttr } from '@/api/mall/attr'
-import { fetchGetGroupList, type Group } from '@/api/mall/group'
-import { defaultResponseAdapter, extractTableData } from '@/utils/table/tableUtils'
+import {fetchGetAttrList, type MallAttr} from '@/api/mall/attr'
+import {fetchGetGroupList, type Group} from '@/api/mall/group'
+import {defaultResponseAdapter, extractTableData} from '@/utils/table/tableUtils'
 
 /** 兼容后端 PageResponse.rows 与前端 PaginatedResponse.records */
 export function pageRows<T>(page: unknown): T[] {

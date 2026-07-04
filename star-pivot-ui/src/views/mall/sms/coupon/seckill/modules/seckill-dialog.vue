@@ -85,17 +85,17 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchSeckillPromotionAdd,
-    fetchSeckillPromotionById,
-    fetchSeckillPromotionUpdate,
-    type SeckillPromotionSavePayload
-  } from '@/api/mall/seckill-promotion'
-  import { fetchSeckillSessionAll, type SeckillSessionVo } from '@/api/mall/seckill-session'
-  import type { DialogType } from '@/types'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchSeckillPromotionAdd,
+  fetchSeckillPromotionById,
+  fetchSeckillPromotionUpdate,
+  type SeckillPromotionSavePayload
+} from '@/api/mall/seckill-promotion'
+import {fetchSeckillSessionAll, type SeckillSessionVo} from '@/api/mall/seckill-session'
+import type {DialogType} from '@/types'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     promotionId?: number

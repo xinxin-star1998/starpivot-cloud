@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import { canSubmitMallAudit } from '@/utils/mall/audit-status'
+import {canSubmitMallAudit} from '@/utils/mall/audit-status'
 
 /** SPU VO（pms_spu_info + 关联数据） */
 export interface MallProductVo {

@@ -35,9 +35,9 @@
 </template>
 
 <script setup lang="ts">
-  import type { ComputedRef } from 'vue'
+import type {ComputedRef} from 'vue'
 
-  interface SettingItemConfig {
+interface SettingItemConfig {
     key: string
     label: string
     type: 'switch' | 'input-number' | 'select'

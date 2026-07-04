@@ -83,30 +83,30 @@
 </template>
 
 <script setup lang="ts">
-  import { safeError } from '@/utils'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTableColumns } from '@/hooks/core/useTableColumns'
+import {safeError} from '@/utils'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTableColumns} from '@/hooks/core/useTableColumns'
+import {
+  type DictTypeFormData,
+  fetchAddDictType,
+  fetchDeleteDictType,
+  fetchGetDictTypeList,
+  fetchUpdateDictType,
+  type SysDictType
+} from '@/api/dict/type'
+import {ElButton, ElDrawer, ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import DictDataPanel from './modules/dict-data-panel.vue'
+import {useRouter} from 'vue-router'
+import {useAuth} from '@/hooks/core/useAuth'
+import {useWindowSize} from '@vueuse/core'
 
-  const DictTypeDialog = defineAsyncComponent(
+const DictTypeDialog = defineAsyncComponent(
     () => import('@views/system/dict/modules/dict-type-dialog.vue')
   )
-  import {
-    fetchGetDictTypeList,
-    fetchAddDictType,
-    fetchUpdateDictType,
-    fetchDeleteDictType,
-    type SysDictType,
-    type DictTypeFormData
-  } from '@/api/dict/type'
-  import { ElButton, ElDrawer, ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import DictDataPanel from './modules/dict-data-panel.vue'
-  import { useRouter } from 'vue-router'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { useWindowSize } from '@vueuse/core'
-  useRouter()
+useRouter()
 
   defineOptions({ name: 'DictType' })
 

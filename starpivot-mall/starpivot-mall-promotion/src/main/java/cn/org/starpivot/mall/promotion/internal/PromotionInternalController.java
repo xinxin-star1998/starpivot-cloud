@@ -10,14 +10,8 @@ import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
 import cn.org.starpivot.mall.portal.service.PortalCouponService;
 import cn.org.starpivot.mall.portal.service.PortalOrderPriceService;
 import cn.org.starpivot.mall.portal.service.PortalSeckillStockService;
-import cn.org.starpivot.mall.sms.entity.SmsMemberPrice;
-import cn.org.starpivot.mall.sms.entity.SmsSkuFullReduction;
-import cn.org.starpivot.mall.sms.entity.SmsSkuLadder;
-import cn.org.starpivot.mall.sms.entity.SmsSpuBounds;
-import cn.org.starpivot.mall.sms.mapper.SmsMemberPriceMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsSkuFullReductionMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsSkuLadderMapper;
-import cn.org.starpivot.mall.sms.mapper.SmsSpuBoundsMapper;
+import cn.org.starpivot.mall.sms.entity.*;
+import cn.org.starpivot.mall.sms.mapper.*;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +34,8 @@ public class PromotionInternalController {
     private final SmsSkuFullReductionMapper smsSkuFullReductionMapper;
     private final SmsSkuLadderMapper smsSkuLadderMapper;
     private final SmsSpuBoundsMapper smsSpuBoundsMapper;
+    private final SmsCouponHistoryMapper smsCouponHistoryMapper;
+    private final SmsHomeSubjectMapper smsHomeSubjectMapper;
     private final PortalCouponService portalCouponService;
     private final PortalOrderPriceService portalOrderPriceService;
     private final PortalSeckillStockService portalSeckillStockService;
@@ -188,6 +184,36 @@ public class PromotionInternalController {
     public Result<Void> releaseSeckillByOrderSn(@RequestParam("orderSn") String orderSn) {
         portalSeckillStockService.releaseByOrderSn(orderSn);
         return Result.success();
+    }
+
+    private static final int COUPON_UNUSED = 0;
+
+    @GetMapping("/coupon/unused-count/{memberId}")
+    public Result<Integer> countUnusedCoupons(@PathVariable("memberId") Long memberId) {
+        if (memberId == null) {
+            return Result.success(0);
+        }
+        Long count = smsCouponHistoryMapper.selectCount(
+                Wrappers.<SmsCouponHistory>lambdaQuery()
+                        .eq(SmsCouponHistory::getMemberId, memberId)
+                        .eq(SmsCouponHistory::getUseType, COUPON_UNUSED));
+        return Result.success(count != null ? count.intValue() : 0);
+    }
+
+    @GetMapping("/subject/{subjectId}")
+    public Result<HomeSubjectDto> getSubject(@PathVariable("subjectId") Long subjectId) {
+        SmsHomeSubject subject = smsHomeSubjectMapper.selectById(subjectId);
+        if (subject == null) {
+            return Result.notFound("专题不存在");
+        }
+        HomeSubjectDto dto = new HomeSubjectDto();
+        dto.setId(subject.getId());
+        dto.setName(subject.getName());
+        dto.setTitle(subject.getTitle());
+        dto.setStatus(subject.getStatus());
+        dto.setUrl(subject.getUrl());
+        dto.setImg(subject.getImg());
+        return Result.success(dto);
     }
 
     private SkuLadderLineDto toLadderDto(SmsSkuLadder ladder) {

@@ -78,17 +78,17 @@
 </template>
 
 <script setup lang="ts">
-  import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
-  import { fetchDownloadUserImportTemplate } from '@/api/user/user'
-  import { useI18n } from 'vue-i18n'
-  import UserSearch from './modules/user-search.vue'
-  import UserDialog from './modules/user-dialog.vue'
-  import DeptTreePanel from './modules/dept-tree-panel.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useUserPage } from './composables/useUserPage'
+import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
+import {fetchDownloadUserImportTemplate} from '@/api/user/user'
+import {useI18n} from 'vue-i18n'
+import UserSearch from './modules/user-search.vue'
+import UserDialog from './modules/user-dialog.vue'
+import DeptTreePanel from './modules/dept-tree-panel.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useUserPage} from './composables/useUserPage'
 
-  defineOptions({ name: 'User' })
+defineOptions({ name: 'User' })
 
   const { t } = useI18n()
 

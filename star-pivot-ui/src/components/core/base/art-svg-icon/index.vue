@@ -4,9 +4,9 @@
 </template>
 
 <script setup lang="ts">
-  import { Icon } from '@iconify/vue'
+import {Icon} from '@iconify/vue'
 
-  defineOptions({ name: 'ArtSvgIcon', inheritAttrs: false })
+defineOptions({ name: 'ArtSvgIcon', inheritAttrs: false })
 
   interface Props {
     /** Iconify icon name */

@@ -1,7 +1,5 @@
 package cn.org.starpivot.common.entity;
 
-import cn.org.starpivot.common.enums.BusinessType;
-
 /**
  * 通用常量类
  */

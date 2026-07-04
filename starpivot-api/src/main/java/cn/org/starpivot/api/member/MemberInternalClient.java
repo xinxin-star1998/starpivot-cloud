@@ -4,7 +4,10 @@ import cn.org.starpivot.api.fallback.MemberInternalClientFallbackFactory;
 import cn.org.starpivot.api.member.dto.*;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * 会员服务内部 Feign 客户端（供 starpivot-mall 等调用）。

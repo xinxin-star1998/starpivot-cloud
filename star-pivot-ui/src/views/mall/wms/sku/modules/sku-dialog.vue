@@ -28,13 +28,13 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { fetchInboundSku } from '@/api/mall/ware-sku'
-  import type { MallSkuVo } from '@/api/mall/sku'
-  import StockSkuWareSelect from '@/views/mall/wms/modules/stock-sku-ware-select.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {fetchInboundSku} from '@/api/mall/ware-sku'
+import type {MallSkuVo} from '@/api/mall/sku'
+import StockSkuWareSelect from '@/views/mall/wms/modules/stock-sku-ware-select.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
   }
   interface Emits {

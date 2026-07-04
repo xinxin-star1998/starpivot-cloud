@@ -7,9 +7,9 @@
  * @author Art Design Pro Team
  */
 
-import type { AppRouteRecord } from '@/types/router'
-import type { RouteRecordRaw } from 'vue-router'
-import { safeLog } from '@/utils'
+import type {AppRouteRecord} from '@/types/router'
+import type {RouteRecordRaw} from 'vue-router'
+import {safeLog} from '@/utils'
 
 /**
  * 路由缓存项

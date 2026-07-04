@@ -6,10 +6,7 @@ import cn.org.starpivot.api.mall.order.dto.OrderRewardContextDto;
 import cn.org.starpivot.api.mall.promotion.dto.*;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.Map;
@@ -87,6 +84,12 @@ public interface PromotionInternalClient {
     @PostMapping("/internal/mall/promotion/seckill/release-by-order-sn")
 
     Result<Void> releaseSeckillByOrderSn(@RequestParam("orderSn") String orderSn);
+
+    @GetMapping("/internal/mall/promotion/coupon/unused-count/{memberId}")
+    Result<Integer> countUnusedCoupons(@PathVariable("memberId") Long memberId);
+
+    @GetMapping("/internal/mall/promotion/subject/{subjectId}")
+    Result<HomeSubjectDto> getSubject(@PathVariable("subjectId") Long subjectId);
 
 }
 

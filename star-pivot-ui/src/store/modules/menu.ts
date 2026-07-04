@@ -28,11 +28,11 @@
  * @module store/modules/menu
  * @author Art Design Pro Team
  */
-import { defineStore } from 'pinia'
-import { AppRouteRecord } from '@/types/router'
-import { getFirstMenuPath } from '@/utils'
-import { HOME_PAGE_PATH } from '@/router'
-import type { SysMenu } from '@/api/menu/menu'
+import {defineStore} from 'pinia'
+import {AppRouteRecord} from '@/types/router'
+import {getFirstMenuPath} from '@/utils'
+import {HOME_PAGE_PATH} from '@/router'
+import type {SysMenu} from '@/api/menu/menu'
 
 const MENU_CACHE_SCHEMA_VERSION = 1
 const MENU_CACHE_TTL_MS = 5 * 60 * 1000

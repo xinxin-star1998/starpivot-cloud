@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import { StorageConfig } from '@/utils/storage/storage-config'
-import type { PortalMember } from '@/api/portal/types'
+import {defineStore} from 'pinia'
+import {StorageConfig} from '@/utils/storage/storage-config'
+import type {PortalMember} from '@/api/portal/types'
 
 export const usePortalMemberStore = defineStore(
   'portalMemberStore',

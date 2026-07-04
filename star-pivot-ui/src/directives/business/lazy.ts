@@ -10,7 +10,7 @@
  * @module directives/business/lazy
  */
 
-import type { App, DirectiveBinding } from 'vue'
+import type {App, DirectiveBinding} from 'vue'
 
 interface LazyOptions {
   src?: string

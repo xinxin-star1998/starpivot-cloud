@@ -1,7 +1,7 @@
 package cn.org.starpivot.generator.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 

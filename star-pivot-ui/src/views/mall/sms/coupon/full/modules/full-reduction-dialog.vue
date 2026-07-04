@@ -24,16 +24,16 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchSkuFullReductionAdd,
-    fetchSkuFullReductionById,
-    fetchSkuFullReductionUpdate,
-    type SkuFullReductionSavePayload
-  } from '@/api/mall/sku-promotion'
-  import type { DialogType } from '@/types'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchSkuFullReductionAdd,
+  fetchSkuFullReductionById,
+  fetchSkuFullReductionUpdate,
+  type SkuFullReductionSavePayload
+} from '@/api/mall/sku-promotion'
+import type {DialogType} from '@/types'
 
-  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

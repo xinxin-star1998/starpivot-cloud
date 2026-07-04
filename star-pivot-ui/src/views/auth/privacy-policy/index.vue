@@ -36,9 +36,9 @@
 </template>
 
 <script lang="ts" setup>
-  import { useI18n } from 'vue-i18n'
+import {useI18n} from 'vue-i18n'
 
-  defineOptions({ name: 'PrivacyPolicy' })
+defineOptions({ name: 'PrivacyPolicy' })
 
   const { t } = useI18n()
   const router = useRouter()

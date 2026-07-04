@@ -24,10 +24,10 @@
 </template>
 
 <script setup lang="ts">
-  import type { ButtonProps } from 'element-plus'
-  import { ElButton, ElTooltip } from 'element-plus'
+import type {ButtonProps} from 'element-plus'
+import {ElButton, ElTooltip} from 'element-plus'
 
-  defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false })
 
   const props = defineProps<{
     /** 简要说明（并入 Tooltip） */

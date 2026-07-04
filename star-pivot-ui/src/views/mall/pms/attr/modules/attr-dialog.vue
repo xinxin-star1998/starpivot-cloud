@@ -142,32 +142,28 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  /**
-   * 属性新增/编辑弹窗。
-   * attrGroupId 提交后由后端写入 pms_attr_attrgroup_relation，非 pms_attr 字段。
-   * attrType 由父页面传入（0 销售 / 1 基本），弹窗内只读展示。
-   */
-  import { ElMessage } from 'element-plus'
-  import { Icon } from '@iconify/vue'
-  import ArtIconPicker from '@/components/core/base/art-icon-picker/index.vue'
-  import { fetchAddAttr, fetchGetAttrById, fetchUpdateAttr, type MallAttr } from '@/api/mall/attr'
-  import { fetchGetGroupList, type Group } from '@/api/mall/group'
-  import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
-  import {
-    filterVisibleCategoryTree,
-    findCategoryNode,
-    findCategoryPath,
-    mapCategoryCascaderOptions
-  } from '@/utils/mall/category-tree'
-  import {
-    joinValueSelect,
-    normalizeAttrValueFields,
-    parseValueSelect
-  } from '@/utils/mall/attr-value-select'
-  import type { DialogType } from '@/types'
+import type {FormInstance, FormRules} from 'element-plus'
+/**
+ * 属性新增/编辑弹窗。
+ * attrGroupId 提交后由后端写入 pms_attr_attrgroup_relation，非 pms_attr 字段。
+ * attrType 由父页面传入（0 销售 / 1 基本），弹窗内只读展示。
+ */
+import {ElMessage} from 'element-plus'
+import {Icon} from '@iconify/vue'
+import ArtIconPicker from '@/components/core/base/art-icon-picker/index.vue'
+import {fetchAddAttr, fetchGetAttrById, fetchUpdateAttr, type MallAttr} from '@/api/mall/attr'
+import {fetchGetGroupList, type Group} from '@/api/mall/group'
+import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
+import {
+  filterVisibleCategoryTree,
+  findCategoryNode,
+  findCategoryPath,
+  mapCategoryCascaderOptions
+} from '@/utils/mall/category-tree'
+import {joinValueSelect, normalizeAttrValueFields, parseValueSelect} from '@/utils/mall/attr-value-select'
+import type {DialogType} from '@/types'
 
-  const props = defineProps<{
+const props = defineProps<{
     visible: boolean
     type: DialogType
     attrType: 0 | 1

@@ -1,7 +1,8 @@
 package cn.org.starpivot.mall.ums.domain.vo;
 
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * 积分变更历史视图对象。

@@ -1,9 +1,5 @@
-import { fetchGoodsImagePresignedUrls } from '@/api/mall/goods-image'
-import {
-  extractOssObjectPath,
-  isHttpUrl,
-  isStorageObjectName
-} from '@/utils/storage/oss-object-path'
+import {fetchGoodsImagePresignedUrls} from '@/api/mall/goods-image'
+import {extractOssObjectPath, isHttpUrl, isStorageObjectName} from '@/utils/storage/oss-object-path'
 
 const displayUrlCache = new Map<string, string>()
 

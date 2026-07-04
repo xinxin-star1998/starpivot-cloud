@@ -2,8 +2,9 @@ package cn.org.starpivot.mall.ums.domain.bo;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * 会员等级保存请求 BO。

@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { FileCategoryNode, SysFileFolderForm } from './types'
+import type {FileCategoryNode, SysFileFolderForm} from './types'
 
 export function fetchFolderTree(category?: string) {
   return request.get<FileCategoryNode[]>({

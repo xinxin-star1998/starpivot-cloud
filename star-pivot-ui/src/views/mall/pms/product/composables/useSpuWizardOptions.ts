@@ -1,12 +1,8 @@
-import { fetchMallBrandList, type MallBrandVo } from '@/api/mall/brand'
-import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
-import {
-  filterVisibleCategoryTree,
-  findCategoryPath,
-  mapCategoryCascaderOptions
-} from '@/utils/mall/category-tree'
-import { pageRows } from '@/utils/mall/spu-wizard-attr'
-import { fetchWmsWareInfoList, type WmsWareInfoVo } from '@/api/mall/wareinfo'
+import {fetchMallBrandList, type MallBrandVo} from '@/api/mall/brand'
+import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
+import {filterVisibleCategoryTree, findCategoryPath, mapCategoryCascaderOptions} from '@/utils/mall/category-tree'
+import {pageRows} from '@/utils/mall/spu-wizard-attr'
+import {fetchWmsWareInfoList, type WmsWareInfoVo} from '@/api/mall/wareinfo'
 
 export function useSpuWizardOptions() {
   const categoryOptions = ref<MallCategoryTreeNode[]>([])

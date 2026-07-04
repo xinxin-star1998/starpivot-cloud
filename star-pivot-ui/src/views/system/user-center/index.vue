@@ -385,31 +385,20 @@
 </template>
 
 <script setup lang="ts">
-  import { useUserStore } from '@/store/modules/user'
-  import {
-    fetchGetAvatarPresignedUrl,
-    fetchGetUserById,
-    fetchUpdateUser,
-    fetchUpdateUserPassword
-  } from '@/api/user/user'
-  import {
-    fetchGetUserInfo,
-    fetchLogout,
-    fetchUserSessions,
-    forceLogoutSession,
-    forceLogoutAllSessions
-  } from '@/api/auth'
-  import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-  import { Refresh, SwitchButton, Location } from '@element-plus/icons-vue'
-  import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
-  import defaultAvatarImg from '@imgs/user/avatar.webp'
-  import bgImageImg from '@imgs/user/bg.webp'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { extractOssObjectPath, needsOssPresignedDisplay } from '@/utils/storage/oss-object-path'
-  import dayjs from 'dayjs'
-  import { logger } from '@/utils/sys/logger'
+import {useUserStore} from '@/store/modules/user'
+import {fetchGetAvatarPresignedUrl, fetchGetUserById, fetchUpdateUser, fetchUpdateUserPassword} from '@/api/user/user'
+import {fetchGetUserInfo, fetchLogout, fetchUserSessions, forceLogoutAllSessions, forceLogoutSession} from '@/api/auth'
+import {ElMessage, ElMessageBox, type FormInstance, type FormRules} from 'element-plus'
+import {Location, Refresh, SwitchButton} from '@element-plus/icons-vue'
+import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
+import defaultAvatarImg from '@imgs/user/avatar.webp'
+import bgImageImg from '@imgs/user/bg.webp'
+import {useSettingStore} from '@/store/modules/setting'
+import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/oss-object-path'
+import dayjs from 'dayjs'
+import {logger} from '@/utils/sys/logger'
 
-  defineOptions({ name: 'UserCenter' })
+defineOptions({ name: 'UserCenter' })
 
   // 主题状态
   const settingStore = useSettingStore()

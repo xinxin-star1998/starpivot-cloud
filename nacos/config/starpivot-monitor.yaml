@@ -39,6 +39,16 @@ spring:
     job-store-type: memory
     auto-startup: true
 
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+starpivot:
+  security:
+    authority-strategy: menu-permission
+
 management:
   endpoints:
     web:

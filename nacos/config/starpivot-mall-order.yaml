@@ -1,11 +1,12 @@
 # starpivot-mall-order 专属配置
 # Nacos Data ID: starpivot-mall-order.yaml  |  Group: DEFAULT_GROUP
+# 业务库：star_pivot_order（oms_*、mq_message 表）
 
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: ${MALL_DB_DRIVER:com.mysql.cj.jdbc.Driver}
-    url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_mall?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_order?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
     username: ${MALL_DB_USERNAME:root}
     password: ${MALL_DB_PASSWORD:root}
     druid:
@@ -17,6 +18,10 @@ spring:
       test-while-idle: true
 
 starpivot:
+  security:
+    authority-strategy: menu-permission
+  mq:
+    enabled: ${MQ_ENABLED:true}
   mall:
     public-base-url: ${MALL_PUBLIC_BASE_URL:http://localhost:8080}
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
@@ -51,4 +56,5 @@ mybatis-plus:
   type-aliases-package: cn.org.starpivot.mall.oms.entity
   configuration:
     map-underscore-to-camel-case: true
+    cache-enabled: false
     log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}

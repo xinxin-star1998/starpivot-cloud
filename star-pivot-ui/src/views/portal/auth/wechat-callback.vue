@@ -6,16 +6,16 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    consumePortalWechatOAuthContext,
-    fetchPortalBindWechat,
-    fetchPortalWechatLogin,
-    fetchPortalWechatRegister
-  } from '@/api/portal/auth'
-  import { usePortalMemberStore } from '@/store/modules/portal-member'
-  import { ElMessage } from 'element-plus'
+import {
+  consumePortalWechatOAuthContext,
+  fetchPortalBindWechat,
+  fetchPortalWechatLogin,
+  fetchPortalWechatRegister
+} from '@/api/portal/auth'
+import {usePortalMemberStore} from '@/store/modules/portal-member'
+import {ElMessage} from 'element-plus'
 
-  defineOptions({ name: 'PortalWechatCallback' })
+defineOptions({ name: 'PortalWechatCallback' })
 
   const route = useRoute()
   const router = useRouter()

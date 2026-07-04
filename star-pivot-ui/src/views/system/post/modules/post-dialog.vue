@@ -47,11 +47,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage } from 'element-plus'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchAddPost, fetchUpdatePost, fetchGetPostById, type SysPost } from '@/api/post/post'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {fetchAddPost, fetchGetPostById, fetchUpdatePost, type SysPost} from '@/api/post/post'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: string
     postData?: Partial<Api.Post.PostListItem>

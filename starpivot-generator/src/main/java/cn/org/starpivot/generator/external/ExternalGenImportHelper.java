@@ -1,13 +1,13 @@
 package cn.org.starpivot.generator.external;
 
 import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.generator.domain.entity.GenTable;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;
 import cn.org.starpivot.generator.domain.external.ExternalGenSession;
 import cn.org.starpivot.generator.mapper.GenTableColumnMapper;
 import cn.org.starpivot.generator.mapper.GenTableMapper;
 import cn.org.starpivot.generator.utils.StringUtils;
-import cn.org.starpivot.common.security.SecurityContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

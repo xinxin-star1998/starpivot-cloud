@@ -1,4 +1,4 @@
-import { logger } from '../sys'
+import {logger} from '../sys'
 
 interface WebSocketOptions {
   url?: string

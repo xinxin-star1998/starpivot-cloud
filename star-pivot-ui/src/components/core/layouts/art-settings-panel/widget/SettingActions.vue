@@ -13,14 +13,14 @@
 </template>
 
 <script setup lang="ts">
-  import { useSettingStore } from '@/store/modules/setting'
-  import { SETTING_DEFAULT_CONFIG } from '@/config/setting'
-  import { useClipboard } from '@vueuse/core'
-  import { useI18n } from 'vue-i18n'
-  import { MenuThemeEnum } from '@/enums/appEnum'
-  import { useTheme } from '@/hooks/core/useTheme'
+import {useSettingStore} from '@/store/modules/setting'
+import {SETTING_DEFAULT_CONFIG} from '@/config/setting'
+import {useClipboard} from '@vueuse/core'
+import {useI18n} from 'vue-i18n'
+import {MenuThemeEnum} from '@/enums/appEnum'
+import {useTheme} from '@/hooks/core/useTheme'
 
-  defineOptions({ name: 'SettingActions' })
+defineOptions({ name: 'SettingActions' })
 
   const { t } = useI18n()
   const settingStore = useSettingStore()

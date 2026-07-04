@@ -18,10 +18,10 @@
 </template>
 
 <script setup lang="ts">
-  import AppConfig from '@/config'
-  import { useSettingStore } from '@/store/modules/setting'
+import AppConfig from '@/config'
+import {useSettingStore} from '@/store/modules/setting'
 
-  defineOptions({ name: 'ArtWatermark' })
+defineOptions({ name: 'ArtWatermark' })
 
   const settingStore = useSettingStore()
   const { watermarkVisible } = storeToRefs(settingStore)

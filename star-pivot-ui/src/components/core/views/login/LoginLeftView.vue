@@ -71,12 +71,12 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n'
-  import AppConfig from '@/config'
-  import loginIcon from '@imgs/svg/login_icon.svg'
-  import { themeAnimation } from '@/utils/ui/animation'
+import {useI18n} from 'vue-i18n'
+import AppConfig from '@/config'
+import loginIcon from '@imgs/svg/login_icon.svg'
+import {themeAnimation} from '@/utils/ui/animation'
 
-  const { t } = useI18n()
+const { t } = useI18n()
 
   // 定义 props
   defineProps<{

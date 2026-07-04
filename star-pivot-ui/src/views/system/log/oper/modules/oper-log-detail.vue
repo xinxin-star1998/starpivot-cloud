@@ -39,12 +39,12 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-  import { ElButton, ElDrawer, ElEmpty, ElResult } from 'element-plus'
-  import type { OperLogListItem } from '@/types/api/operlog'
-  import OperLogDetailFields from './oper-log-detail-fields.vue'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
+import {ElButton, ElDrawer, ElEmpty, ElResult} from 'element-plus'
+import type {OperLogListItem} from '@/types/api/operlog'
+import OperLogDetailFields from './oper-log-detail-fields.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
     operLog: OperLogListItem | null
     loading?: boolean

@@ -11,9 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
 
-  defineOptions({ name: 'BrandLogoUpload' })
+defineOptions({ name: 'BrandLogoUpload' })
 
   defineProps<{
     modelValue?: string

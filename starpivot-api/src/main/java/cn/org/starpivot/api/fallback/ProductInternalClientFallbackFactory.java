@@ -26,6 +26,11 @@ public class ProductInternalClientFallbackFactory implements FallbackFactory<Pro
             }
 
             @Override
+            public Result<List<SkuDto>> listSkusBySpuIds(List<Long> spuIds) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
             public Result<Map<Long, SkuOrderSnapshotDto>> loadOrderSnapshots(List<Long> skuIds) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }
@@ -98,6 +103,11 @@ public class ProductInternalClientFallbackFactory implements FallbackFactory<Pro
 
             @Override
             public Result<Integer> countPendingReviews(Long memberId) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
+            public Result<Integer> countCommentsByMember(Long memberId) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }
         };

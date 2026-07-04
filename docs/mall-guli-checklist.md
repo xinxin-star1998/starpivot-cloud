@@ -142,7 +142,7 @@
 
 | 功能 | 状态 |
 |------|------|
-| OSS 对象存储 | ⚠️ product 内嵌 + starpivot-file |
+| OSS 对象存储 | ⚠️ 公共 `oss-config.yaml` + starpivot-file / product |
 | 短信 | ⚠️ member 内短信登录 |
 | 本地静态资源 | ✅ mall-app `/local-storage/**` |
 | 统一文件中心 objectKey | ❌ 待规范 |

@@ -34,12 +34,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
-  import { DialogType } from '@/types'
-  import { fetchCreateTable } from '@/api/generator/gen-table'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage} from 'element-plus'
+import {DialogType} from '@/types'
+import {fetchCreateTable} from '@/api/generator/gen-table'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
   }

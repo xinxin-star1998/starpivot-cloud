@@ -7,7 +7,7 @@
  * @module utils/virtual-scroll
  */
 
-import { computed, isRef as vueIsRef, type Ref } from 'vue'
+import {computed, isRef as vueIsRef, type Ref} from 'vue'
 
 /**
  * 虚拟滚动配置选项

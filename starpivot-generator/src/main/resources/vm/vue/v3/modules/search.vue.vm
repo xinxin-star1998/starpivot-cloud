@@ -60,9 +60,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
-  import { Search, Refresh } from '@element-plus/icons-vue'
-  import type { FormInstance } from 'element-plus'
+  import {computed, ref} from 'vue'
+  import type {FormInstance} from 'element-plus'
 
   interface Props {
     modelValue: Record<string, any>

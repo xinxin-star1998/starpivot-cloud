@@ -35,14 +35,14 @@
 </template>
 
 <script setup lang="ts">
-  import { createFolder, updateFolder } from '@/api/file/folder'
-  import type { SysFileFolderForm } from '@/api/file/types'
-  import { FILE_CATEGORIES } from '../constants'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { computed, reactive, ref, watch } from 'vue'
+import {createFolder, updateFolder} from '@/api/file/folder'
+import type {SysFileFolderForm} from '@/api/file/types'
+import {FILE_CATEGORIES} from '../constants'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {computed, reactive, ref, watch} from 'vue'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
   const props = defineProps<{
     type: 'add' | 'edit'

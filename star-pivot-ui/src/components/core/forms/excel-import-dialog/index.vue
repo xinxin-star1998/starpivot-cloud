@@ -51,12 +51,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage } from 'element-plus'
-  import { UploadFilled } from '@element-plus/icons-vue'
-  import type { UploadFile } from 'element-plus'
-  import type { ExcelImportResultVo } from '@/api/common/excel'
+import type {UploadFile} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {UploadFilled} from '@element-plus/icons-vue'
+import type {ExcelImportResultVo} from '@/api/common/excel'
 
-  defineOptions({ name: 'ExcelImportDialog' })
+defineOptions({ name: 'ExcelImportDialog' })
 
   const props = withDefaults(
     defineProps<{

@@ -28,8 +28,8 @@
  * @author Art Design Pro Team
  */
 
-import { useRoute } from 'vue-router'
-import type { AppRouteRecord } from '@/types/router'
+import {useRoute} from 'vue-router'
+import type {AppRouteRecord} from '@/types/router'
 
 type AuthItem = NonNullable<AppRouteRecord['meta']['authList']>[number]
 

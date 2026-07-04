@@ -27,10 +27,11 @@
  * @module utils/theme/animation
  * @author Art Design Pro Team
  */
-import { useCommon } from '@/hooks/core/useCommon'
-import { useTheme } from '@/hooks/core/useTheme'
-import { SystemThemeEnum } from '@/enums/appEnum'
-import { useSettingStore } from '@/store/modules/setting'
+import {useCommon} from '@/hooks/core/useCommon'
+import {useTheme} from '@/hooks/core/useTheme'
+import {SystemThemeEnum} from '@/enums/appEnum'
+import {useSettingStore} from '@/store/modules/setting'
+
 const { LIGHT, DARK } = SystemThemeEnum
 
 /**

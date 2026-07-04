@@ -45,11 +45,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { AppRouteRecord } from '@/types/router'
-  import { handleMenuJump } from '@/utils/navigation'
-  import { formatMenuTitle } from '@/utils/router'
+import {AppRouteRecord} from '@/types/router'
+import {handleMenuJump} from '@/utils/navigation'
+import {formatMenuTitle} from '@/utils/router'
 
-  const props = defineProps({
+const props = defineProps({
     item: {
       type: Object as PropType<AppRouteRecord>,
       required: true

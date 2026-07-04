@@ -1,7 +1,7 @@
 // 从 URL 和路径模块中导入必要的功能
 import fs from 'fs'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import path, {dirname} from 'path'
+import {fileURLToPath} from 'url'
 
 // 从 ESLint 插件中导入推荐配置
 import pluginJs from '@eslint/js'

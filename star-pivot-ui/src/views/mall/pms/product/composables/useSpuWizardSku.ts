@@ -1,18 +1,14 @@
-import type { Ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+import type {Ref} from 'vue'
+import {ElMessage} from 'element-plus'
+import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
 import {
-  createDefaultSkuRow,
-  generateSkuRowsFromSaleDraft,
-  setDefaultSkuImage as setDefaultSkuImageFn,
-  syncSkuImageSlots as syncSkuImageSlotsFn,
-  toggleSkuImage as toggleSkuImageFn
+    createDefaultSkuRow,
+    generateSkuRowsFromSaleDraft,
+    setDefaultSkuImage as setDefaultSkuImageFn,
+    syncSkuImageSlots as syncSkuImageSlotsFn,
+    toggleSkuImage as toggleSkuImageFn
 } from '@/utils/mall/spu-wizard-sku'
-import type {
-  SpuWizardBaseForm,
-  SpuWizardSaleDraft,
-  SpuWizardSkuRow
-} from '@/utils/mall/spu-wizard-payload'
+import type {SpuWizardBaseForm, SpuWizardSaleDraft, SpuWizardSkuRow} from '@/utils/mall/spu-wizard-payload'
 
 export function useSpuWizardSku(
   baseForm: SpuWizardBaseForm,

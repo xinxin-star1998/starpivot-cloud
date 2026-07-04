@@ -71,16 +71,16 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { useUserStore } from '@/store/modules/user'
-  import { useHeaderBar } from '@/hooks/core/useHeaderBar'
-  import { themeAnimation } from '@/utils/ui/animation'
-  import { languageOptions } from '@/locales'
-  import { LanguageEnum } from '@/enums/appEnum'
-  import AppConfig from '@/config'
+import {useI18n} from 'vue-i18n'
+import {useSettingStore} from '@/store/modules/setting'
+import {useUserStore} from '@/store/modules/user'
+import {useHeaderBar} from '@/hooks/core/useHeaderBar'
+import {themeAnimation} from '@/utils/ui/animation'
+import {languageOptions} from '@/locales'
+import {LanguageEnum} from '@/enums/appEnum'
+import AppConfig from '@/config'
 
-  defineOptions({ name: 'AuthTopBar' })
+defineOptions({ name: 'AuthTopBar' })
 
   const settingStore = useSettingStore()
   const userStore = useUserStore()

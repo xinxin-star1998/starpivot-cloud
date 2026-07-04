@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-  import MallAttrListPage from '../components/mall-attr-list-page.vue'
+import MallAttrListPage from '../components/mall-attr-list-page.vue'
 
-  defineOptions({ name: 'MallSaleAttr' })
+defineOptions({ name: 'MallSaleAttr' })
 </script>

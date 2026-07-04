@@ -7,10 +7,10 @@
  * @author Art Design Pro Team
  */
 
-import type { AppRouteRecord } from '@/types/router'
-import { fetchGetDynamicRoutes, type DynamicRouteVo, type SysMenu } from '@/api/menu/menu'
-import { RoutesAlias } from '../routesAlias'
-import { formatMenuTitle } from '@/utils'
+import type {AppRouteRecord} from '@/types/router'
+import {type DynamicRouteVo, fetchGetDynamicRoutes, type SysMenu} from '@/api/menu/menu'
+import {RoutesAlias} from '../routesAlias'
+import {formatMenuTitle} from '@/utils'
 
 export class MenuProcessor {
   /**

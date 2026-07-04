@@ -71,11 +71,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage } from 'element-plus'
-  import { Refresh, Search } from '@element-plus/icons-vue'
-  import { fetchAssignUser, fetchGetUserListNotInByRoleId } from '@/api/role/role'
+import {ElMessage} from 'element-plus'
+import {Refresh, Search} from '@element-plus/icons-vue'
+import {fetchAssignUser, fetchGetUserListNotInByRoleId} from '@/api/role/role'
 
-  interface Props {
+interface Props {
     modelValue: boolean
     roleId?: string | number
   }

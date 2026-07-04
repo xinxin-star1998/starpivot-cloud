@@ -1,7 +1,7 @@
 package cn.org.starpivot.generator.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

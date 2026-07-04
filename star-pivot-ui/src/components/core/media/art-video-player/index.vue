@@ -4,10 +4,10 @@
 </template>
 
 <script setup lang="ts">
-  import Player from 'xgplayer'
-  import 'xgplayer/dist/index.min.css'
+import Player from 'xgplayer'
+import 'xgplayer/dist/index.min.css'
 
-  defineOptions({ name: 'ArtVideoPlayer' })
+defineOptions({ name: 'ArtVideoPlayer' })
 
   interface Props {
     /** 播放器容器 ID */

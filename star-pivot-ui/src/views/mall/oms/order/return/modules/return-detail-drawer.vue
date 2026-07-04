@@ -54,19 +54,19 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    canSubmitReturnAudit,
-    fetchReturnById,
-    fetchReturnSubmitApproval,
-    RETURN_AUDIT_STATUS_MAP,
-    RETURN_STATUS_MAP,
-    type ReturnVo
-  } from '@/api/mall/order-return'
-  import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  canSubmitReturnAudit,
+  fetchReturnById,
+  fetchReturnSubmitApproval,
+  RETURN_AUDIT_STATUS_MAP,
+  RETURN_STATUS_MAP,
+  type ReturnVo
+} from '@/api/mall/order-return'
+import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {ElMessage, ElMessageBox} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     returnId?: number
   }

@@ -40,18 +40,18 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    type Address,
-    type AddressSavePayload,
-    fetchAddAddress,
-    fetchGetAddressById,
-    fetchUpdateAddress
-  } from '@/api/mall/address'
-  import type { DialogType } from '@/types'
-  import { ADDRESS_LEVEL_OPTIONS } from '@/utils/mall/address-level'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  type Address,
+  type AddressSavePayload,
+  fetchAddAddress,
+  fetchGetAddressById,
+  fetchUpdateAddress
+} from '@/api/mall/address'
+import type {DialogType} from '@/types'
+import {ADDRESS_LEVEL_OPTIONS} from '@/utils/mall/address-level'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     addressData?: Partial<Address>

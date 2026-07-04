@@ -44,25 +44,25 @@
 </template>
 
 <script setup lang="ts">
-  import { safeError } from '@/utils'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import DictDataDialog from './dict-data-dialog.vue'
-  import {
-    type DictDataFormData,
-    fetchAddDictData,
-    fetchDeleteDictData,
-    fetchGetDictDataList,
-    fetchUpdateDictData,
-    type SysDictData
-  } from '@/api/dict/data'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {safeError} from '@/utils'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTableColumns} from '@/hooks/core/useTableColumns'
+import DictDataDialog from './dict-data-dialog.vue'
+import {
+  type DictDataFormData,
+  fetchAddDictData,
+  fetchDeleteDictData,
+  fetchGetDictDataList,
+  fetchUpdateDictData,
+  type SysDictData
+} from '@/api/dict/data'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'DictDataPanel' })
+defineOptions({ name: 'DictDataPanel' })
 
   interface Props {
     dictType: string

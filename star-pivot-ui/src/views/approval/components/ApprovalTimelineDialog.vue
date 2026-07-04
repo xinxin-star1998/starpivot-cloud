@@ -11,9 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-  import ApprovalTimeline from './ApprovalTimeline.vue'
+import ApprovalTimeline from './ApprovalTimeline.vue'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
   const instanceId = defineModel<number | undefined>('instanceId')
 
   const timelineRef = ref<InstanceType<typeof ApprovalTimeline>>()

@@ -59,17 +59,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchHomeAdvAdd,
-    fetchHomeAdvById,
-    fetchHomeAdvUpdate,
-    type HomeAdvSavePayload
-  } from '@/api/mall/home-adv'
-  import type { DialogType } from '@/types'
-  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {fetchHomeAdvAdd, fetchHomeAdvById, fetchHomeAdvUpdate, type HomeAdvSavePayload} from '@/api/mall/home-adv'
+import type {DialogType} from '@/types'
+import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
 
-  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

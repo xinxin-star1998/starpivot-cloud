@@ -16,9 +16,9 @@
 </template>
 
 <script lang="ts" setup>
-  import type { WmsWareInfoVo } from '@/api/mall/wareinfo'
+import type {WmsWareInfoVo} from '@/api/mall/wareinfo'
 
-  defineProps<{
+defineProps<{
     isEdit: boolean
     defaultWareId?: number
     wareOptions: WmsWareInfoVo[]

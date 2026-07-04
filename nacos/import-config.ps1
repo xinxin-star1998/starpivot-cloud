@@ -22,7 +22,7 @@ function Test-ConfigInProfile {
     param([string]$DataId, [string]$ProfileName)
     switch ($ProfileName) {
         "Mall" {
-            return ($DataId -eq "common-config.yaml") -or ($DataId -eq "mq-config.yaml") -or ($DataId -like "starpivot-mall*.yaml")
+            return ($DataId -eq "common-config.yaml") -or ($DataId -eq "oss-config.yaml") -or ($DataId -eq "mq-config.yaml") -or ($DataId -like "starpivot-mall*.yaml")
         }
         "Core" {
             return ($DataId -notlike "starpivot-mall*.yaml")

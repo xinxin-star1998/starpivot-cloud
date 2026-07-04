@@ -86,16 +86,16 @@
 </template>
 
 <script setup lang="ts">
-  import { Refresh, Search } from '@element-plus/icons-vue'
-  import { fetchForceLogout, fetchGetOnlineUserList } from '@/api/monitor/online'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { usePageVisibility } from '@/hooks/core/usePageVisibility'
-  import type { OnlineUser, OnlineUserQueryParams } from '@/types/api/monitor'
-  import type { ColumnOption } from '@/types'
+import {Refresh, Search} from '@element-plus/icons-vue'
+import {fetchForceLogout, fetchGetOnlineUserList} from '@/api/monitor/online'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {usePageVisibility} from '@/hooks/core/usePageVisibility'
+import type {OnlineUser, OnlineUserQueryParams} from '@/types/api/monitor'
+import type {ColumnOption} from '@/types'
 
-  defineOptions({ name: 'OnlineUser' })
+defineOptions({ name: 'OnlineUser' })
 
   // 页面可见性检测 - 页面不可见时暂停刷新
   const { onPause, onResume } = usePageVisibility()

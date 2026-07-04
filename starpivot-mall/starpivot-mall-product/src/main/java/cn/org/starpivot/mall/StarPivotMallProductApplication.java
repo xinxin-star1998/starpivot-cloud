@@ -20,8 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableConfigurationProperties(JwtProperties.class)
 @MapperScan({
-        "cn.org.starpivot.mall.pms.mapper",
-        "cn.org.starpivot.mall.oms.mapper"
+        "cn.org.starpivot.mall.pms.mapper"
 })
 public class StarPivotMallProductApplication {
 

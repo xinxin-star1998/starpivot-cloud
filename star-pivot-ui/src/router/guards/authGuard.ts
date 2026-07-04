@@ -1,9 +1,9 @@
-import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
-import { RoutesAlias } from '../routesAlias'
-import { staticRoutes } from '../routes/staticRoutes'
-import { useCommon } from '@/hooks/core/useCommon'
-import { isRegisterEnabled } from '@/utils/auth/register-config'
+import type {NavigationGuardNext, RouteLocationNormalized} from 'vue-router'
+import {useUserStore} from '@/store/modules/user'
+import {RoutesAlias} from '../routesAlias'
+import {staticRoutes} from '../routes/staticRoutes'
+import {useCommon} from '@/hooks/core/useCommon'
+import {isRegisterEnabled} from '@/utils/auth/register-config'
 
 /**
  * 注册页访问控制：配置关闭时重定向到登录页

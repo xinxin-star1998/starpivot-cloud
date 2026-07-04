@@ -44,8 +44,8 @@
  * @author Art Design Pro Team
  */
 
-import type { App, Directive, DirectiveBinding } from 'vue'
-import { useUserStore } from '@/store/modules/user'
+import type {App, Directive, DirectiveBinding} from 'vue'
+import {useUserStore} from '@/store/modules/user'
 
 interface RolesBinding extends DirectiveBinding {
   value: string | string[]

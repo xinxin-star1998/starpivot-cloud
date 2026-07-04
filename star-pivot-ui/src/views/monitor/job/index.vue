@@ -40,24 +40,18 @@
 </template>
 
 <script setup lang="ts">
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchJobList,
-    fetchDeleteJob,
-    fetchChangeJobStatus,
-    fetchRunJobOnce,
-    type SysJob
-  } from '@/api/monitor/job'
-  import JobDialog from './modules/job-dialog.vue'
-  import JobLogDialog from './modules/job-log-dialog.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import type { DialogType } from '@/types'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchChangeJobStatus, fetchDeleteJob, fetchJobList, fetchRunJobOnce, type SysJob} from '@/api/monitor/job'
+import JobDialog from './modules/job-dialog.vue'
+import JobLogDialog from './modules/job-log-dialog.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import type {DialogType} from '@/types'
 
-  defineOptions({ name: 'MonitorJob' })
+defineOptions({ name: 'MonitorJob' })
 
   const { hasAuth } = useAuth()
 

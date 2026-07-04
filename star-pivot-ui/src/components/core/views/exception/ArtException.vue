@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-  import { useCommon } from '@/hooks/core/useCommon'
+import {useCommon} from '@/hooks/core/useCommon'
 
-  const router = useRouter()
+const router = useRouter()
 
   interface ExceptionData {
     /** 标题 */

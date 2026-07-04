@@ -29,6 +29,7 @@ public class ProductInternalService {
     private final PmsSkuSaleAttrValueMapper pmsSkuSaleAttrValueMapper;
     private final PmsCategoryBrandRelationMapper pmsCategoryBrandRelationMapper;
     private final PmsSpuImagesMapper pmsSpuImagesMapper;
+    private final PmsSpuCommentMapper pmsSpuCommentMapper;
     private final PmsCategoryService pmsCategoryService;
 
     public SkuDto getSku(Long skuId) {
@@ -44,6 +45,17 @@ public class ProductInternalService {
             return List.of();
         }
         return pmsSkuInfoMapper.selectBatchIds(skuIds).stream().map(this::toSkuDto).toList();
+    }
+
+    public List<SkuDto> listSkusBySpuIds(List<Long> spuIds) {
+        if (CollectionUtils.isEmpty(spuIds)) {
+            return List.of();
+        }
+        return pmsSkuInfoMapper.selectList(
+                        Wrappers.<PmsSkuInfo>lambdaQuery().in(PmsSkuInfo::getSpuId, spuIds))
+                .stream()
+                .map(this::toSkuDto)
+                .toList();
     }
 
     public Map<Long, SkuOrderSnapshotDto> loadOrderSnapshots(List<Long> skuIds) {
@@ -321,5 +333,14 @@ public class ProductInternalService {
         Map<Long, String> result = new LinkedHashMap<>();
         builderMap.forEach((skuId, sb) -> result.put(skuId, sb.toString()));
         return result;
+    }
+
+    public int countCommentsByMember(Long memberId) {
+        if (memberId == null) {
+            return 0;
+        }
+        Long count = pmsSpuCommentMapper.selectCount(
+                Wrappers.<PmsSpuComment>lambdaQuery().eq(PmsSpuComment::getMemberId, memberId));
+        return count != null ? count.intValue() : 0;
     }
 }

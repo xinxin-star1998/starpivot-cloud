@@ -36,10 +36,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ElTag, ElText, ElDescriptions, ElDescriptionsItem } from 'element-plus'
-  import type { LogininforListItem } from '@/types/api/logininfor'
+import {ElDescriptions, ElDescriptionsItem, ElTag, ElText} from 'element-plus'
+import type {LogininforListItem} from '@/types/api/logininfor'
 
-  interface Props {
+interface Props {
     visible: boolean
     logininfor: LogininforListItem | null
   }

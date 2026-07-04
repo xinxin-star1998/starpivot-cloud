@@ -58,24 +58,24 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchPurchaseDetailList,
-    fetchPurchaseDetailRemove,
-    PURCHASE_DETAIL_STATUS_MAP,
-    type PurchaseDetailVo
-  } from '@/api/mall/purchase'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import PurchaseItemSearch from './modules/purchase-item-search.vue'
-  import PurchaseItemDialog from './modules/purchase-item-dialog.vue'
-  import PurchaseMergeDialog from './modules/purchase-merge-dialog.vue'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  fetchPurchaseDetailList,
+  fetchPurchaseDetailRemove,
+  PURCHASE_DETAIL_STATUS_MAP,
+  type PurchaseDetailVo
+} from '@/api/mall/purchase'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import PurchaseItemSearch from './modules/purchase-item-search.vue'
+import PurchaseItemDialog from './modules/purchase-item-dialog.vue'
+import PurchaseMergeDialog from './modules/purchase-merge-dialog.vue'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'PurchaseItem' })
+defineOptions({ name: 'PurchaseItem' })
 
   const { hasAuth } = useAuth()
 

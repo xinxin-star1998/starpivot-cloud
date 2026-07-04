@@ -71,24 +71,19 @@
 </template>
 
 <script lang="ts" setup>
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    type Config,
-    fetchDeleteConfig,
-    fetchExportConfig,
-    fetchGetConfigList
-  } from '@/api/system/config/config'
-  import ConfigSearch from './modules/config-search.vue'
-  import ConfigDialog from './modules/config-dialog.vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import { DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ref, nextTick, h } from 'vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {type Config, fetchDeleteConfig, fetchExportConfig, fetchGetConfigList} from '@/api/system/config/config'
+import ConfigSearch from './modules/config-search.vue'
+import ConfigDialog from './modules/config-dialog.vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {h, nextTick, ref} from 'vue'
 
-  defineOptions({ name: 'Config' })
+defineOptions({ name: 'Config' })
 
   const { hasAuth } = useAuth()
 

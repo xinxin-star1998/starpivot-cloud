@@ -41,22 +41,22 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchSeckillPromotionList,
-    fetchSeckillPromotionRemove,
-    type SeckillPromotionVo
-  } from '@/api/mall/seckill-promotion'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import SeckillDialog from './modules/seckill-dialog.vue'
-  import type { DialogType } from '@/types'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  fetchSeckillPromotionList,
+  fetchSeckillPromotionRemove,
+  type SeckillPromotionVo
+} from '@/api/mall/seckill-promotion'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import SeckillDialog from './modules/seckill-dialog.vue'
+import type {DialogType} from '@/types'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'SmsSeckillPromotion' })
+defineOptions({ name: 'SmsSeckillPromotion' })
 
   const searchForm = ref({ title: undefined as string | undefined })
   const dialogVisible = ref(false)

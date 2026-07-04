@@ -11,9 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-  import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
+import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, any>
   }
 

@@ -14,11 +14,11 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import { ElMessage } from 'element-plus'
-  import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
+import {computed} from 'vue'
+import {ElMessage} from 'element-plus'
+import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
 
-  defineOptions({ name: 'ArtImportDialog' })
+defineOptions({ name: 'ArtImportDialog' })
 
   const props = defineProps<{
     modelValue?: boolean

@@ -23,10 +23,10 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n'
-  import type { DashboardTrendData } from '@/types/api/dashboard'
+import {useI18n} from 'vue-i18n'
+import type {DashboardTrendData} from '@/types/api/dashboard'
 
-  const { t } = useI18n()
+const { t } = useI18n()
 
   interface UserStatItem {
     name: string

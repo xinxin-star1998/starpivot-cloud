@@ -7,13 +7,13 @@
  * @author Art Design Pro Team
  */
 
-import type { RouteRecordRaw } from 'vue-router'
-import type { AppRouteRecord } from '@/types/router'
-import { ComponentLoader } from './ComponentLoader'
-import { IframeRouteManager } from './IframeRouteManager'
-import { RoutesAlias } from '../routesAlias'
-import { RouteCacheManager } from './RouteCacheManager'
-import { safeLog, safeWarn } from '@/utils'
+import type {RouteRecordRaw} from 'vue-router'
+import type {AppRouteRecord} from '@/types/router'
+import {ComponentLoader} from './ComponentLoader'
+import {IframeRouteManager} from './IframeRouteManager'
+import {RoutesAlias} from '../routesAlias'
+import {RouteCacheManager} from './RouteCacheManager'
+import {safeLog, safeWarn} from '@/utils'
 
 interface ConvertedRoute extends Omit<RouteRecordRaw, 'children'> {
   id?: number

@@ -50,47 +50,39 @@ mvn clean install -DskipTests
 
 ## Nacos 配置导入
 
-### 方式一：仅商城（推荐）
-
 ```powershell
-# Windows
-.\nacos\import-mall-config.ps1
+# 全部 yaml
+.\nacos\import-config.ps1
 
-# Linux / macOS
-chmod +x nacos/import-mall-config.sh
-./nacos/import-mall-config.sh
+# 仅商城（common + oss + mq + starpivot-mall*）
+.\nacos\import-config.ps1 -Profile Mall
+
+# 不含商城
+.\nacos\import-config.ps1 -Profile Core
 ```
 
-按顺序发布：`common-config.yaml` → `mq-config.yaml` → `starpivot-mall*.yaml`。
+Linux / macOS：`pwsh ./nacos/import-config.ps1 -Profile Mall`，或在 Nacos 控制台手动粘贴。
 
-### 方式二：全量 / 按 Profile
+发布顺序（脚本按文件名排序，等价于）：`common-config.yaml` → `oss-config.yaml` → `mq-config.yaml` → `starpivot-mall*.yaml`。
 
-```powershell
-.\nacos\import-config.ps1              # 全部 yaml
-.\nacos\import-config.ps1 -Profile Mall # 等同 import-mall-config
-.\nacos\import-config.ps1 -Profile Core # 不含 starpivot-mall*
-```
-
-```bash
-./nacos/import-config.sh Mall
-./nacos/import-config.sh All
-```
-
-### 方式三：单文件
+单文件更新：
 
 ```powershell
 .\nacos\upload-config.ps1 starpivot-mall-order.yaml
 ```
+
+配置说明见 [nacos/README.md](../nacos/README.md)。
 
 ### 商城 Nacos Data ID
 
 | Data ID | 说明 |
 |---------|------|
 | `common-config.yaml` | Redis、JWT、内部 Token（**必选**） |
+| `oss-config.yaml` | 阿里云 OSS（product、promotion 等共用，**商品图需启用**） |
 | `mq-config.yaml` | RabbitMQ（审批回调、营销 MQ） |
-| `starpivot-mall.yaml` | 静态资源本地路径 |
+| `starpivot-mall.yaml` | 静态资源本地路径（默认 `oss.enabled=false` 覆盖公共配置） |
 | `starpivot-mall-member.yaml` | 会员库、短信/微信登录 |
-| `starpivot-mall-product.yaml` | 商品库、Elasticsearch、OSS |
+| `starpivot-mall-product.yaml` | 商品库、Elasticsearch |
 | `starpivot-mall-ware.yaml` | 仓储库 |
 | `starpivot-mall-order.yaml` | 订单库、支付（微信/支付宝）、Mock 支付 |
 | `starpivot-mall-promotion.yaml` | 营销库、秒杀 Redis |
@@ -127,25 +119,6 @@ mvn spring-boot:run -pl starpivot-mall/starpivot-mall-app -am
 ```
 
 指定端口：`SERVER_PORT=9207 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-product -am`
-
-### 脚本批量启动
-
-```powershell
-# 先导入 Nacos，再在多个 PowerShell 窗口启动各服务
-.\nacos\start-mall.ps1 -ImportConfig
-
-# 仅打印命令
-.\nacos\start-mall.ps1 -DryRun
-
-# 不启动静态资源 BFF
-.\nacos\start-mall.ps1 -SkipStatic
-```
-
-```bash
-chmod +x nacos/start-mall.sh
-./nacos/start-mall.sh --import-config --run
-./nacos/start-mall.sh              # 仅打印命令
-```
 
 **网关需单独启动**：`mvn spring-boot:run -pl starpivot-gateway`
 

@@ -123,16 +123,16 @@
 </template>
 
 <script lang="ts" setup>
-  import { storeToRefs } from 'pinia'
-  import { TableSizeEnum } from '@/enums/formEnum'
-  import { useTableStore } from '@/store/modules/table'
-  import { VueDraggable } from 'vue-draggable-plus'
-  import { useI18n } from 'vue-i18n'
-  import type { ColumnOption } from '@/types/component'
-  import { ElScrollbar } from 'element-plus'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {storeToRefs} from 'pinia'
+import {TableSizeEnum} from '@/enums/formEnum'
+import {useTableStore} from '@/store/modules/table'
+import {VueDraggable} from 'vue-draggable-plus'
+import {useI18n} from 'vue-i18n'
+import type {ColumnOption} from '@/types/component'
+import {ElScrollbar} from 'element-plus'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
-  defineOptions({ name: 'ArtTableHeader' })
+defineOptions({ name: 'ArtTableHeader' })
 
   const { t } = useI18n()
 

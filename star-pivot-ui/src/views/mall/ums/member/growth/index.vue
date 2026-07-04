@@ -24,20 +24,20 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    CHANGE_SOURCE_TYPE_MAP,
-    fetchGrowthHistoryList,
-    fetchIntegrationHistoryList,
-    type MemberGrowthListParams
-  } from '@/api/mall/member-growth'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import GrowthSearch from './modules/growth-search.vue'
-  import { ElTag } from 'element-plus'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  CHANGE_SOURCE_TYPE_MAP,
+  fetchGrowthHistoryList,
+  fetchIntegrationHistoryList,
+  type MemberGrowthListParams
+} from '@/api/mall/member-growth'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import GrowthSearch from './modules/growth-search.vue'
+import {ElTag} from 'element-plus'
 
-  defineOptions({ name: 'MemberGrowth' })
+defineOptions({ name: 'MemberGrowth' })
 
   const activeTab = ref<'integration' | 'growth'>('integration')
 

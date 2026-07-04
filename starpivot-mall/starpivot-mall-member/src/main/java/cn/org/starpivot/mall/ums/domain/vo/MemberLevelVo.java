@@ -1,7 +1,8 @@
 package cn.org.starpivot.mall.ums.domain.vo;
 
-import java.math.BigDecimal;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * 会员等级视图对象。

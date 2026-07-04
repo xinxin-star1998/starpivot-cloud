@@ -19,20 +19,20 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    COUPON_GET_TYPE_MAP,
-    COUPON_HISTORY_USE_TYPE_MAP,
-    fetchCouponHistoryList,
-    type CouponHistoryVo
-  } from '@/api/mall/coupon-history'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import HistorySearch from './modules/history-search.vue'
-  import { ElTag } from 'element-plus'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  COUPON_GET_TYPE_MAP,
+  COUPON_HISTORY_USE_TYPE_MAP,
+  type CouponHistoryVo,
+  fetchCouponHistoryList
+} from '@/api/mall/coupon-history'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import HistorySearch from './modules/history-search.vue'
+import {ElTag} from 'element-plus'
 
-  defineOptions({ name: 'CouponHistory' })
+defineOptions({ name: 'CouponHistory' })
 
   const searchForm = ref({
     memberId: undefined as number | undefined,

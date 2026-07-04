@@ -19,20 +19,15 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchRefundList,
-    REFUND_CHANNEL_MAP,
-    REFUND_STATUS_MAP,
-    type RefundVo
-  } from '@/api/mall/refund'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import RefundSearch from './modules/refund-search.vue'
-  import { ElTag } from 'element-plus'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchRefundList, REFUND_CHANNEL_MAP, REFUND_STATUS_MAP, type RefundVo} from '@/api/mall/refund'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import RefundSearch from './modules/refund-search.vue'
+import {ElTag} from 'element-plus'
 
-  defineOptions({ name: 'OmsRefundLog' })
+defineOptions({ name: 'OmsRefundLog' })
 
   const searchForm = ref({
     orderSn: undefined as string | undefined

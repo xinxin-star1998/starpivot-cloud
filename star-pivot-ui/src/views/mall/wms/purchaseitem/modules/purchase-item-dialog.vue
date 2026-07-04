@@ -40,12 +40,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchPurchaseDetailAdd } from '@/api/mall/purchase'
-  import type { MallSkuVo } from '@/api/mall/sku'
-  import StockSkuWareSelect from '@/views/mall/wms/modules/stock-sku-ware-select.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {fetchPurchaseDetailAdd} from '@/api/mall/purchase'
+import type {MallSkuVo} from '@/api/mall/sku'
+import StockSkuWareSelect from '@/views/mall/wms/modules/stock-sku-ware-select.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
   }
   interface Emits {

@@ -1,5 +1,5 @@
-import { useRouter, useRoute } from 'vue-router'
-import { usePortalMemberStore } from '@/store/modules/portal-member'
+import {useRoute, useRouter} from 'vue-router'
+import {usePortalMemberStore} from '@/store/modules/portal-member'
 
 /** C 端会员登录校验，未登录跳转 /portal/login */
 export function usePortalAuth() {

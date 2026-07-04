@@ -43,13 +43,13 @@
 </template>
 
 <script lang="ts" setup>
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import { fetchApprovalBindSave } from '@/api/approval/template'
-  import type { ApTemplateBind } from '@/api/approval/types'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {handleMutationError} from '@/utils/http/mutation'
+import {fetchApprovalBindSave} from '@/api/approval/template'
+import type {ApTemplateBind} from '@/api/approval/types'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
   const record = defineModel<ApTemplateBind | null>('record', { default: null })
 
   const emit = defineEmits<{ success: [] }>()

@@ -21,11 +21,11 @@
  * @author Art Design Pro Team
  */
 
-import { createI18n } from 'vue-i18n'
-import type { I18n, I18nOptions } from 'vue-i18n'
-import { LanguageEnum } from '@/enums/appEnum'
-import { getSystemStorage } from '@/utils/storage'
-import { StorageKeyManager } from '@/utils/storage/storage-key-manager'
+import type {I18n, I18nOptions} from 'vue-i18n'
+import {createI18n} from 'vue-i18n'
+import {LanguageEnum} from '@/enums/appEnum'
+import {getSystemStorage} from '@/utils/storage'
+import {StorageKeyManager} from '@/utils/storage/storage-key-manager'
 
 // 同步导入语言文件
 import enMessages from './langs/en.json'

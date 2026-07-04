@@ -39,11 +39,11 @@
  * @author Art Design Pro Team
  */
 
-import { ElMessage } from 'element-plus'
-import { isHttpError } from '@utils/http/error'
-import { safeError } from '@/utils/sys/console'
-import type { ApiResponse } from './tableCache'
-import { tableConfig } from './tableConfig'
+import {ElMessage} from 'element-plus'
+import {isHttpError} from '@utils/http/error'
+import {safeError} from '@/utils/sys/console'
+import type {ApiResponse} from './tableCache'
+import {tableConfig} from './tableConfig'
 
 // 请求参数基础接口，扩展分页参数（发送给后端使用 pageNum 和 pageSize）
 export interface BaseRequestParams extends Api.Common.CommonSearchParams {

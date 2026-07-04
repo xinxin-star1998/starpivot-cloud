@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
 
-  defineOptions({ name: 'SpuImageUpload' })
+defineOptions({ name: 'SpuImageUpload' })
 
   const props = withDefaults(
     defineProps<{

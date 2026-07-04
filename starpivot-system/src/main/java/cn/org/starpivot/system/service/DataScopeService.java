@@ -1,7 +1,7 @@
 package cn.org.starpivot.system.service;
 
-import cn.org.starpivot.common.entity.DataScope;
 import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.entity.DataScope;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.system.domain.entity.SysDept;
 import cn.org.starpivot.system.domain.entity.SysRole;

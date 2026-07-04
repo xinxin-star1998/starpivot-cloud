@@ -18,14 +18,14 @@
 </template>
 
 <script setup lang="ts">
-  import '@wangeditor/editor/dist/css/style.css'
-  import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-  import { useUserStore } from '@/store/modules/user'
-  import { getApiBaseUrl } from '@/utils/http'
-  import EmojiText from '@/utils/ui/emojo'
-  import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
+import '@wangeditor/editor/dist/css/style.css'
+import {Editor, Toolbar} from '@wangeditor/editor-for-vue'
+import {useUserStore} from '@/store/modules/user'
+import {getApiBaseUrl} from '@/utils/http'
+import EmojiText from '@/utils/ui/emojo'
+import {IDomEditor, IEditorConfig, IToolbarConfig} from '@wangeditor/editor'
 
-  defineOptions({ name: 'ArtWangEditor' })
+defineOptions({ name: 'ArtWangEditor' })
 
   // Props 定义
   interface Props {

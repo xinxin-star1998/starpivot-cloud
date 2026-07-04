@@ -1,11 +1,11 @@
 package cn.org.starpivot.generator.external;
 
-import com.alibaba.fastjson2.JSON;
 import cn.org.starpivot.common.constants.GenConstants;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.generator.domain.entity.GenTable;
 import cn.org.starpivot.generator.domain.external.GenPathProfile;
 import cn.org.starpivot.generator.utils.StringUtils;
+import com.alibaba.fastjson2.JSON;
 
 import java.util.HashMap;
 import java.util.Map;

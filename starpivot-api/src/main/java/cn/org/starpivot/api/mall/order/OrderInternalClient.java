@@ -1,10 +1,7 @@
 package cn.org.starpivot.api.mall.order;
 
 import cn.org.starpivot.api.fallback.OrderInternalClientFallbackFactory;
-import cn.org.starpivot.api.mall.order.dto.OrderInternalDto;
-import cn.org.starpivot.api.mall.order.dto.OrderItemInternalDto;
-import cn.org.starpivot.api.mall.order.dto.OrderSubmitRequestDto;
-import cn.org.starpivot.api.mall.order.dto.OrderSubmitResultDto;
+import cn.org.starpivot.api.mall.order.dto.*;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,4 +29,15 @@ public interface OrderInternalClient {
 
     @PostMapping("/internal/mall/order/submit")
     Result<OrderSubmitResultDto> submitOrder(@RequestBody OrderSubmitRequestDto request);
+
+    @GetMapping("/internal/mall/order/member/{memberId}/count")
+    Result<Integer> countByMember(@PathVariable("memberId") Long memberId);
+
+    @GetMapping("/internal/mall/order/member/{memberId}/purchased-spu/{spuId}")
+    Result<Boolean> hasPurchasedSpu(
+            @PathVariable("memberId") Long memberId,
+            @PathVariable("spuId") Long spuId);
+
+    @GetMapping("/internal/mall/order/member/{memberId}/reviewable-purchase-items")
+    Result<List<PendingReviewItemDto>> listReviewablePurchaseItems(@PathVariable("memberId") Long memberId);
 }

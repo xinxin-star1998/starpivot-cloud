@@ -48,15 +48,15 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    fetchMemberStatisticsByMemberId,
-    fetchMemberStatisticsRefresh,
-    type MemberStatisticsVo
-  } from '@/api/mall/member-statistics'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ElMessage } from 'element-plus'
+import {
+  fetchMemberStatisticsByMemberId,
+  fetchMemberStatisticsRefresh,
+  type MemberStatisticsVo
+} from '@/api/mall/member-statistics'
+import {useAuth} from '@/hooks/core/useAuth'
+import {ElMessage} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     memberId?: number
   }

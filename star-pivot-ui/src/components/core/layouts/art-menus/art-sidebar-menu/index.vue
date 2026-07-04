@@ -130,17 +130,16 @@
 </template>
 
 <script setup lang="ts">
-  import AppConfig from '@/config'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { MenuTypeEnum, MenuWidth } from '@/enums/appEnum'
-  import { useMenuStore } from '@/store/modules/menu'
-  import { isIframe } from '@/utils/navigation'
-  import { handleMenuJump } from '@/utils/navigation'
-  import SidebarSubmenu from './widget/SidebarSubmenu.vue'
-  import { useCommon } from '@/hooks/core/useCommon'
-  import { useWindowSize, useTimeoutFn } from '@vueuse/core'
+import AppConfig from '@/config'
+import {useSettingStore} from '@/store/modules/setting'
+import {MenuTypeEnum, MenuWidth} from '@/enums/appEnum'
+import {useMenuStore} from '@/store/modules/menu'
+import {handleMenuJump, isIframe} from '@/utils/navigation'
+import SidebarSubmenu from './widget/SidebarSubmenu.vue'
+import {useCommon} from '@/hooks/core/useCommon'
+import {useTimeoutFn, useWindowSize} from '@vueuse/core'
 
-  defineOptions({ name: 'ArtSidebarMenu' })
+defineOptions({ name: 'ArtSidebarMenu' })
 
   const MOBILE_BREAKPOINT = 800
   const ANIMATION_DELAY = 350

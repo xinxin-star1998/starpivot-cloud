@@ -1,9 +1,9 @@
-import type { App } from 'vue'
-import { setupAuthDirective } from './core/auth'
-import { setupHighlightDirective } from './business/highlight'
-import { setupRippleDirective } from './business/ripple'
-import { setupLazyDirective } from './business/lazy'
-import { setupRolesDirective } from './core/roles'
+import type {App} from 'vue'
+import {setupAuthDirective} from './core/auth'
+import {setupHighlightDirective} from './business/highlight'
+import {setupRippleDirective} from './business/ripple'
+import {setupLazyDirective} from './business/lazy'
+import {setupRolesDirective} from './core/roles'
 
 export function setupGlobDirectives(app: App) {
   setupAuthDirective(app) // 权限指令

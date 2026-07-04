@@ -1,5 +1,5 @@
-import { fetchCaptcha } from '@/api/auth'
-import { logger } from '@/utils/sys/logger'
+import {fetchCaptcha} from '@/api/auth'
+import {logger} from '@/utils/sys/logger'
 
 export type CaptchaScene = 'login' | 'forget-password'
 

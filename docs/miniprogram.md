@@ -82,7 +82,7 @@ Mock 模式（未配置商户号）：返回 `mock: true`，可再调 `POST /por
 
 按 [README](../README.md) 启动 Gateway + Mall（及 MySQL/Redis/Nacos）。
 
-**商品图片：** `starpivot-mall` 须启用 OSS（`nacos/config/starpivot-mall.yaml` 中 `oss.enabled=true`，与 system 服务共用桶）。未启用时预签名接口会返回 `/local-storage/...`，而实际文件在 OSS，小程序图片会 404。修改 Nacos 配置后需**重启 mall** 并执行 `.\nacos\import-config.ps1` 同步。
+**商品图片：** `starpivot-mall` 须启用 OSS（`nacos/config/oss-config.yaml` 中 `oss.enabled=true`，或在 `starpivot-mall.yaml` 中覆盖为 `true`，与 system 服务共用桶）。未启用时预签名接口会返回 `/local-storage/...`，而实际文件在 OSS，小程序图片会 404。修改 Nacos 配置后需**重启 mall** 并执行 `.\nacos\import-config.ps1` 同步。
 
 ### 5.2 启动小程序
 

@@ -53,20 +53,20 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    canSubmitPurchaseAudit,
-    fetchPurchaseById,
-    fetchPurchaseSubmitApproval,
-    PURCHASE_AUDIT_STATUS_MAP,
-    PURCHASE_DETAIL_STATUS_MAP,
-    PURCHASE_STATUS_MAP,
-    type PurchaseVo
-  } from '@/api/mall/purchase'
-  import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  canSubmitPurchaseAudit,
+  fetchPurchaseById,
+  fetchPurchaseSubmitApproval,
+  PURCHASE_AUDIT_STATUS_MAP,
+  PURCHASE_DETAIL_STATUS_MAP,
+  PURCHASE_STATUS_MAP,
+  type PurchaseVo
+} from '@/api/mall/purchase'
+import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {ElMessage, ElMessageBox} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     purchaseId?: number
   }

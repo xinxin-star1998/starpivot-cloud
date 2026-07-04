@@ -52,18 +52,18 @@
 </template>
 
 <script lang="ts" setup>
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchMallBrandAdd,
-    fetchMallBrandById,
-    fetchMallBrandUpdate,
-    type MallBrandSavePayload,
-    type MallBrandVo
-  } from '@/api/mall/brand'
-  import type { DialogType } from '@/types'
-  import BrandLogoUpload from './brand-logo-upload.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchMallBrandAdd,
+  fetchMallBrandById,
+  fetchMallBrandUpdate,
+  type MallBrandSavePayload,
+  type MallBrandVo
+} from '@/api/mall/brand'
+import type {DialogType} from '@/types'
+import BrandLogoUpload from './brand-logo-upload.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     brandData?: Partial<MallBrandVo>

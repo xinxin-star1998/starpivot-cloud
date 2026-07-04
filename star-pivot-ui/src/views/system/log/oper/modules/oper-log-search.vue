@@ -13,10 +13,10 @@
 </template>
 
 <script setup lang="ts">
-  import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
-  import { OPER_BUSINESS_TYPE_OPTIONS } from '../constants'
+import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
+import {OPER_BUSINESS_TYPE_OPTIONS} from '../constants'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, any>
   }
   interface Emits {

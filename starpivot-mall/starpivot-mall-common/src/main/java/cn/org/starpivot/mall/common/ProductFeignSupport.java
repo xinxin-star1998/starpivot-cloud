@@ -34,6 +34,13 @@ public class ProductFeignSupport {
         return unwrap(productInternalClient.listSkusByIds(skuIds), "SKU查询失败");
     }
 
+    public List<SkuDto> requireSkusBySpuIds(List<Long> spuIds) {
+        if (CollectionUtils.isEmpty(spuIds)) {
+            return List.of();
+        }
+        return unwrap(productInternalClient.listSkusBySpuIds(spuIds), "SKU查询失败");
+    }
+
     public Map<Long, SkuDto> requireSkuMap(List<Long> skuIds) {
         return requireSkus(skuIds).stream()
                 .filter(sku -> sku.getSkuId() != null)
@@ -146,6 +153,11 @@ public class ProductFeignSupport {
 
     public int countPendingReviews(Long memberId) {
         return unwrap(productInternalClient.countPendingReviews(memberId), "待评价数量加载失败");
+    }
+
+    public int countCommentsByMember(Long memberId) {
+        Integer count = unwrap(productInternalClient.countCommentsByMember(memberId), "评价数量加载失败");
+        return count == null ? 0 : count;
     }
 
     private void unwrapVoid(Result<Void> result) {

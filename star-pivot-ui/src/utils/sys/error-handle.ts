@@ -29,7 +29,7 @@
  * @module utils/sys/error-handle
  * @author Art Design Pro Team
  */
-import type { App } from 'vue'
+import type {App} from 'vue'
 
 /**
  * Vue 运行时错误处理

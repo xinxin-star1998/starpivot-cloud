@@ -1,9 +1,9 @@
-import type { App } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
-import { staticRoutes } from './routes/staticRoutes'
-import { configureNProgress } from '@/utils/router'
-import { setupBeforeEachGuard } from './guards/beforeEach'
-import { setupAfterEachGuard } from './guards/afterEach'
+import type {App} from 'vue'
+import {createRouter, createWebHistory} from 'vue-router'
+import {staticRoutes} from './routes/staticRoutes'
+import {configureNProgress} from '@/utils/router'
+import {setupBeforeEachGuard} from './guards/beforeEach'
+import {setupAfterEachGuard} from './guards/afterEach'
 
 // 创建路由实例
 export const router = createRouter({

@@ -94,15 +94,15 @@
 </template>
 
 <script lang="ts" setup>
-  import { useUserStore } from '@/store/modules/user'
-  import { AppRouteRecord } from '@/types/router'
-  import { Search } from '@element-plus/icons-vue'
-  import { mittBus } from '@/utils/sys'
-  import { useMenuStore } from '@/store/modules/menu'
-  import { formatMenuTitle } from '@/utils/router'
-  import { type ScrollbarInstance } from 'element-plus'
+import {useUserStore} from '@/store/modules/user'
+import {AppRouteRecord} from '@/types/router'
+import {Search} from '@element-plus/icons-vue'
+import {mittBus} from '@/utils/sys'
+import {useMenuStore} from '@/store/modules/menu'
+import {formatMenuTitle} from '@/utils/router'
+import {type ScrollbarInstance} from 'element-plus'
 
-  defineOptions({ name: 'ArtGlobalSearch' })
+defineOptions({ name: 'ArtGlobalSearch' })
 
   const router = useRouter()
   const userStore = useUserStore()

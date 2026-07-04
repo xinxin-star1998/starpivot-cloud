@@ -1,4 +1,4 @@
-import { addCollection } from '@iconify/vue'
+import {addCollection} from '@iconify/vue'
 
 export type OfflineIconSetOption = {
   label: string

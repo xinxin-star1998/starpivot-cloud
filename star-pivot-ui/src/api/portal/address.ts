@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { PortalAddress, PortalAddressSavePayload } from './types'
+import type {PortalAddress, PortalAddressSavePayload} from './types'
 
 export function fetchPortalAddressList() {
   return request.get<PortalAddress[]>({

@@ -53,12 +53,12 @@
 </template>
 
 <script lang="ts" setup>
-  import type { FormInstance, FormRules, TableInstance } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { fetchPortalOrderReturnApply } from '@/api/portal/order'
-  import type { PortalOrder, PortalOrderItem } from '@/api/portal/types'
+import type {FormInstance, FormRules, TableInstance} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {fetchPortalOrderReturnApply} from '@/api/portal/order'
+import type {PortalOrder, PortalOrderItem} from '@/api/portal/types'
 
-  interface ReturnRow extends PortalOrderItem {
+interface ReturnRow extends PortalOrderItem {
     maxQty: number
     returnQty: number
     selected: boolean

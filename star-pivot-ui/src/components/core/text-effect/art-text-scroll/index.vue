@@ -43,16 +43,10 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    useElementSize,
-    useRafFn,
-    useElementHover,
-    useDebounceFn,
-    useTimeoutFn
-  } from '@vueuse/core'
-  import { useSettingStore } from '@/store/modules/setting'
+import {useDebounceFn, useElementHover, useElementSize, useRafFn, useTimeoutFn} from '@vueuse/core'
+import {useSettingStore} from '@/store/modules/setting'
 
-  type ThemeType =
+type ThemeType =
     | 'theme'
     | 'primary'
     | 'secondary'

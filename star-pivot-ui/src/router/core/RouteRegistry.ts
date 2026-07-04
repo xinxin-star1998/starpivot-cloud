@@ -7,12 +7,12 @@
  * @author Art Design Pro Team
  */
 
-import type { Router, RouteRecordRaw } from 'vue-router'
-import type { AppRouteRecord } from '@/types/router'
-import { ComponentLoader } from './ComponentLoader'
-import { RouteValidator } from './RouteValidator'
-import { RouteTransformer } from './RouteTransformer'
-import { safeLog, safeWarn } from '@/utils'
+import type {Router, RouteRecordRaw} from 'vue-router'
+import type {AppRouteRecord} from '@/types/router'
+import {ComponentLoader} from './ComponentLoader'
+import {RouteValidator} from './RouteValidator'
+import {RouteTransformer} from './RouteTransformer'
+import {safeLog, safeWarn} from '@/utils'
 
 export class RouteRegistry {
   private router: Router

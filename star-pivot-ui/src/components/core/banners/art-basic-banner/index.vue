@@ -67,8 +67,9 @@
 </template>
 
 <script setup lang="ts">
-  import { useSettingStore } from '@/store/modules/setting'
-  const settingStore = useSettingStore()
+import {useSettingStore} from '@/store/modules/setting'
+
+const settingStore = useSettingStore()
   const { isDark } = storeToRefs(settingStore)
 
   defineOptions({ name: 'ArtBasicBanner' })

@@ -84,12 +84,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, nextTick } from 'vue'
-  import { Plus, Delete, Refresh } from '@element-plus/icons-vue'
-  import { ElMessageBox, ElMessage } from 'element-plus'
-  import { fetchGet${BusinessName}List, fetchDelete${BusinessName}, type ${BusinessName} } from '@/api/${moduleName}/${businessName}'
-  import ${BusinessName}Search from './modules/${businessName}-search.vue'
-  import ${BusinessName}Dialog from './modules/${businessName}-dialog.vue'
+  import {nextTick, ref} from 'vue'
+  import {ElMessage, ElMessageBox} from 'element-plus'
+
+  import {fetchDelete${BusinessName}} from '@/api/'
 
   defineOptions({ name: '${BusinessName}' })
 

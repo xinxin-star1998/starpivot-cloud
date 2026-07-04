@@ -1,9 +1,8 @@
 package cn.org.starpivot.system.mapper;
 
-import cn.org.starpivot.system.domain.entity.SysUser;
-import cn.org.starpivot.system.domain.entity.SysRole;
-import cn.org.starpivot.system.domain.entity.SysDept;
 import cn.org.starpivot.system.domain.entity.SysMenu;
+import cn.org.starpivot.system.domain.entity.SysRole;
+import cn.org.starpivot.system.domain.entity.SysUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

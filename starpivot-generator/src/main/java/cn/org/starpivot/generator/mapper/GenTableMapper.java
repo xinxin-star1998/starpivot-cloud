@@ -1,10 +1,10 @@
 package cn.org.starpivot.generator.mapper;
 
+import cn.org.starpivot.generator.domain.dto.GenTableQueryDTO;
+import cn.org.starpivot.generator.domain.entity.GenTable;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.org.starpivot.generator.domain.entity.GenTable;
-import cn.org.starpivot.generator.domain.dto.GenTableQueryDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

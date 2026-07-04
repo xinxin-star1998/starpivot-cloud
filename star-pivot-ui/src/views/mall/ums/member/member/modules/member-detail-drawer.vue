@@ -26,14 +26,9 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    fetchMemberById,
-    MEMBER_GENDER_MAP,
-    MEMBER_STATUS_MAP,
-    type MemberVo
-  } from '@/api/mall/member'
+import {fetchMemberById, MEMBER_GENDER_MAP, MEMBER_STATUS_MAP, type MemberVo} from '@/api/mall/member'
 
-  interface Props {
+interface Props {
     visible: boolean
     memberId?: number
   }

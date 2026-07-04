@@ -1,4 +1,4 @@
-import type { CouponVo } from '@/api/mall/coupon'
+import type {CouponVo} from '@/api/mall/coupon'
 
 export type CouponRunStatus = 'not_started' | 'claiming' | 'running' | 'expired' | 'depleted'
 

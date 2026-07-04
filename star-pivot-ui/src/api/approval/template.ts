@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { ApTemplate, ApTemplateBind, ApTemplateBindSaveDto, ApTemplateRoute, ApTemplateSaveDto } from './types'
+import type {ApTemplate, ApTemplateBind, ApTemplateBindSaveDto, ApTemplateRoute, ApTemplateSaveDto} from './types'
 
 export interface ApTemplateQuery {
   templateCode?: string

@@ -24,9 +24,9 @@
 </template>
 
 <script setup lang="ts">
-  import { useAuth } from '@/hooks/core/useAuth'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'ArtButtonMore' })
+defineOptions({ name: 'ArtButtonMore' })
 
   const { hasAuth } = useAuth()
 

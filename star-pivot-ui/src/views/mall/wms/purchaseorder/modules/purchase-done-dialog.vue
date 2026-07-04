@@ -27,9 +27,9 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchPurchaseById, fetchPurchaseDone, type PurchaseDetailVo } from '@/api/mall/purchase'
+import {fetchPurchaseById, fetchPurchaseDone, type PurchaseDetailVo} from '@/api/mall/purchase'
 
-  interface Props {
+interface Props {
     visible: boolean
     purchaseId?: number
   }

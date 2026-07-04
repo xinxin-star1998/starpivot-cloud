@@ -1,16 +1,13 @@
 package cn.org.starpivot.mall.portal.service.impl;
 
+import cn.org.starpivot.api.mall.order.dto.PendingReviewItemDto;
 import cn.org.starpivot.api.member.dto.MemberDto;
 import cn.org.starpivot.common.domain.PageReqBo;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
-import cn.org.starpivot.mall.common.MallOrderConstants;
 import cn.org.starpivot.mall.common.MemberFeignSupport;
-import cn.org.starpivot.mall.oms.entity.OmsOrder;
-import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
-import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
-import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
+import cn.org.starpivot.mall.common.OrderFeignSupport;
 import cn.org.starpivot.mall.pms.domain.bo.CommentReqBo;
 import cn.org.starpivot.mall.pms.entity.PmsSkuInfo;
 import cn.org.starpivot.mall.pms.entity.PmsSpuComment;
@@ -39,7 +36,10 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,8 +54,7 @@ public class PortalCommentServiceImpl implements PortalCommentService {
     private final PmsSpuInfoMapper pmsSpuInfoMapper;
     private final PmsSkuInfoMapper pmsSkuInfoMapper;
     private final PmsSpuImagesMapper pmsSpuImagesMapper;
-    private final OmsOrderMapper omsOrderMapper;
-    private final OmsOrderItemMapper omsOrderItemMapper;
+    private final OrderFeignSupport orderFeignSupport;
     private final MemberFeignSupport memberFeignSupport;
 
     @Override
@@ -124,35 +123,19 @@ public class PortalCommentServiceImpl implements PortalCommentService {
         if (memberId == null) {
             return List.of();
         }
-        List<OmsOrder> orders = omsOrderMapper.selectList(
-                Wrappers.<OmsOrder>lambdaQuery()
-                        .eq(OmsOrder::getMemberId, memberId)
-                        .in(OmsOrder::getStatus,
-                                MallOrderConstants.ORDER_STATUS_DELIVERED,
-                                MallOrderConstants.ORDER_STATUS_COMPLETED)
-                        .orderByDesc(OmsOrder::getCreateTime));
-        if (orders.isEmpty()) {
-            return List.of();
-        }
-
         List<PortalPendingReviewVo> result = new ArrayList<>();
-        Set<Long> seenSpuIds = new HashSet<>();
-        for (OmsOrder order : orders) {
-            List<OmsOrderItem> items = omsOrderItemMapper.selectList(
-                    Wrappers.<OmsOrderItem>lambdaQuery().eq(OmsOrderItem::getOrderId, order.getId()));
-            for (OmsOrderItem item : items) {
-                Long spuId = item.getSpuId();
-                if (spuId == null || !seenSpuIds.add(spuId) || !canComment(memberId, spuId)) {
-                    continue;
-                }
-                PortalPendingReviewVo vo = new PortalPendingReviewVo();
-                vo.setSpuId(spuId);
-                vo.setSkuId(item.getSkuId());
-                vo.setSpuName(StringUtils.hasText(item.getSpuName()) ? item.getSpuName() : loadSpuName(spuId));
-                vo.setCoverImg(resolveCover(spuId, item.getSpuPic()));
-                vo.setOrderSn(order.getOrderSn());
-                result.add(vo);
+        for (PendingReviewItemDto item : orderFeignSupport.listReviewablePurchaseItems(memberId)) {
+            Long spuId = item.getSpuId();
+            if (spuId == null || !canComment(memberId, spuId)) {
+                continue;
             }
+            PortalPendingReviewVo vo = new PortalPendingReviewVo();
+            vo.setSpuId(spuId);
+            vo.setSkuId(item.getSkuId());
+            vo.setSpuName(StringUtils.hasText(item.getSpuName()) ? item.getSpuName() : loadSpuName(spuId));
+            vo.setCoverImg(StringUtils.hasText(item.getCoverImg()) ? item.getCoverImg() : resolveCover(spuId, null));
+            vo.setOrderSn(item.getOrderSn());
+            result.add(vo);
         }
         return result;
     }
@@ -245,21 +228,7 @@ public class PortalCommentServiceImpl implements PortalCommentService {
     }
 
     private boolean hasPurchased(Long memberId, Long spuId) {
-        List<OmsOrder> orders = omsOrderMapper.selectList(
-                Wrappers.<OmsOrder>lambdaQuery()
-                        .eq(OmsOrder::getMemberId, memberId)
-                        .in(OmsOrder::getStatus,
-                                MallOrderConstants.ORDER_STATUS_DELIVERED,
-                                MallOrderConstants.ORDER_STATUS_COMPLETED));
-        if (orders.isEmpty()) {
-            return false;
-        }
-        List<Long> orderIds = orders.stream().map(OmsOrder::getId).toList();
-        Long itemCount = omsOrderItemMapper.selectCount(
-                Wrappers.<OmsOrderItem>lambdaQuery()
-                        .in(OmsOrderItem::getOrderId, orderIds)
-                        .eq(OmsOrderItem::getSpuId, spuId));
-        return itemCount != null && itemCount > 0;
+        return orderFeignSupport.hasPurchasedSpu(memberId, spuId);
     }
 
     private String buildSkuAttrLabel(PmsSkuInfo sku) {

@@ -10,12 +10,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { EChartsOption, TooltipComponentOption } from '@/plugins/echarts'
-  import { getCssVar } from '@/utils/ui'
-  import { useChartComponent, useChartOps } from '@/hooks/core/useChart'
-  import type { ScatterChartProps } from '@/types/component/chart'
+import type {EChartsOption, TooltipComponentOption} from '@/plugins/echarts'
+import {getCssVar} from '@/utils/ui'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
+import type {ScatterChartProps} from '@/types/component/chart'
 
-  defineOptions({ name: 'ArtScatterChart' })
+defineOptions({ name: 'ArtScatterChart' })
 
   const props = withDefaults(defineProps<ScatterChartProps>(), {
     // 基础配置

@@ -72,21 +72,21 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormRules } from 'element-plus'
-  import { ElIcon, ElInput, ElMessage, ElTooltip, ElTreeSelect } from 'element-plus'
-  import { QuestionFilled } from '@element-plus/icons-vue'
-  import { Icon } from '@iconify/vue'
-  import { formatMenuTitle } from '@/utils/router'
-  import { safeError } from '@/utils'
-  import type { AppRouteRecord } from '@/types/router'
-  import type { FormItem } from '@/components/core/forms/art-form/index.vue'
-  import ArtForm from '@/components/core/forms/art-form/index.vue'
-  import ArtIconPicker from '@/components/core/base/art-icon-picker/index.vue'
-  import { useWindowSize } from '@vueuse/core'
-  import type { MenuFormData } from '../types'
-  import { fetchGetParentMenu, type SysMenu } from '@/api/menu/menu'
+import type {FormRules} from 'element-plus'
+import {ElIcon, ElInput, ElMessage, ElTooltip, ElTreeSelect} from 'element-plus'
+import {QuestionFilled} from '@element-plus/icons-vue'
+import {Icon} from '@iconify/vue'
+import {formatMenuTitle} from '@/utils/router'
+import {safeError} from '@/utils'
+import type {AppRouteRecord} from '@/types/router'
+import type {FormItem} from '@/components/core/forms/art-form/index.vue'
+import ArtForm from '@/components/core/forms/art-form/index.vue'
+import ArtIconPicker from '@/components/core/base/art-icon-picker/index.vue'
+import {useWindowSize} from '@vueuse/core'
+import type {MenuFormData} from '../types'
+import {fetchGetParentMenu, type SysMenu} from '@/api/menu/menu'
 
-  const { width } = useWindowSize()
+const { width } = useWindowSize()
 
   /**
    * 创建带 tooltip 的表单标签

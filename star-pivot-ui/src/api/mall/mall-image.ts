@@ -1,4 +1,4 @@
-import { uploadFile } from '@/api/file/file'
+import {uploadFile} from '@/api/file/file'
 import request from '@/utils/http'
 
 /** 文件中心「商品素材」默认文件夹 ID */

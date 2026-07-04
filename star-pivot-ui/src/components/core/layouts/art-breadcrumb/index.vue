@@ -33,11 +33,11 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter, useRoute } from 'vue-router'
-  import type { RouteLocationMatched, RouteRecordRaw } from 'vue-router'
-  import { formatMenuTitle } from '@/utils/router'
+import type {RouteLocationMatched, RouteRecordRaw} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
+import {formatMenuTitle} from '@/utils/router'
 
-  defineOptions({ name: 'ArtBreadcrumb' })
+defineOptions({ name: 'ArtBreadcrumb' })
 
   export interface BreadcrumbItem {
     path: string

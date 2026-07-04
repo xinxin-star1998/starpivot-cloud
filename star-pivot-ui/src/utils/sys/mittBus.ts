@@ -41,7 +41,7 @@
  * @module utils/sys/mittBus
  * @author Art Design Pro Team
  */
-import mitt, { type Emitter } from 'mitt'
+import mitt, {type Emitter} from 'mitt'
 
 // 定义事件类型映射
 type Events = {

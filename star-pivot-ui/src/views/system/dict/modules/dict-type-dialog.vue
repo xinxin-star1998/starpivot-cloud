@@ -30,13 +30,13 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import type { FormItem } from '@/components/core/forms/art-form/index.vue'
-  import ArtForm from '@/components/core/forms/art-form/index.vue'
-  import type { DictTypeFormData } from '@/api/dict/type'
+import type {FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import type {FormItem} from '@/components/core/forms/art-form/index.vue'
+import ArtForm from '@/components/core/forms/art-form/index.vue'
+import type {DictTypeFormData} from '@/api/dict/type'
 
-  interface Props {
+interface Props {
     visible: boolean
     editData?: DictTypeFormData | null
   }

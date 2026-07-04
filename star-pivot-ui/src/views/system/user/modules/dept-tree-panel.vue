@@ -94,18 +94,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { useI18n } from 'vue-i18n'
-  import { fetchGetDeptTree, type SysDept } from '@/api/dept/dept'
-  import {
-    ArrowDown,
-    DArrowLeft,
-    DArrowRight,
-    OfficeBuilding,
-    RefreshRight,
-    Search
-  } from '@element-plus/icons-vue'
+import {useI18n} from 'vue-i18n'
+import {fetchGetDeptTree, type SysDept} from '@/api/dept/dept'
+import {ArrowDown, DArrowLeft, DArrowRight, OfficeBuilding, RefreshRight, Search} from '@element-plus/icons-vue'
 
-  defineProps<{
+defineProps<{
     collapsed: boolean
   }>()
 

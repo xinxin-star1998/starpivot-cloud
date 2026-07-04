@@ -1,11 +1,11 @@
-import { fetchGetUserList } from '@/api/user/user'
-import { useTable } from '@/hooks/core/useTable'
-import { useTableSearch, useTableSelection } from '@/hooks/core/useTableSearch'
-import { useAuth } from '@/hooks/core/useAuth'
-import { useUserStore } from '@/store/modules/user'
-import { DialogType } from '@/types'
-import { createUserColumns, transformUserListRecords } from './useUserColumns'
-import { useUserActions } from './useUserActions'
+import {fetchGetUserList} from '@/api/user/user'
+import {useTable} from '@/hooks/core/useTable'
+import {useTableSearch, useTableSelection} from '@/hooks/core/useTableSearch'
+import {useAuth} from '@/hooks/core/useAuth'
+import {useUserStore} from '@/store/modules/user'
+import {DialogType} from '@/types'
+import {createUserColumns, transformUserListRecords} from './useUserColumns'
+import {useUserActions} from './useUserActions'
 
 type UserListItem = Api.SystemManage.UserListItem
 

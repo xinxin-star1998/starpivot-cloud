@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import 'vue'
-import type { Directive } from 'vue'
+import type {Directive} from 'vue'
 
 declare module '*.vue' {
   const component: import('vue').DefineComponent<

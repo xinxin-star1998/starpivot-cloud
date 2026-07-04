@@ -84,19 +84,19 @@
 </template>
 
 <script setup lang="ts">
-  import { LocationQueryRaw, useRoute, useRouter } from 'vue-router'
-  import { useI18n } from 'vue-i18n'
-  import { storeToRefs } from 'pinia'
+import {LocationQueryRaw, useRoute, useRouter} from 'vue-router'
+import {useI18n} from 'vue-i18n'
+import {storeToRefs} from 'pinia'
 
-  import { useWorktabStore } from '@/store/modules/worktab'
-  import { useUserStore } from '@/store/modules/user'
-  import { formatMenuTitle } from '@/utils/router'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { MenuItemType } from '../../others/art-menu-right/index.vue'
-  import { useCommon } from '@/hooks/core/useCommon'
-  import { WorkTab } from '@/types'
+import {useWorktabStore} from '@/store/modules/worktab'
+import {useUserStore} from '@/store/modules/user'
+import {formatMenuTitle} from '@/utils/router'
+import {useSettingStore} from '@/store/modules/setting'
+import {MenuItemType} from '../../others/art-menu-right/index.vue'
+import {useCommon} from '@/hooks/core/useCommon'
+import {WorkTab} from '@/types'
 
-  defineOptions({ name: 'ArtWorkTab' })
+defineOptions({ name: 'ArtWorkTab' })
 
   // 类型定义
   interface ScrollState {

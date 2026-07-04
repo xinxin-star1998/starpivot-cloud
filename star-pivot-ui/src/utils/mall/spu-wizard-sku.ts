@@ -1,5 +1,5 @@
-import { cartesianProduct } from '@/utils/mall/spu-descartes'
-import type { SpuWizardSaleDraft, SpuWizardSkuRow } from '@/utils/mall/spu-wizard-payload'
+import {cartesianProduct} from '@/utils/mall/spu-descartes'
+import type {SpuWizardSaleDraft, SpuWizardSkuRow} from '@/utils/mall/spu-wizard-payload'
 
 export function buildSkuImages(spuImages: string[]): SpuWizardSkuRow['images'] {
   return spuImages.map(() => ({ imgUrl: '', defaultImg: 0 }))

@@ -107,14 +107,14 @@
 </template>
 
 <script setup lang="ts">
-  import { Lock, Unlock } from '@element-plus/icons-vue'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { useI18n } from 'vue-i18n'
-  import CryptoJS from 'crypto-js'
-  import { useUserStore } from '@/store/modules/user'
-  import { mittBus } from '@/utils/sys'
+import {Lock, Unlock} from '@element-plus/icons-vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {useI18n} from 'vue-i18n'
+import CryptoJS from 'crypto-js'
+import {useUserStore} from '@/store/modules/user'
+import {mittBus} from '@/utils/sys'
 
-  // 国际化
+// 国际化
   const { t } = useI18n()
 
   // 环境变量

@@ -39,10 +39,10 @@
 </template>
 
 <script setup lang="ts">
-  import { type EChartsOption } from '@/plugins/echarts'
-  import { useChartOps, useChartComponent } from '@/hooks/core/useChart'
+import {type EChartsOption} from '@/plugins/echarts'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
 
-  defineOptions({ name: 'ArtDonutChartCard' })
+defineOptions({ name: 'ArtDonutChartCard' })
 
   interface Props {
     /** 数值 */

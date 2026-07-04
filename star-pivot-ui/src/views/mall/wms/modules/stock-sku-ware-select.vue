@@ -38,10 +38,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { fetchMallSkuById, fetchMallSkuList, type MallSkuVo } from '@/api/mall/sku'
-  import { fetchWmsWareInfoList, type WmsWareInfoVo } from '@/api/mall/wareinfo'
+import {fetchMallSkuById, fetchMallSkuList, type MallSkuVo} from '@/api/mall/sku'
+import {fetchWmsWareInfoList, type WmsWareInfoVo} from '@/api/mall/wareinfo'
 
-  interface Props {
+interface Props {
     skuId?: number
     wareId?: number
     skuProp?: string

@@ -32,7 +32,7 @@
  * @module utils/table/tableCache
  * @author Art Design Pro Team
  */
-import { hash } from 'ohash'
+import {hash} from 'ohash'
 
 // 缓存失效策略枚举
 export enum CacheInvalidationStrategy {

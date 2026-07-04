@@ -1,4 +1,4 @@
-import type { SysFile } from '@/api/file/types'
+import type {SysFile} from '@/api/file/types'
 
 export type PreviewMode = 'image' | 'video' | 'audio' | 'pdf' | 'download'
 

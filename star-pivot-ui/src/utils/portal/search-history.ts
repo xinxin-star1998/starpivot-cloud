@@ -1,4 +1,4 @@
-import { notifyPortalSearchHistoryChanged } from './search-event'
+import {notifyPortalSearchHistoryChanged} from './search-event'
 
 const STORAGE_KEY = 'portal_search_history'
 const MAX_ITEMS = 10

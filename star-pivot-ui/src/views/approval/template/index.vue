@@ -31,25 +31,25 @@
 </template>
 
 <script lang="ts" setup>
-  import { h } from 'vue'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import {
-    fetchApprovalTemplateDisable,
-    fetchApprovalTemplateList,
-    fetchApprovalTemplatePublish
-  } from '@/api/approval/template'
-  import type { ApTemplate } from '@/api/approval/types'
-  import { templateStatusLabel, templateStatusTagType } from '../utils/approval-labels'
-  import TemplateSearch from './modules/template-search.vue'
-  import TemplateEditDialog from './modules/template-edit-dialog.vue'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {
+  fetchApprovalTemplateDisable,
+  fetchApprovalTemplateList,
+  fetchApprovalTemplatePublish
+} from '@/api/approval/template'
+import type {ApTemplate} from '@/api/approval/types'
+import {templateStatusLabel, templateStatusTagType} from '../utils/approval-labels'
+import TemplateSearch from './modules/template-search.vue'
+import TemplateEditDialog from './modules/template-edit-dialog.vue'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'ApprovalTemplate' })
+defineOptions({ name: 'ApprovalTemplate' })
 
   const { hasAuth } = useAuth()
 

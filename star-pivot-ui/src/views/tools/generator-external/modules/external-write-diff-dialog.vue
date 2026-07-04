@@ -130,27 +130,19 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    ElCheckbox,
-    ElDialog,
-    ElEmpty,
-    ElRadioButton,
-    ElRadioGroup,
-    ElScrollbar,
-    ElTag
-  } from 'element-plus'
-  import {
-    type ExternalGenScope,
-    type ExternalWriteDiffItem,
-    type ExternalWriteDiffResult,
-    type ExternalWriteDiffStatus,
-    fetchExternalWriteDiff,
-    fetchExternalWriteDiffFile
-  } from '@/api/generator/gen-external'
-  import LineDiffView from './line-diff-view.vue'
-  import ExternalActionBtn from './external-action-btn.vue'
+import {ElCheckbox, ElDialog, ElEmpty, ElRadioButton, ElRadioGroup, ElScrollbar, ElTag} from 'element-plus'
+import {
+  type ExternalGenScope,
+  type ExternalWriteDiffItem,
+  type ExternalWriteDiffResult,
+  type ExternalWriteDiffStatus,
+  fetchExternalWriteDiff,
+  fetchExternalWriteDiffFile
+} from '@/api/generator/gen-external'
+import LineDiffView from './line-diff-view.vue'
+import ExternalActionBtn from './external-action-btn.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
     sessionId?: string
     tableNames?: string[]

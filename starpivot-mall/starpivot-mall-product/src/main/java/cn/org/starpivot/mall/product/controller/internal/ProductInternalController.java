@@ -39,6 +39,11 @@ public class ProductInternalController {
         return Result.success(productInternalService.listSkusByIds(skuIds));
     }
 
+    @PostMapping("/sku/by-spu-ids")
+    public Result<List<SkuDto>> listSkusBySpuIds(@RequestBody List<Long> spuIds) {
+        return Result.success(productInternalService.listSkusBySpuIds(spuIds));
+    }
+
     @PostMapping("/sku/order-snapshot")
     public Result<Map<Long, SkuOrderSnapshotDto>> loadOrderSnapshots(@RequestBody List<Long> skuIds) {
         return Result.success(productInternalService.loadOrderSnapshots(skuIds));
@@ -131,6 +136,11 @@ public class ProductInternalController {
     @GetMapping("/comment/pending-review-count/{memberId}")
     public Result<Integer> countPendingReviews(@PathVariable("memberId") Long memberId) {
         return Result.success(portalCommentService.countPendingReviews(memberId));
+    }
+
+    @GetMapping("/comment/count-by-member/{memberId}")
+    public Result<Integer> countCommentsByMember(@PathVariable("memberId") Long memberId) {
+        return Result.success(productInternalService.countCommentsByMember(memberId));
     }
 
     private PortalProductListDto toPortalProductListDto(PortalProductListVo vo) {

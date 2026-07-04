@@ -1,4 +1,8 @@
 # Nacos 引导配置（各微服务通过 spring.config.import 引入，避免重复维护）
+starpivot:
+  api:
+    version: ${API_VERSION:v1}
+
 spring:
   cloud:
     nacos:

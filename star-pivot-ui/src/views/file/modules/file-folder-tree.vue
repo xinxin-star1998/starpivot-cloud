@@ -71,15 +71,15 @@
 </template>
 
 <script setup lang="ts">
-  import type { FileCategoryNode } from '@/api/file/types'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { getCategoryIcon } from '../constants'
-  import { MoreFilled, Search } from '@element-plus/icons-vue'
-  import type { ElTree } from 'element-plus'
-  import { computed, nextTick, ref, watch } from 'vue'
+import type {FileCategoryNode} from '@/api/file/types'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {getCategoryIcon} from '../constants'
+import {MoreFilled, Search} from '@element-plus/icons-vue'
+import type {ElTree} from 'element-plus'
+import {computed, nextTick, ref, watch} from 'vue'
 
-  const props = defineProps<{
+const props = defineProps<{
     categories: FileCategoryNode[]
     activeFolderId?: number
   }>()

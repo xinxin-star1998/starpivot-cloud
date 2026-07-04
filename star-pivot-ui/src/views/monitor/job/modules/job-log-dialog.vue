@@ -32,10 +32,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import { fetchJobLogList, fetchClearJobLog, type SysJobLog } from '@/api/monitor/job'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {fetchClearJobLog, fetchJobLogList, type SysJobLog} from '@/api/monitor/job'
 
-  interface Props {
+interface Props {
     modelValue: boolean
     jobName?: string
     jobGroup?: string

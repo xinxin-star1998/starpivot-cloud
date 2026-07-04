@@ -73,24 +73,24 @@
 </template>
 
 <script setup lang="ts">
-  import { h, onMounted } from 'vue'
-  import { ElMessageBox } from 'element-plus'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import {
-    fetchSkuFullReductionList,
-    fetchSkuFullReductionRemove,
-    fetchSkuLadderList,
-    fetchSkuLadderRemove,
-    type SkuFullReductionVo,
-    type SkuLadderVo
-  } from '@/api/mall/sku-promotion'
-  import FullReductionDialog from './modules/full-reduction-dialog.vue'
-  import LadderDialog from './modules/ladder-dialog.vue'
-  import type { DialogType } from '@/types'
+import {h, onMounted} from 'vue'
+import {ElMessageBox} from 'element-plus'
+import {handleMutationError} from '@/utils/http/mutation'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {
+  fetchSkuFullReductionList,
+  fetchSkuFullReductionRemove,
+  fetchSkuLadderList,
+  fetchSkuLadderRemove,
+  type SkuFullReductionVo,
+  type SkuLadderVo
+} from '@/api/mall/sku-promotion'
+import FullReductionDialog from './modules/full-reduction-dialog.vue'
+import LadderDialog from './modules/ladder-dialog.vue'
+import type {DialogType} from '@/types'
 
-  defineOptions({ name: 'SmsFullReduction' })
+defineOptions({ name: 'SmsFullReduction' })
 
   const activeTab = ref('full')
 

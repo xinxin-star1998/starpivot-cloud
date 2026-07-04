@@ -1,6 +1,6 @@
-import { type Address, fetchGetAddressChildren, fetchSearchAddress } from '@/api/mall/address'
-import { addressHasChildren } from '@/utils/mall/address-level'
-import type { CascaderNode, CascaderOption, CascaderProps } from 'element-plus'
+import {type Address, fetchGetAddressChildren, fetchSearchAddress} from '@/api/mall/address'
+import {addressHasChildren} from '@/utils/mall/address-level'
+import type {CascaderNode, CascaderOption, CascaderProps} from 'element-plus'
 
 /** 仓库选址：仅省 / 市 / 区县（level 0～2），不含乡镇 */
 export const WAREHOUSE_MAX_AREA_LEVEL = 2

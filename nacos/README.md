@@ -6,32 +6,35 @@ StarPivot 微服务配置统一托管在 Nacos，本地 `application.yml` 仅保
 
 | Data ID | 说明 |
 |---------|------|
-| `common-config.yaml` | 公共配置：Redis、JWT、内部 Token、日志 |
+| `common-config.yaml` | 公共配置：Redis、JWT、内部 Token、日志、MQ 开关 |
+| `oss-config.yaml` | 阿里云 OSS（system、file、product、promotion、mall-app 共用） |
 | `mq-config.yaml` | RabbitMQ（审批/MQ 消费者） |
 | `starpivot-gateway.yaml` | 网关 Redis、日志 |
 | `starpivot-auth.yaml` | 认证服务 Redis、健康检查 |
-| `starpivot-system.yaml` | 数据源、OSS、Druid |
-| `starpivot-file.yaml` | 数据源、OSS |
+| `starpivot-system.yaml` | 数据源、Druid |
+| `starpivot-file.yaml` | 数据源、文件中心 |
 | `starpivot-generator.yaml` | 数据源、代码生成参数 |
 | `starpivot-monitor.yaml` | 数据源、Druid 监控、Quartz |
 | `starpivot-approval.yaml` | 审批服务 |
-| `starpivot-mall.yaml` | 商城静态资源 BFF（本地磁盘路径） |
+| `starpivot-mall.yaml` | 商城静态资源 BFF（本地磁盘路径，默认 `oss.enabled=false`） |
 | `starpivot-mall-member.yaml` | 会员服务：数据源、短信/微信登录 |
-| `starpivot-mall-product.yaml` | 商品服务：数据源、ES、OSS |
+| `starpivot-mall-product.yaml` | 商品服务：数据源、ES |
 | `starpivot-mall-ware.yaml` | 仓储服务：数据源 |
 | `starpivot-mall-order.yaml` | 订单服务：数据源、支付配置 |
 | `starpivot-mall-promotion.yaml` | 营销服务：数据源、秒杀 |
 
 Group 默认：`DEFAULT_GROUP`
 
-## 商城专用脚本
+## 导入脚本
 
 | 脚本 | 说明 |
 |------|------|
-| `import-mall-config.ps1` / `.sh` | 仅发布 common + mq + `starpivot-mall*` |
-| `import-config.ps1 -Profile Mall` | 同上（Windows） |
-| `import-config.sh Mall` | 同上（Linux/macOS） |
-| `start-mall.ps1` / `.sh` | 本地批量启动商城微服务（网关需单独起） |
+| `import-config.ps1` | 批量发布 `nacos/config/*.yaml` |
+| `import-config.ps1 -Profile Mall` | 仅 common + oss + mq + `starpivot-mall*` |
+| `import-config.ps1 -Profile Core` | 不含 `starpivot-mall*` |
+| `upload-config.ps1 <file>` | 发布单个 yaml |
+
+Linux / macOS 可安装 [PowerShell](https://learn.microsoft.com/powershell/) 后执行 `pwsh ./nacos/import-config.ps1`，或在 Nacos 控制台手动粘贴配置。
 
 商城启动顺序、Feign 依赖、网关路由详见 [docs/mall-startup.md](../docs/mall-startup.md)。
 
@@ -46,7 +49,6 @@ docker compose up -d
 2. 设置必需环境变量（至少 JWT 密钥）：
 
 ```powershell
-# PowerShell
 $env:JWT_SECRET = "your-secret-at-least-32-characters-long"
 $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
 ```
@@ -54,20 +56,11 @@ $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
 3. 发布配置到 Nacos：
 
 ```powershell
-# Windows — 全部
+# 全部
 .\nacos\import-config.ps1
 
 # 仅商城微服务
-.\nacos\import-mall-config.ps1
-# 或
 .\nacos\import-config.ps1 -Profile Mall
-```
-
-```bash
-# Linux / macOS
-chmod +x nacos/import-config.sh nacos/import-mall-config.sh
-./nacos/import-config.sh All
-./nacos/import-mall-config.sh
 ```
 
 4. 打开 Nacos 控制台确认：http://localhost:8848/nacos（默认账号 `nacos` / `nacos`）
@@ -86,6 +79,13 @@ chmod +x nacos/import-config.sh nacos/import-mall-config.sh
 | `INTERNAL_SERVICE_TOKEN_REQUIRED` | 未配置 Token 时是否拒绝内部接口 | `true` |
 | `TRUST_GATEWAY_HEADERS` | 微服务是否信任网关透传身份 Header | `false`（生产保持 false） |
 | `REDIS_PASSWORD` | Redis 密码 | `root`（与 docker-compose 一致） |
+| `MQ_ENABLED` | 是否启用 RabbitMQ | `false` |
+| `OSS_ENABLED` | 是否启用 OSS | `true`（`oss-config.yaml`）；mall-app 默认 `false` |
+| `OSS_ENDPOINT` | OSS 端点 | `oss-cn-beijing.aliyuncs.com` |
+| `OSS_ACCESS_KEY_ID` | OSS AccessKey | 空（通过环境变量注入） |
+| `OSS_ACCESS_KEY_SECRET` | OSS AccessKey Secret | 空 |
+| `OSS_BUCKET_NAME` | OSS 桶名 | `star-pivot` |
+| `OSS_URL_PREFIX` | OSS 访问前缀（CDN 域名等） | 空 |
 | `DB_URL` | 数据库连接 | 见各服务 yaml |
 
 ## 加载机制
@@ -97,12 +97,13 @@ spring:
   config:
     import:
       - optional:nacos:common-config.yaml
+      - optional:nacos:oss-config.yaml
       - optional:nacos:${spring.application.name}.yaml
 ```
 
-- Nacos 配置**覆盖**本地同名属性
+- Nacos 配置**覆盖**本地同名属性（如 `starpivot-mall.yaml` 中 `oss.enabled=false` 覆盖公共 `oss-config.yaml`）
 - `optional:` 表示 Nacos 不可用时仍可用本地 fallback 启动
-- 修改 Nacos 配置后支持热刷新（`refresh-enabled: true`）
+- 修改 Nacos 配置后支持热刷新（`refreshEnabled=true`）
 
 ## 生产建议
 

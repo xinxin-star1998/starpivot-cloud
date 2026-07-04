@@ -1,7 +1,5 @@
 package cn.org.starpivot.generator.utils;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import cn.org.starpivot.common.constants.GenConstants;
 import cn.org.starpivot.common.utils.date.DateUtils;
 import cn.org.starpivot.generator.domain.entity.GenTable;
@@ -9,6 +7,8 @@ import cn.org.starpivot.generator.domain.entity.GenTableColumn;
 import cn.org.starpivot.generator.domain.external.GenPathProfile;
 import cn.org.starpivot.generator.path.GenPathContext;
 import cn.org.starpivot.generator.path.GenTemplateRegistry;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import org.apache.velocity.VelocityContext;
 
 import java.util.HashSet;

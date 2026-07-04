@@ -25,6 +25,9 @@ public interface ProductInternalClient {
     @PostMapping("/internal/product/sku/batch-ids")
     Result<List<SkuDto>> listSkusByIds(@RequestBody List<Long> skuIds);
 
+    @PostMapping("/internal/product/sku/by-spu-ids")
+    Result<List<SkuDto>> listSkusBySpuIds(@RequestBody List<Long> spuIds);
+
     @PostMapping("/internal/product/sku/order-snapshot")
     Result<Map<Long, SkuOrderSnapshotDto>> loadOrderSnapshots(@RequestBody List<Long> skuIds);
 
@@ -70,4 +73,7 @@ public interface ProductInternalClient {
 
     @GetMapping("/internal/product/comment/pending-review-count/{memberId}")
     Result<Integer> countPendingReviews(@PathVariable("memberId") Long memberId);
+
+    @GetMapping("/internal/product/comment/count-by-member/{memberId}")
+    Result<Integer> countCommentsByMember(@PathVariable("memberId") Long memberId);
 }

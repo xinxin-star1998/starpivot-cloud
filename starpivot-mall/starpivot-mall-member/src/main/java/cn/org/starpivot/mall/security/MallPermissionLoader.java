@@ -1,10 +1,11 @@
 package cn.org.starpivot.mall.security;
 
 import cn.org.starpivot.mall.config.MallSecurityProperties;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * 从系统库加载菜单权限（JdbcTemplate + 可配置 schema，避免 MyBatis 跨库配置失效）。

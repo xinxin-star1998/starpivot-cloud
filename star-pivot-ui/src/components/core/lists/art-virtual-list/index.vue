@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-  import { useVirtualScroll } from '@/utils/virtual-scroll'
-  import { useThrottleFn } from '@vueuse/core'
+import {useVirtualScroll} from '@/utils/virtual-scroll'
+import {useThrottleFn} from '@vueuse/core'
 
-  defineOptions({ name: 'ArtVirtualList' })
+defineOptions({ name: 'ArtVirtualList' })
 
   interface Props {
     /** 数据列表 */

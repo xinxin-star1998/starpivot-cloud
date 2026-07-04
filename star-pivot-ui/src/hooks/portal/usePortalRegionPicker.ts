@@ -1,5 +1,5 @@
-import { fetchPortalRegionChildren } from '@/api/portal/region'
-import type { PortalRegion } from '@/api/portal/types'
+import {fetchPortalRegionChildren} from '@/api/portal/region'
+import type {PortalRegion} from '@/api/portal/types'
 
 export interface PortalRegionForm {
   province: string

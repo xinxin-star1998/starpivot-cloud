@@ -15,8 +15,8 @@
  * @author Art Design Pro Team
  */
 
-import { useMenuStore } from '@/store/modules/menu'
-import { useSettingStore } from '@/store/modules/setting'
+import {useMenuStore} from '@/store/modules/menu'
+import {useSettingStore} from '@/store/modules/setting'
 
 export function useCommon() {
   const menuStore = useMenuStore()

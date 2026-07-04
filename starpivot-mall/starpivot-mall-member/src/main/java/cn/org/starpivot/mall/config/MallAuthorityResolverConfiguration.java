@@ -7,10 +7,6 @@ import cn.org.starpivot.common.security.RolesOnlyAuthorityResolver;
 import cn.org.starpivot.mall.common.MallMemberConstants;
 import cn.org.starpivot.mall.security.MallPermissionCacheService;
 import cn.org.starpivot.mall.security.MallPermissionLoader;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,6 +14,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.StringUtils;
+
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 商城服务权限解析：后台用户走菜单 perms；C 端会员仅使用 JWT 角色。

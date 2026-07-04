@@ -1,7 +1,6 @@
 package cn.org.starpivot.mall.portal.auth.domain.bo;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data

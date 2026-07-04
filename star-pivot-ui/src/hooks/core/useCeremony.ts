@@ -40,11 +40,11 @@
  * @author Art Design Pro Team
  */
 
-import { useTimeoutFn, useIntervalFn, useDateFormat } from '@vueuse/core'
-import { storeToRefs } from 'pinia'
-import { useSettingStore } from '@/store/modules/setting'
-import { mittBus } from '@/utils/sys'
-import { festivalConfigList } from '@/config/modules/festival'
+import {useDateFormat, useIntervalFn, useTimeoutFn} from '@vueuse/core'
+import {storeToRefs} from 'pinia'
+import {useSettingStore} from '@/store/modules/setting'
+import {mittBus} from '@/utils/sys'
+import {festivalConfigList} from '@/config/modules/festival'
 
 /**
  * 节日庆祝配置常量

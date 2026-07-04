@@ -30,14 +30,14 @@
  * @module store/modules/setting
  * @author Art Design Pro Team
  */
-import { defineStore } from 'pinia'
-import { MenuThemeType } from '@/types/store'
+import {defineStore} from 'pinia'
+import {MenuThemeType} from '@/types/store'
 import AppConfig from '@/config'
-import { SystemThemeEnum, MenuThemeEnum, MenuTypeEnum, ContainerWidthEnum } from '@/enums/appEnum'
-import { setElementThemeColor } from '@/utils/ui'
-import { useCeremony } from '@/hooks/core/useCeremony'
-import { StorageConfig } from '@/utils'
-import { SETTING_DEFAULT_CONFIG } from '@/config/setting'
+import {ContainerWidthEnum, MenuThemeEnum, MenuTypeEnum, SystemThemeEnum} from '@/enums/appEnum'
+import {setElementThemeColor} from '@/utils/ui'
+import {useCeremony} from '@/hooks/core/useCeremony'
+import {StorageConfig} from '@/utils'
+import {SETTING_DEFAULT_CONFIG} from '@/config/setting'
 
 /**
  * 系统设置状态管理

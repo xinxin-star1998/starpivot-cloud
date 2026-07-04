@@ -1,12 +1,8 @@
 package cn.org.starpivot.file.controller;
 
 import cn.org.starpivot.common.annotation.Log;
-import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.domain.Result;
-import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
-import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.file.domain.bo.FileCategoryNodeVO;
 import cn.org.starpivot.file.domain.dto.SysFileFolderDTO;
 import cn.org.starpivot.file.service.ISysFileFolderService;

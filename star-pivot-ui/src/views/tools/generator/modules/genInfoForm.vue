@@ -194,14 +194,14 @@
 </template>
 
 <script setup lang="ts">
-  /**
-   * 生成信息表单子组件（Vue3 + Element Plus）
-   * 使用 v-model 绑定父组件中的生成配置对象，并支持树表 / 主子表等高级配置
-   */
-  import type { FormInstance, FormRules } from 'element-plus'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+/**
+ * 生成信息表单子组件（Vue3 + Element Plus）
+ * 使用 v-model 绑定父组件中的生成配置对象，并支持树表 / 主子表等高级配置
+ */
+import type {FormInstance, FormRules} from 'element-plus'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
-  interface GenInfoFormModel {
+interface GenInfoFormModel {
     tplCategory?: string
     tplWebType?: string
     packageName?: string

@@ -10,10 +10,10 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchCategoryNameMap } from '@/utils/mall/category-tree'
-  import { fetchBrandNameMap } from '@/utils/mall/brand-map'
+import {fetchCategoryNameMap} from '@/utils/mall/category-tree'
+import {fetchBrandNameMap} from '@/utils/mall/brand-map'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, unknown>
   }
   interface Emits {

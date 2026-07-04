@@ -35,27 +35,22 @@
  * @module router/guards/beforeEach
  * @author Art Design Pro Team
  */
-import type { NavigationGuardNext, RouteLocationNormalized, Router } from 'vue-router'
+import type {NavigationGuardNext, RouteLocationNormalized, Router} from 'vue-router'
 import NProgress from 'nprogress'
-import { useSettingStore } from '@/store/modules/setting'
-import { useUserStore } from '@/store/modules/user'
-import { useMenuStore } from '@/store/modules/menu'
-import { setWorktab } from '@/utils/navigation'
-import { setPageTitle } from '@/utils/router'
+import {useSettingStore} from '@/store/modules/setting'
+import {useUserStore} from '@/store/modules/user'
+import {useMenuStore} from '@/store/modules/menu'
+import {setWorktab} from '@/utils/navigation'
+import {setPageTitle} from '@/utils/router'
+import {handleLoginStatus, handleRegisterRouteGuard, handleRootPathRedirect, isStaticRoute} from './authGuard'
 import {
-  handleLoginStatus,
-  handleRegisterRouteGuard,
-  handleRootPathRedirect,
-  isStaticRoute
-} from './authGuard'
-import {
-  closeLoading,
-  getRouteLoadingState,
-  handleDynamicRoutes,
-  resetRouteLoadingState,
-  resetRouterState,
-  setupRouteRegistry,
-  tryRestoreRoutesFromCache
+    closeLoading,
+    getRouteLoadingState,
+    handleDynamicRoutes,
+    resetRouteLoadingState,
+    resetRouterState,
+    setupRouteRegistry,
+    tryRestoreRoutesFromCache
 } from './dynamicRouteGuard'
 
 export { getRouteLoadingState, resetRouteLoadingState, resetRouterState }

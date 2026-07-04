@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ADDRESS_LEVEL_OPTIONS } from '@/utils/mall/address-level'
+import {ADDRESS_LEVEL_OPTIONS} from '@/utils/mall/address-level'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, unknown>
   }
   interface Emits {

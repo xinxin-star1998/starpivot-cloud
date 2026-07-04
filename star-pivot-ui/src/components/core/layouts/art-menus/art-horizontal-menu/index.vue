@@ -25,11 +25,11 @@
 </template>
 
 <script setup lang="ts">
-  import type { AppRouteRecord } from '@/types/router'
-  import HorizontalSubmenu from './widget/HorizontalSubmenu.vue'
-  import { useSettingStore } from '@/store/modules/setting'
+import type {AppRouteRecord} from '@/types/router'
+import HorizontalSubmenu from './widget/HorizontalSubmenu.vue'
+import {useSettingStore} from '@/store/modules/setting'
 
-  defineOptions({ name: 'ArtHorizontalMenu' })
+defineOptions({ name: 'ArtHorizontalMenu' })
 
   const settingStore = useSettingStore()
   const { isDark } = storeToRefs(settingStore)

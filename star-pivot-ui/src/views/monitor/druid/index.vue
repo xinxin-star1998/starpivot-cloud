@@ -154,13 +154,13 @@
 </template>
 
 <script setup lang="ts">
-  import { Refresh, Link } from '@element-plus/icons-vue'
-  import { fetchGetDruidMonitorInfo } from '@/api/monitor/druid'
-  import { usePageVisibility } from '@/hooks/core/usePageVisibility'
-  import type { DruidMonitorInfo } from '@/types/api/monitor'
-  import { router } from '@/router'
+import {Link, Refresh} from '@element-plus/icons-vue'
+import {fetchGetDruidMonitorInfo} from '@/api/monitor/druid'
+import {usePageVisibility} from '@/hooks/core/usePageVisibility'
+import type {DruidMonitorInfo} from '@/types/api/monitor'
+import {router} from '@/router'
 
-  defineOptions({ name: 'DruidMonitor' })
+defineOptions({ name: 'DruidMonitor' })
 
   const loading = ref(false)
   const druidInfo = ref<DruidMonitorInfo | null>(null)

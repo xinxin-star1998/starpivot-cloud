@@ -1,13 +1,13 @@
-import type { Ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { MallAttr } from '@/api/mall/attr'
-import { parseValueSelect } from '@/utils/mall/attr-value-select'
+import type {Ref} from 'vue'
+import {ElMessage} from 'element-plus'
+import type {MallAttr} from '@/api/mall/attr'
+import {parseValueSelect} from '@/utils/mall/attr-value-select'
 import {
-  fetchCatalogBaseAttrGroups,
-  fetchCatalogSaleAttrs,
-  type SpuAttrGroupWithAttrs
+    fetchCatalogBaseAttrGroups,
+    fetchCatalogSaleAttrs,
+    type SpuAttrGroupWithAttrs
 } from '@/utils/mall/spu-wizard-attr'
-import type { SpuWizardBaseAttrCell, SpuWizardSaleDraft } from '@/utils/mall/spu-wizard-payload'
+import type {SpuWizardBaseAttrCell, SpuWizardSaleDraft} from '@/utils/mall/spu-wizard-payload'
 
 export function useSpuWizardAttrs(catalogId: Ref<number | undefined>) {
   const loadingAttrs = ref(false)

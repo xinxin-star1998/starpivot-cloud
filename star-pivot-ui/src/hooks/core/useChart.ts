@@ -50,17 +50,17 @@
  */
 
 import {
-  echarts,
-  type EChartsOption,
-  type GridComponentOption,
-  type LegendComponentOption,
-  type TooltipComponentOption
+    echarts,
+    type EChartsOption,
+    type GridComponentOption,
+    type LegendComponentOption,
+    type TooltipComponentOption
 } from '@/plugins/echarts'
-import { storeToRefs } from 'pinia'
-import { useSettingStore } from '@/store/modules/setting'
-import { getCssVar } from '@/utils/ui'
-import { logger } from '@/utils/sys'
-import type { BaseChartProps, ChartThemeConfig, UseChartOptions } from '@/types/component/chart'
+import {storeToRefs} from 'pinia'
+import {useSettingStore} from '@/store/modules/setting'
+import {getCssVar} from '@/utils/ui'
+import {logger} from '@/utils/sys'
+import type {BaseChartProps, ChartThemeConfig, UseChartOptions} from '@/types/component/chart'
 
 // 图表主题配置
 export const useChartOps = (): ChartThemeConfig => ({

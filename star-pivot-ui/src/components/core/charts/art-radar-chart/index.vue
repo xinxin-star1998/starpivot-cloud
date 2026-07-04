@@ -9,11 +9,11 @@
 </template>
 
 <script setup lang="ts">
-  import type { EChartsOption } from '@/plugins/echarts'
-  import { useChartOps, useChartComponent } from '@/hooks/core/useChart'
-  import type { RadarChartProps } from '@/types/component/chart'
+import type {EChartsOption} from '@/plugins/echarts'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
+import type {RadarChartProps} from '@/types/component/chart'
 
-  defineOptions({ name: 'ArtRadarChart' })
+defineOptions({ name: 'ArtRadarChart' })
 
   const props = withDefaults(defineProps<RadarChartProps>(), {
     // 基础配置

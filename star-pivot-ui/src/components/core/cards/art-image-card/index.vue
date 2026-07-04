@@ -48,9 +48,9 @@
 </template>
 
 <script setup lang="ts">
-  import { Picture, View, ChatLineRound } from '@element-plus/icons-vue'
+import {ChatLineRound, Picture, View} from '@element-plus/icons-vue'
 
-  defineOptions({ name: 'ArtImageCard' })
+defineOptions({ name: 'ArtImageCard' })
 
   interface Props {
     /** 图片地址 */

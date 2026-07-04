@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n'
-  import imgUrl from '@imgs/svg/500.svg'
+import {useI18n} from 'vue-i18n'
+import imgUrl from '@imgs/svg/500.svg'
 
-  defineOptions({ name: 'Exception500' })
+defineOptions({ name: 'Exception500' })
 
   const { t } = useI18n()
 </script>

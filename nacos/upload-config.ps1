@@ -3,8 +3,7 @@
 # 示例:
 #   .\nacos\upload-config.ps1 common-config.yaml
 #   .\nacos\upload-config.ps1 starpivot-mall-order.yaml
-#   .\nacos\import-mall-config.ps1          # 批量发布商城相关配置
-#   .\nacos\import-config.ps1 -Profile Mall # 同上（含 common + mq + starpivot-mall*）
+#   .\nacos\import-config.ps1 -Profile Mall # 批量发布商城相关配置（common + oss + mq + starpivot-mall*）
 #
 param(
     [Parameter(Mandatory = $true, Position = 0)]

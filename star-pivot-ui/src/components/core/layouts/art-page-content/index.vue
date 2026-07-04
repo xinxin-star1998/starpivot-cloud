@@ -54,12 +54,12 @@
 </template>
 <script setup lang="ts">
   type StyleObject = Record<string, string | number>
-  import { useRoute, RouterView } from 'vue-router'
-  import { useAutoLayoutHeight } from '@/hooks/core/useLayoutHeight'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { useWorktabStore } from '@/store/modules/worktab'
-  import { computed, ref, shallowRef, watch, nextTick, onMounted } from 'vue'
-  import { storeToRefs } from 'pinia'
+  import {RouterView, useRoute} from 'vue-router'
+  import {useAutoLayoutHeight} from '@/hooks/core/useLayoutHeight'
+  import {useSettingStore} from '@/store/modules/setting'
+  import {useWorktabStore} from '@/store/modules/worktab'
+  import {computed, nextTick, onMounted, ref, shallowRef, watch} from 'vue'
+  import {storeToRefs} from 'pinia'
 
   defineOptions({ name: 'ArtPageContent' })
 

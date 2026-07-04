@@ -26,22 +26,18 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchMemberList,
-    MEMBER_STATUS_MAP,
-    type MemberVo
-  } from '@/api/mall/member'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import MemberSearch from './modules/member-search.vue'
-  import MemberDetailDrawer from './modules/member-detail-drawer.vue'
-  import MemberEditDialog from './modules/member-edit-dialog.vue'
-  import { ElButton, ElSpace, ElTag } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchMemberList, MEMBER_STATUS_MAP, type MemberVo} from '@/api/mall/member'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import MemberSearch from './modules/member-search.vue'
+import MemberDetailDrawer from './modules/member-detail-drawer.vue'
+import MemberEditDialog from './modules/member-edit-dialog.vue'
+import {ElButton, ElSpace, ElTag} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'MemberList' })
+defineOptions({ name: 'MemberList' })
 
   const { hasAuth } = useAuth()
 

@@ -1,18 +1,18 @@
-import type { Ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { applyBaseAttrsFromDetail, restoreSaleAndSkusFromDetail } from '@/utils/mall/spu-wizard-detail'
+import type {Ref} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {applyBaseAttrsFromDetail, restoreSaleAndSkusFromDetail} from '@/utils/mall/spu-wizard-detail'
 import {
-  buildSpuSavePayload,
-  type SpuWizardBaseAttrCell,
-  type SpuWizardBaseForm,
-  type SpuWizardSaleDraft,
-  type SpuWizardSkuRow
+    buildSpuSavePayload,
+    type SpuWizardBaseAttrCell,
+    type SpuWizardBaseForm,
+    type SpuWizardSaleDraft,
+    type SpuWizardSkuRow
 } from '@/utils/mall/spu-wizard-payload'
-import { validateSkuRows } from '@/utils/mall/spu-wizard-sku'
-import type { MallAttr } from '@/api/mall/attr'
-import type { SpuAttrGroupWithAttrs } from '@/utils/mall/spu-wizard-attr'
-import { RouteLocationNormalizedLoaded, Router } from 'vue-router'
-import { fetchMallProductAdd, fetchMallProductById, fetchMallProductUpdate } from '@/api/mall/product'
+import {validateSkuRows} from '@/utils/mall/spu-wizard-sku'
+import type {MallAttr} from '@/api/mall/attr'
+import type {SpuAttrGroupWithAttrs} from '@/utils/mall/spu-wizard-attr'
+import {RouteLocationNormalizedLoaded, Router} from 'vue-router'
+import {fetchMallProductAdd, fetchMallProductById, fetchMallProductUpdate} from '@/api/mall/product'
 
 interface SubmitDeps {
   route: RouteLocationNormalizedLoaded

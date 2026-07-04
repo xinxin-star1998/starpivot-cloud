@@ -156,20 +156,20 @@
 </template>
 
 <script setup lang="ts">
-  import { Delete, Refresh } from '@element-plus/icons-vue'
-  import {
-    fetchClearAllCache,
-    fetchDeleteCache,
-    fetchDeleteCacheKey,
-    fetchGetCacheContent,
-    fetchGetCacheKeys,
-    fetchGetCacheList
-  } from '@/api/monitor/cache'
-  import type { CacheContentInfo, CacheKeyInfo, RedisCacheInfo } from '@/types/api/monitor'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import ArtVirtualList from '@/components/core/lists/art-virtual-list/index.vue'
+import {Delete, Refresh} from '@element-plus/icons-vue'
+import {
+  fetchClearAllCache,
+  fetchDeleteCache,
+  fetchDeleteCacheKey,
+  fetchGetCacheContent,
+  fetchGetCacheKeys,
+  fetchGetCacheList
+} from '@/api/monitor/cache'
+import type {CacheContentInfo, CacheKeyInfo, RedisCacheInfo} from '@/types/api/monitor'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import ArtVirtualList from '@/components/core/lists/art-virtual-list/index.vue'
 
-  defineOptions({ name: 'CacheManage' })
+defineOptions({ name: 'CacheManage' })
 
   const loading = ref(false)
   const keyListRef = ref<InstanceType<typeof ArtVirtualList> | null>(null)

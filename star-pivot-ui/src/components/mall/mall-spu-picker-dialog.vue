@@ -64,10 +64,10 @@
 </template>
 
 <script lang="ts" setup>
-  import type { TableInstance } from 'element-plus'
-  import { fetchMallProductList, type MallProductVo } from '@/api/mall/product'
+import type {TableInstance} from 'element-plus'
+import {fetchMallProductList, type MallProductVo} from '@/api/mall/product'
 
-  export interface MallSpuPickerItem {
+export interface MallSpuPickerItem {
     spuId: number
     spuName?: string
   }

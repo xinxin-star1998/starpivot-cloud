@@ -1,11 +1,12 @@
 # starpivot-mall-promotion 专属配置
 # Nacos Data ID: starpivot-mall-promotion.yaml  |  Group: DEFAULT_GROUP
+# 业务库：star_pivot_promotion（sms_* 表）
 
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: ${MALL_DB_DRIVER:com.mysql.cj.jdbc.Driver}
-    url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_mall?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    url: ${MALL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_promotion?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
     username: ${MALL_DB_USERNAME:root}
     password: ${MALL_DB_PASSWORD:root}
     druid:
@@ -16,25 +17,22 @@ spring:
       validation-query: SELECT 1
       test-while-idle: true
 
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: cn.org.starpivot.mall.sms.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
+
 starpivot:
+  security:
+    authority-strategy: menu-permission
+  mq:
+    enabled: ${MQ_ENABLED:true}
   mall:
     public-base-url: ${MALL_PUBLIC_BASE_URL:http://localhost:8080}
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     seckill:
       max-requests-per-second: ${MALL_SECKILL_MAX_RPS:10}
       unpaid-lock-minutes: ${MALL_SECKILL_UNPAID_LOCK_MINUTES:5}
-
-mybatis-plus:
-  mapper-locations: classpath*:/mapper/**/*.xml
-  type-aliases-package: cn.org.starpivot.mall.sms.entity
-  configuration:
-    map-underscore-to-camel-case: true
-    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
-
-oss:
-  enabled: ${OSS_ENABLED:true}
-  endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
-  access-key-id: ${OSS_ACCESS_KEY_ID:}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
-  url-prefix: ${OSS_URL_PREFIX:}
-  bucket-name: ${OSS_BUCKET_NAME:star-pivot}

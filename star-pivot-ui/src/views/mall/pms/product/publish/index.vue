@@ -1,9 +1,9 @@
 <!-- 发布商品：跳转至 SPU 发布向导 -->
 <script setup lang="ts">
-  import { onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
+import {onMounted} from 'vue'
+import {useRouter} from 'vue-router'
 
-  defineOptions({ name: 'PublishSPU' })
+defineOptions({ name: 'PublishSPU' })
 
   const router = useRouter()
 

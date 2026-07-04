@@ -176,19 +176,13 @@ mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_mall < sql/star_pivot_mall.sql
 ### 2. 导入 Nacos 配置
 
 ```powershell
-# PowerShell — 至少设置 JWT 密钥（≥ 32 字符）
+# 至少设置 JWT 密钥（≥ 32 字符）
 $env:JWT_SECRET = "dev-local-jwt-secret-must-be-at-least-32-chars"
 $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
 .\nacos\import-config.ps1
 ```
 
-```bash
-# Linux / macOS
-export JWT_SECRET="dev-local-jwt-secret-must-be-at-least-32-chars"
-export INTERNAL_SERVICE_TOKEN="dev-internal-token"
-chmod +x nacos/import-config.sh
-./nacos/import-config.sh
-```
+Linux / macOS：`export JWT_SECRET=... INTERNAL_SERVICE_TOKEN=...` 后执行 `pwsh ./nacos/import-config.ps1`。
 
 配置说明见 [nacos/README.md](nacos/README.md)。
 
@@ -219,22 +213,17 @@ mvn spring-boot:run -pl starpivot-monitor
 mvn spring-boot:run -pl starpivot-approval
 ```
 
-**商城微服务（需先 `.\nacos\import-mall-config.ps1`，详见 [docs/mall-startup.md](docs/mall-startup.md)）：**
-
-```powershell
-# 批量启动（多窗口）
-.\nacos\start-mall.ps1 -ImportConfig
-mvn spring-boot:run -pl starpivot-gateway
-```
-
-或手动：
+**商城微服务（需先 `.\nacos\import-config.ps1 -Profile Mall`，详见 [docs/mall-startup.md](docs/mall-startup.md)）：**
 
 ```bash
+mvn spring-boot:run -pl starpivot-gateway
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-member -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-product -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-ware -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-promotion -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-order -am
+# 可选：静态资源 BFF
+mvn spring-boot:run -pl starpivot-mall/starpivot-mall-app -am
 ```
 
 
@@ -247,7 +236,7 @@ pnpm install
 pnpm dev
 ```
 
-前端默认 [http://localhost:3000，Vite](http://localhost:3000，Vite) 代理将 `/api/*` 转发至网关 [http://localhost:8080。](http://localhost:8080。)
+前端默认 http://localhost:3000，Vite 代理将 `/api/*` 转发至网关 http://localhost:8080。
 
 ### 6. 验证
 

@@ -25,11 +25,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { useSpuWizardInject } from '../../composables/useSpuWizard'
-  import SpuSkuWareBar from './SpuSkuWareBar.vue'
-  import SpuSkuTable from './SpuSkuTable.vue'
+import {useSpuWizardInject} from '../../composables/useSpuWizard'
+import SpuSkuWareBar from './SpuSkuWareBar.vue'
+import SpuSkuTable from './SpuSkuTable.vue'
 
-  const wizard = useSpuWizardInject()
+const wizard = useSpuWizardInject()
 </script>
 
 <style lang="scss" scoped>

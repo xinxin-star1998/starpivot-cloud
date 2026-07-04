@@ -108,13 +108,13 @@
 </template>
 
 <script lang="ts" setup>
-  import type { SpuWizardSaleDraft, SpuWizardSkuRow } from '@/utils/mall/spu-wizard-payload'
-  import { useSkuTableDragScroll } from '../../composables/useSkuTableDragScroll'
-  import SpuSkuImagePick from './SpuSkuImagePick.vue'
-  import SpuSkuPromoDiscount from './SpuSkuPromoDiscount.vue'
-  import SpuSkuPromoReduction from './SpuSkuPromoReduction.vue'
+import type {SpuWizardSaleDraft, SpuWizardSkuRow} from '@/utils/mall/spu-wizard-payload'
+import {useSkuTableDragScroll} from '../../composables/useSkuTableDragScroll'
+import SpuSkuImagePick from './SpuSkuImagePick.vue'
+import SpuSkuPromoDiscount from './SpuSkuPromoDiscount.vue'
+import SpuSkuPromoReduction from './SpuSkuPromoReduction.vue'
 
-  defineProps<{
+defineProps<{
     isEdit: boolean
     skuRows: SpuWizardSkuRow[]
     saleTableColumns: SpuWizardSaleDraft[]

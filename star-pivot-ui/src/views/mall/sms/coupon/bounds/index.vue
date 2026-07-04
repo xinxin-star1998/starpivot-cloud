@@ -41,18 +41,18 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElMessageBox } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchSpuBoundsList, fetchSpuBoundsRemove, type SpuBoundsVo } from '@/api/mall/spu-bounds'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import BoundsDialog from './modules/bounds-dialog.vue'
-  import type { DialogType } from '@/types'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {ElMessageBox} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchSpuBoundsList, fetchSpuBoundsRemove, type SpuBoundsVo} from '@/api/mall/spu-bounds'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import BoundsDialog from './modules/bounds-dialog.vue'
+import type {DialogType} from '@/types'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'SmsSpuBounds' })
+defineOptions({ name: 'SmsSpuBounds' })
 
   const searchForm = ref({ spuId: undefined as number | undefined })
   const dialogVisible = ref(false)

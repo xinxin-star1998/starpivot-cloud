@@ -26,12 +26,12 @@
 </template>
 
 <script setup lang="ts">
-  import { moveFiles } from '@/api/file/file'
-  import type { FileCategoryNode } from '@/api/file/types'
-  import { ElMessage } from 'element-plus'
-  import { computed, ref, watch } from 'vue'
+import {moveFiles} from '@/api/file/file'
+import type {FileCategoryNode} from '@/api/file/types'
+import {ElMessage} from 'element-plus'
+import {computed, ref, watch} from 'vue'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
   const props = defineProps<{
     categories: FileCategoryNode[]

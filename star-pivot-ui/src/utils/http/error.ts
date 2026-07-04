@@ -21,10 +21,10 @@
  * @module utils/http/error
  * @author Art Design Pro Team
  */
-import { AxiosError } from 'axios'
-import { ElMessage } from 'element-plus'
-import { ApiStatus } from './status'
-import { $t } from '@/locales'
+import {AxiosError} from 'axios'
+import {ElMessage} from 'element-plus'
+import {ApiStatus} from './status'
+import {$t} from '@/locales'
 
 const isProd = import.meta.env.PROD
 

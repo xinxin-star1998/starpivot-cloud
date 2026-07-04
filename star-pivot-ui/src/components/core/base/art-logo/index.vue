@@ -6,9 +6,9 @@
 </template>
 
 <script setup lang="ts">
-  import logoSrc from '@imgs/svg/star-pivot-logo.svg'
+import logoSrc from '@imgs/svg/star-pivot-logo.svg'
 
-  defineOptions({ name: 'ArtLogo' })
+defineOptions({ name: 'ArtLogo' })
   interface Props {
     /** logo 大小（px） */
     size?: number | string

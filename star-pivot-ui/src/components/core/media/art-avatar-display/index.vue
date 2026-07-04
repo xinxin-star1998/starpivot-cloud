@@ -10,10 +10,10 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchGetAvatarPresignedUrl } from '@/api/user/user'
-  import { extractOssObjectPath, needsOssPresignedDisplay } from '@/utils/storage/oss-object-path'
+import {fetchGetAvatarPresignedUrl} from '@/api/user/user'
+import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/oss-object-path'
 
-  const props = withDefaults(
+const props = withDefaults(
     defineProps<{
       /** 头像地址（OSS 私有桶永久地址时，组件内部会请求临时 URL 用于展示） */
       avatarUrl?: string

@@ -1,9 +1,9 @@
-import type { Ref } from 'vue'
-import type { ColumnOption } from '@/types/component'
+import type {Ref} from 'vue'
+import type {ColumnOption} from '@/types/component'
 import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
 import ArtAvatarDisplay from '@/components/core/media/art-avatar-display/index.vue'
-import { ElSwitch } from 'element-plus'
-import type { DialogType } from '@/types'
+import {ElSwitch} from 'element-plus'
+import type {DialogType} from '@/types'
 
 type UserListItem = Api.SystemManage.UserListItem
 

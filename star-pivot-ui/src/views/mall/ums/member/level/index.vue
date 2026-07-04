@@ -30,23 +30,17 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElMessageBox } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchMemberLevelPage,
-    fetchMemberLevelRemove,
-    PRIVILEGE_MAP,
-    type MemberLevelVo
-  } from '@/api/mall/member-level'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import LevelDialog from './modules/level-dialog.vue'
-  import { ElTag } from 'element-plus'
-  import type { DialogType } from '@/types'
+import {h} from 'vue'
+import {ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchMemberLevelPage, fetchMemberLevelRemove, type MemberLevelVo, PRIVILEGE_MAP} from '@/api/mall/member-level'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import LevelDialog from './modules/level-dialog.vue'
+import type {DialogType} from '@/types'
 
-  defineOptions({ name: 'MemberLevel' })
+defineOptions({ name: 'MemberLevel' })
 
   const dialogVisible = ref(false)
   const dialogType = ref<DialogType>('add')

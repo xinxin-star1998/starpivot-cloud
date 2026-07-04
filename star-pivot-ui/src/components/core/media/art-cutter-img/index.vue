@@ -45,9 +45,9 @@
 </template>
 
 <script setup lang="ts">
-  import ImgCutter from 'vue-img-cutter'
+import ImgCutter from 'vue-img-cutter'
 
-  defineOptions({ name: 'ArtCutterImg' })
+defineOptions({ name: 'ArtCutterImg' })
 
   interface CutterProps {
     // 基础配置

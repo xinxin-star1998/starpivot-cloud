@@ -92,22 +92,18 @@
 </template>
 
 <script setup lang="ts">
-  import { ElButton, ElDialog, ElIcon, ElInput, ElTabPane, ElTabs } from 'element-plus'
-  import { Close, Loading, Search } from '@element-plus/icons-vue'
-  import { Icon } from '@iconify/vue'
-  import {
-    DEFAULT_ICON_SETS,
-    ensureIconCollection,
-    type OfflineIconSetOption
-  } from '@/utils/ui/iconify-offline'
-  import {
-    containsCjk,
-    expandIconSearchKeywords,
-    iconMatchesSearchTerms,
-    toIconifySearchQuery
-  } from '@/utils/ui/icon-search-zh'
+import {ElButton, ElDialog, ElIcon, ElInput, ElTabPane, ElTabs} from 'element-plus'
+import {Close, Loading, Search} from '@element-plus/icons-vue'
+import {Icon} from '@iconify/vue'
+import {DEFAULT_ICON_SETS, ensureIconCollection, type OfflineIconSetOption} from '@/utils/ui/iconify-offline'
+import {
+  containsCjk,
+  expandIconSearchKeywords,
+  iconMatchesSearchTerms,
+  toIconifySearchQuery
+} from '@/utils/ui/icon-search-zh'
 
-  type IconSet = OfflineIconSetOption
+type IconSet = OfflineIconSetOption
 
   interface Props {
     modelValue: string | undefined

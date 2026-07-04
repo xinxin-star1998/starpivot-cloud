@@ -1,16 +1,16 @@
-import type { Ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import type {Ref} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
 import {
-  fetchDeleteUser,
-  fetchExportUser,
-  fetchImportUserExcel,
-  fetchResetUserPassword,
-  fetchUnlockUser,
-  fetchUpdateUserStatus
+    fetchDeleteUser,
+    fetchExportUser,
+    fetchImportUserExcel,
+    fetchResetUserPassword,
+    fetchUnlockUser,
+    fetchUpdateUserStatus
 } from '@/api/user/user'
-import { runSingleDelete, useBatchDelete } from '@/hooks/core/useBatchDelete'
-import { useResetPasswordPrompt } from '@/hooks/core/useResetPasswordPrompt'
-import { isUserCancel } from '@/utils/sys/confirm-action'
+import {runSingleDelete, useBatchDelete} from '@/hooks/core/useBatchDelete'
+import {useResetPasswordPrompt} from '@/hooks/core/useResetPasswordPrompt'
+import {isUserCancel} from '@/utils/sys/confirm-action'
 
 type UserListItem = Api.SystemManage.UserListItem
 

@@ -51,32 +51,26 @@
 </template>
 
 <script setup lang="ts">
-  import { formatMenuTitle } from '@/utils/router'
-  import { deepClone, safeError } from '@/utils'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { useMenuStore } from '@/store/modules/menu'
-  import type { AppRouteRecord } from '@/types/router'
-  import MenuDialog from './modules/menu-dialog.vue'
-  import {
-    fetchAddMenu,
-    fetchDeleteMenu,
-    fetchGetMenuTree,
-    fetchUpdateMenu,
-    type SysMenu
-  } from '@/api/menu/menu'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { Icon } from '@iconify/vue'
-  import { MenuProcessor } from '@/router/core/MenuProcessor'
-  import type { MenuFormData } from './types'
-  import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import { INITIAL_SEARCH_STATE, MENU_TYPE_CONFIG, STATUS_CONFIG } from './constants'
-  import { reloadDynamicRoutes } from '@/router/guards/dynamicRouteGuard'
+import {formatMenuTitle} from '@/utils/router'
+import {deepClone, safeError} from '@/utils'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTableColumns} from '@/hooks/core/useTableColumns'
+import {useAuth} from '@/hooks/core/useAuth'
+import {useMenuStore} from '@/store/modules/menu'
+import type {AppRouteRecord} from '@/types/router'
+import MenuDialog from './modules/menu-dialog.vue'
+import {fetchAddMenu, fetchDeleteMenu, fetchGetMenuTree, fetchUpdateMenu, type SysMenu} from '@/api/menu/menu'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {Icon} from '@iconify/vue'
+import {MenuProcessor} from '@/router/core/MenuProcessor'
+import type {MenuFormData} from './types'
+import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import {INITIAL_SEARCH_STATE, MENU_TYPE_CONFIG, STATUS_CONFIG} from './constants'
+import {reloadDynamicRoutes} from '@/router/guards/dynamicRouteGuard'
 
-  defineOptions({ name: 'Menus' })
+defineOptions({ name: 'Menus' })
 
   // 权限检查
   const { hasAuth } = useAuth()

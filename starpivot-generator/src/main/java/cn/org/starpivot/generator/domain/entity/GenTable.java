@@ -1,12 +1,12 @@
 package cn.org.starpivot.generator.domain.entity;
 
+import cn.org.starpivot.common.constants.GenConstants;
+import cn.org.starpivot.generator.utils.StringUtils;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import cn.org.starpivot.common.constants.GenConstants;
-import cn.org.starpivot.generator.utils.StringUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

@@ -53,18 +53,18 @@
 </template>
 
 <script setup lang="ts">
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchCleanOperLog, fetchDeleteOperLog, fetchGetOperLogList } from '@/api/log/operlog'
-  import { ElButton, ElCollapseTransition, ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import type { OperLogListItem, OperLogSearchParams } from '@/types/api/operlog'
-  import OperLogDetail from './modules/oper-log-detail.vue'
-  import OperLogSearch from './modules/oper-log-search.vue'
-  import { getOperBusinessTypeLabel } from './constants'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchCleanOperLog, fetchDeleteOperLog, fetchGetOperLogList} from '@/api/log/operlog'
+import {ElButton, ElCollapseTransition, ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import type {OperLogListItem, OperLogSearchParams} from '@/types/api/operlog'
+import OperLogDetail from './modules/oper-log-detail.vue'
+import OperLogSearch from './modules/oper-log-search.vue'
+import {getOperBusinessTypeLabel} from './constants'
 
-  defineOptions({ name: 'OperLog' })
+defineOptions({ name: 'OperLog' })
 
   const { hasAuth } = useAuth()
 

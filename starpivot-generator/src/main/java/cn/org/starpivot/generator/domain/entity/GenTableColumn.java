@@ -1,9 +1,9 @@
 package cn.org.starpivot.generator.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import cn.org.starpivot.common.entity.BaseEntity;
 import cn.org.starpivot.generator.utils.StringUtils;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import jakarta.validation.constraints.NotBlank;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

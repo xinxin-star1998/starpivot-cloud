@@ -1,15 +1,13 @@
 package cn.org.starpivot.mall.mall.controller.internal;
 
-import cn.org.starpivot.api.mall.order.dto.OrderInternalDto;
-import cn.org.starpivot.api.mall.order.dto.OrderItemInternalDto;
-import cn.org.starpivot.api.mall.order.dto.OrderSubmitRequestDto;
-import cn.org.starpivot.api.mall.order.dto.OrderSubmitResultDto;
+import cn.org.starpivot.api.mall.order.dto.*;
 import cn.org.starpivot.api.mall.promotion.dto.CouponTrialItemDto;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
+import cn.org.starpivot.mall.order.internal.OrderMemberInternalService;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCartItemVo;
@@ -35,6 +33,7 @@ public class MallOrderInternalExtensionsController {
     private final OmsOrderItemMapper omsOrderItemMapper;
     private final PortalCartService portalCartService;
     private final PortalOrderService portalOrderService;
+    private final OrderMemberInternalService orderMemberInternalService;
 
     @GetMapping("/internal/mall/order/{orderId}/summary")
     public Result<OrderInternalDto> getOrderSummary(@PathVariable("orderId") Long orderId) {
@@ -93,6 +92,23 @@ public class MallOrderInternalExtensionsController {
         result.setOrderSn(vo.getOrderSn());
         result.setStatus(vo.getStatus());
         return Result.success(result);
+    }
+
+    @GetMapping("/internal/mall/order/member/{memberId}/count")
+    public Result<Integer> countByMember(@PathVariable("memberId") Long memberId) {
+        return Result.success(orderMemberInternalService.countByMember(memberId));
+    }
+
+    @GetMapping("/internal/mall/order/member/{memberId}/purchased-spu/{spuId}")
+    public Result<Boolean> hasPurchasedSpu(
+            @PathVariable("memberId") Long memberId,
+            @PathVariable("spuId") Long spuId) {
+        return Result.success(orderMemberInternalService.hasPurchasedSpu(memberId, spuId));
+    }
+
+    @GetMapping("/internal/mall/order/member/{memberId}/reviewable-purchase-items")
+    public Result<List<PendingReviewItemDto>> listReviewablePurchaseItems(@PathVariable("memberId") Long memberId) {
+        return Result.success(orderMemberInternalService.listReviewablePurchaseItems(memberId));
     }
 
     private OrderItemInternalDto toItemDto(OmsOrderItem item) {

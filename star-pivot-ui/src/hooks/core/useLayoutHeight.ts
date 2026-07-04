@@ -16,7 +16,7 @@
  * @author Art Design Pro Team
  */
 
-import { useElementSize } from '@vueuse/core'
+import {useElementSize} from '@vueuse/core'
 
 /**
  * 页面容器高度配置

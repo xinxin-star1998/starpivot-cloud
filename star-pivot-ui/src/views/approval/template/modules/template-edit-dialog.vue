@@ -228,17 +228,17 @@
 </template>
 
 <script lang="ts" setup>
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { fetchApprovalTemplateDetail, fetchApprovalTemplateSave } from '@/api/approval/template'
-  import type { ApTemplate, ApTemplateRoute, ApTemplateStep } from '@/api/approval/types'
-  import { APPROVE_MODE_OPTIONS, ASSIGNEE_TYPE_OPTIONS, TIMEOUT_ACTION_OPTIONS } from '../../utils/approval-labels'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import { fetchGetRoleSelect } from '@/api/role/role'
-  import { fetchGetAllPosts } from '@/api/post/post'
-  import { fetchGetUserList } from '@/api/user/user'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {fetchApprovalTemplateDetail, fetchApprovalTemplateSave} from '@/api/approval/template'
+import type {ApTemplate, ApTemplateRoute, ApTemplateStep} from '@/api/approval/types'
+import {APPROVE_MODE_OPTIONS, ASSIGNEE_TYPE_OPTIONS, TIMEOUT_ACTION_OPTIONS} from '../../utils/approval-labels'
+import {handleMutationError} from '@/utils/http/mutation'
+import {fetchGetRoleSelect} from '@/api/role/role'
+import {fetchGetAllPosts} from '@/api/post/post'
+import {fetchGetUserList} from '@/api/user/user'
 
-  const visible = defineModel<boolean>('visible', { default: false })
+const visible = defineModel<boolean>('visible', { default: false })
   const templateId = defineModel<number | undefined>('templateId')
 
   const emit = defineEmits<{ success: [] }>()

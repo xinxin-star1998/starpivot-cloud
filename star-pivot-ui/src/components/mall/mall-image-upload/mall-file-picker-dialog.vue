@@ -121,16 +121,16 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchFileList } from '@/api/file/file'
-  import { fetchFolderTree } from '@/api/file/folder'
-  import type { SysFile, SysFileFolder } from '@/api/file/types'
-  import { uploadMallImage } from '@/api/mall/mall-image'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { ElMessage } from 'element-plus'
-  import { defaultResponseAdapter, extractTableData } from '@/utils/table/tableUtils'
-  import { isStorageObjectName, normalizeToObjectName } from '@/utils/mall/goods-image-url'
+import {fetchFileList} from '@/api/file/file'
+import {fetchFolderTree} from '@/api/file/folder'
+import type {SysFile, SysFileFolder} from '@/api/file/types'
+import {uploadMallImage} from '@/api/mall/mall-image'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {ElMessage} from 'element-plus'
+import {defaultResponseAdapter, extractTableData} from '@/utils/table/tableUtils'
+import {isStorageObjectName, normalizeToObjectName} from '@/utils/mall/goods-image-url'
 
-  defineOptions({ name: 'MallFilePickerDialog' })
+defineOptions({ name: 'MallFilePickerDialog' })
 
   const props = withDefaults(
     defineProps<{

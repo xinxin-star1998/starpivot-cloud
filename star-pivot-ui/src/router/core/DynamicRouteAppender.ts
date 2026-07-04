@@ -20,8 +20,8 @@
  * @author Art Design Pro Team
  */
 
-import type { AppRouteRecord } from '@/types/router'
-import { safeLog, safeWarn } from '@/utils'
+import type {AppRouteRecord} from '@/types/router'
+import {safeLog, safeWarn} from '@/utils'
 
 interface RouteIndex {
   names: Set<string>

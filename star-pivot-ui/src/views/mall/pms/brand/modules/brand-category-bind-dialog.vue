@@ -69,20 +69,16 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
-  import {
-    fetchMallBrandBindCategories,
-    fetchMallBrandBoundCategories,
-    type MallBrandCategoryRelation
-  } from '@/api/mall/brand'
-  import {
-    filterVisibleCategoryTree,
-    findCategoryNode,
-    mapCategoryCascaderOptions
-  } from '@/utils/mall/category-tree'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
+import {
+  fetchMallBrandBindCategories,
+  fetchMallBrandBoundCategories,
+  type MallBrandCategoryRelation
+} from '@/api/mall/brand'
+import {filterVisibleCategoryTree, findCategoryNode, mapCategoryCascaderOptions} from '@/utils/mall/category-tree'
+import {ElMessage, ElMessageBox} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     brandId?: number
     brandName?: string

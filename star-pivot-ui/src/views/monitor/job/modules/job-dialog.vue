@@ -73,13 +73,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage } from 'element-plus'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchAddJob, fetchUpdateJob, fetchJobById, type SysJob } from '@/api/monitor/job'
-  import type { DialogType } from '@/types'
-  import CronEditorDialog from './cron-editor-dialog.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {fetchAddJob, fetchJobById, fetchUpdateJob, type SysJob} from '@/api/monitor/job'
+import type {DialogType} from '@/types'
+import CronEditorDialog from './cron-editor-dialog.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     jobData?: Partial<SysJob>

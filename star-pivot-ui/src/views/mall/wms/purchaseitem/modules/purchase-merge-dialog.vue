@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchPurchaseMerge } from '@/api/mall/purchase'
+import {fetchPurchaseMerge} from '@/api/mall/purchase'
 
-  interface Props {
+interface Props {
     visible: boolean
     detailIds: number[]
   }

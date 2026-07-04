@@ -48,23 +48,18 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElImage, ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchHomeAdvList,
-    fetchHomeAdvRemove,
-    HOME_ADV_STATUS_MAP,
-    type HomeAdvVo
-  } from '@/api/mall/home-adv'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import HomeAdvDialog from './modules/home-adv-dialog.vue'
-  import type { DialogType } from '@/types'
-  import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+import {h} from 'vue'
+import {ElImage, ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchHomeAdvList, fetchHomeAdvRemove, HOME_ADV_STATUS_MAP, type HomeAdvVo} from '@/api/mall/home-adv'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import HomeAdvDialog from './modules/home-adv-dialog.vue'
+import type {DialogType} from '@/types'
+import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
 
-  defineOptions({ name: 'CmsHomeAdv' })
+defineOptions({ name: 'CmsHomeAdv' })
 
   const searchForm = ref({
     name: undefined as string | undefined,

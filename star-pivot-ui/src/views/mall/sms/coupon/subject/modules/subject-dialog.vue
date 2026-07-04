@@ -84,20 +84,18 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import {
-    fetchHomeSubjectAdd,
-    fetchHomeSubjectById,
-    fetchHomeSubjectUpdate,
-    type HomeSubjectSavePayload
-  } from '@/api/mall/subject'
-  import type { DialogType } from '@/types'
-  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
-  import MallSpuPickerDialog, {
-    type MallSpuPickerItem
-  } from '@/components/mall/mall-spu-picker-dialog.vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {
+  fetchHomeSubjectAdd,
+  fetchHomeSubjectById,
+  fetchHomeSubjectUpdate,
+  type HomeSubjectSavePayload
+} from '@/api/mall/subject'
+import type {DialogType} from '@/types'
+import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+import MallSpuPickerDialog, {type MallSpuPickerItem} from '@/components/mall/mall-spu-picker-dialog.vue'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: DialogType
     subjectId?: number

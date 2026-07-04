@@ -21,10 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableConfigurationProperties(JwtProperties.class)
 @MapperScan({
         "cn.org.starpivot.mall.ums.mapper",
-        "cn.org.starpivot.mall.portal.auth.mapper",
-        "cn.org.starpivot.mall.pms.mapper",
-        "cn.org.starpivot.mall.sms.mapper",
-        "cn.org.starpivot.mall.oms.mapper"
+        "cn.org.starpivot.mall.portal.auth.mapper"
 })
 public class StarPivotMallMemberApplication {
 

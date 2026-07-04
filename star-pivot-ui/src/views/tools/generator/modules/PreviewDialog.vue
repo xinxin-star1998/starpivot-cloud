@@ -20,15 +20,15 @@
 </template>
 
 <script setup lang="ts">
-  /**
-   * 代码预览弹窗组件
-   * 用于预览代码生成器生成的代码文件
-   */
-  import { ElButton, ElDialog, ElMessage } from 'element-plus'
-  import { fetchPreviewCode } from '@/api/generator/gen-table'
-  import CodePreviewTreePanel from './code-preview-tree-panel.vue'
+/**
+ * 代码预览弹窗组件
+ * 用于预览代码生成器生成的代码文件
+ */
+import {ElButton, ElDialog, ElMessage} from 'element-plus'
+import {fetchPreviewCode} from '@/api/generator/gen-table'
+import CodePreviewTreePanel from './code-preview-tree-panel.vue'
 
-  interface Props {
+interface Props {
     /** 弹窗可见性，由父组件控制 */
     visible: boolean
     /** 表ID，用于获取预览代码 */

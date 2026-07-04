@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-  import { COMMENT_SHOW_STATUS_MAP } from '@/api/mall/comment'
+import {COMMENT_SHOW_STATUS_MAP} from '@/api/mall/comment'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, unknown>
   }
   interface Emits {

@@ -162,11 +162,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect } from 'element-plus'
-  import ExternalActionBtn from './external-action-btn.vue'
-  import type { GenPathProfile } from '@/api/generator/gen-external'
+import {ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect} from 'element-plus'
+import ExternalActionBtn from './external-action-btn.vue'
+import type {GenPathProfile} from '@/api/generator/gen-external'
 
-  const PRESET_STORAGE_KEY = 'gen_external_path_presets'
+const PRESET_STORAGE_KEY = 'gen_external_path_presets'
   const LAST_PROFILE_KEY = 'gen_external_last_path_profile'
 
   interface SavedPreset {

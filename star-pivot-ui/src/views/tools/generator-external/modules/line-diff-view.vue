@@ -16,10 +16,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ElScrollbar } from 'element-plus'
-  import { type DiffLine, diffLines, type DiffLineType } from '@/utils/text/line-diff'
+import {ElScrollbar} from 'element-plus'
+import {type DiffLine, diffLines, type DiffLineType} from '@/utils/text/line-diff'
 
-  const props = defineProps<{
+const props = defineProps<{
     oldText?: string | null
     newText?: string | null
     mode?: 'unified' | 'old' | 'new'

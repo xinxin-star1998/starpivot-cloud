@@ -47,23 +47,19 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElImage, ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchHomeSubjectList,
-    fetchHomeSubjectRemove,
-    type HomeSubjectVo
-  } from '@/api/mall/subject'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import SubjectDialog from './modules/subject-dialog.vue'
-  import type { DialogType } from '@/types'
-  import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {ElImage, ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchHomeSubjectList, fetchHomeSubjectRemove, type HomeSubjectVo} from '@/api/mall/subject'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import SubjectDialog from './modules/subject-dialog.vue'
+import type {DialogType} from '@/types'
+import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'SmsSubject' })
+defineOptions({ name: 'SmsSubject' })
 
   const searchForm = ref({
     name: undefined as string | undefined,

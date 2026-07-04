@@ -140,34 +140,34 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick } from 'vue'
-  import { watchDebounced } from '@vueuse/core'
-  import { RefreshRight } from '@element-plus/icons-vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchDeleteGroup,
-    fetchDownloadGroupImportTemplate,
-    fetchExportGroup,
-    fetchGetGroupList,
-    fetchImportGroup,
-    type Group
-  } from '@/api/mall/group'
-  import { fetchMallCategoryChildren, type MallCategoryTreeNode } from '@/api/mall/category'
-  import { fetchCategoryNameMap, getCategoryDisplayName } from '@/utils/mall/category-tree'
-  import GroupSearch from './modules/group-search.vue'
-  import GroupDialog from './modules/group-dialog.vue'
-  import GroupAttrRelationDialog from './modules/group-attr-relation-dialog.vue'
-  import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import type { DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import { formatTableIconCell } from '@/utils/ui/table-icon-cell'
+import {nextTick} from 'vue'
+import {watchDebounced} from '@vueuse/core'
+import {RefreshRight} from '@element-plus/icons-vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {
+  fetchDeleteGroup,
+  fetchDownloadGroupImportTemplate,
+  fetchExportGroup,
+  fetchGetGroupList,
+  fetchImportGroup,
+  type Group
+} from '@/api/mall/group'
+import {fetchMallCategoryChildren, type MallCategoryTreeNode} from '@/api/mall/category'
+import {fetchCategoryNameMap, getCategoryDisplayName} from '@/utils/mall/category-tree'
+import GroupSearch from './modules/group-search.vue'
+import GroupDialog from './modules/group-dialog.vue'
+import GroupAttrRelationDialog from './modules/group-attr-relation-dialog.vue'
+import ExcelImportDialog from '@/components/core/forms/excel-import-dialog/index.vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import type {DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {handleMutationError} from '@/utils/http/mutation'
+import {formatTableIconCell} from '@/utils/ui/table-icon-cell'
 
-  defineOptions({ name: 'Group' })
+defineOptions({ name: 'Group' })
 
   type LazyCatNode = MallCategoryTreeNode & { leaf?: boolean }
 

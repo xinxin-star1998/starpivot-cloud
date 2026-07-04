@@ -46,9 +46,9 @@
 </template>
 
 <script lang="ts" setup>
-  import { useSpuWizardInject } from '../../composables/useSpuWizard'
+import {useSpuWizardInject} from '../../composables/useSpuWizard'
 
-  const wizard = useSpuWizardInject()
+const wizard = useSpuWizardInject()
 </script>
 
 <style lang="scss" scoped>

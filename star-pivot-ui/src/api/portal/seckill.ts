@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { PortalOrderSubmitResult, PortalSeckillOrderPayload, PortalSeckillPage } from './types'
+import type {PortalOrderSubmitResult, PortalSeckillOrderPayload, PortalSeckillPage} from './types'
 
 export function fetchPortalSeckillPage(sessionId?: number) {
   return request.get<PortalSeckillPage>({

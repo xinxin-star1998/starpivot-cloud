@@ -1,5 +1,6 @@
 package cn.org.starpivot.common.security.mapper;
 
+import cn.org.starpivot.common.security.MenuPermissionAuthorityResolver;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

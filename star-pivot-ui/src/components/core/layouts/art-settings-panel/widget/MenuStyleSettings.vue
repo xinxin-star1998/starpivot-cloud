@@ -21,12 +21,12 @@
 </template>
 
 <script setup lang="ts">
-  import AppConfig from '@/config'
-  import SectionTitle from './SectionTitle.vue'
-  import { MenuTypeEnum, type MenuThemeEnum } from '@/enums/appEnum'
-  import { useSettingStore } from '@/store/modules/setting'
+import AppConfig from '@/config'
+import SectionTitle from './SectionTitle.vue'
+import {type MenuThemeEnum, MenuTypeEnum} from '@/enums/appEnum'
+import {useSettingStore} from '@/store/modules/setting'
 
-  const menuThemeList = AppConfig.themeList
+const menuThemeList = AppConfig.themeList
   const settingStore = useSettingStore()
   const { menuThemeType, menuType, isDark } = storeToRefs(settingStore)
   const isTopMenu = computed(() => menuType.value === MenuTypeEnum.TOP)

@@ -97,31 +97,31 @@
 </template>
 
 <script setup lang="ts">
-  import { useWindowSize } from '@vueuse/core'
-  import { useI18n } from 'vue-i18n'
-  // Component 类型从全局类型中获取（由 auto-imports.d.ts 提供）
+import {useWindowSize} from '@vueuse/core'
+import {useI18n} from 'vue-i18n'
+import {
+  ElCascader,
+  ElCheckbox,
+  ElCheckboxGroup,
+  ElDatePicker,
+  ElInput,
+  ElInputNumber,
+  ElInputTag,
+  ElRadioGroup,
+  ElRate,
+  ElSelect,
+  ElSlider,
+  ElSwitch,
+  ElTimePicker,
+  ElTimeSelect,
+  ElTreeSelect,
+  type FormInstance
+} from 'element-plus'
+import {calculateResponsiveSpan, type ResponsiveBreakpoint} from '@/utils/form/responsive'
+// Component 类型从全局类型中获取（由 auto-imports.d.ts 提供）
   type Component = ComponentPublicInstance
-  import {
-    ElCascader,
-    ElCheckbox,
-    ElCheckboxGroup,
-    ElDatePicker,
-    ElInput,
-    ElInputTag,
-    ElInputNumber,
-    ElRadioGroup,
-    ElRate,
-    ElSelect,
-    ElSlider,
-    ElSwitch,
-    ElTimePicker,
-    ElTimeSelect,
-    ElTreeSelect,
-    type FormInstance
-  } from 'element-plus'
-  import { calculateResponsiveSpan, type ResponsiveBreakpoint } from '@/utils/form/responsive'
 
-  defineOptions({ name: 'ArtForm' })
+defineOptions({ name: 'ArtForm' })
 
   const componentMap = {
     input: ElInput, // 输入框

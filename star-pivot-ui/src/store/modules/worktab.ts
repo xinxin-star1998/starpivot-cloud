@@ -37,11 +37,11 @@
  * @module store/modules/worktab
  * @author Art Design Pro Team
  */
-import { defineStore } from 'pinia'
-import { router } from '@/router'
-import { LocationQueryRaw, Router } from 'vue-router'
-import { WorkTab } from '@/types'
-import { useCommon } from '@/hooks/core/useCommon'
+import {defineStore} from 'pinia'
+import {router} from '@/router'
+import {LocationQueryRaw, Router} from 'vue-router'
+import {WorkTab} from '@/types'
+import {useCommon} from '@/hooks/core/useCommon'
 
 interface WorktabState {
   current: Partial<WorkTab>

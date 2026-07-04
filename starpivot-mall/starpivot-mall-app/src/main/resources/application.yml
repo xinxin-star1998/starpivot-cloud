@@ -12,15 +12,5 @@ spring:
     import:
       - optional:classpath:application-nacos.yml
       - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:oss-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
       - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
-
-starpivot:
-  api:
-    version: ${API_VERSION:v1}
-
-file:
-  storage:
-    local-path: ${FILE_STORAGE_LOCAL_PATH:${user.home}/starpivot/uploads}
-
-oss:
-  enabled: ${OSS_ENABLED:false}

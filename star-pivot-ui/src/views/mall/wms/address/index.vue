@@ -71,32 +71,22 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import type { TableProps } from 'element-plus'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import {
-    type Address,
-    fetchDeleteAddress,
-    fetchGetAddressChildren,
-    fetchSearchAddress
-  } from '@/api/mall/address'
-  import AddressSearch from './modules/address-search.vue'
-  import AddressDialog from './modules/address-dialog.vue'
-  import type { DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import {
-    addressHasChildren,
-    addressLevelTagType,
-    formatAddressLevel,
-    nextAddressLevel
-  } from '@/utils/mall/address-level'
+import {h} from 'vue'
+import type {TableProps} from 'element-plus'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTableColumns} from '@/hooks/core/useTableColumns'
+import {type Address, fetchDeleteAddress, fetchGetAddressChildren, fetchSearchAddress} from '@/api/mall/address'
+import AddressSearch from './modules/address-search.vue'
+import AddressDialog from './modules/address-dialog.vue'
+import type {DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
+import {handleMutationError} from '@/utils/http/mutation'
+import {addressHasChildren, addressLevelTagType, formatAddressLevel, nextAddressLevel} from '@/utils/mall/address-level'
 
-  defineOptions({ name: 'MallAddress' })
+defineOptions({ name: 'MallAddress' })
 
   const { hasAuth } = useAuth()
 

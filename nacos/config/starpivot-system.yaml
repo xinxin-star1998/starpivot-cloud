@@ -33,16 +33,18 @@ spring:
         exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
 
 mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: cn.org.starpivot.system.domain
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: delFlag
+      logic-delete-value: 2
+      logic-not-delete-value: 0
   configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
     log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
-
-oss:
-  enabled: ${OSS_ENABLED:true}
-  endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
-  access-key-id: ${OSS_ACCESS_KEY_ID:}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
-  url-prefix: ${OSS_URL_PREFIX:}
-  bucket-name: ${OSS_BUCKET_NAME:star-pivot}
 
 management:
   endpoints:

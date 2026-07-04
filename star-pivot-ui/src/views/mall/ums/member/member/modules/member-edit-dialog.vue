@@ -25,10 +25,10 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchMemberById, fetchMemberUpdate, type MemberSavePayload } from '@/api/mall/member'
-  import type { FormInstance, FormRules } from 'element-plus'
+import {fetchMemberById, fetchMemberUpdate, type MemberSavePayload} from '@/api/mall/member'
+import type {FormInstance, FormRules} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     memberId?: number
   }

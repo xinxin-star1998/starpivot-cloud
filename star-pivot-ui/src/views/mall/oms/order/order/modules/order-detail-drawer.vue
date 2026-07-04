@@ -61,12 +61,12 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchOmsOrderById, fetchOmsOrderClose, type OmsOrderVo } from '@/api/mall/order'
-  import { getPortalOrderStatusLabel, getPortalOrderStatusType } from '@/utils/portal/order-status'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ElMessageBox } from 'element-plus'
+import {fetchOmsOrderById, fetchOmsOrderClose, type OmsOrderVo} from '@/api/mall/order'
+import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/portal/order-status'
+import {useAuth} from '@/hooks/core/useAuth'
+import {ElMessageBox} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     orderId?: number
     showActions?: boolean

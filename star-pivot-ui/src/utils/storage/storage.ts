@@ -32,9 +32,9 @@
  * @module utils/storage/storage
  * @author Art Design Pro Team
  */
-import { router } from '@/router'
-import { useUserStore } from '@/store/modules/user'
-import { StorageConfig } from '@/utils/storage/storage-config'
+import {router} from '@/router'
+import {useUserStore} from '@/store/modules/user'
+import {StorageConfig} from '@/utils/storage/storage-config'
 
 /**
  * 存储兼容性管理器

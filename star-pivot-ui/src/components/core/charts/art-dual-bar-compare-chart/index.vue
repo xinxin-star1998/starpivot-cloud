@@ -4,11 +4,11 @@
 </template>
 
 <script setup lang="ts">
-  import { useChartOps, useChartComponent } from '@/hooks/core/useChart'
-  import type { EChartsOption, BarSeriesOption } from '@/plugins/echarts'
-  import type { BidirectionalBarChartProps } from '@/types/component/chart'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
+import type {BarSeriesOption, EChartsOption} from '@/plugins/echarts'
+import type {BidirectionalBarChartProps} from '@/types/component/chart'
 
-  defineOptions({ name: 'ArtDualBarCompareChart' })
+defineOptions({ name: 'ArtDualBarCompareChart' })
 
   const props = withDefaults(defineProps<BidirectionalBarChartProps>(), {
     // 基础配置

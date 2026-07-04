@@ -22,10 +22,10 @@
 </template>
 
 <script setup lang="ts">
-  import AppConfig from '@/config'
-  import { WEB_LINKS } from '@/utils/constants'
+import AppConfig from '@/config'
+import {WEB_LINKS} from '@/utils/constants'
 
-  const systemName = AppConfig.systemInfo.name
+const systemName = AppConfig.systemInfo.name
 
   const linkList = [
     { label: '项目官网', url: WEB_LINKS.DOCS },

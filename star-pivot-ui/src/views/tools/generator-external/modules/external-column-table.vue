@@ -103,11 +103,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ElCheckbox, ElInput, ElOption, ElSelect, ElTable, ElTableColumn } from 'element-plus'
-  import type { GenTableColumnItem } from '@/api/generator/gen-external'
-  import type { SysDictType } from '@/api/dict/type'
+import {ElCheckbox, ElInput, ElOption, ElSelect, ElTable, ElTableColumn} from 'element-plus'
+import type {GenTableColumnItem} from '@/api/generator/gen-external'
+import type {SysDictType} from '@/api/dict/type'
 
-  defineProps<{
+defineProps<{
     columns: GenTableColumnItem[]
     dictOptions: SysDictType[]
     maxHeight?: number | string

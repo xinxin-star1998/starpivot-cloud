@@ -1,4 +1,4 @@
-import type { ExternalDbConnection } from '@/api/generator/gen-external'
+import type {ExternalDbConnection} from '@/api/generator/gen-external'
 
 const STORAGE_KEY = 'gen_external_connection_presets'
 const LAST_CONN_KEY = 'gen_external_last_connection'

@@ -44,18 +44,18 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import DeptSearch from './modules/dept-search.vue'
-  import DeptDialog from './modules/dept-dialog.vue'
-  import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
-  import { DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { fetchGetDeptTree, fetchDeleteDept, type SysDept } from '@/api/dept/dept'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTableColumns} from '@/hooks/core/useTableColumns'
+import {useAuth} from '@/hooks/core/useAuth'
+import DeptSearch from './modules/dept-search.vue'
+import DeptDialog from './modules/dept-dialog.vue'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {fetchDeleteDept, fetchGetDeptTree, type SysDept} from '@/api/dept/dept'
 
-  defineOptions({ name: 'Dept' })
+defineOptions({ name: 'Dept' })
 
   // 权限检查
   const { hasAuth } = useAuth()

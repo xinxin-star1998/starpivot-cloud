@@ -43,12 +43,12 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
-  import { ElButton, ElIcon } from 'element-plus'
-  import { CopyDocument, ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue'
-  import { formatOperLogParam } from './oper-log-utils'
+import {computed, ref} from 'vue'
+import {ElButton, ElIcon} from 'element-plus'
+import {ArrowDownBold, ArrowUpBold, CopyDocument} from '@element-plus/icons-vue'
+import {formatOperLogParam} from './oper-log-utils'
 
-  interface Props {
+interface Props {
     label: string
     content?: string
     /** 超过该长度显示展开/收起 */

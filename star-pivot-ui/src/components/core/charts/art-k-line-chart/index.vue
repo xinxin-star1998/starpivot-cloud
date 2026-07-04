@@ -9,11 +9,11 @@
 </template>
 
 <script setup lang="ts">
-  import type { EChartsOption, TooltipComponentOption } from '@/plugins/echarts'
-  import { useChartComponent, useChartOps } from '@/hooks/core/useChart'
-  import type { KLineChartProps } from '@/types/component/chart'
+import type {EChartsOption, TooltipComponentOption} from '@/plugins/echarts'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
+import type {KLineChartProps} from '@/types/component/chart'
 
-  defineOptions({ name: 'ArtKLineChart' })
+defineOptions({ name: 'ArtKLineChart' })
 
   const props = withDefaults(defineProps<KLineChartProps>(), {
     // 基础配置

@@ -1,7 +1,7 @@
 package cn.org.starpivot.system.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import cn.org.starpivot.system.domain.entity.SysDictData;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -1,10 +1,10 @@
 package cn.org.starpivot.generator.external;
 
-import com.alibaba.druid.pool.DruidDataSource;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.generator.config.GenExternalProperties;
 import cn.org.starpivot.generator.domain.external.ExternalDbConnection;
 import cn.org.starpivot.generator.utils.StringUtils;
+import com.alibaba.druid.pool.DruidDataSource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

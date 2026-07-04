@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { ConsoleDashboardData } from '@/types/api/dashboard'
+import type {ConsoleDashboardData} from '@/types/api/dashboard'
 
 /**
  * 获取工作台首页数据

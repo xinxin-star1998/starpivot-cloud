@@ -72,9 +72,9 @@
 </template>
 
 <script setup lang="ts">
-  import type { PortalBrandBrief, PortalCategory } from '@/api/portal/types'
+import type {PortalBrandBrief, PortalCategory} from '@/api/portal/types'
 
-  defineOptions({ name: 'SearchCategorySidebar' })
+defineOptions({ name: 'SearchCategorySidebar' })
 
   defineProps<{
     categories: PortalCategory[]

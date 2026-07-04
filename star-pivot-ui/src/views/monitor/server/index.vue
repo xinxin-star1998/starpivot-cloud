@@ -173,13 +173,13 @@
 </template>
 
 <script setup lang="ts">
-  import { Refresh } from '@element-plus/icons-vue'
-  import { fetchGetServerInfo } from '@/api/monitor/server'
-  import { usePageVisibility } from '@/hooks/core/usePageVisibility'
-  import { useSettingStore } from '@/store/modules/setting'
-  import type { ServerInfo } from '@/types/api/monitor'
+import {Refresh} from '@element-plus/icons-vue'
+import {fetchGetServerInfo} from '@/api/monitor/server'
+import {usePageVisibility} from '@/hooks/core/usePageVisibility'
+import {useSettingStore} from '@/store/modules/setting'
+import type {ServerInfo} from '@/types/api/monitor'
 
-  defineOptions({ name: 'ServerMonitor' })
+defineOptions({ name: 'ServerMonitor' })
   const settingStore = useSettingStore()
   const { isDark } = storeToRefs(settingStore)
 

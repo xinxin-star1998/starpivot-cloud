@@ -62,10 +62,10 @@
 </template>
 
 <script setup lang="ts">
-  import { useFastEnter } from '@/hooks/core/useFastEnter'
-  import type { FastEnterApplication, FastEnterQuickLink } from '@/types/config'
+import {useFastEnter} from '@/hooks/core/useFastEnter'
+import type {FastEnterApplication, FastEnterQuickLink} from '@/types/config'
 
-  defineOptions({ name: 'ArtFastEnter' })
+defineOptions({ name: 'ArtFastEnter' })
 
   const router = useRouter()
   const popoverRef = ref()

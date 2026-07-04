@@ -34,11 +34,11 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchDeleteAvatar, fetchGetAvatarPresignedUrl, fetchUploadAvatar } from '@/api/user/user'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { extractOssObjectPath, needsOssPresignedDisplay } from '@/utils/storage/oss-object-path'
+import {fetchDeleteAvatar, fetchGetAvatarPresignedUrl, fetchUploadAvatar} from '@/api/user/user'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/oss-object-path'
 
-  // Props
+// Props
   const props = defineProps({
     modelValue: {
       type: String,

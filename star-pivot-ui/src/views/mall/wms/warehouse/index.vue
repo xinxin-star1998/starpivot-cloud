@@ -44,24 +44,20 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchWmsWareInfoList,
-    fetchWmsWareInfoRemove,
-    type WmsWareInfoVo
-  } from '@/api/mall/wareinfo'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import WarehouseSearch from './modules/warehouse-search.vue'
-  import WarehouseDialog from './modules/warehouse-dialog.vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import type { DialogType } from '@/types'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchWmsWareInfoList, fetchWmsWareInfoRemove, type WmsWareInfoVo} from '@/api/mall/wareinfo'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import WarehouseSearch from './modules/warehouse-search.vue'
+import WarehouseDialog from './modules/warehouse-dialog.vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import type {DialogType} from '@/types'
+import {useAuth} from '@/hooks/core/useAuth'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'WmsWarehouse' })
+defineOptions({ name: 'WmsWarehouse' })
 
   const { hasAuth } = useAuth()
 

@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { ServerInfo } from '@/types/api/monitor'
+import type {ServerInfo} from '@/types/api/monitor'
 
 /**
  * 获取服务器信息

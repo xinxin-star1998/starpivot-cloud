@@ -1,22 +1,19 @@
 package cn.org.starpivot.mall.portal.service.impl;
 
+import cn.org.starpivot.api.mall.promotion.dto.HomeSubjectDto;
+import cn.org.starpivot.api.product.dto.SkuDto;
+import cn.org.starpivot.api.product.dto.SpuDto;
 import cn.org.starpivot.common.domain.PageReqBo;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.storage.StorageObjectPathUtils;
-import cn.org.starpivot.mall.pms.entity.PmsSkuInfo;
-import cn.org.starpivot.mall.pms.entity.PmsSpuImages;
-import cn.org.starpivot.mall.pms.entity.PmsSpuInfo;
-import cn.org.starpivot.mall.pms.mapper.PmsSkuInfoMapper;
-import cn.org.starpivot.mall.pms.mapper.PmsSpuImagesMapper;
-import cn.org.starpivot.mall.pms.mapper.PmsSpuInfoMapper;
-import cn.org.starpivot.mall.portal.PortalConstants;
+import cn.org.starpivot.mall.common.MallProductConstants;
+import cn.org.starpivot.mall.common.ProductFeignSupport;
+import cn.org.starpivot.mall.common.PromotionFeignSupport;
 import cn.org.starpivot.mall.portal.domain.bo.PortalCollectAddBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalCollectSubjectAddBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCollectVo;
 import cn.org.starpivot.mall.portal.service.PortalCollectService;
-import cn.org.starpivot.mall.sms.entity.SmsHomeSubject;
-import cn.org.starpivot.mall.sms.mapper.SmsHomeSubjectMapper;
 import cn.org.starpivot.mall.ums.entity.UmsMemberCollectSpu;
 import cn.org.starpivot.mall.ums.entity.UmsMemberCollectSubject;
 import cn.org.starpivot.mall.ums.mapper.UmsMemberCollectSpuMapper;
@@ -32,7 +29,6 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,10 +36,8 @@ public class PortalCollectServiceImpl implements PortalCollectService {
 
     private final UmsMemberCollectSpuMapper collectSpuMapper;
     private final UmsMemberCollectSubjectMapper collectSubjectMapper;
-    private final SmsHomeSubjectMapper smsHomeSubjectMapper;
-    private final PmsSpuInfoMapper pmsSpuInfoMapper;
-    private final PmsSkuInfoMapper pmsSkuInfoMapper;
-    private final PmsSpuImagesMapper pmsSpuImagesMapper;
+    private final ProductFeignSupport productFeignSupport;
+    private final PromotionFeignSupport promotionFeignSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -70,8 +64,8 @@ public class PortalCollectServiceImpl implements PortalCollectService {
     @Transactional(rollbackFor = Exception.class)
     public void add(Long memberId, PortalCollectAddBo bo) {
         Long spuId = bo.getSpuId();
-        PmsSpuInfo spu = pmsSpuInfoMapper.selectById(spuId);
-        if (spu == null || !Integer.valueOf(PortalConstants.PUBLISH_STATUS_ON).equals(spu.getPublishStatus())) {
+        SpuDto spu = productFeignSupport.requireSpu(spuId);
+        if (!Integer.valueOf(MallProductConstants.PUBLISH_STATUS_ON).equals(spu.getPublishStatus())) {
             throw new BizException("商品不存在或已下架");
         }
 
@@ -118,8 +112,8 @@ public class PortalCollectServiceImpl implements PortalCollectService {
     @Transactional(rollbackFor = Exception.class)
     public void addSubject(Long memberId, PortalCollectSubjectAddBo bo) {
         Long subjectId = bo.getSubjectId();
-        SmsHomeSubject subject = smsHomeSubjectMapper.selectById(subjectId);
-        if (subject == null || !Integer.valueOf(1).equals(subject.getStatus())) {
+        HomeSubjectDto subject = promotionFeignSupport.requireSubject(subjectId);
+        if (!Integer.valueOf(1).equals(subject.getStatus())) {
             throw new BizException("专题不存在或已下线");
         }
         Long exists = collectSubjectMapper.selectCount(
@@ -165,14 +159,12 @@ public class PortalCollectServiceImpl implements PortalCollectService {
             return List.of();
         }
         List<Long> spuIds = records.stream().map(UmsMemberCollectSpu::getSpuId).filter(Objects::nonNull).distinct().toList();
-        Map<Long, PmsSpuInfo> spuMap = pmsSpuInfoMapper.selectBatchIds(spuIds).stream()
-                .collect(Collectors.toMap(PmsSpuInfo::getId, s -> s, (a, b) -> a));
+        Map<Long, SpuDto> spuMap = productFeignSupport.requireSpuMap(spuIds);
 
-        List<PmsSkuInfo> skus = pmsSkuInfoMapper.selectList(
-                Wrappers.<PmsSkuInfo>lambdaQuery().in(PmsSkuInfo::getSpuId, spuIds));
+        List<SkuDto> skus = productFeignSupport.requireSkusBySpuIds(spuIds);
         Map<Long, BigDecimal> minPriceMap = new HashMap<>();
         Map<Long, Long> defaultSkuMap = new HashMap<>();
-        for (PmsSkuInfo sku : skus) {
+        for (SkuDto sku : skus) {
             if (sku.getSpuId() == null || sku.getPrice() == null || sku.getSkuId() == null) {
                 continue;
             }
@@ -195,7 +187,7 @@ public class PortalCollectServiceImpl implements PortalCollectService {
             vo.setCreateTime(record.getCreateTime());
             vo.setPrice(minPriceMap.get(record.getSpuId()));
             vo.setDefaultSkuId(defaultSkuMap.get(record.getSpuId()));
-            PmsSpuInfo spu = spuMap.get(record.getSpuId());
+            SpuDto spu = spuMap.get(record.getSpuId());
             if (spu != null) {
                 vo.setPublishStatus(spu.getPublishStatus());
                 if (!StringUtils.hasText(vo.getSpuName())) {
@@ -208,15 +200,8 @@ public class PortalCollectServiceImpl implements PortalCollectService {
     }
 
     private String resolveCover(Long spuId) {
-        PmsSpuImages img = pmsSpuImagesMapper.selectOne(
-                Wrappers.<PmsSpuImages>lambdaQuery()
-                        .eq(PmsSpuImages::getSpuId, spuId)
-                        .orderByDesc(PmsSpuImages::getDefaultImg)
-                        .orderByAsc(PmsSpuImages::getImgSort)
-                        .last("LIMIT 1"));
-        if (img == null || !StringUtils.hasText(img.getImgUrl())) {
-            return null;
-        }
-        return StorageObjectPathUtils.normalizeToObjectName(img.getImgUrl().trim());
+        Map<Long, String> covers = productFeignSupport.requireSpuCoverImages(List.of(spuId));
+        String cover = covers.get(spuId);
+        return StringUtils.hasText(cover) ? cover : null;
     }
 }

@@ -43,7 +43,7 @@
  * @module useDict
  */
 
-import { useDictStore } from '@/store/modules/dict'
+import {useDictStore} from '@/store/modules/dict'
 
 export const useDict = () => {
   const dictStore = useDictStore()

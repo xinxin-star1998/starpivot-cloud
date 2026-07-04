@@ -54,20 +54,20 @@
 </template>
 
 <script setup lang="ts">
-  import { h, nextTick, onMounted, ref } from 'vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useDict } from '@/hooks/core/useDict'
-  import { fetchDeleteNotice, fetchGetNoticeList, type Notice } from '@/api/system/notice/notice'
-  import NoticeSearch from './modules/notice-search.vue'
-  import NoticeDialog from './modules/notice-dialog.vue'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h, nextTick, onMounted, ref} from 'vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {useDict} from '@/hooks/core/useDict'
+import {fetchDeleteNotice, fetchGetNoticeList, type Notice} from '@/api/system/notice/notice'
+import NoticeSearch from './modules/notice-search.vue'
+import NoticeDialog from './modules/notice-dialog.vue'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'Notice' })
+defineOptions({ name: 'Notice' })
 
   const { hasAuth } = useAuth()
   const { getDictItem, getTagType, loadDicts } = useDict()

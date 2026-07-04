@@ -41,22 +41,18 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { ElMessageBox } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import {
-    fetchMemberPriceList,
-    fetchMemberPriceRemove,
-    type MemberPriceVo
-  } from '@/api/mall/member-price'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import MemberPriceDialog from './modules/member-price-dialog.vue'
-  import type { DialogType } from '@/types'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {ElMessageBox} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchMemberPriceList, fetchMemberPriceRemove, type MemberPriceVo} from '@/api/mall/member-price'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import MemberPriceDialog from './modules/member-price-dialog.vue'
+import type {DialogType} from '@/types'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'SmsMemberPrice' })
+defineOptions({ name: 'SmsMemberPrice' })
 
   const searchForm = ref({ skuId: undefined as number | undefined })
   const dialogVisible = ref(false)

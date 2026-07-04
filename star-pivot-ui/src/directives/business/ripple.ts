@@ -37,7 +37,7 @@
  * @author Art Design Pro Team
  */
 
-import type { App, Directive, DirectiveBinding } from 'vue'
+import type {App, Directive, DirectiveBinding} from 'vue'
 
 export interface RippleOptions {
   /** 水波纹颜色 */

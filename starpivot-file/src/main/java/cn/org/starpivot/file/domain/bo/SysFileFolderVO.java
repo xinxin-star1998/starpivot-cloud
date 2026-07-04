@@ -2,8 +2,6 @@ package cn.org.starpivot.file.domain.bo;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * 文件夹树节点。
  */

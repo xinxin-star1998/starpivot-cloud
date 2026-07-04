@@ -169,31 +169,31 @@
 </template>
 
 <script setup lang="ts">
-  /**
-   * 代码生成配置编辑逻辑
-   * 从后端接口获取表的基本信息、字段信息、生成信息
-   */
-  import { useRoute, useRouter } from 'vue-router'
-  import {
-    ElButton,
-    ElCard,
-    ElCheckbox,
-    ElForm,
-    ElFormItem,
-    ElInput,
-    ElMessage,
-    ElOption,
-    ElSelect,
-    ElTable,
-    ElTableColumn,
-    ElTabPane,
-    ElTabs
-  } from 'element-plus'
-  import { fetchEditSave, fetchGetGenTableInfo } from '@/api/generator/gen-table'
-  import { fetchGetDictTypeSelectList, type SysDictType } from '@/api/dict/type'
-  import { fetchGetParentMenu } from '@/api/menu/menu'
+/**
+ * 代码生成配置编辑逻辑
+ * 从后端接口获取表的基本信息、字段信息、生成信息
+ */
+import {useRoute, useRouter} from 'vue-router'
+import {
+  ElButton,
+  ElCard,
+  ElCheckbox,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElMessage,
+  ElOption,
+  ElSelect,
+  ElTable,
+  ElTableColumn,
+  ElTabPane,
+  ElTabs
+} from 'element-plus'
+import {fetchEditSave, fetchGetGenTableInfo} from '@/api/generator/gen-table'
+import {fetchGetDictTypeSelectList, type SysDictType} from '@/api/dict/type'
+import {fetchGetParentMenu} from '@/api/menu/menu'
 
-  const GenInfoForm = defineAsyncComponent(
+const GenInfoForm = defineAsyncComponent(
     () => import('@views/tools/generator/modules/genInfoForm.vue')
   )
 

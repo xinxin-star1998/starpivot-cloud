@@ -12,33 +12,25 @@
 import * as echarts from 'echarts/core'
 
 // 导入图表类型
-import {
-  BarChart,
-  CandlestickChart,
-  LineChart,
-  MapChart,
-  PieChart,
-  RadarChart,
-  ScatterChart
-} from 'echarts/charts'
+import {BarChart, CandlestickChart, LineChart, MapChart, PieChart, RadarChart, ScatterChart} from 'echarts/charts'
 
 // 导入组件
 import {
-  BrushComponent,
-  DataZoomComponent,
-  GeoComponent,
-  GridComponent,
-  LegendComponent,
-  MarkLineComponent,
-  MarkPointComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-  VisualMapComponent
+    BrushComponent,
+    DataZoomComponent,
+    GeoComponent,
+    GridComponent,
+    LegendComponent,
+    MarkLineComponent,
+    MarkPointComponent,
+    TitleComponent,
+    ToolboxComponent,
+    TooltipComponent,
+    VisualMapComponent
 } from 'echarts/components'
 
 // 导入渲染器
-import { CanvasRenderer } from 'echarts/renderers'
+import {CanvasRenderer} from 'echarts/renderers'
 
 // 注册必要的组件
 echarts.use([

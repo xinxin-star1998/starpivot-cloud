@@ -31,19 +31,19 @@
 </template>
 
 <script setup lang="ts">
-  import { h } from 'vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchOmsOrderList, OMS_ORDER_STATUS_MAP, type OmsOrderVo } from '@/api/mall/order'
-  import { getPortalOrderStatusLabel, getPortalOrderStatusType } from '@/utils/portal/order-status'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import OrderSearch from './modules/order-search.vue'
-  import OrderDetailDrawer from './modules/order-detail-drawer.vue'
-  import DeliverDialog from './modules/deliver-dialog.vue'
-  import { ElButton, ElSpace, ElTag } from 'element-plus'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {h} from 'vue'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchOmsOrderList, OMS_ORDER_STATUS_MAP} from '@/api/mall/order'
+import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/portal/order-status'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import OrderSearch from './modules/order-search.vue'
+import OrderDetailDrawer from './modules/order-detail-drawer.vue'
+import DeliverDialog from './modules/deliver-dialog.vue'
+import {ElButton, ElSpace, ElTag} from 'element-plus'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'OmsOrderQuery' })
+defineOptions({ name: 'OmsOrderQuery' })
 
   const { hasAuth } = useAuth()
 

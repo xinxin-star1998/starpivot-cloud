@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-  import { RETURN_STATUS_MAP } from '@/api/mall/order-return'
+import {RETURN_STATUS_MAP} from '@/api/mall/order-return'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, unknown>
   }
   interface Emits {

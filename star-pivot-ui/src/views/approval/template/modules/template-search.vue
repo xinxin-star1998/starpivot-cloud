@@ -10,9 +10,9 @@
 </template>
 
 <script lang="ts" setup>
-  import { TEMPLATE_STATUS_OPTIONS } from '../../utils/approval-labels'
+import {TEMPLATE_STATUS_OPTIONS} from '../../utils/approval-labels'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, any>
   }
   interface Emits {

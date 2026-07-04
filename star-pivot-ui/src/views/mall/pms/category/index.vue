@@ -111,24 +111,24 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick } from 'vue'
-  import { watchDebounced } from '@vueuse/core'
-  import type { ColumnOption } from '@/types/component'
-  import {
-    fetchMallCategoryById,
-    fetchMallCategoryChildren,
-    fetchMallCategoryRemove,
-    fetchMallCategorySortBatch,
-    type MallCategoryTreeNode
-  } from '@/api/mall/category'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import CategoryDialog, { type CategoryDialogSubmitPayload } from './modules/category-dialog.vue'
-  import { ElButton, ElMessage, ElMessageBox, ElSpace, ElTag, ElTree } from 'element-plus'
-  import type { DialogType } from '@/types'
-  import type Node from 'element-plus/es/components/tree/src/model/node'
-  import { useAuth } from '@/hooks/core/useAuth'
+import {nextTick} from 'vue'
+import {watchDebounced} from '@vueuse/core'
+import type {ColumnOption} from '@/types/component'
+import {
+  fetchMallCategoryById,
+  fetchMallCategoryChildren,
+  fetchMallCategoryRemove,
+  fetchMallCategorySortBatch,
+  type MallCategoryTreeNode
+} from '@/api/mall/category'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import CategoryDialog, {type CategoryDialogSubmitPayload} from './modules/category-dialog.vue'
+import {ElButton, ElMessage, ElMessageBox, ElSpace, ElTag, ElTree} from 'element-plus'
+import type {DialogType} from '@/types'
+import type Node from 'element-plus/es/components/tree/src/model/node'
+import {useAuth} from '@/hooks/core/useAuth'
 
-  defineOptions({ name: 'MallCategory' })
+defineOptions({ name: 'MallCategory' })
 
   const { hasAuth } = useAuth()
 

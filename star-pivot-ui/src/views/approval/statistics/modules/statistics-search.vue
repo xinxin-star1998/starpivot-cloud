@@ -10,9 +10,9 @@
 </template>
 
 <script lang="ts" setup>
-  import { BIZ_MODULE_OPTIONS } from '../../utils/approval-labels'
+import {BIZ_MODULE_OPTIONS} from '../../utils/approval-labels'
 
-  interface Props {
+interface Props {
     modelValue: Record<string, any>
   }
   interface Emits {

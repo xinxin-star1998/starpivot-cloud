@@ -1,4 +1,4 @@
-import { fetchRegisterEnabled } from '@/api/auth'
+import {fetchRegisterEnabled} from '@/api/auth'
 
 let registerEnabledCache: boolean | null = null
 let pendingRequest: Promise<boolean> | null = null

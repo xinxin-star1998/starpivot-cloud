@@ -57,12 +57,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { AppRouteRecord } from '@/types/router'
-  import { formatMenuTitle } from '@/utils/router'
-  import { handleMenuJump } from '@/utils/navigation'
-  import { useSettingStore } from '@/store/modules/setting'
+import type {AppRouteRecord} from '@/types/router'
+import {formatMenuTitle} from '@/utils/router'
+import {handleMenuJump} from '@/utils/navigation'
+import {useSettingStore} from '@/store/modules/setting'
 
-  interface MenuTheme {
+interface MenuTheme {
     iconColor?: string
   }
 

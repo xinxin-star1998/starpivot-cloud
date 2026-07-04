@@ -51,15 +51,15 @@
 </template>
 
 <script setup lang="ts">
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetUserListByRoleId, fetchCancelUser } from '@/api/role/role'
-  import AssignUserSearch from './modules/assign-user-search.vue'
-  import { ElTag, ElButton, ElSpace, ElMessage } from 'element-plus'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import { useRoute, useRouter } from 'vue-router'
+import {useTable} from '@/hooks/core/useTable'
+import {fetchCancelUser, fetchGetUserListByRoleId} from '@/api/role/role'
+import AssignUserSearch from './modules/assign-user-search.vue'
+import {ElButton, ElMessage, ElSpace, ElTag} from 'element-plus'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import {useRoute, useRouter} from 'vue-router'
 
-  const AddUser = defineAsyncComponent(() => import('@views/system/role/modules/add-user.vue'))
+const AddUser = defineAsyncComponent(() => import('@views/system/role/modules/add-user.vue'))
 
   defineOptions({ name: 'AssignUser' })
 

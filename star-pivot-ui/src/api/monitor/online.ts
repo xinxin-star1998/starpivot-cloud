@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { OnlineUser, OnlineUserQueryParams } from '@/types/api/monitor'
+import type {OnlineUser, OnlineUserQueryParams} from '@/types/api/monitor'
 
 /**
  * 获取在线用户列表

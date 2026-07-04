@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { ApTaskActionDto, ApTaskVo } from './types'
+import type {ApTaskActionDto, ApTaskVo} from './types'
 
 export interface ApTaskQuery {
   title?: string

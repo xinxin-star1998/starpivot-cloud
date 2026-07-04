@@ -1,10 +1,7 @@
 package cn.org.starpivot.api.fallback;
 
 import cn.org.starpivot.api.mall.order.OrderInternalClient;
-import cn.org.starpivot.api.mall.order.dto.OrderInternalDto;
-import cn.org.starpivot.api.mall.order.dto.OrderItemInternalDto;
-import cn.org.starpivot.api.mall.order.dto.OrderSubmitRequestDto;
-import cn.org.starpivot.api.mall.order.dto.OrderSubmitResultDto;
+import cn.org.starpivot.api.mall.order.dto.*;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FallbackFactory;
 
@@ -29,6 +26,21 @@ public class OrderInternalClientFallbackFactory implements FallbackFactory<Order
 
             @Override
             public Result<OrderSubmitResultDto> submitOrder(OrderSubmitRequestDto request) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
+            public Result<Integer> countByMember(Long memberId) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
+            public Result<Boolean> hasPurchasedSpu(Long memberId, Long spuId) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
+            public Result<List<PendingReviewItemDto>> listReviewablePurchaseItems(Long memberId) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }
         };

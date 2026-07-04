@@ -49,18 +49,18 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { fetchDeletePost, fetchGetPostList, fetchUpdatePost } from '@/api/post/post'
-  import PostSearch from './modules/post-search.vue'
-  import PostDialog from './modules/post-dialog.vue'
-  import { ElMessage, ElMessageBox, ElSwitch } from 'element-plus'
-  import { type ColumnOption, DialogType } from '@/types'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import {fetchDeletePost, fetchGetPostList, fetchUpdatePost} from '@/api/post/post'
+import PostSearch from './modules/post-search.vue'
+import PostDialog from './modules/post-dialog.vue'
+import {ElMessage, ElMessageBox, ElSwitch} from 'element-plus'
+import {type ColumnOption, DialogType} from '@/types'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
 
-  defineOptions({ name: 'Post' })
+defineOptions({ name: 'Post' })
 
   // 权限检查
   const { hasAuth } = useAuth()

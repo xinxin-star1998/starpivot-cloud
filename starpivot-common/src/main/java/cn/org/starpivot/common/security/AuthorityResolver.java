@@ -1,7 +1,5 @@
 package cn.org.starpivot.common.security;
 
-import cn.org.starpivot.common.security.LoginUser;
-
 import java.util.Collection;
 
 /**

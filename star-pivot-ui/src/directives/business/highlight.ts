@@ -41,7 +41,7 @@
  * @author Art Design Pro Team
  */
 
-import type { App, Directive } from 'vue'
+import type {App, Directive} from 'vue'
 import hljs from 'highlight.js'
 
 // 高亮代码

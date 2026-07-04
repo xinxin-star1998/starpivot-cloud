@@ -11,9 +11,9 @@
 </template>
 
 <script setup lang="ts">
-  import { IframeRouteManager } from '@/router/core'
+import {IframeRouteManager} from '@/router/core'
 
-  defineOptions({ name: 'IframeView' })
+defineOptions({ name: 'IframeView' })
 
   const route = useRoute()
   const isLoading = ref(true)

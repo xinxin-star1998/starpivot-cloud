@@ -9,12 +9,12 @@
 </template>
 
 <script setup lang="ts">
-  import { useChartOps, useChartComponent } from '@/hooks/core/useChart'
-  import { getCssVar } from '@/utils/ui'
-  import { graphic, type EChartsOption } from '@/plugins/echarts'
-  import type { BarChartProps, BarDataItem } from '@/types/component/chart'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
+import {getCssVar} from '@/utils/ui'
+import {type EChartsOption, graphic} from '@/plugins/echarts'
+import type {BarChartProps, BarDataItem} from '@/types/component/chart'
 
-  defineOptions({ name: 'ArtHBarChart' })
+defineOptions({ name: 'ArtHBarChart' })
 
   const props = withDefaults(defineProps<BarChartProps>(), {
     // 基础配置

@@ -1,10 +1,5 @@
-import type {
-  MallProductBaseAttr,
-  MallProductSavePayload,
-  MallProductSku,
-  MallProductSkuImage
-} from '@/api/mall/product'
-import { joinValueSelect } from '@/utils/mall/attr-value-select'
+import type {MallProductBaseAttr, MallProductSavePayload, MallProductSku, MallProductSkuImage} from '@/api/mall/product'
+import {joinValueSelect} from '@/utils/mall/attr-value-select'
 
 export interface SpuWizardBaseForm {
   id?: number

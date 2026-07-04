@@ -112,13 +112,13 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchRegister } from '@/api/auth'
-  import { isRegisterEnabled } from '@/utils/auth/register-config'
-  import { useSettingStore } from '@/store/modules/setting'
+import {useI18n} from 'vue-i18n'
+import type {FormInstance, FormRules} from 'element-plus'
+import {fetchRegister} from '@/api/auth'
+import {isRegisterEnabled} from '@/utils/auth/register-config'
+import {useSettingStore} from '@/store/modules/setting'
 
-  defineOptions({ name: 'Register' })
+defineOptions({ name: 'Register' })
 
   const settingStore = useSettingStore()
   const { isDark } = storeToRefs(settingStore)

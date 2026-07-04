@@ -1,5 +1,6 @@
 package cn.org.starpivot.auth.service;
 
+import cn.org.starpivot.auth.security.AuthTokenBlacklistChecker;
 import cn.org.starpivot.common.security.JwtUtils;
 import cn.org.starpivot.common.security.SecurityConstants;
 import lombok.RequiredArgsConstructor;

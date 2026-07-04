@@ -29,19 +29,19 @@
 </template>
 
 <script lang="ts" setup>
-  import { h } from 'vue'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { fetchApprovalBindList, fetchApprovalBindRemove } from '@/api/approval/template'
-  import type { ApTemplateBind } from '@/api/approval/types'
-  import BindEditDialog from './modules/bind-edit-dialog.vue'
-  import { handleMutationError } from '@/utils/http/mutation'
+import {h} from 'vue'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {fetchApprovalBindList, fetchApprovalBindRemove} from '@/api/approval/template'
+import type {ApTemplateBind} from '@/api/approval/types'
+import BindEditDialog from './modules/bind-edit-dialog.vue'
+import {handleMutationError} from '@/utils/http/mutation'
 
-  defineOptions({ name: 'ApprovalBind' })
+defineOptions({ name: 'ApprovalBind' })
 
   const { hasAuth } = useAuth()
 

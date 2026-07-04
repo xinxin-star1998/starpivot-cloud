@@ -57,19 +57,19 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    fetchWareTaskById,
-    fetchWareTaskDeduct,
-    fetchWareTaskLock,
-    fetchWareTaskUnlock,
-    LOCK_STATUS_MAP,
-    TASK_STATUS_MAP,
-    type WareOrderTaskVo
-  } from '@/api/mall/ware-task'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import { ElMessageBox } from 'element-plus'
+import {
+  fetchWareTaskById,
+  fetchWareTaskDeduct,
+  fetchWareTaskLock,
+  fetchWareTaskUnlock,
+  LOCK_STATUS_MAP,
+  TASK_STATUS_MAP,
+  type WareOrderTaskVo
+} from '@/api/mall/ware-task'
+import {useAuth} from '@/hooks/core/useAuth'
+import {ElMessageBox} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     taskId?: number
   }

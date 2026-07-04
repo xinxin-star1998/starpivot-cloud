@@ -32,8 +32,8 @@
  * @author Art Design Pro Team
  */
 
-import { $t } from '@/locales'
-import type { ColumnOption } from '@/types/component'
+import {$t} from '@/locales'
+import type {ColumnOption} from '@/types/component'
 
 /**
  * 特殊列类型

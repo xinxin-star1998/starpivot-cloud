@@ -1,8 +1,9 @@
 package cn.org.starpivot.mall.ums.domain.vo;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import lombok.Data;
 
 /**
  * 会员视图对象。

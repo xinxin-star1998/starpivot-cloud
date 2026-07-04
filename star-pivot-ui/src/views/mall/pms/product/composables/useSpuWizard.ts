@@ -1,11 +1,11 @@
-import type { InjectionKey } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
-import { useRoute, useRouter } from 'vue-router'
-import { parseValueSelect } from '@/utils/mall/attr-value-select'
-import { useSpuWizardOptions } from './useSpuWizardOptions'
-import { useSpuWizardAttrs } from './useSpuWizardAttrs'
-import { useSpuWizardSku } from './useSpuWizardSku'
-import { useSpuWizardSubmit } from './useSpuWizardSubmit'
+import type {InjectionKey} from 'vue'
+import type {FormInstance, FormRules} from 'element-plus'
+import {useRoute, useRouter} from 'vue-router'
+import {parseValueSelect} from '@/utils/mall/attr-value-select'
+import {useSpuWizardOptions} from './useSpuWizardOptions'
+import {useSpuWizardAttrs} from './useSpuWizardAttrs'
+import {useSpuWizardSku} from './useSpuWizardSku'
+import {useSpuWizardSubmit} from './useSpuWizardSubmit'
 
 export const SPU_WIZARD_KEY: InjectionKey<ReturnType<typeof useSpuWizard>> = Symbol('spuWizard')
 

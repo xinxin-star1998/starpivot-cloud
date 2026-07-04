@@ -67,20 +67,20 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElMessage } from 'element-plus'
-  import { Icon } from '@iconify/vue'
-  import ArtIconPicker from '@/components/core/base/art-icon-picker/index.vue'
-  import { fetchAddGroup, fetchGetGroupById, fetchUpdateGroup, type Group } from '@/api/mall/group'
-  import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
-  import {
-    filterVisibleCategoryTree,
-    findCategoryNode,
-    findCategoryPath,
-    mapCategoryCascaderOptions
-  } from '@/utils/mall/category-tree'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {Icon} from '@iconify/vue'
+import ArtIconPicker from '@/components/core/base/art-icon-picker/index.vue'
+import {fetchAddGroup, fetchGetGroupById, fetchUpdateGroup, type Group} from '@/api/mall/group'
+import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
+import {
+  filterVisibleCategoryTree,
+  findCategoryNode,
+  findCategoryPath,
+  mapCategoryCascaderOptions
+} from '@/utils/mall/category-tree'
 
-  interface Props {
+interface Props {
     visible: boolean
     type: string
     groupData?: Partial<Group>

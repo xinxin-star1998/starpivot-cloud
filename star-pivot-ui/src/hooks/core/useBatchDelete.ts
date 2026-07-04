@@ -1,6 +1,6 @@
-import type { Ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { isUserCancel } from '@/utils/sys/confirm-action'
+import type {Ref} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {isUserCancel} from '@/utils/sys/confirm-action'
 
 type ConfirmType = 'success' | 'warning' | 'info' | 'error'
 

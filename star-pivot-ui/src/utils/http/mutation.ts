@@ -5,9 +5,9 @@
  * - HttpError 默认由 HTTP 拦截器 showError，此处避免重复 toast
  * - 非 HTTP 错误展示 fallback 提示
  */
-import { ElMessage } from 'element-plus'
-import { isHttpError } from './error'
-import { safeError } from '@/utils/sys/console'
+import {ElMessage} from 'element-plus'
+import {isHttpError} from './error'
+import {safeError} from '@/utils/sys/console'
 
 /** 是否为 MessageBox / 用户主动取消 */
 export function isUserCancelError(error: unknown): boolean {

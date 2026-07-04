@@ -27,7 +27,7 @@
  * @module types/component/chart
  * @author Art Design Pro Team
  */
-import type { EChartsOption } from '@/plugins/echarts'
+import type {EChartsOption} from '@/plugins/echarts'
 
 // 图例位置类型
 export type LegendPosition = 'bottom' | 'top' | 'left' | 'right'

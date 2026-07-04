@@ -35,13 +35,9 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    fetchOrderSetting,
-    fetchOrderSettingUpdate,
-    type OmsOrderSetting
-  } from '@/api/mall/order-setting'
+import {fetchOrderSetting, fetchOrderSettingUpdate, type OmsOrderSetting} from '@/api/mall/order-setting'
 
-  defineOptions({ name: 'OmsOrderSetting' })
+defineOptions({ name: 'OmsOrderSetting' })
 
   const loading = ref(false)
   const submitting = ref(false)

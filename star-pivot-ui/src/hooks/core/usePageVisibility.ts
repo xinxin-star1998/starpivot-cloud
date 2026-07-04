@@ -19,7 +19,7 @@
  * ```
  */
 
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import {onBeforeUnmount, onMounted, ref} from 'vue'
 
 export function usePageVisibility() {
   const isVisible = ref(true)

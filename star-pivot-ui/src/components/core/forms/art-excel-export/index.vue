@@ -19,13 +19,13 @@
 </template>
 
 <script setup lang="ts">
-  import * as XLSX from 'xlsx'
-  import FileSaver from 'file-saver'
-  import { Loading } from '@element-plus/icons-vue'
-  import type { ButtonType } from 'element-plus'
-  import { useThrottleFn } from '@vueuse/core'
+import * as XLSX from 'xlsx'
+import FileSaver from 'file-saver'
+import {Loading} from '@element-plus/icons-vue'
+import type {ButtonType} from 'element-plus'
+import {useThrottleFn} from '@vueuse/core'
 
-  defineOptions({ name: 'ArtExcelExport' })
+defineOptions({ name: 'ArtExcelExport' })
 
   /** 导出数据类型 */
   type ExportValue = string | number | boolean | null | undefined | Date

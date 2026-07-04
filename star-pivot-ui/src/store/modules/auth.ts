@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { useUserStore } from './user'
+import {defineStore} from 'pinia'
+import {useUserStore} from './user'
 
 /**
  * 认证相关状态（轻量门面）

@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-  import { useChartOps, useChartComponent } from '@/hooks/core/useChart'
-  import { type EChartsOption } from '@/plugins/echarts'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
+import {type EChartsOption} from '@/plugins/echarts'
 
-  defineOptions({ name: 'ArtBarChartCard' })
+defineOptions({ name: 'ArtBarChartCard' })
 
   interface Props {
     /** 数值 */

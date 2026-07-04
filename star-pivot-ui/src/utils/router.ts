@@ -5,11 +5,11 @@
  *
  * @module utils/router
  */
-import { RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
+import {RouteLocationNormalized, RouteRecordRaw} from 'vue-router'
 import AppConfig from '@/config'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
-import i18n, { $t } from '@/locales'
+import i18n, {$t} from '@/locales'
 
 /** 扩展的路由配置类型 */
 export type AppRouteRecordRaw = RouteRecordRaw & {

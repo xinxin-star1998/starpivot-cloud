@@ -48,17 +48,17 @@
 </template>
 
 <script setup lang="ts">
-  /**
-   * 导入表弹窗组件
-   * 仅负责展示查询表单与待导入表格列表，真正的导入逻辑由父组件触发
-   */
-  import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import { fetchGetDbList, fetchImportTable } from '@/api/generator/gen-table'
-  import type { ColumnOption } from '@/types'
+/**
+ * 导入表弹窗组件
+ * 仅负责展示查询表单与待导入表格列表，真正的导入逻辑由父组件触发
+ */
+import {ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElMessage} from 'element-plus'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import {fetchGetDbList, fetchImportTable} from '@/api/generator/gen-table'
+import type {ColumnOption} from '@/types'
 
-  interface ImportTableItem {
+interface ImportTableItem {
     /** 表名称 */
     tableName: string
     /** 表描述 */

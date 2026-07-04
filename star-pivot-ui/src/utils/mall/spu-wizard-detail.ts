@@ -1,13 +1,9 @@
-import type { Ref } from 'vue'
-import type { MallAttr } from '@/api/mall/attr'
-import type { MallProductSku } from '@/api/mall/product'
-import { parseValueSelect } from '@/utils/mall/attr-value-select'
-import type { SpuAttrGroupWithAttrs } from '@/utils/mall/spu-wizard-attr'
-import type {
-  SpuWizardBaseAttrCell,
-  SpuWizardSaleDraft,
-  SpuWizardSkuRow
-} from '@/utils/mall/spu-wizard-payload'
+import type {Ref} from 'vue'
+import type {MallAttr} from '@/api/mall/attr'
+import type {MallProductSku} from '@/api/mall/product'
+import {parseValueSelect} from '@/utils/mall/attr-value-select'
+import type {SpuAttrGroupWithAttrs} from '@/utils/mall/spu-wizard-attr'
+import type {SpuWizardBaseAttrCell, SpuWizardSaleDraft, SpuWizardSkuRow} from '@/utils/mall/spu-wizard-payload'
 
 export function applyBaseAttrsFromDetail(
   baseAttrValues: SpuWizardBaseAttrCell[][],

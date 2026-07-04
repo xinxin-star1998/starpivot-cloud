@@ -15,10 +15,10 @@
 </template>
 
 <script setup lang="ts">
-  import * as XLSX from 'xlsx'
-  import type { UploadFile } from 'element-plus'
+import * as XLSX from 'xlsx'
+import type {UploadFile} from 'element-plus'
 
-  defineOptions({ name: 'ArtExcelImport' })
+defineOptions({ name: 'ArtExcelImport' })
 
   // Excel 导入工具函数
   async function importExcel(file: File): Promise<Array<Record<string, unknown>>> {

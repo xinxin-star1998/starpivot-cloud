@@ -25,8 +25,8 @@
  * @module store/modules/table
  * @author Art Design Pro Team
  */
-import { defineStore } from 'pinia'
-import { TableSizeEnum } from '@/enums/formEnum'
+import {defineStore} from 'pinia'
+import {TableSizeEnum} from '@/enums/formEnum'
 
 // 表格
 export const useTableStore = defineStore(

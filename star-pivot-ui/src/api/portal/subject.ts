@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type { PortalSubjectDetail } from './types'
+import type {PortalSubjectDetail} from './types'
 
 export function fetchPortalSubjectDetail(
   id: number,

@@ -31,11 +31,11 @@
 </template>
 
 <script setup lang="ts">
-  import { graphic, type EChartsOption } from '@/plugins/echarts'
-  import { getCssVar, hexToRgba } from '@/utils/ui'
-  import { useChartOps, useChartComponent } from '@/hooks/core/useChart'
+import {type EChartsOption, graphic} from '@/plugins/echarts'
+import {getCssVar, hexToRgba} from '@/utils/ui'
+import {useChartComponent, useChartOps} from '@/hooks/core/useChart'
 
-  defineOptions({ name: 'ArtLineChartCard' })
+defineOptions({ name: 'ArtLineChartCard' })
 
   interface Props {
     /** 数值 */

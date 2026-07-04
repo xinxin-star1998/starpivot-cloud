@@ -86,21 +86,21 @@
 </template>
 
 <script setup lang="ts">
-  import { Loading, Plus } from '@element-plus/icons-vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import { computed, onUnmounted, ref, watch } from 'vue'
-  import { uploadMallImage } from '@/api/mall/mall-image'
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import {
-    isStorageObjectName,
-    normalizeToObjectName,
-    resolveGoodsImageDisplayUrl,
-    resolveGoodsImageDisplayUrls
-  } from '@/utils/mall/goods-image-url'
-  import { useMenuStore } from '@/store/modules/menu'
-  import MallFilePickerDialog from './mall-file-picker-dialog.vue'
+import {Loading, Plus} from '@element-plus/icons-vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {computed, onUnmounted, ref, watch} from 'vue'
+import {uploadMallImage} from '@/api/mall/mall-image'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {
+  isStorageObjectName,
+  normalizeToObjectName,
+  resolveGoodsImageDisplayUrl,
+  resolveGoodsImageDisplayUrls
+} from '@/utils/mall/goods-image-url'
+import {useMenuStore} from '@/store/modules/menu'
+import MallFilePickerDialog from './mall-file-picker-dialog.vue'
 
-  defineOptions({ name: 'MallImageUpload' })
+defineOptions({ name: 'MallImageUpload' })
 
   const props = withDefaults(
     defineProps<{

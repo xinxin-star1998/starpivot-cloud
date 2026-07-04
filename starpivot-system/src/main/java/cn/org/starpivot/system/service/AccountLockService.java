@@ -1,8 +1,6 @@
 package cn.org.starpivot.system.service;
 
 import cn.org.starpivot.common.cache.CacheConstants;
-import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.system.domain.entity.SysUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;

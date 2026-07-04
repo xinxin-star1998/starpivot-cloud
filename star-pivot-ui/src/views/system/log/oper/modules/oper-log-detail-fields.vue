@@ -124,15 +124,15 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
-  import { ElTag, ElAlert, ElButton, ElIcon } from 'element-plus'
-  import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue'
-  import type { OperLogListItem } from '@/types/api/operlog'
-  import { getOperBusinessTypeLabel } from '../constants'
-  import { getHttpMethodClass } from './oper-log-utils'
-  import OperLogJsonBlock from './oper-log-json-block.vue'
+import {computed, ref} from 'vue'
+import {ElAlert, ElButton, ElIcon, ElTag} from 'element-plus'
+import {ArrowDownBold, ArrowUpBold} from '@element-plus/icons-vue'
+import type {OperLogListItem} from '@/types/api/operlog'
+import {getOperBusinessTypeLabel} from '../constants'
+import {getHttpMethodClass} from './oper-log-utils'
+import OperLogJsonBlock from './oper-log-json-block.vue'
 
-  const props = defineProps<{
+const props = defineProps<{
     operLog: OperLogListItem
   }>()
 

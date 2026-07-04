@@ -1,13 +1,13 @@
-import { useSettingStore } from '@/store/modules/setting'
-import { storeToRefs } from 'pinia'
-import { useBreakpoints } from '@vueuse/core'
+import {useSettingStore} from '@/store/modules/setting'
+import {storeToRefs} from 'pinia'
+import {useBreakpoints} from '@vueuse/core'
 import AppConfig from '@/config'
-import { SystemThemeEnum, MenuTypeEnum } from '@/enums/appEnum'
-import { mittBus } from '@/utils/sys'
-import { useTheme } from '@/hooks/core/useTheme'
-import { useCeremony } from '@/hooks/core/useCeremony'
-import { useSettingsState } from './useSettingsState'
-import { useSettingsHandlers } from './useSettingsHandlers'
+import {MenuTypeEnum, SystemThemeEnum} from '@/enums/appEnum'
+import {mittBus} from '@/utils/sys'
+import {useTheme} from '@/hooks/core/useTheme'
+import {useCeremony} from '@/hooks/core/useCeremony'
+import {useSettingsState} from './useSettingsState'
+import {useSettingsHandlers} from './useSettingsHandlers'
 
 /**
  * 设置面板核心逻辑管理

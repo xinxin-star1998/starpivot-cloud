@@ -83,14 +83,14 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
-  import { ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect } from 'element-plus'
-  import { fetchGetDeptTree, type SysDept } from '@/api/dept/dept'
-  import { fetchAssignPermission, fetchGetRoleDeptIds } from '@/api/role/role'
-  import { useSettingStore } from '@/store/modules/setting'
-  import { useCheckableTree } from '@/composables/useCheckableTree'
+import type {FormInstance, FormRules} from 'element-plus'
+import {ElForm, ElFormItem, ElInput, ElMessage, ElOption, ElSelect} from 'element-plus'
+import {fetchGetDeptTree, type SysDept} from '@/api/dept/dept'
+import {fetchAssignPermission, fetchGetRoleDeptIds} from '@/api/role/role'
+import {useSettingStore} from '@/store/modules/setting'
+import {useCheckableTree} from '@/composables/useCheckableTree'
 
-  type RoleListItem = Api.SystemManage.RoleListItem
+type RoleListItem = Api.SystemManage.RoleListItem
 
   interface Props {
     modelValue: boolean

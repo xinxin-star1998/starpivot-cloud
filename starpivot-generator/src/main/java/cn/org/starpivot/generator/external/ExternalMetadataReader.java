@@ -1,6 +1,7 @@
 package cn.org.starpivot.generator.external;
 
 import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.generator.config.GenConfig;
 import cn.org.starpivot.generator.domain.entity.GenTable;
 import cn.org.starpivot.generator.domain.entity.GenTableColumn;
@@ -8,7 +9,6 @@ import cn.org.starpivot.generator.domain.external.ExternalGenSession;
 import cn.org.starpivot.generator.domain.external.GenPathProfile;
 import cn.org.starpivot.generator.utils.GenUtils;
 import cn.org.starpivot.generator.utils.StringUtils;
-import cn.org.starpivot.common.security.SecurityContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

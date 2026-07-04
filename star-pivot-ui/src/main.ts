@@ -10,7 +10,7 @@ import {setupErrorHandle} from './utils/sys/error-handle'
 import {setupOfflineIconify} from './utils/ui/iconify-offline'
 import {setupPerformanceMonitor} from './utils/performance'
 // 添加缺失的导入
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 
 void setupOfflineIconify()
 

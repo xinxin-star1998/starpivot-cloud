@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-  import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
+import ArtSearchBar from '@/components/core/forms/art-search-bar/index.vue'
 
-  const props = defineProps<{
+const props = defineProps<{
     modelValue: Record<string, unknown>
     recycle?: boolean
   }>()

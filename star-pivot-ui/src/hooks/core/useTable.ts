@@ -17,20 +17,20 @@
  * @author Art Design Pro Team
  */
 
-import { useWindowSize } from '@vueuse/core'
-import { useTableColumns } from '@/hooks'
-import type { ColumnOption } from '@/types/component'
-import { type ApiResponse, CacheInvalidationStrategy, TableCache } from '@utils/table/tableCache'
+import {useWindowSize} from '@vueuse/core'
+import {useTableColumns} from '@/hooks'
+import type {ColumnOption} from '@/types/component'
+import {type ApiResponse, CacheInvalidationStrategy, TableCache} from '@utils/table/tableCache'
 import {
-  createErrorHandler,
-  createSmartDebounce,
-  defaultResponseAdapter,
-  defaultTableErrorHandler,
-  extractTableData,
-  type TableError,
-  updatePaginationFromResponse
+    createErrorHandler,
+    createSmartDebounce,
+    defaultResponseAdapter,
+    defaultTableErrorHandler,
+    extractTableData,
+    type TableError,
+    updatePaginationFromResponse
 } from '@utils/table/tableUtils'
-import { tableConfig } from '@utils/table/tableConfig'
+import {tableConfig} from '@utils/table/tableConfig'
 
 // 类型推导工具类型
 type InferApiParams<T> = T extends (params: infer P) => Promise<unknown> ? P : never

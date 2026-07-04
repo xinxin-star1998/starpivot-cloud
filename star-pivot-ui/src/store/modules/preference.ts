@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import { LanguageEnum } from '@/enums/appEnum'
-import { useUserStore } from './user'
+import {defineStore} from 'pinia'
+import {LanguageEnum} from '@/enums/appEnum'
+import {useUserStore} from './user'
 
 /**
  * 用户偏好相关状态（语言、搜索历史、锁屏等）

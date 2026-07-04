@@ -99,11 +99,11 @@
 </template>
 
 <script lang="ts" setup>
-  import type { FormInstance } from 'element-plus'
-  import { useSpuWizardInject } from '../../composables/useSpuWizard'
-  import SpuImageUpload from '../spu-image-upload.vue'
+import type {FormInstance} from 'element-plus'
+import {useSpuWizardInject} from '../../composables/useSpuWizard'
+import SpuImageUpload from '../spu-image-upload.vue'
 
-  const wizard = useSpuWizardInject()
+const wizard = useSpuWizardInject()
 </script>
 
 <style lang="scss" scoped>

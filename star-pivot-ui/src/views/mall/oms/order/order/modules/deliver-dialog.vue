@@ -16,10 +16,10 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchOmsOrderDeliver } from '@/api/mall/order'
-  import type { FormInstance, FormRules } from 'element-plus'
+import {fetchOmsOrderDeliver} from '@/api/mall/order'
+import type {FormInstance, FormRules} from 'element-plus'
 
-  interface Props {
+interface Props {
     visible: boolean
     orderId?: number
   }

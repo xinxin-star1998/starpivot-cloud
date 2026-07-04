@@ -89,12 +89,12 @@
 </template>
 
 <script setup lang="ts">
-  import { Picture, Paperclip, Close } from '@element-plus/icons-vue'
-  import { mittBus } from '@/utils/sys'
-  import meAvatar from '@/assets/images/avatar/avatar5.webp'
-  import aiAvatar from '@/assets/images/avatar/avatar10.webp'
+import {Close, Paperclip, Picture} from '@element-plus/icons-vue'
+import {mittBus} from '@/utils/sys'
+import meAvatar from '@/assets/images/avatar/avatar5.webp'
+import aiAvatar from '@/assets/images/avatar/avatar10.webp'
 
-  defineOptions({ name: 'ArtChatWindow' })
+defineOptions({ name: 'ArtChatWindow' })
 
   // 类型定义
   interface ChatMessage {

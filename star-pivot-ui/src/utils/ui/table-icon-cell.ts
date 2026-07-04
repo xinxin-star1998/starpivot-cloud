@@ -1,5 +1,5 @@
-import { h, type VNode } from 'vue'
-import { Icon } from '@iconify/vue'
+import {h, type VNode} from 'vue'
+import {Icon} from '@iconify/vue'
 
 /** Iconify 名称：prefix:icon-name */
 export function isIconifyIconName(icon?: string | null): boolean {

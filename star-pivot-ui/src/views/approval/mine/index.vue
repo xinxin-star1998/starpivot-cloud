@@ -24,22 +24,22 @@
 </template>
 
 <script lang="ts" setup>
-  import { h } from 'vue'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { useTable } from '@/hooks/core/useTable'
-  import { useAuth } from '@/hooks/core/useAuth'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import ArtTable from '@/components/core/tables/art-table/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-  import { fetchApprovalMineList, fetchApprovalWithdraw } from '@/api/approval/instance'
-  import type { ApInstanceVo } from '@/api/approval/types'
-  import { instanceStatusLabel, instanceStatusTagType } from '../utils/approval-labels'
-  import { handleMutationError } from '@/utils/http/mutation'
-  import MineSearch from './modules/mine-search.vue'
-  import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
-  import { useApprovalTimelineDialog } from '../composables/useApprovalTimelineDialog'
+import {h} from 'vue'
+import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
+import {useTable} from '@/hooks/core/useTable'
+import {useAuth} from '@/hooks/core/useAuth'
+import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+import {fetchApprovalMineList, fetchApprovalWithdraw} from '@/api/approval/instance'
+import type {ApInstanceVo} from '@/api/approval/types'
+import {instanceStatusLabel, instanceStatusTagType} from '../utils/approval-labels'
+import {handleMutationError} from '@/utils/http/mutation'
+import MineSearch from './modules/mine-search.vue'
+import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
+import {useApprovalTimelineDialog} from '../composables/useApprovalTimelineDialog'
 
-  defineOptions({ name: 'ApprovalMine' })
+defineOptions({ name: 'ApprovalMine' })
 
   const { hasAuth } = useAuth()
   const { progressVisible, progressInstanceId, openTimelineDialog } = useApprovalTimelineDialog()

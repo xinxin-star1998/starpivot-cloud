@@ -14,8 +14,8 @@
  * @module utils/navigation/jump
  * @author Art Design Pro Team
  */
-import { AppRouteRecord } from '@/types/router'
-import { router } from '@/router'
+import {AppRouteRecord} from '@/types/router'
+import {router} from '@/router'
 
 // 打开外部链接
 export const openExternalLink = (link: string) => {
