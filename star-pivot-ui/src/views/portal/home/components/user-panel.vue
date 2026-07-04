@@ -40,10 +40,13 @@
     </template>
 
     <div class="user-panel__coupons" @click="router.push('/portal/coupons')">
-      <div v-for="item in couponHints" :key="item.label" class="coupon-item">
-        <span class="coupon-item__amount">{{ item.amount }}</span>
-        <span class="coupon-item__label">{{ item.label }}</span>
+      <div v-if="couponHints.length" class="user-panel__coupon-row">
+        <div v-for="item in couponHints" :key="item.key" class="coupon-item">
+          <span class="coupon-item__amount">{{ item.amount }}</span>
+          <span class="coupon-item__label">{{ item.label }}</span>
+        </div>
       </div>
+      <p v-else class="user-panel__coupon-empty">暂无可用优惠券</p>
     </div>
 
     <div class="user-panel__shortcuts">
@@ -66,6 +69,7 @@
 
 <script setup lang="ts">
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {fetchPortalCouponClaimable, fetchPortalCouponMine} from '@/api/portal/coupon'
 import {fetchPortalPendingReviewCount} from '@/api/portal/comment'
 import {usePortalMemberStore} from '@/store/modules/portal-member'
 
@@ -91,11 +95,40 @@ defineOptions({ name: 'PortalHomeUserPanel' })
 
   const avatarUrl = computed(() => portalStore.member?.header || '')
 
-  const couponHints = [
-    { amount: '¥5', label: '新人券' },
-    { amount: '¥10', label: '满减券' },
-    { amount: '包邮', label: '运费券' }
-  ]
+  const couponHints = ref<Array<{ key: string; amount: string; label: string }>>([])
+
+  function formatCouponAmount(amount?: number) {
+    if (amount == null) return '券'
+    if (amount <= 0) return '包邮'
+    const value = Number(amount)
+    return Number.isInteger(value) ? `¥${value}` : `¥${value.toFixed(0)}`
+  }
+
+  async function loadCouponHints() {
+    try {
+      if (portalStore.isLogin) {
+        const mine = await fetchPortalCouponMine(0)
+        if (mine.length) {
+          const sorted = [...mine].sort((a, b) => (b.amount || 0) - (a.amount || 0))
+          couponHints.value = sorted.slice(0, 3).map((item) => ({
+            key: `mine-${item.historyId}`,
+            amount: formatCouponAmount(item.amount),
+            label: item.couponName || '可用券'
+          }))
+          return
+        }
+      }
+      const claimable = await fetchPortalCouponClaimable()
+      const available = claimable.filter((item) => item.canReceive !== false).slice(0, 3)
+      couponHints.value = available.map((item) => ({
+        key: `claim-${item.couponId}`,
+        amount: formatCouponAmount(item.amount),
+        label: item.couponName || '可领取'
+      }))
+    } catch {
+      couponHints.value = []
+    }
+  }
 
   const pendingReviewCount = ref(0)
 
@@ -115,8 +148,13 @@ defineOptions({ name: 'PortalHomeUserPanel' })
   watch(
     () => portalStore.isLogin,
     (login) => {
-      if (login) loadPendingReviewCount()
-      else pendingReviewCount.value = 0
+      if (login) {
+        loadPendingReviewCount()
+        loadCouponHints()
+      } else {
+        pendingReviewCount.value = 0
+        loadCouponHints()
+      }
     },
     { immediate: true }
   )
@@ -284,11 +322,25 @@ defineOptions({ name: 'PortalHomeUserPanel' })
   }
 
   .user-panel__coupons {
-    display: flex;
-    gap: 6px;
     width: 100%;
     margin: 4px 0 10px;
     cursor: pointer;
+  }
+
+  .user-panel__coupon-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .user-panel__coupon-empty {
+    margin: 0;
+    padding: 10px 8px;
+    font-size: 12px;
+    color: var(--portal-text-muted);
+    border: 1px dashed var(--portal-border);
+    border-radius: var(--portal-radius-sm);
+    background: #fafbfc;
   }
 
   .coupon-item {

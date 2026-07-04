@@ -38,28 +38,17 @@
         </div>
 
         <div v-if="products.length" class="product-grid">
-          <div
+          <PortalProductCard
             v-for="item in products"
             :key="item.id"
-            class="product-card"
+            :spu-name="item.spuName"
+            :brand-name="item.brandName"
+            :price="item.price"
+            :image-url="coverUrls.get(item.coverImg || '') || placeholderImg"
+            :avg-star="item.avgStar"
+            :comment-count="item.commentCount"
             @click="goDetail(item.id!)"
-          >
-            <div class="product-card__img-wrap">
-              <img
-                :src="coverUrls.get(item.coverImg || '') || placeholderImg"
-                :alt="item.spuName"
-                class="product-card__img"
-              />
-            </div>
-            <div class="product-card__body">
-              <p class="product-card__name">{{ item.spuName }}</p>
-              <p v-if="item.brandName" class="product-card__brand">{{ item.brandName }}</p>
-              <PortalProductRating :avg-star="item.avgStar" :comment-count="item.commentCount" />
-              <p class="product-card__price">
-                <span class="currency">¥</span>{{ formatPrice(item.price) }}
-              </p>
-            </div>
-          </div>
+          />
         </div>
         <ElEmpty v-else description="未找到相关商品">
           <ElButton type="primary" @click="router.push('/portal')">返回首页</ElButton>
@@ -91,12 +80,13 @@ import {fetchPortalHome} from '@/api/portal/home'
 import {fetchPortalProductSearch} from '@/api/portal/product'
 import type {PortalBrandBrief, PortalCategory, PortalProductListItem} from '@/api/portal/types'
 import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
+import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
 import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
 import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
 import SearchCategorySidebar from './components/search-category-sidebar.vue'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {PORTAL_PRODUCT_PLACEHOLDER_IMG} from '@/utils/portal/product-placeholder'
 import {addPortalSearchKeyword} from '@/utils/portal/search-history'
 
 defineOptions({ name: 'PortalSearch' })
@@ -124,13 +114,7 @@ defineOptions({ name: 'PortalSearch' })
   const filterDrawerVisible = ref(false)
   const isMobile = ref(false)
 
-  const placeholderImg =
-    'data:image/svg+xml,' +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#f0f0f0" width="200" height="200"/><text x="50%" y="50%" fill="#999" font-size="14" text-anchor="middle" dy=".3em">暂无图片</text></svg>'
-    )
-
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const placeholderImg = PORTAL_PRODUCT_PLACEHOLDER_IMG
 
   const pageTitle = computed(() => {
     if (keyword.value) return `搜索「${keyword.value}」`
@@ -396,71 +380,6 @@ defineOptions({ name: 'PortalSearch' })
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
-  }
-
-  .product-card {
-    border: 1px solid var(--portal-border);
-    border-radius: var(--portal-radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all var(--portal-transition);
-    background: var(--portal-bg-elevated);
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--portal-shadow-lg);
-      border-color: transparent;
-    }
-
-    &__img-wrap {
-      aspect-ratio: 1;
-      background: #fafbfc;
-      overflow: hidden;
-    }
-
-    &__img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.35s ease;
-    }
-
-    &:hover &__img {
-      transform: scale(1.05);
-    }
-
-    &__body {
-      padding: 14px 16px 16px;
-    }
-
-    &__name {
-      margin: 0 0 6px;
-      font-size: 14px;
-      color: var(--portal-text);
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      min-height: 42px;
-    }
-
-    &__brand {
-      margin: 0 0 10px;
-      font-size: 12px;
-      color: var(--portal-text-muted);
-    }
-
-    &__price {
-      margin: 0;
-      color: var(--portal-primary);
-      font-size: 20px;
-      font-weight: 700;
-
-      .currency {
-        font-size: 13px;
-      }
-    }
   }
 
   .load-more {

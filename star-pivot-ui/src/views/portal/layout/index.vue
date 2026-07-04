@@ -5,6 +5,8 @@
     <main class="portal-main">
       <RouterView />
     </main>
+    <PortalBottomNav />
+    <PortalCategoryDrawer />
     <footer class="portal-footer">
       <div class="portal-footer__inner">
         <div class="portal-footer__brand">
@@ -26,13 +28,15 @@
         </div>
       </div>
       <div class="portal-footer__bottom">
-        <span>© {{ year }} StarPivot 商城 · C 端演示</span>
+        <span>© {{ year }} StarPivot 商城</span>
       </div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import PortalCategoryDrawer from '@/views/portal/components/portal-category-drawer.vue'
+import PortalBottomNav from './portal-bottom-nav.vue'
 import PortalHeader from './portal-header.vue'
 
 defineOptions({ name: 'PortalLayout' })
@@ -83,6 +87,12 @@ defineOptions({ name: 'PortalLayout' })
     margin: 0 auto;
     padding: 20px 20px 32px;
     box-sizing: border-box;
+  }
+
+  @media (width <= 900px) {
+    .portal-main {
+      padding-bottom: calc(32px + var(--portal-bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   .portal-footer {

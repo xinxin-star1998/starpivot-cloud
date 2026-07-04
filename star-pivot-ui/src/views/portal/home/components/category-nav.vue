@@ -350,4 +350,10 @@ defineOptions({ name: 'PortalHomeCategoryNav' })
   .mega-fade-leave-to {
     opacity: 0;
   }
+
+  @media (width <= 900px) {
+    .category-nav {
+      display: none;
+    }
+  }
 </style>

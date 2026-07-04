@@ -36,6 +36,15 @@
 
         <button
           type="button"
+          class="portal-header__mobile-category"
+          aria-label="全部分类"
+          @click="openPortalCategoryDrawer()"
+        >
+          <ArtSvgIcon icon="ri:apps-2-line" />
+        </button>
+
+        <button
+          type="button"
           class="portal-header__mobile-search"
           aria-label="搜索商品"
           @click="mobileSearchVisible = true"
@@ -134,6 +143,7 @@ import {fetchPortalPendingReviewCount} from '@/api/portal/comment'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import {usePortalMemberStore} from '@/store/modules/portal-member'
 import {addPortalSearchKeyword, getPortalSearchHistory} from '@/utils/portal/search-history'
+import {openPortalCategoryDrawer} from '@/utils/portal/category-drawer'
 
 defineOptions({ name: 'PortalHeader' })
 
@@ -428,12 +438,13 @@ defineOptions({ name: 'PortalHeader' })
       display: none;
     }
 
-    .portal-header__mobile-search {
+    .portal-header__mobile-search,
+    .portal-header__mobile-category {
       display: inline-flex;
     }
 
     .portal-header__inner {
-      gap: 12px;
+      gap: 8px;
     }
 
     .nav-item span:not(.nav-item__icon-wrap) {
@@ -441,13 +452,13 @@ defineOptions({ name: 'PortalHeader' })
     }
   }
 
+  .portal-header__mobile-category,
   .portal-header__mobile-search {
     display: none;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
-    margin-left: auto;
     border: 1px solid var(--portal-border);
     border-radius: var(--portal-radius-sm);
     background: #fff;
@@ -464,6 +475,10 @@ defineOptions({ name: 'PortalHeader' })
       border-color: var(--portal-primary);
       background: var(--portal-primary-light);
     }
+  }
+
+  .portal-header__mobile-search {
+    margin-left: auto;
   }
 
   .mobile-search-submit {

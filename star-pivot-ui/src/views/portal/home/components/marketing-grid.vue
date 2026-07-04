@@ -39,6 +39,11 @@
           <span class="seckill-tab__label">
             {{ sessionStateLabel(session.state) }}
           </span>
+          <PortalSeckillCountdown
+            v-if="activeSessionMap[block.code] === session.id"
+            :session="session"
+            class="seckill-tab__countdown"
+          />
         </button>
       </div>
 
@@ -79,6 +84,7 @@
 
 <script setup lang="ts">
 import type {PortalHomeBlock, PortalHomeProduct, PortalSeckillSession} from '@/api/portal/types'
+import PortalSeckillCountdown from '@/views/portal/components/portal-seckill-countdown.vue'
 
 defineOptions({ name: 'PortalHomeMarketingGrid' })
 
@@ -267,6 +273,12 @@ defineOptions({ name: 'PortalHomeMarketingGrid' })
       font-size: 10px;
       color: #999;
       margin-top: 2px;
+    }
+
+    &__countdown {
+      display: block;
+      margin-top: 4px;
+      justify-content: center;
     }
   }
 

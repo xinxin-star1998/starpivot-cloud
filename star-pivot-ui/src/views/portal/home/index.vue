@@ -1,115 +1,156 @@
 <!-- C 端商城首页 -->
 <template>
-  <div v-loading="loading" class="portal-home">
-    <!-- 京东式 Hero：左分类 + 中轮播 + 右用户 -->
-    <section class="portal-home__hero">
-      <HomeCategoryNav
-        :categories="categoryTree"
-        :category-brands="categoryBrands"
-        :brand-logos="brandLogoUrls"
-        @select-category="selectCategory"
-        @select-brand="selectBrand"
+  <div class="portal-home">
+    <PortalHomeSkeleton v-if="loading" />
+
+    <template v-else>
+      <!-- 京东式 Hero：左分类 + 中轮播 + 右用户 -->
+      <section class="portal-home__hero">
+        <HomeCategoryNav
+          class="portal-home__category-nav"
+          :categories="categoryTree"
+          :category-brands="categoryBrands"
+          :brand-logos="brandLogoUrls"
+          @select-category="selectCategory"
+          @select-brand="selectBrand"
+        />
+
+        <div class="portal-home__banner-wrap">
+          <ElCarousel v-if="banners.length" height="480px" class="portal-home__banner">
+            <ElCarouselItem v-for="item in banners" :key="item.id">
+              <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="banner-link">
+                <img :src="bannerUrls.get(item.pic || '') || ''" :alt="item.name" class="banner-img" />
+              </a>
+              <img
+                v-else
+                :src="bannerUrls.get(item.pic || '') || ''"
+                :alt="item.name"
+                class="banner-img"
+              />
+            </ElCarouselItem>
+          </ElCarousel>
+          <div v-else class="portal-home__banner-placeholder">
+            <ElEmpty description="暂无轮播" />
+          </div>
+        </div>
+
+        <div class="portal-home__user-wrap">
+          <HomeUserPanel />
+        </div>
+
+        <button
+          v-if="showHomeSearch"
+          type="button"
+          class="portal-home__category-entry"
+          @click="openPortalCategoryDrawer()"
+        >
+          <ArtSvgIcon icon="ri:apps-2-line" />
+          <span>全部分类</span>
+          <ArtSvgIcon icon="ri:arrow-right-s-line" class="portal-home__category-entry-arrow" />
+        </button>
+      </section>
+
+      <HomeMarketingGrid
+        :blocks="homeBlocks"
+        :image-urls="marketingImageUrls"
+        :placeholder-img="placeholderImg"
+        @go-product="goDetail"
+        @open-link="openMarketingLink"
       />
 
-      <div class="portal-home__banner-wrap">
-        <ElCarousel v-if="banners.length" height="480px" class="portal-home__banner">
-          <ElCarouselItem v-for="item in banners" :key="item.id">
-            <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="banner-link">
-              <img :src="bannerUrls.get(item.pic || '') || ''" :alt="item.name" class="banner-img" />
-            </a>
-            <img
-              v-else
-              :src="bannerUrls.get(item.pic || '') || ''"
-              :alt="item.name"
-              class="banner-img"
-            />
-          </ElCarouselItem>
-        </ElCarousel>
-        <div v-else class="portal-home__banner-placeholder">
-          <ElEmpty description="暂无轮播" />
-        </div>
-      </div>
+      <HomeHotCategories
+        :items="hotCategories"
+        :icon-urls="hotCategoryIconUrls"
+        @select="selectHotCategory"
+      />
 
-      <HomeUserPanel />
-    </section>
+      <PortalRecentBrowse />
 
-    <!-- 营销四宫格 -->
-    <HomeMarketingGrid
-      :blocks="homeBlocks"
-      :image-urls="marketingImageUrls"
-      :placeholder-img="placeholderImg"
-      @go-product="goDetail"
-      @open-link="openMarketingLink"
-    />
+      <section v-if="showHomeSearch" class="portal-home__quick-search">
+        <PortalSearchBar v-model="homeSearchKeyword" placeholder="搜一搜心仪好物" @search="handleHomeSearch" />
+        <PortalSearchHints compact @select="searchFromHint" />
+      </section>
 
-    <!-- 分类热门 -->
-    <HomeHotCategories
-      :items="hotCategories"
-      :icon-urls="hotCategoryIconUrls"
-      @select="selectHotCategory"
-    />
-
-    <PortalRecentBrowse />
-
-    <section v-if="showHomeSearch" class="portal-home__quick-search">
-      <PortalSearchBar v-model="homeSearchKeyword" placeholder="搜一搜心仪好物" @search="handleHomeSearch" />
-      <PortalSearchHints compact @select="searchFromHint" />
-    </section>
-
-    <!-- 商品列表 -->
-    <section class="portal-home__section">
-      <div class="section-head">
-        <div class="section-head__left">
-          <h2 class="section-title">精选商品</h2>
-          <p v-if="filterHint" class="section-filter-hint">
-            {{ filterHint }}
-            <button type="button" class="clear-filter" @click="clearFilter">清除筛选</button>
-          </p>
-        </div>
-        <ElSelect v-model="sort" placeholder="排序" style="width: 140px" @change="loadProducts">
-          <ElOption label="默认" value="default" />
-          <ElOption label="价格升序" value="priceAsc" />
-          <ElOption label="价格降序" value="priceDesc" />
-          <ElOption label="最新" value="newest" />
-        </ElSelect>
-      </div>
-
-      <div v-if="products.length" class="product-grid">
-        <div
-          v-for="item in products"
-          :key="item.id"
-          class="product-card"
-          @click="goDetail(item.id!)"
-        >
-          <div class="product-card__img-wrap">
-            <img
-              :src="coverUrls.get(item.coverImg || '') || placeholderImg"
-              :alt="item.spuName"
-              class="product-card__img"
-            />
+      <section v-if="guessProducts.length" class="portal-home__section">
+        <div class="section-head">
+          <div class="section-head__left">
+            <h2 class="section-title">猜你喜欢</h2>
+            <p class="section-subtitle">根据你的浏览足迹推荐</p>
           </div>
-          <div class="product-card__body">
-            <p class="product-card__name">{{ item.spuName }}</p>
-            <p v-if="item.brandName" class="product-card__brand">{{ item.brandName }}</p>
-            <PortalProductRating :avg-star="item.avgStar" :comment-count="item.commentCount" />
-            <p class="product-card__price">
-              <span class="currency">¥</span>{{ formatPrice(item.price) }}
+        </div>
+        <div class="product-grid">
+          <PortalProductCard
+            v-for="item in guessProducts"
+            :key="`guess-${item.id}`"
+            :spu-name="item.spuName"
+            :brand-name="item.brandName"
+            :price="item.price"
+            :image-url="guessCoverUrls.get(item.coverImg || '') || placeholderImg"
+            :avg-star="item.avgStar"
+            :comment-count="item.commentCount"
+            show-actions
+            :collected="isCollected(item.id!)"
+            :favorite-loading="isFavoriteLoading(item.id!)"
+            :cart-loading="isCartLoading(item.id!)"
+            @click="goDetail(item.id!)"
+            @favorite="toggleFavorite(item)"
+            @add-cart="addToCart(item)"
+          />
+        </div>
+      </section>
+
+      <section class="portal-home__section">
+        <div class="section-head">
+          <div class="section-head__left">
+            <h2 class="section-title">精选商品</h2>
+            <p v-if="filterHint" class="section-filter-hint">
+              {{ filterHint }}
+              <button type="button" class="clear-filter" @click="clearFilter">清除筛选</button>
             </p>
           </div>
+          <ElSelect v-model="sort" placeholder="排序" style="width: 140px" @change="loadProducts">
+            <ElOption label="默认" value="default" />
+            <ElOption label="价格升序" value="priceAsc" />
+            <ElOption label="价格降序" value="priceDesc" />
+            <ElOption label="最新" value="newest" />
+          </ElSelect>
         </div>
-      </div>
-      <ElEmpty v-else description="暂无商品" />
 
-      <div v-if="total > products.length" class="load-more">
-        <ElButton :loading="loadingMore" @click="loadMore">加载更多</ElButton>
-      </div>
-    </section>
+        <div v-if="products.length" class="product-grid">
+          <PortalProductCard
+            v-for="item in products"
+            :key="item.id"
+            :spu-name="item.spuName"
+            :brand-name="item.brandName"
+            :price="item.price"
+            :image-url="coverUrls.get(item.coverImg || '') || placeholderImg"
+            :avg-star="item.avgStar"
+            :comment-count="item.commentCount"
+            show-actions
+            :collected="isCollected(item.id!)"
+            :favorite-loading="isFavoriteLoading(item.id!)"
+            :cart-loading="isCartLoading(item.id!)"
+            @click="goDetail(item.id!)"
+            @favorite="toggleFavorite(item)"
+            @add-cart="addToCart(item)"
+          />
+        </div>
+        <ElEmpty v-else description="暂无商品" />
+
+        <div v-if="total > products.length" class="load-more">
+          <ElButton :loading="loadingMore" @click="loadMore">加载更多</ElButton>
+        </div>
+      </section>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import {fetchPortalHome} from '@/api/portal/home'
-import {fetchPortalProductSearch} from '@/api/portal/product'
+import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import { fetchPortalCartAdd } from '@/api/portal/cart'
+import { fetchPortalCollectAdd, fetchPortalCollectRemove } from '@/api/portal/collect'
+import { fetchPortalHome } from '@/api/portal/home'
+import { fetchPortalProductDetail, fetchPortalProductRelated, fetchPortalProductSearch } from '@/api/portal/product'
 import type {
   PortalBrandBrief,
   PortalCategory,
@@ -117,12 +158,18 @@ import type {
   PortalHotCategory,
   PortalProductListItem
 } from '@/api/portal/types'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
+import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+import { getPortalBrowseHistory } from '@/utils/portal/browse-history'
+import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
+import { openPortalCategoryDrawer } from '@/utils/portal/category-drawer'
+import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+import { addPortalSearchKeyword } from '@/utils/portal/search-history'
+import PortalHomeSkeleton from '@/views/portal/components/portal-home-skeleton.vue'
+import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
 import PortalRecentBrowse from '@/views/portal/components/portal-recent-browse.vue'
 import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
 import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
-import {addPortalSearchKeyword} from '@/utils/portal/search-history'
 import HomeCategoryNav from './components/category-nav.vue'
 import HomeHotCategories from './components/hot-categories.vue'
 import HomeMarketingGrid from './components/marketing-grid.vue'
@@ -132,6 +179,7 @@ defineOptions({ name: 'PortalHome' })
 
   const router = useRouter()
   const route = useRoute()
+  const { requireLogin } = usePortalAuth()
   const loading = ref(true)
   const loadingMore = ref(false)
   const banners = ref<{ id?: number; name?: string; pic?: string; url?: string }[]>([])
@@ -145,8 +193,11 @@ defineOptions({ name: 'PortalHome' })
   const marketingImageUrls = ref(new Map<string, string>())
   const products = ref<PortalProductListItem[]>([])
   const coverUrls = ref(new Map<string, string>())
-  const selectedCatalogId = ref<number | undefined>()
-  const selectedBrandId = ref<number | undefined>()
+  const guessProducts = ref<PortalProductListItem[]>([])
+  const guessCoverUrls = ref(new Map<string, string>())
+  const collectedIds = ref(new Set<number>())
+  const favoriteLoadingSet = ref(new Set<number>())
+  const cartLoadingSet = ref(new Set<number>())
   const searchKeyword = ref('')
   const homeSearchKeyword = ref('')
   const showHomeSearch = ref(false)
@@ -154,21 +205,24 @@ defineOptions({ name: 'PortalHome' })
   const pageNum = ref(1)
   const pageSize = 12
   const total = ref(0)
-  const placeholderImg =
-    'data:image/svg+xml,' +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#f0f0f0" width="200" height="200"/><text x="50%" y="50%" fill="#999" font-size="14" text-anchor="middle" dy=".3em">暂无图片</text></svg>'
-    )
-
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const placeholderImg = PORTAL_PRODUCT_PLACEHOLDER_IMG
 
   const filterHint = computed(() => {
-    const parts: string[] = []
-    if (searchKeyword.value) parts.push(`搜索「${searchKeyword.value}」`)
-    if (selectedCatalogId.value != null) parts.push('已选分类')
-    if (selectedBrandId.value != null) parts.push('已选品牌')
-    return parts.length ? parts.join(' · ') : ''
+    if (!searchKeyword.value) return ''
+    return `搜索「${searchKeyword.value}」`
   })
+
+  function isCollected(spuId: number) {
+    return collectedIds.value.has(spuId)
+  }
+
+  function isFavoriteLoading(spuId: number) {
+    return favoriteLoadingSet.value.has(spuId)
+  }
+
+  function isCartLoading(spuId: number) {
+    return cartLoadingSet.value.has(spuId)
+  }
 
   async function resolveImages(items: { pic?: string; coverImg?: string }[], target: Ref<Map<string, string>>) {
     const keys = items.map((i) => i.pic || i.coverImg).filter(Boolean) as string[]
@@ -222,6 +276,22 @@ defineOptions({ name: 'PortalHome' })
     map.forEach((url, key) => hotCategoryIconUrls.value.set(key, url))
   }
 
+  async function loadGuessProducts() {
+    const history = getPortalBrowseHistory()
+    const seedId = history[0]?.spuId
+    if (!seedId) {
+      guessProducts.value = []
+      return
+    }
+    try {
+      const related = await fetchPortalProductRelated(seedId, 8)
+      guessProducts.value = related.filter((item) => item.id !== seedId).slice(0, 8)
+      await resolveImages(guessProducts.value, guessCoverUrls)
+    } catch {
+      guessProducts.value = []
+    }
+  }
+
   async function loadHome() {
     const data = await fetchPortalHome()
     banners.value = data.banners || []
@@ -233,7 +303,8 @@ defineOptions({ name: 'PortalHome' })
       resolveImages(banners.value, bannerUrls),
       resolveBrandLogos(categoryBrands.value),
       resolveMarketingImages(homeBlocks.value),
-      resolveHotCategoryIcons(hotCategories.value)
+      resolveHotCategoryIcons(hotCategories.value),
+      loadGuessProducts()
     ])
   }
 
@@ -246,8 +317,6 @@ defineOptions({ name: 'PortalHome' })
       pageNum: pageNum.value,
       pageSize,
       keyword: searchKeyword.value || undefined,
-      catalogId: selectedCatalogId.value,
-      brandId: selectedBrandId.value,
       sort: sort.value === 'default' ? undefined : sort.value
     })
     total.value = res.total || 0
@@ -256,12 +325,46 @@ defineOptions({ name: 'PortalHome' })
     await resolveImages(rows, coverUrls)
   }
 
-  function selectCategory(catId?: number, toggle = false) {
-    if (catId == null) return
-    if (toggle && selectedCatalogId.value === catId && !selectedBrandId.value) {
-      clearFilter()
-      return
+  async function toggleFavorite(item: PortalProductListItem) {
+    if (!item.id || !requireLogin()) return
+    if (favoriteLoadingSet.value.has(item.id)) return
+    favoriteLoadingSet.value.add(item.id)
+    const next = !isCollected(item.id)
+    try {
+      if (next) {
+        await fetchPortalCollectAdd(item.id, { silent: true })
+        collectedIds.value = new Set([...collectedIds.value, item.id])
+      } else {
+        await fetchPortalCollectRemove(item.id)
+        const nextSet = new Set(collectedIds.value)
+        nextSet.delete(item.id)
+        collectedIds.value = nextSet
+      }
+    } finally {
+      favoriteLoadingSet.value.delete(item.id)
     }
+  }
+
+  async function addToCart(item: PortalProductListItem) {
+    if (!item.id || !requireLogin()) return
+    if (cartLoadingSet.value.has(item.id)) return
+    cartLoadingSet.value.add(item.id)
+    try {
+      const detail = await fetchPortalProductDetail(item.id)
+      const sku = detail.skus?.find((s) => (s.availableStock ?? 1) > 0) || detail.skus?.[0]
+      if (!sku?.skuId) {
+        ElMessage.warning('该商品暂不可购买')
+        return
+      }
+      await fetchPortalCartAdd({ skuId: sku.skuId, quantity: 1 })
+      notifyPortalCartChanged()
+    } finally {
+      cartLoadingSet.value.delete(item.id)
+    }
+  }
+
+  function selectCategory(catId?: number) {
+    if (catId == null) return
     router.push({ path: '/portal/search', query: { catalogId: String(catId) } })
   }
 
@@ -286,8 +389,6 @@ defineOptions({ name: 'PortalHome' })
   }
 
   function clearFilter() {
-    selectedCatalogId.value = undefined
-    selectedBrandId.value = undefined
     searchKeyword.value = ''
     router.replace({ path: '/portal', query: {} })
     loadProducts(true)
@@ -295,8 +396,6 @@ defineOptions({ name: 'PortalHome' })
 
   function applySearchKeyword(keyword: string) {
     searchKeyword.value = keyword
-    selectedCatalogId.value = undefined
-    selectedBrandId.value = undefined
     loadProducts(true)
   }
 
@@ -304,6 +403,10 @@ defineOptions({ name: 'PortalHome' })
     const keyword = (e as CustomEvent<string>).detail || ''
     applySearchKeyword(keyword)
     scrollToProducts()
+  }
+
+  function onBrowseChanged() {
+    loadGuessProducts()
   }
 
   function scrollToProducts() {
@@ -374,6 +477,7 @@ defineOptions({ name: 'PortalHome' })
     syncHomeSearchVisibility()
     homeSearchMq.addEventListener('change', syncHomeSearchVisibility)
     window.addEventListener('portal-search', onPortalSearch)
+    window.addEventListener('portal-browse-changed', onBrowseChanged)
     try {
       await Promise.all([loadHome(), loadProducts(true)])
     } finally {
@@ -384,11 +488,11 @@ defineOptions({ name: 'PortalHome' })
   onUnmounted(() => {
     homeSearchMq?.removeEventListener('change', syncHomeSearchVisibility)
     window.removeEventListener('portal-search', onPortalSearch)
+    window.removeEventListener('portal-browse-changed', onBrowseChanged)
   })
 </script>
 
 <style scoped lang="scss">
-
   .portal-home__hero {
     position: relative;
     display: flex;
@@ -450,6 +554,30 @@ defineOptions({ name: 'PortalHome' })
     justify-content: center;
   }
 
+  .portal-home__category-entry {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-top: 1px solid var(--portal-border);
+    background: linear-gradient(90deg, #2d3436 0%, #3d4f5f 100%);
+    color: rgb(255 255 255 / 92%);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+
+    svg {
+      font-size: 18px;
+    }
+
+    &-arrow {
+      margin-left: auto;
+      opacity: 0.7;
+    }
+  }
+
   .portal-home__quick-search {
     margin-bottom: 20px;
     padding: 16px;
@@ -501,6 +629,12 @@ defineOptions({ name: 'PortalHome' })
     }
   }
 
+  .section-subtitle {
+    margin: 6px 0 0 12px;
+    font-size: 13px;
+    color: var(--portal-text-muted);
+  }
+
   .section-filter-hint {
     margin: 6px 0 0 12px;
     font-size: 13px;
@@ -527,73 +661,6 @@ defineOptions({ name: 'PortalHome' })
     gap: 20px;
   }
 
-  .product-card {
-    border: 1px solid var(--portal-border);
-    border-radius: var(--portal-radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all var(--portal-transition);
-    background: var(--portal-bg-elevated);
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--portal-shadow-lg);
-      border-color: transparent;
-
-      .product-card__img {
-        transform: scale(1.05);
-      }
-    }
-
-    &__img-wrap {
-      aspect-ratio: 1;
-      background: #fafbfc;
-      overflow: hidden;
-    }
-
-    &__img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.35s ease;
-    }
-
-    &__body {
-      padding: 14px 16px 16px;
-    }
-
-    &__name {
-      margin: 0 0 6px;
-      font-size: 14px;
-      color: var(--portal-text);
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      min-height: 42px;
-    }
-
-    &__brand {
-      margin: 0 0 10px;
-      font-size: 12px;
-      color: var(--portal-text-muted);
-    }
-
-    &__price {
-      margin: 0;
-      color: var(--portal-primary);
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-
-      .currency {
-        font-size: 13px;
-        margin-right: 1px;
-      }
-    }
-  }
-
   .load-more {
     text-align: center;
     margin-top: 28px;
@@ -610,8 +677,23 @@ defineOptions({ name: 'PortalHome' })
       min-height: 0;
     }
 
+    .portal-home__category-nav {
+      display: none;
+    }
+
     .portal-home__banner-wrap {
+      order: 1;
       height: 220px;
+    }
+
+    .portal-home__user-wrap {
+      order: 2;
+    }
+
+    .portal-home__category-entry {
+      display: flex;
+      order: 3;
+      border-radius: 0 0 var(--portal-radius-lg) var(--portal-radius-lg);
     }
 
     .portal-home__banner,
