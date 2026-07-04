@@ -59,9 +59,13 @@
     }
   }
 
-  // 去除滚动条
-  .el-drawer__body::-webkit-scrollbar {
-    width: 0 !important;
+  // 去除滚动条（WebKit / Firefox）
+  .el-drawer__body {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      width: 0 !important;
+    }
   }
 }
 
@@ -77,11 +81,6 @@
       }
     }
   }
-}
-
-// 去除火狐浏览器滚动条
-:deep(.el-drawer__body) {
-  scrollbar-width: none;
 }
 
 // 移动端隐藏
