@@ -37,7 +37,7 @@
               <span class="record-operator">{{ rec.operatorName }}</span>
               <ElTag size="small">{{ recordActionLabel(rec.action) }}</ElTag>
               <span v-if="rec.comment" class="record-comment">{{ rec.comment }}</span>
-              <span class="record-time">{{ rec.time }}</span>
+              <span class="record-time">{{ formatDateTime(rec.time) }}</span>
             </div>
           </div>
         </div>
@@ -50,6 +50,7 @@
 <script lang="ts" setup>
 import type {ApprovalTimelineVo} from '@/api/approval/types'
 import {fetchApprovalTimeline} from '@/api/approval/instance'
+import {formatDateTime} from '@/utils/common/datetime'
 import {instanceStatusLabel, instanceStatusTagType, recordActionLabel, stepStatusLabel} from '../utils/approval-labels'
 
 const props = defineProps<{

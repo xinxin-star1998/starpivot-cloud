@@ -34,6 +34,7 @@
 
 import {$t} from '@/locales'
 import type {ColumnOption} from '@/types/component'
+import {formatDateTime, isDateTimeColumnProp} from '@/utils/common/datetime'
 
 /**
  * 特殊列类型
@@ -137,13 +138,29 @@ export interface DynamicColumnConfig<T = any> {
   resetColumns: () => void
 }
 
+function withAutoDateTimeFormatters<T>(columns: ColumnOption<T>[]): ColumnOption<T>[] {
+  return columns.map((col) => {
+    if (!col.prop || col.formatter || col.type || col.useSlot) {
+      return col
+    }
+    if (!isDateTimeColumnProp(col.prop)) {
+      return col
+    }
+    const prop = col.prop as keyof T & string
+    return {
+      ...col,
+      formatter: (row: T) => formatDateTime(row[prop])
+    }
+  })
+}
+
 export function useTableColumns<T = any>(
   columnsFactory: () => ColumnOption<T>[]
 ): {
   columns: any
   columnChecks: any
 } & DynamicColumnConfig<T> {
-  const dynamicColumns = ref<ColumnOption<T>[]>(columnsFactory())
+  const dynamicColumns = ref<ColumnOption<T>[]>(withAutoDateTimeFormatters(columnsFactory()))
   const columnChecks = ref<ColumnOption<T>[]>(getColumnChecks(dynamicColumns.value))
 
   // 当 dynamicColumns 变动时，重新生成 columnChecks 且保留已存在的显示状态
@@ -261,7 +278,7 @@ export function useTableColumns<T = any>(
      * 重置所有列
      */
     resetColumns: () => {
-      dynamicColumns.value = columnsFactory()
+      dynamicColumns.value = withAutoDateTimeFormatters(columnsFactory())
     },
 
     /**

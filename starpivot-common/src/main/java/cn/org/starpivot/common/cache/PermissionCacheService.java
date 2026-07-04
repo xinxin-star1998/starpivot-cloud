@@ -1,6 +1,5 @@
-package cn.org.starpivot.approval.security;
+package cn.org.starpivot.common.cache;
 
-import cn.org.starpivot.common.cache.CacheConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -10,11 +9,11 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * 审批菜单权限 Redis 缓存。
+ * 用户菜单权限 Redis 缓存（各微服务共用）。
  */
 @Service
 @RequiredArgsConstructor
-public class ApprovalPermissionCacheService {
+public class PermissionCacheService {
 
     private static final Duration TTL = CacheConstants.TTL_USER_PERMISSIONS;
 

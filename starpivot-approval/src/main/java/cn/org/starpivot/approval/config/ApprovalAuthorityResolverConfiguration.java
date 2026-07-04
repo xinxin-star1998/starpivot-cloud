@@ -1,12 +1,14 @@
 package cn.org.starpivot.approval.config;
 
-import cn.org.starpivot.approval.security.ApprovalPermissionCacheService;
 import cn.org.starpivot.approval.security.ApprovalPermissionLoader;
+import cn.org.starpivot.common.cache.PermissionCacheService;
 import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.observability.PermissionLoadFailureRecorder;
 import cn.org.starpivot.common.security.AuthorityResolver;
 import cn.org.starpivot.common.security.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,24 +32,35 @@ import java.util.Set;
 public class ApprovalAuthorityResolverConfiguration {
 
     private final ApprovalPermissionLoader approvalPermissionLoader;
-    private final ApprovalPermissionCacheService approvalPermissionCacheService;
+    private final PermissionCacheService permissionCacheService;
+    private final PermissionLoadFailureRecorder permissionLoadFailureRecorder;
+
+    @Value("${spring.application.name:starpivot-approval}")
+    private String applicationName;
 
     @Bean
     public AuthorityResolver authorityResolver() {
-        return new ApprovalAuthorityResolver(approvalPermissionLoader, approvalPermissionCacheService);
+        return new ApprovalAuthorityResolver(
+                approvalPermissionLoader, permissionCacheService, permissionLoadFailureRecorder, applicationName);
     }
 
     @Slf4j
     static final class ApprovalAuthorityResolver implements AuthorityResolver {
 
         private final ApprovalPermissionLoader permissionLoader;
-        private final ApprovalPermissionCacheService permissionCacheService;
+        private final PermissionCacheService permissionCacheService;
+        private final PermissionLoadFailureRecorder permissionLoadFailureRecorder;
+        private final String serviceName;
 
         ApprovalAuthorityResolver(
                 ApprovalPermissionLoader permissionLoader,
-                ApprovalPermissionCacheService permissionCacheService) {
+                PermissionCacheService permissionCacheService,
+                PermissionLoadFailureRecorder permissionLoadFailureRecorder,
+                String serviceName) {
             this.permissionLoader = permissionLoader;
             this.permissionCacheService = permissionCacheService;
+            this.permissionLoadFailureRecorder = permissionLoadFailureRecorder;
+            this.serviceName = serviceName;
         }
 
         @Override
@@ -68,11 +81,7 @@ public class ApprovalAuthorityResolverConfiguration {
                     permissions.stream().filter(StringUtils::hasText).forEach(authoritySet::add);
                 }
             } catch (DataAccessException ex) {
-                log.error(
-                        "Failed to load approval menu permissions from system DB; check "
-                                + "starpivot.approval.system-db-schema matches the system service database. "
-                                + "Falling back to JWT roles only.",
-                        ex);
+                permissionLoadFailureRecorder.record(serviceName, ex);
             }
             return authoritySet;
         }

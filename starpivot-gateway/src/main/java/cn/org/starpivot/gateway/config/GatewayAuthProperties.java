@@ -85,6 +85,8 @@ public class GatewayAuthProperties {
 
             "/api/v1/portal/image/presigned-urls",
 
+            "/local-storage/**",
+
             "/api/v1/portal/pay/alipay/notify",
 
             "/**/actuator/**",

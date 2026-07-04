@@ -16,5 +16,8 @@ public interface ApInstanceService {
 
     PageResponse<ApInstanceVo> mineList(ApInstanceQueryDto query, Long starterId);
 
-    ApprovalTimelineVo timeline(Long instanceId);
+    ApprovalTimelineVo timeline(Long instanceId, Long viewerUserId);
+
+    /** 内部服务（Feign）调用，跳过访问者校验 */
+    ApprovalTimelineVo timelineInternal(Long instanceId);
 }

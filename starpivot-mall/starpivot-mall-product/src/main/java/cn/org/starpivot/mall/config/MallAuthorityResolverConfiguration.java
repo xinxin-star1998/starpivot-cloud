@@ -1,14 +1,16 @@
 package cn.org.starpivot.mall.config;
 
+import cn.org.starpivot.common.cache.PermissionCacheService;
 import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.observability.PermissionLoadFailureRecorder;
 import cn.org.starpivot.common.security.AuthorityResolver;
 import cn.org.starpivot.common.security.LoginUser;
 import cn.org.starpivot.common.security.RolesOnlyAuthorityResolver;
 import cn.org.starpivot.mall.common.MallMemberConstants;
-import cn.org.starpivot.mall.security.MallPermissionCacheService;
 import cn.org.starpivot.mall.security.MallPermissionLoader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,22 +37,35 @@ import java.util.Set;
 public class MallAuthorityResolverConfiguration {
 
     private final MallPermissionLoader mallPermissionLoader;
-    private final MallPermissionCacheService mallPermissionCacheService;
+    private final PermissionCacheService permissionCacheService;
+    private final PermissionLoadFailureRecorder permissionLoadFailureRecorder;
+
+    @Value("${spring.application.name:mall}")
+    private String applicationName;
 
     @Bean
     public AuthorityResolver authorityResolver() {
-        return new MallAuthorityResolver(mallPermissionLoader, mallPermissionCacheService);
+        return new MallAuthorityResolver(
+                mallPermissionLoader, permissionCacheService, permissionLoadFailureRecorder, applicationName);
     }
 
     @Slf4j
     static final class MallAuthorityResolver implements AuthorityResolver {
 
         private final MallPermissionLoader permissionLoader;
-        private final MallPermissionCacheService permissionCacheService;
+        private final PermissionCacheService permissionCacheService;
+        private final PermissionLoadFailureRecorder permissionLoadFailureRecorder;
+        private final String serviceName;
 
-        MallAuthorityResolver(MallPermissionLoader permissionLoader, MallPermissionCacheService permissionCacheService) {
+        MallAuthorityResolver(
+                MallPermissionLoader permissionLoader,
+                PermissionCacheService permissionCacheService,
+                PermissionLoadFailureRecorder permissionLoadFailureRecorder,
+                String serviceName) {
             this.permissionLoader = permissionLoader;
             this.permissionCacheService = permissionCacheService;
+            this.permissionLoadFailureRecorder = permissionLoadFailureRecorder;
+            this.serviceName = serviceName;
         }
 
         @Override
@@ -75,10 +90,7 @@ public class MallAuthorityResolverConfiguration {
                     permissions.stream().filter(StringUtils::hasText).forEach(authoritySet::add);
                 }
             } catch (DataAccessException ex) {
-                log.error(
-                        "Failed to load mall menu permissions from system DB; check starpivot.mall.system-db-schema "
-                                + "matches the system service database. Falling back to JWT roles only.",
-                        ex);
+                permissionLoadFailureRecorder.record(serviceName, ex);
             }
             return authoritySet;
         }

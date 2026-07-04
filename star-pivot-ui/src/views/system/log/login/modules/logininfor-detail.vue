@@ -15,7 +15,7 @@
           {{ logininfor.status === '0' ? '成功' : '失败' }}
         </ElTag>
       </ElDescriptionsItem>
-      <ElDescriptionsItem label="登录时间">{{ logininfor.loginTime }}</ElDescriptionsItem>
+      <ElDescriptionsItem label="登录时间">{{ formatDateTime(logininfor.loginTime) }}</ElDescriptionsItem>
       <ElDescriptionsItem label="登录IP">{{ logininfor.ipaddr }}</ElDescriptionsItem>
       <ElDescriptionsItem label="登录地点">
         {{ logininfor.loginLocation || '未知' }}
@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import {ElDescriptions, ElDescriptionsItem, ElTag, ElText} from 'element-plus'
 import type {LogininforListItem} from '@/types/api/logininfor'
+import {formatDateTime} from '@/utils/common/datetime'
 
 interface Props {
     visible: boolean

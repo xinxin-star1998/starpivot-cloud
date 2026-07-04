@@ -17,7 +17,7 @@
         >
           <div class="notify-title">{{ item.title }}</div>
           <div class="notify-content">{{ item.content }}</div>
-          <div class="notify-time">{{ item.createTime }}</div>
+          <div class="notify-time">{{ formatDateTime(item.createTime) }}</div>
         </li>
       </ul>
     </template>
@@ -32,6 +32,7 @@ import {
   fetchApprovalNotificationReadAll,
   fetchApprovalUnreadCount
 } from '@/api/approval/notification'
+import {formatDateTime} from '@/utils/common/datetime'
 
 const visible = defineModel<boolean>('visible', { default: false })
   const emit = defineEmits<{

@@ -1,4 +1,5 @@
 cn.org.starpivot.common.config.InternalServiceAutoConfiguration
+cn.org.starpivot.common.config.JacksonDateTimeAutoConfiguration
 cn.org.starpivot.common.config.ObservabilityAutoConfiguration
 cn.org.starpivot.common.config.SecurityBeansConfiguration
 cn.org.starpivot.common.config.MicroserviceAuthenticationAutoConfiguration

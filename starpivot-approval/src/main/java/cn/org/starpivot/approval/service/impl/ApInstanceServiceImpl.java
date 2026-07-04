@@ -12,17 +12,22 @@ import cn.org.starpivot.approval.domain.vo.ApInstanceVo;
 import cn.org.starpivot.approval.mapper.ApInstanceMapper;
 import cn.org.starpivot.approval.mapper.ApRecordMapper;
 import cn.org.starpivot.approval.mapper.ApTaskMapper;
+import cn.org.starpivot.approval.security.ApprovalPermissionLoader;
 import cn.org.starpivot.approval.service.ApInstanceService;
 import cn.org.starpivot.approval.service.engine.AssigneeResolver;
 import cn.org.starpivot.approval.service.engine.PipelineEngine;
 import cn.org.starpivot.approval.service.engine.TemplateResolver;
+import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
+import cn.org.starpivot.common.security.LoginUser;
+import cn.org.starpivot.common.security.SecurityContextUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -40,6 +45,7 @@ public class ApInstanceServiceImpl implements ApInstanceService {
     private final ApRecordMapper recordMapper;
     private final TemplateResolver templateResolver;
     private final AssigneeResolver assigneeResolver;
+    private final ApprovalPermissionLoader approvalPermissionLoader;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -82,11 +88,76 @@ public class ApInstanceServiceImpl implements ApInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApprovalTimelineVo timeline(Long instanceId) {
+    public ApprovalTimelineVo timeline(Long instanceId, Long viewerUserId) {
+        ApInstance instance = requireInstance(instanceId);
+        assertTimelineAccess(instance, viewerUserId);
+        return buildTimeline(instance);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalTimelineVo timelineInternal(Long instanceId) {
+        return buildTimeline(requireInstance(instanceId));
+    }
+
+    private ApInstance requireInstance(Long instanceId) {
         ApInstance instance = instanceMapper.selectById(instanceId);
         if (instance == null) {
             throw new BizException(ErrorCode.PARAM_INVALID, "审批实例不存在");
         }
+        return instance;
+    }
+
+    private void assertTimelineAccess(ApInstance instance, Long viewerUserId) {
+        if (viewerUserId == null) {
+            throw new BizException(ErrorCode.UNAUTHORIZED, "未登录");
+        }
+        if (viewerUserId.equals(instance.getStarterId())) {
+            return;
+        }
+        if (isSuperUser(viewerUserId)) {
+            return;
+        }
+        Long assigneeCount = taskMapper.selectCount(new LambdaQueryWrapper<ApTask>()
+                .eq(ApTask::getInstanceId, instance.getInstanceId())
+                .eq(ApTask::getAssigneeId, viewerUserId));
+        if (assigneeCount != null && assigneeCount > 0) {
+            return;
+        }
+        Long operatorCount = recordMapper.selectCount(new LambdaQueryWrapper<ApRecord>()
+                .eq(ApRecord::getInstanceId, instance.getInstanceId())
+                .eq(ApRecord::getOperatorId, viewerUserId));
+        if (operatorCount != null && operatorCount > 0) {
+            return;
+        }
+        throw new BizException(ErrorCode.FORBIDDEN, "无权查看该审批时间轴");
+    }
+
+    private boolean isSuperUser(Long userId) {
+        if (AppConstants.ADMIN_USER_ID.equals(userId)) {
+            return true;
+        }
+        LoginUser loginUser = SecurityContextUtils.getLoginUser();
+        if (loginUser != null
+                && loginUser.getUserId() != null
+                && userId.equals(loginUser.getUserId())
+                && loginUser.getRoles() != null
+                && loginUser.getRoles().stream().anyMatch(AppConstants.ADMIN_ROLE_KEY::equals)) {
+            return true;
+        }
+        try {
+            List<String> roleKeys = approvalPermissionLoader.selectRoleKeysByUserId(userId);
+            if (roleKeys != null && roleKeys.stream().anyMatch(AppConstants.ADMIN_ROLE_KEY::equals)) {
+                return true;
+            }
+            return approvalPermissionLoader.hasAllDataScopeRole(userId);
+        } catch (DataAccessException ex) {
+            return false;
+        }
+    }
+
+    private ApprovalTimelineVo buildTimeline(ApInstance instance) {
+        Long instanceId = instance.getInstanceId();
         List<ApTemplateStep> steps = templateResolver.loadSteps(instance.getTemplateId());
         List<ApRecord> records = recordMapper.selectList(new LambdaQueryWrapper<ApRecord>()
                 .eq(ApRecord::getInstanceId, instanceId)

@@ -1,13 +1,13 @@
 package cn.org.starpivot.system.service;
 
 import cn.org.starpivot.common.cache.CacheConstants;
+import cn.org.starpivot.common.cache.PermissionCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,8 +27,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class UserPermissionCacheService {
 
-    private static final Duration TTL = CacheConstants.TTL_USER_PERMISSIONS;
-
+    private final PermissionCacheService permissionCacheService;
     private final RedisTemplate<String, Object> redisTemplate;
 
     /**
@@ -38,22 +37,8 @@ public class UserPermissionCacheService {
      * @param loader 缓存未命中时的数据库加载函数
      * @return 权限标识列表
      */
-    @SuppressWarnings("unchecked")
     public List<String> getPermissionStrings(Long userId, Supplier<List<String>> loader) {
-        if (userId == null) {
-            return List.of();
-        }
-        String key = cacheKey(userId);
-        Object cached = redisTemplate.opsForValue().get(key);
-        if (cached instanceof List<?> list) {
-            return (List<String>) list;
-        }
-        List<String> permissions = loader.get();
-        List<String> safeList = permissions != null ? permissions : List.of();
-        if (!safeList.isEmpty()) {
-            redisTemplate.opsForValue().set(key, safeList, TTL);
-        }
-        return safeList;
+        return permissionCacheService.getPermissionStrings(userId, loader);
     }
 
     /**

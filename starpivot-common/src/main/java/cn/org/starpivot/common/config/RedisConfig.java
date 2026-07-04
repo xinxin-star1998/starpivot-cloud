@@ -1,6 +1,7 @@
 package cn.org.starpivot.common.config;
 
 import cn.org.starpivot.common.cache.CacheConstants;
+import cn.org.starpivot.common.config.JacksonDateTimeAutoConfiguration;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,9 @@ public class RedisConfig {
     private static ObjectMapper createRedisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
+        // 覆盖默认 ISO-8601，与 HTTP API 序列化格式一致
+        mapper.registerModule(JacksonDateTimeAutoConfiguration.createJavaTimeModule());
+        mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         BasicPolymorphicTypeValidator validator = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType("cn.org.starpivot")

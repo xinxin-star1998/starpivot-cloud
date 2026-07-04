@@ -14,9 +14,9 @@
         <ElDescriptionsItem label="应付金额">¥{{ formatAmount(detail.payAmount) }}</ElDescriptionsItem>
         <ElDescriptionsItem label="运费">¥{{ formatAmount(detail.freightAmount) }}</ElDescriptionsItem>
         <ElDescriptionsItem label="优惠">¥{{ formatAmount(detail.discountAmount) }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="下单时间" :span="2">{{ detail.createTime || '-' }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="支付时间" :span="2">{{ detail.paymentTime || '-' }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="发货时间" :span="2">{{ detail.deliveryTime || '-' }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="下单时间" :span="2">{{ formatDateTime(detail.createTime) }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="支付时间" :span="2">{{ formatDateTime(detail.paymentTime) }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="发货时间" :span="2">{{ formatDateTime(detail.deliveryTime) }}</ElDescriptionsItem>
         <ElDescriptionsItem label="物流公司">{{ detail.deliveryCompany || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="物流单号">{{ detail.deliverySn || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="收货人">{{ detail.receiverName || '-' }}</ElDescriptionsItem>
@@ -65,6 +65,7 @@ import {fetchOmsOrderById, fetchOmsOrderClose, type OmsOrderVo} from '@/api/mall
 import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/portal/order-status'
 import {useAuth} from '@/hooks/core/useAuth'
 import {ElMessageBox} from 'element-plus'
+import {formatDateTime} from '@/utils/common/datetime'
 
 interface Props {
     visible: boolean

@@ -46,7 +46,7 @@ public class ApInstanceController {
     @PreAuthorize("hasAuthority('approval:instance:query')")
     @GetMapping("/{id}/timeline")
     public Result<ApprovalTimelineVo> timeline(@PathVariable Long id) {
-        return Result.success(instanceService.timeline(id));
+        return Result.success(instanceService.timeline(id, requireUserId()));
     }
 
     private Long requireUserId() {

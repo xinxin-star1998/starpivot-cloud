@@ -5,6 +5,8 @@
  * @module utils/common
  */
 
+export * from './datetime'
+
 /**
  * 深度克隆对象
  * @param obj 要克隆的对象

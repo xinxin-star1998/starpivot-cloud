@@ -30,4 +30,4 @@ starpivot:
 
 logging:
   level:
-    cn.org.starpivot.approval: DEBUG
+    cn.org.starpivot.approval: INFO

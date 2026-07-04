@@ -78,6 +78,7 @@ import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
 import ApprovalNotificationDrawer from '../components/ApprovalNotificationDrawer.vue'
 import {useApprovalTimelineDialog} from '../composables/useApprovalTimelineDialog'
 import {fetchApprovalUnreadCount} from '@/api/approval/notification'
+import {formatDateTime} from '@/utils/common/datetime'
 
 defineOptions({ name: 'ApprovalTodo' })
 
@@ -190,7 +191,9 @@ defineOptions({ name: 'ApprovalTodo' })
             minWidth: 160,
             showOverflowTooltip: true,
             formatter: (row: ApTaskVo) =>
-              activeTab.value === 'todo' ? row.createTime : row.finishTime || row.createTime
+              formatDateTime(
+                activeTab.value === 'todo' ? row.createTime : row.finishTime || row.createTime
+              )
           }
         ]
 

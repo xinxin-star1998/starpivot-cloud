@@ -34,6 +34,7 @@ public class ApprovalTimelineVo {
         private String operatorName;
         private String action;
         private String comment;
+        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
         private LocalDateTime time;
     }
 }

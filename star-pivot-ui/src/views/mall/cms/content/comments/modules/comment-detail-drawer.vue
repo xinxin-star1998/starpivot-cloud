@@ -17,7 +17,7 @@
         <ElDescriptionsItem label="点赞">{{ detail.likesCount ?? 0 }}</ElDescriptionsItem>
         <ElDescriptionsItem label="回复数">{{ detail.replyCount ?? 0 }}</ElDescriptionsItem>
         <ElDescriptionsItem label="IP">{{ detail.memberIp || '-' }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="时间">{{ detail.createTime || '-' }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="时间">{{ formatDateTime(detail.createTime) }}</ElDescriptionsItem>
         <ElDescriptionsItem label="内容">{{ detail.content || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem v-if="detail.resources" label="图片">{{ detail.resources }}</ElDescriptionsItem>
       </ElDescriptions>
@@ -27,7 +27,7 @@
         <div v-for="reply in detail.replies" :key="reply.id" class="reply-item">
           <p class="reply-item__meta">
             <strong>{{ reply.memberNickName || '客服' }}</strong>
-            <span>{{ reply.createTime }}</span>
+            <span>{{ formatDateTime(reply.createTime) }}</span>
           </p>
           <p class="reply-item__content">{{ reply.content }}</p>
         </div>
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import {COMMENT_SHOW_STATUS_MAP, type CommentVo, fetchCommentById, fetchCommentReply} from '@/api/mall/comment'
 import {useAuth} from '@/hooks/core/useAuth'
+import {formatDateTime} from '@/utils/common/datetime'
 
 interface Props {
     visible: boolean
