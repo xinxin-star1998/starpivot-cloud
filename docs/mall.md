@@ -10,7 +10,7 @@
 | 微服务 | `starpivot-mall-member` (9206)、`product` (9207)、`ware` (9208)、`order` (9209)、`promotion` (9212)、静态 BFF `starpivot-mall` (9205) |
 | 统一入口 | 网关 `starpivot-gateway:8080` |
 | API 前缀 | `/api/v1`（环境变量 `API_VERSION`） |
-| 业务库 | `star_pivot_mall`（各商城服务共用） |
+| 业务库 | 五域分库：`star_pivot_product` / `star_pivot_ware` / `star_pivot_order` / `star_pivot_member` / `star_pivot_promotion` |
 | 系统库 | `star_pivot`（菜单/权限） |
 | 系统库名配置 | 商城服务通过 `SYSTEM_DB_SCHEMA` 跨库读 RBAC，**须与 system 服务库名一致**（推荐 `star_pivot`） |
 | 权限策略 | `menu-permission`（见 `docs/security/permission-strategy.md`） |
@@ -112,14 +112,17 @@
 ```bash
 # 1. 系统库（含商城基础菜单 24~210、281）
 mysql -uroot -p < sql/star_pivot.sql
+mysql -uroot -p star_pivot < sql/sys_menu.sql
 
-# 2. 商城业务库 + 菜单补充（perms/按钮 282~303、280 C端、281 SKU）
-cd sql/gulimall
-mysql -uroot -p < init_mall_all.sql
+# 2. 商城五域业务库（Docker 首次启动会执行 00_create_mall_database.sql 建库）
+.\sql\import_mall_databases.ps1
 
-# 3. 已有库若跑过旧版 init_mall_menus（ID 冲突），先迁移再补充
-mysql -uroot -p star_pivot < migrate_mall_menus_v2.sql
-mysql -uroot -p star_pivot < init_mall_menus.sql
+# 或逐库：
+mysql -uroot -p star_pivot_product  < sql/star_pivot_product.sql
+mysql -uroot -p star_pivot_ware     < sql/star_pivot_ware.sql
+mysql -uroot -p star_pivot_order    < sql/star_pivot_order.sql
+mysql -uroot -p star_pivot_member   < sql/star_pivot_member.sql
+mysql -uroot -p star_pivot_promotion < sql/star_pivot_promotion.sql
 ```
 
 ## 实体代码生成

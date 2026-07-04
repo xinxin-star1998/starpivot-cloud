@@ -606,7 +606,7 @@ starpivot-approval/
 
 ## 10.3 部署清单
 
-1. MySQL：执行 `sql/01_star_pivot.sql` → `sql/init_approval.sql`；商城见 `sql/gulimall/init_mall_all.sql`
+1. MySQL：执行 `sql/star_pivot.sql` → `sql/sys_menu.sql`；商城五域见 `sql/import_mall_databases.ps1`
 2. RabbitMQ：声明 exchange / queue（`starpivot-mq` 拓扑配置）
 3. Nacos：注册 `starpivot-approval`
 4. Gateway：增加 approval 路由

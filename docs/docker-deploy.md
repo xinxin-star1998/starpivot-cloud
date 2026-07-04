@@ -92,8 +92,8 @@ docker compose up -d rabbitmq
 2. **Nacos 无配置**  
    手动执行 `.\nacos\import-config.ps1`。
 
-3. **已有 MySQL 数据卷但缺少 star_pivot_mall 库**  
-   手动执行：`CREATE DATABASE star_pivot_mall ...` 后导入 `sql/star_pivot_mall.sql`。
+3. **已有 MySQL 数据卷但缺少商城域库**  
+   执行 `sql/00_create_mall_database.sql` 创建五域库后，运行 `.\sql\import_mall_databases.ps1` 导入各 `sql/star_pivot_*.sql`。
 
 4. **auth 出现「回退 Feign」**  
    确认 RabbitMQ 已启动：`docker compose up -d rabbitmq`。

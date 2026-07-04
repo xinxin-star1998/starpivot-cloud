@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 01/07/2026 16:59:07
+ Date: 04/07/2026 19:31:43
 */
 
 SET NAMES utf8mb4;
@@ -43,7 +43,7 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 271 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 313 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
@@ -188,10 +188,10 @@ INSERT INTO `sys_menu` VALUES (137, '品牌删除', 127, 4, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (138, '属性分组', 128, 1, 'group', '/mall/pms/group/index', NULL, 'AttrgroupManager', 1, 1, 'C', '0', '0', '', 'ep:histogram', 'admin', '2026-05-18 14:59:27', 'admin', '2026-06-23 21:13:54', '');
 INSERT INTO `sys_menu` VALUES (139, '规格参数', 128, 2, 'base', '/mall/pms/attr/base/index', NULL, 'BaseParam', 1, 1, 'C', '0', '0', '', 'ep:document', 'admin', '2026-05-18 15:06:50', 'admin', '2026-06-23 21:14:05', '');
 INSERT INTO `sys_menu` VALUES (140, '销售属性', 128, 3, 'sale', '/mall/pms/attr/sale/index', NULL, 'SalesAttributes', 1, 1, 'C', '0', '0', '', 'ep:present', 'admin', '2026-05-18 15:12:11', 'admin', '2026-06-23 21:14:16', '');
-INSERT INTO `sys_menu` VALUES (141, 'spu管理', 129, 1, 'spu', '/mall/pms/product/spu/index', NULL, 'SpuManager', 1, 1, 'C', '0', '0', '', 'ri:shining-2-line', 'admin', '2026-06-23 16:40:46', 'admin', '2026-06-23 21:23:25', '');
-INSERT INTO `sys_menu` VALUES (142, '发布商品', 129, 2, 'publish', '/mall/pms/product/publish/index', NULL, 'PublishSPU', 1, 1, 'C', '0', '0', '', 'heroicons-outline:annotation', 'admin', '2026-06-23 16:43:05', 'admin', '2026-06-23 21:24:37', '');
-INSERT INTO `sys_menu` VALUES (143, '商品管理', 129, 3, 'manager', '/mall/pms/product/manager/index', NULL, 'GoodsManager', 1, 1, 'C', '0', '0', 'mall:product:query', 'ep:apple', 'admin', '2026-06-23 16:44:11', 'admin', '2026-06-23 21:25:22', 'SKU 只读检索（对齐谷粒商品管理）');
-INSERT INTO `sys_menu` VALUES (144, 'SKU 管理', 129, 4, 'sku', '/mall/pms/sku/index', NULL, 'PmsSkuManager', 1, 1, 'C', '1', '0', 'mall:product:list', 'mdi:barcode', 'admin', '2026-06-24 13:11:09', '', NULL, '已合并至「商品管理」');
+INSERT INTO `sys_menu` VALUES (141, 'spu管理', 129, 1, 'spu', '/mall/pms/product/spu/index', NULL, 'SpuManager', 1, 1, 'C', '0', '0', '', 'ri:shining-2-line', 'admin', '2026-06-23 16:40:46', 'admin', '2026-07-01 17:27:32', 'SPU 列表 + 分类树');
+INSERT INTO `sys_menu` VALUES (142, '发布商品', 129, 2, 'publish', '/mall/pms/product/publish/index', NULL, 'PublishSPU', 1, 1, 'C', '0', '0', '', 'heroicons-outline:annotation', 'admin', '2026-06-23 16:43:05', 'admin', '2026-07-01 17:27:32', '跳转 SPU 发布向导');
+INSERT INTO `sys_menu` VALUES (143, '商品管理', 129, 3, 'manager', '/mall/pms/product/manager/index', NULL, 'GoodsManager', 1, 1, 'C', '0', '0', 'mall:product:query', 'ep:apple', 'admin', '2026-06-23 16:44:11', 'admin', '2026-07-01 17:27:32', 'SKU 只读检索');
+INSERT INTO `sys_menu` VALUES (144, 'SKU 管理', 129, 4, 'sku', '/mall/pms/sku/index', NULL, 'PmsSkuManager', 1, 1, 'C', '1', '1', 'mall:product:list', 'mdi:barcode', 'admin', '2026-06-24 13:11:09', 'admin', '2026-07-01 17:28:25', 'PMS SKU 独立管理 [已合并至「商品管理」]');
 INSERT INTO `sys_menu` VALUES (145, '属性分组查询', 138, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:group:query', '#', 'admin', '2026-05-18 15:42:26', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (146, '属性分组新增', 138, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:group:add', '#', 'admin', '2026-05-18 15:42:26', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (147, '属性分组修改', 138, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:group:edit', '#', 'admin', '2026-05-18 15:42:26', '', NULL, '');
@@ -214,7 +214,6 @@ INSERT INTO `sys_menu` VALUES (163, '商品查询', 141, 1, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (164, '商品新增', 141, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (165, '商品修改', 141, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (166, '商品删除', 141, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:delete', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (306, '商品查询', 143, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, 'SKU 只读检索');
 INSERT INTO `sys_menu` VALUES (167, '仓库维护', 30, 1, 'warehouse', '/mall/wms/warehouse/index', NULL, 'WareHouse', 1, 1, 'C', '0', '0', '', 'ep:office-building', 'admin', '2026-05-19 15:29:10', 'admin', '2026-06-23 16:45:58', '仓库管理');
 INSERT INTO `sys_menu` VALUES (168, '地区管理', 30, 2, 'address', '/mall/wms/address/index', NULL, 'AddressManager', 1, 1, 'C', '0', '0', '', 'ep:position', 'admin', '2026-05-19 15:53:01', 'admin', '2026-05-22 17:39:15', '地区管理');
 INSERT INTO `sys_menu` VALUES (169, '商品库存', 30, 3, 'sku', '/mall/wms/sku/index', NULL, '', 1, 0, 'C', '0', '0', 'mall:sku:list', 'mdi:alpha-s-box-outline', 'admin', '2026-05-22 17:38:35', 'admin', '2026-05-22 17:41:05', '商品库存菜单');
@@ -297,7 +296,7 @@ INSERT INTO `sys_menu` VALUES (245, '等级新增', 240, 1, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (246, '等级修改', 240, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:edit', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (247, '等级删除', 240, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:delete', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (248, '首页推荐', 34, 1, 'home', '/mall/cms/content/home/index', NULL, 'HomeRecommend', 1, 1, 'C', '0', '0', 'mall:adv:list', '#', 'admin', '2026-06-23 17:18:06', 'admin', '2026-06-24 15:36:48', '');
-INSERT INTO `sys_menu` VALUES (249, '分类热门', 34, 2, 'category', '/mall/cms/content/category/index', NULL, 'CategoryHot', 1, 1, 'C', '0', '0', 'mall:categoryHot:list', '#', 'admin', '2026-06-23 17:18:49', 'admin', '2026-06-24 15:36:48', '首页分类热门配置');
+INSERT INTO `sys_menu` VALUES (249, '分类热门', 34, 2, 'category', '/mall/cms/content/category/index', NULL, 'CategoryHot', 1, 1, 'C', '0', '0', 'mall:categoryHot:list', '#', 'admin', '2026-06-23 17:18:49', 'admin', '2026-07-01 18:06:19', '首页分类热门配置');
 INSERT INTO `sys_menu` VALUES (250, '评论管理', 34, 3, 'comments', '/mall/cms/content/comments/index', NULL, 'CommentManage', 1, 1, 'C', '0', '0', 'mall:comment:list', '#', 'admin', '2026-06-23 17:19:35', 'admin', '2026-06-24 15:36:48', '');
 INSERT INTO `sys_menu` VALUES (251, '轮播新增', 248, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (252, '轮播修改', 248, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
@@ -305,9 +304,6 @@ INSERT INTO `sys_menu` VALUES (253, '轮播删除', 248, 3, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (254, '评论查询', 250, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:comment:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (255, '评论修改', 250, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:comment:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (256, '评论删除', 250, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:comment:delete', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (310, '分类热门新增', 249, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (311, '分类热门修改', 249, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (312, '分类热门删除', 249, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:delete', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (257, '模板编辑', 35, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:template:edit', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (258, '模板发布', 35, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:template:publish', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (259, '绑定编辑', 36, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:bind:edit', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
@@ -319,5 +315,9 @@ INSERT INTO `sys_menu` VALUES (264, '撤回审批', 38, 2, '', '', NULL, '', 1, 
 INSERT INTO `sys_menu` VALUES (270, '审批统计', 6, 5, 'statistics', '/approval/statistics/index', NULL, 'ApprovalStatistics', 1, 1, 'C', '0', '0', 'approval:statistics:query', 'mdi:chart-bar', 'admin', '2026-06-30 18:04:12', '', NULL, '审批数据看板');
 INSERT INTO `sys_menu` VALUES (271, '登录日志', 33, 5, 'login-log', '/mall/ums/member/login-log/index', NULL, 'MemberLoginLog', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, 'C端会员登录审计');
 INSERT INTO `sys_menu` VALUES (272, '会员收藏', 33, 6, 'collect', '/mall/ums/member/collect/index', NULL, 'MemberCollect', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, '商品/专题收藏查询');
+INSERT INTO `sys_menu` VALUES (306, '商品查询', 143, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:query', '#', 'admin', '2026-07-01 17:22:16', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (310, '分类热门新增', 249, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:add', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (311, '分类热门修改', 249, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:edit', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (312, '分类热门删除', 249, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:delete', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
 
 SET FOREIGN_KEY_CHECKS = 1;

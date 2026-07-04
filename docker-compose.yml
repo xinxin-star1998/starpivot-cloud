@@ -32,7 +32,7 @@ services:
     ports:
       - "3307:3306"
     # 命名卷替代本地E盘目录绑定
-    # 首次仅导入核心库；商城大 SQL（~7.8MB）请手动导入，见 docs/docker-deploy.md
+    # 首次仅导入核心库；商城五域 SQL 请手动导入，见 docs/docker-deploy.md 与 sql/import_mall_databases.ps1
     volumes:
       - mysql-data:/var/lib/mysql
       - ./sql/00_create_mall_database.sql:/docker-entrypoint-initdb.d/00_create_mall_database.sql:ro

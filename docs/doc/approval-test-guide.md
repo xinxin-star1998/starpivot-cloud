@@ -16,14 +16,14 @@
 | starpivot-approval | 9213 | 审批引擎 |
 | starpivot-mall | 9205 | 商城业务 + MQ 消费 |
 | RabbitMQ | 5672 / 15672 | 审批完结事件（建议开启） |
-| MySQL | 3307 | `star_pivot` + `star_pivot_mall` |
+| MySQL | 3307 | `star_pivot` + 商城五域库（至少 `star_pivot_ware` 等） |
 
 前端：`star-pivot-ui` 开发服务或打包后由网关/static 提供。
 
 ### 1.2 执行 SQL 补丁（按顺序，仅首次或升级时）
 
 ```bash
-mysql -u root -p star_pivot_mall < sql/patch_approval_extend.sql
+mysql -u root -p star_pivot_ware < sql/patch_approval_extend.sql
 mysql -u root -p star_pivot       < sql/patch_approval_extend.sql   # 脚本内会 USE star_pivot 写模板
 mysql -u root -p star_pivot       < sql/patch_approval_notify.sql
 mysql -u root -p star_pivot       < sql/patch_approval_phase3.sql
@@ -150,7 +150,7 @@ sequenceDiagram
 ```sql
 -- 业务库
 SELECT id, audit_status, approval_instance_id
-FROM star_pivot_mall.wms_purchase
+FROM star_pivot_ware.wms_purchase
 WHERE id = <采购单ID>;
 
 -- 审批库

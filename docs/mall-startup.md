@@ -1,17 +1,17 @@
 # 商城微服务启动指南
 
-商城已按 Guli 风格拆分为 **5 个业务微服务 + 1 个静态资源 BFF**，共用 Nacos 服务发现与 `star_pivot_mall` 数据库。
+商城已按 Guli 风格拆分为 **5 个业务微服务 + 1 个静态资源 BFF**，共用 Nacos 服务发现；各微服务使用独立业务库（见下表）。
 
 ## 架构与端口
 
-| 服务 | Nacos 名称 | 默认端口 | 职责 |
-|------|------------|----------|------|
-| starpivot-mall-member | `starpivot-mall-member` | 9206 | 会员、认证、地址、收藏 |
-| starpivot-mall-product | `starpivot-mall-product` | 9207 | 商品 PMS、ES 搜索、C 端商品/评价 |
-| starpivot-mall-ware | `starpivot-mall-ware` | 9208 | 仓储、采购、省市区 |
-| starpivot-mall-order | `starpivot-mall-order` | 9209 | 订单、购物车、支付 |
-| starpivot-mall-promotion | `starpivot-mall-promotion` | 9212 | 优惠券、秒杀、首页营销 |
-| starpivot-mall | `starpivot-mall` | 9205 | 本地静态资源 `/local-storage/**`（可选） |
+| 服务 | Nacos 名称 | 默认端口 | 业务库 | 职责 |
+|------|------------|----------|--------|------|
+| starpivot-mall-member | `starpivot-mall-member` | 9206 | `star_pivot_member` | 会员、认证、地址、收藏 |
+| starpivot-mall-product | `starpivot-mall-product` | 9207 | `star_pivot_product` | 商品 PMS、ES 搜索、C 端商品/评价 |
+| starpivot-mall-ware | `starpivot-mall-ware` | 9208 | `star_pivot_ware` | 仓储、采购、省市区 |
+| starpivot-mall-order | `starpivot-mall-order` | 9209 | `star_pivot_order` | 订单、购物车、支付 |
+| starpivot-mall-promotion | `starpivot-mall-promotion` | 9212 | `star_pivot_promotion` | 优惠券、秒杀、首页营销 |
+| starpivot-mall | `starpivot-mall` | 9205 | — | 本地静态资源 `/local-storage/**`（可选） |
 
 网关 `starpivot-gateway`（8080）按路径转发至上述服务，详见 `starpivot-gateway/src/main/resources/application.yml`。
 
@@ -28,10 +28,10 @@ promotion → member, product, order（购物车/秒杀下单）
 ## 前置条件
 
 1. **基础设施**：`docker compose up -d`（Nacos、MySQL、Redis、RabbitMQ）
-2. **商城库数据**（首次）：
+2. **商城库数据**（首次，需先由 `00_create_mall_database.sql` 建好五域库）：
 
-```bash
-mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_mall < sql/star_pivot_mall.sql
+```powershell
+.\sql\import_mall_databases.ps1
 ```
 
 3. **环境变量**（PowerShell 示例）：
@@ -39,7 +39,7 @@ mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_mall < sql/star_pivot_mall.sql
 ```powershell
 $env:JWT_SECRET = "dev-local-jwt-secret-must-be-at-least-32-chars"
 $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
-$env:MALL_DB_URL = "jdbc:mysql://127.0.0.1:3307/star_pivot_mall?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true"
+# 各商城服务在 Nacos yaml 中已配置各自业务库 URL，一般无需设置 MALL_DB_URL
 ```
 
 4. **编译**：

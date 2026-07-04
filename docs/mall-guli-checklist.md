@@ -19,7 +19,7 @@
 | API 网关 | gulimall-gateway | starpivot-gateway | ✅ |
 | 认证中心 | gulimall-auth-server | starpivot-auth + member 内 C 端 JWT | ⚠️ |
 | 公共模块 | gulimall-common | starpivot-mall-common + starpivot-api(Feign) | ✅ |
-| 数据库 | 各服务独立库（课程后期） | 共用 `star_pivot_mall` | ⚠️ 逻辑拆分、物理同库 |
+| 数据库 | 各服务独立库 | 五域分库（product/ware/order/member/promotion） | ✅ 与 Nacos 配置一致 |
 
 ### 服务端口对照
 
