@@ -312,6 +312,10 @@ INSERT INTO `sys_menu` VALUES (261, '审批操作', 37, 2, '', '', NULL, '', 1, 
 INSERT INTO `sys_menu` VALUES (262, '提交审批', 37, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:submit', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (263, '发起查询', 38, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:query', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (264, '撤回审批', 38, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:withdraw', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (313, '通知查询', 37, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:query', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知查询');
+INSERT INTO `sys_menu` VALUES (314, '通知已读', 37, 5, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:edit', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知标记已读');
+INSERT INTO `sys_menu` VALUES (315, '通知查询', 38, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:query', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知查询');
+INSERT INTO `sys_menu` VALUES (316, '通知已读', 38, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:edit', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知标记已读');
 INSERT INTO `sys_menu` VALUES (270, '审批统计', 6, 5, 'statistics', '/approval/statistics/index', NULL, 'ApprovalStatistics', 1, 1, 'C', '0', '0', 'approval:statistics:query', 'mdi:chart-bar', 'admin', '2026-06-30 18:04:12', '', NULL, '审批数据看板');
 INSERT INTO `sys_menu` VALUES (271, '登录日志', 33, 5, 'login-log', '/mall/ums/member/login-log/index', NULL, 'MemberLoginLog', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, 'C端会员登录审计');
 INSERT INTO `sys_menu` VALUES (272, '会员收藏', 33, 6, 'collect', '/mall/ums/member/collect/index', NULL, 'MemberCollect', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, '商品/专题收藏查询');

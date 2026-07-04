@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,18 +24,21 @@ public class ApNotificationController {
     private final ApNotificationService notificationService;
 
     @Operation(summary = "我的通知分页")
+    @PreAuthorize("hasAuthority('approval:notification:query')")
     @PostMapping("/notificationPageList")
     public Result<PageResponse<ApNotificationVo>> pageList(@Valid @RequestBody ApNotificationQueryDto query) {
         return Result.success(notificationService.pageList(query, requireUserId()));
     }
 
     @Operation(summary = "未读数量")
+    @PreAuthorize("hasAuthority('approval:notification:query')")
     @GetMapping("/unread-count")
     public Result<Long> unreadCount() {
         return Result.success(notificationService.unreadCount(requireUserId()));
     }
 
     @Operation(summary = "标记已读")
+    @PreAuthorize("hasAuthority('approval:notification:edit')")
     @PostMapping("/{id}/read")
     public Result<Void> markRead(@PathVariable Long id) {
         notificationService.markRead(id, requireUserId());
@@ -42,6 +46,7 @@ public class ApNotificationController {
     }
 
     @Operation(summary = "全部已读")
+    @PreAuthorize("hasAuthority('approval:notification:edit')")
     @PostMapping("/read-all")
     public Result<Void> markAllRead() {
         notificationService.markAllRead(requireUserId());

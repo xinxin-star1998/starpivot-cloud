@@ -3,18 +3,37 @@ import type {ExternalDbConnection} from '@/api/generator/gen-external'
 const STORAGE_KEY = 'gen_external_connection_presets'
 const LAST_CONN_KEY = 'gen_external_last_connection'
 
+/** 持久化到 localStorage 的连接预设（不含密码） */
 export interface ConnectionPreset {
   name: string
   connection: Omit<ExternalDbConnection, 'password'>
-  /** 是否保存密码（本地存储，仅当前浏览器） */
+}
+
+type LegacyConnectionPreset = ConnectionPreset & {
   savePassword?: boolean
   password?: string
+}
+
+function stripLegacyPasswordFields(preset: LegacyConnectionPreset): ConnectionPreset {
+  const { savePassword: _s, password: _p, ...rest } = preset
+  return rest
 }
 
 export function loadConnectionPresets(): ConnectionPreset[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as ConnectionPreset[]) : []
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as LegacyConnectionPreset[]
+    if (!Array.isArray(parsed)) return []
+
+    const cleaned = parsed.map(stripLegacyPasswordFields)
+    const hadLegacyPassword = parsed.some(
+      (p) => Boolean(p.savePassword) || Boolean(p.password)
+    )
+    if (hadLegacyPassword) {
+      persistConnectionPresets(cleaned)
+    }
+    return cleaned
   } catch {
     return []
   }
@@ -27,7 +46,14 @@ export function persistConnectionPresets(list: ConnectionPreset[]) {
 export function loadLastConnection(): Partial<ExternalDbConnection> | null {
   try {
     const raw = localStorage.getItem(LAST_CONN_KEY)
-    return raw ? (JSON.parse(raw) as Partial<ExternalDbConnection>) : null
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<ExternalDbConnection>
+    if (!parsed || typeof parsed !== 'object') return null
+    if (parsed.password) {
+      delete parsed.password
+      localStorage.setItem(LAST_CONN_KEY, JSON.stringify(parsed))
+    }
+    return parsed
   } catch {
     return null
   }

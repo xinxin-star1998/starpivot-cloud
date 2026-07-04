@@ -20,7 +20,6 @@ starpivot:
       - /api/${starpivot.api.version}/auth/register/enabled
       - /api/${starpivot.api.version}/auth/forgot-password
       - /api/${starpivot.api.version}/auth/forgot-password/**
-      - /api/${starpivot.api.version}/router/dynamic-routes
       - /api/${starpivot.api.version}/portal/home/**
       - /api/${starpivot.api.version}/portal/product/**
       - /api/${starpivot.api.version}/portal/subject/**

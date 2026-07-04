@@ -14,10 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackages = "cn.org.starpivot.api")
 @EnableConfigurationProperties(JwtProperties.class)
 @EnableScheduling
-@MapperScan({
-        "cn.org.starpivot.approval.mapper",
-        "cn.org.starpivot.common.security.mapper"
-})
+@MapperScan("cn.org.starpivot.approval.mapper")
 public class ApprovalApplication {
 
     public static void main(String[] args) {

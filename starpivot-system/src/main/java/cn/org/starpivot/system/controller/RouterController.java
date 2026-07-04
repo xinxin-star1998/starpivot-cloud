@@ -42,10 +42,7 @@ public class RouterController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/dynamic-routes")
     public Result<List<RouterVo>> getDynamicRoutes() {
-        Long userId = SecurityContextUtils.getUserId();
-        if (userId == null) {
-            return Result.success(List.of());
-        }
+        Long userId = requireUserId();
         return Result.success(sysRouterService.buildDynamicRoutes(userId));
     }
 

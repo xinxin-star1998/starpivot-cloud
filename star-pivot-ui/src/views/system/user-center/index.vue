@@ -359,7 +359,13 @@
                       <el-tag v-else type="info" size="small">其他</el-tag>
                     </template>
                   </el-table-column>
-                  <el-table-column label="操作" width="90" fixed="right" align="center">
+                  <el-table-column
+                    v-if="hasOtherSessions"
+                    label="操作"
+                    width="90"
+                    fixed="right"
+                    align="center"
+                  >
                     <template #default="{ row }">
                       <el-button
                         v-if="!isCurrentSession(row)"
@@ -371,7 +377,6 @@
                       >
                         下线
                       </el-button>
-                      <el-text v-else type="info" size="small">-</el-text>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -536,6 +541,11 @@ defineOptions({ name: 'UserCenter' })
   const isCurrentSession = (session: Api.Auth.DeviceSession) => {
     return session.isCurrent === true
   }
+
+  /** 存在其他设备会话时才展示操作列（当前会话不可下线） */
+  const hasOtherSessions = computed(() =>
+    sessionList.value.some((session) => !isCurrentSession(session))
+  )
 
   const sessionRowClassName = ({ row }: { row: Api.Auth.DeviceSession }) => {
     return isCurrentSession(row) ? 'current-session-row' : ''

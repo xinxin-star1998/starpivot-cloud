@@ -55,8 +55,6 @@ public class GatewayAuthProperties {
 
             "/api/v1/auth/forgot-password/**",
 
-            "/api/v1/router/dynamic-routes",
-
             "/api/v1/portal/home/**",
 
             "/api/v1/portal/product/**",

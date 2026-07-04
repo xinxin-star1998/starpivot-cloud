@@ -22,6 +22,7 @@ import '@wangeditor/editor/dist/css/style.css'
 import {Editor, Toolbar} from '@wangeditor/editor-for-vue'
 import {useUserStore} from '@/store/modules/user'
 import {getApiBaseUrl} from '@/utils/http'
+import {buildAbsoluteApiUrl} from '@/utils/http/api-path'
 import EmojiText from '@/utils/ui/emojo'
 import {IDomEditor, IEditorConfig, IToolbarConfig} from '@wangeditor/editor'
 
@@ -70,17 +71,9 @@ defineOptions({ name: 'ArtWangEditor' })
     allowedFileTypes: ['image/*']
   } as const
 
-  /**
-   * 富文本图片上传地址：
-   * - 生产环境（VITE_API_URL=/api/v1）：${base}/common/upload/wangeditor → /api/v1/common/upload/wangeditor
-   * - 开发环境（VITE_API_URL=/）：使用 Vite 代理 /api → /api/common/upload/wangeditor
-   */
   const uploadServer = computed(() => {
     if (props.uploadConfig?.server) return props.uploadConfig.server
-    const base = getApiBaseUrl().replace(/\/$/, '')
-    const path = '/common/upload/wangeditor'
-    if (!base || base === '/') return `/api${path}`
-    return `${base}${path}`
+    return buildAbsoluteApiUrl('/common/upload/wangeditor', getApiBaseUrl())
   })
 
   // 合并上传配置

@@ -1,9 +1,10 @@
 # starpivot-approval 专属配置
 # Nacos Data ID: starpivot-approval.yaml  |  Group: DEFAULT_GROUP
+# 业务库：star_pivot_approval（ap_* 表）；RBAC 菜单仍在 star_pivot
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    url: ${APPROVAL_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_approval?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -23,6 +24,7 @@ starpivot:
   mq:
     enabled: ${MQ_ENABLED:true}
   approval:
+    system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     timeout-scan-ms: 60000
     timeout-batch-size: 50
 

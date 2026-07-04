@@ -22,6 +22,8 @@
 
 import type {AppRouteRecord} from '@/types/router'
 import {safeLog, safeWarn} from '@/utils'
+import {getApiBaseUrl} from '@/utils/http'
+import {buildAbsoluteApiUrl} from '@/utils/http/api-path'
 
 interface RouteIndex {
   names: Set<string>
@@ -456,7 +458,7 @@ export class DynamicRouteAppender {
     // 这样前端和后端就是同源（都是 localhost:3000），可以满足 SAMEORIGIN 的要求
     // 开发环境：通过 Vite 代理转发到后端
     // 生产环境：如果前后端部署在同一域名下，也是同源
-    const druidUrl = '/api/druid/index.html'
+    const druidUrl = buildAbsoluteApiUrl('/druid/index.html', getApiBaseUrl())
 
     const druidIframeRoute: AppRouteRecord = {
       path: '/monitor/druid-iframe',

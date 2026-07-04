@@ -18,35 +18,40 @@ export default ({ mode }: { mode: string }) => {
   console.log(`🚀 API_URL = ${VITE_API_URL}`)
   console.log(`🚀 VERSION = ${VITE_VERSION}`)
 
-  /** 开发代理：/api/xxx → /api/v1/xxx，与后端 context-path 一致 */
-  const apiVersionRewrite = (path: string) => {
-    if (/^\/api\/v\d+\//.test(path)) {
-      return path
-    }
-    return path.replace(/^\/api\//, '/api/v1/')
+  const API_VERSION_PREFIX = '/api/v1'
+
+  /** 兼容 VITE_API_URL=/ 或未走 normalize 的裸 /api 请求 */
+  const legacyApiVersionRewrite = (path: string) => {
+    if (/^\/api\/v\d+\//.test(path)) return path
+    return path.replace(/^\/api\//, `${API_VERSION_PREFIX}/`)
   }
 
   const devProxy: Record<string, import('vite').ProxyOptions> = {}
 
   // 商城 API 可直连 starpivot-mall（网关未重启 / 无 mall 路由时启用）
   if (VITE_MALL_PROXY_URL) {
-    devProxy['/api/mall'] = {
+    devProxy[`${API_VERSION_PREFIX}/mall`] = {
       target: VITE_MALL_PROXY_URL,
-      changeOrigin: true,
-      rewrite: apiVersionRewrite
+      changeOrigin: true
     }
-    devProxy['/api/portal'] = {
+    devProxy[`${API_VERSION_PREFIX}/portal`] = {
       target: VITE_MALL_PROXY_URL,
-      changeOrigin: true,
-      rewrite: apiVersionRewrite
+      changeOrigin: true
     }
     console.log(`🚀 MALL_PROXY = ${VITE_MALL_PROXY_URL}`)
   }
 
+  // 主路径：与生产 VITE_API_URL=/api/v1 一致，无需 rewrite
+  devProxy[API_VERSION_PREFIX] = {
+    target: VITE_API_PROXY_URL,
+    changeOrigin: true
+  }
+
+  // 兜底：iframe / 旧配置仍发 /api/xxx 时补 v1
   devProxy['/api'] = {
     target: VITE_API_PROXY_URL,
     changeOrigin: true,
-    rewrite: apiVersionRewrite
+    rewrite: legacyApiVersionRewrite
   }
 
   return defineConfig({

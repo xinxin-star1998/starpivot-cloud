@@ -62,10 +62,10 @@
             </ElCol>
             <ElCol :span="6">
               <ElFormItem label-width="0">
-                <ElCheckbox v-model="saveConnPassword">记住密码</ElCheckbox>
+                <ElCheckbox v-model="saveConnPassword">本会话记住密码</ElCheckbox>
                 <ExternalActionBtn
                   what="存到浏览器"
-                  usage="将当前连接参数保存为预设，下次可快速填充。勾选「记住密码」会本地保存密码。"
+                  usage="将当前连接参数（不含密码）保存为预设。勾选「本会话记住密码」仅在当前标签页内存中暂存密码，关闭页面后清除。"
                   link
                   type="primary"
                   class="ml-2"
@@ -535,6 +535,14 @@ import {
   saveLastConnection,
   toPresetConnection
 } from '@/utils/generator/external-connection-presets'
+import {
+  clearLastConnectionPassword,
+  clearPresetPassword,
+  getLastConnectionPassword,
+  getPresetPassword,
+  setLastConnectionPassword,
+  setPresetPassword
+} from '@/utils/generator/external-connection-password-store'
 
 defineOptions({ name: 'GenExternal' })
 
@@ -713,6 +721,7 @@ defineOptions({ name: 'GenExternal' })
       sessionStorage.setItem(SESSION_KEY, res.sessionId)
       dbInfo.value = `${res.database} · ${dbTypeShortName(connection.dbType)} ${res.dbVersion}`
       saveLastConnection(connection)
+      setLastConnectionPassword(connection.password)
       sessionExpireWarned.value = false
       startSessionTimer()
       await refreshSessionTemplateDir()
@@ -768,7 +777,11 @@ defineOptions({ name: 'GenExternal' })
     connPresets.value = loadConnectionPresets()
     const last = loadLastConnection()
     if (last) {
-      Object.assign(connection, { ...connection, ...last, password: connection.password })
+      Object.assign(connection, {
+        ...connection,
+        ...last,
+        password: getLastConnectionPassword()
+      })
     }
   }
 
@@ -777,8 +790,9 @@ defineOptions({ name: 'GenExternal' })
     const preset = connPresets.value.find((p) => p.name === name)
     if (!preset) return
     Object.assign(connection, preset.connection)
-    if (preset.savePassword && preset.password) {
-      connection.password = preset.password
+    const sessionPassword = getPresetPassword(name)
+    if (sessionPassword) {
+      connection.password = sessionPassword
       saveConnPassword.value = true
     } else {
       connection.password = ''
@@ -792,11 +806,14 @@ defineOptions({ name: 'GenExternal' })
       ElMessage.warning('请输入预设名称')
       return
     }
+    if (saveConnPassword.value) {
+      setPresetPassword(name, connection.password)
+    } else {
+      clearPresetPassword(name)
+    }
     const entry: ConnectionPreset = {
       name,
-      connection: toPresetConnection(connection),
-      savePassword: saveConnPassword.value,
-      password: saveConnPassword.value ? connection.password : undefined
+      connection: toPresetConnection(connection)
     }
     const idx = connPresets.value.findIndex((p) => p.name === name)
     if (idx >= 0) {
@@ -815,6 +832,7 @@ defineOptions({ name: 'GenExternal' })
     if (!name) return
     connPresets.value = connPresets.value.filter((p) => p.name !== name)
     persistConnectionPresets(connPresets.value)
+    clearPresetPassword(name)
     selectedConnPreset.value = ''
     ElMessage.success('已删除连接预设')
   }
@@ -829,6 +847,7 @@ defineOptions({ name: 'GenExternal' })
     }
     sessionId.value = ''
     sessionStorage.removeItem(SESSION_KEY)
+    clearLastConnectionPassword()
     lastWriteBackup.value = null
     clearLastWriteBackup()
     dbInfo.value = ''

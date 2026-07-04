@@ -23,6 +23,7 @@ import {$t} from '@/locales'
 import {BaseResponse} from '@/types'
 import {fetchRefreshToken} from '@/api/auth'
 import {logger} from '@/utils/sys/logger'
+import {normalizeRequestUrl as stripDuplicateApiPrefix} from './api-path'
 
 /** 请求配置常量 */
 const REQUEST_TIMEOUT = 15000
@@ -194,27 +195,9 @@ const axiosInstance = axios.create({
   ]
 })
 
-/**
- * 规范化请求 URL，避免出现 /api/api 或 /api/v1/api 等重复前缀
- *
- * - 当 baseURL 已包含 /api/v1（生产）或 /api（旧配置）时，业务层写 /api/xxx 会被剥离为 /xxx
- * - 仅处理以 /api/ 开头的相对路径；绝对 URL 与非 /api 路径原样返回
- */
+/** 见 api-path.ts：剥离 url 中与 baseURL 重复的 /api 前缀 */
 function normalizeRequestUrl(url: string): string {
-  if (!url) return url
-  if (!url.startsWith('/api/')) return url
-
-  const base = (getApiBaseUrl() || '').trim()
-  // 匹配带版本的 /api/v1 以及旧版 /api 的 baseURL
-  const baseHasApi =
-    base === '/api/v1' ||
-    base.endsWith('/api/v1') ||
-    base.includes('/api/v1/') ||
-    base === '/api' ||
-    base.endsWith('/api') ||
-    base.includes('/api/')
-
-  return baseHasApi ? url.replace(/^\/api/, '') : url
+  return stripDuplicateApiPrefix(url, getApiBaseUrl())
 }
 
 /** 请求拦截器 */
