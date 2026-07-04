@@ -13,7 +13,7 @@
 
 | 章节 | 谷粒 | StarPivot | 状态 |
 |------|------|-----------|------|
-| 微服务拆分 | product / ware / order / member / coupon + search + third-party | member / product / ware / order / promotion + app(BFF) | ✅ |
+| 微服务拆分 | product / ware / order / member / coupon + search + third-party | member / product / ware / order / promotion | ✅ |
 | 注册中心 Nacos | ✅ | ✅ | ✅ |
 | 配置中心 Nacos | ✅ | ✅ `nacos/config/starpivot-mall-*.yaml` | ✅ |
 | API 网关 | gulimall-gateway | starpivot-gateway | ✅ |
@@ -32,7 +32,6 @@
 | gulimall-coupon | starpivot-mall-promotion | 9210 |
 | gulimall-search | （合并在 product） | — |
 | gulimall-third-party | starpivot-file + 各服务 OSS 配置 | 9202 |
-| — | starpivot-mall（静态资源 BFF） | 9205 |
 
 ---
 
@@ -47,7 +46,7 @@
 | SKU 笛卡尔积生成 | ✅ | 前端 `spu-descartes.ts` + 后端 |
 | SKU 管理 / 商品管理 | ✅ | product |
 | 商品评论 B 端 | ✅ | product |
-| 商品图片上传 | ✅ | product（OSS / 本地） |
+| 商品图片上传 | ✅ | product（OSS） |
 | C 端商品搜索 / 详情 | ✅ | product |
 | ES 商品索引 | ⚠️ | 合并在 product，`MALL_ES_ENABLED=false` 默认走 DB |
 | Canal 监听 binlog 同步 ES | ❌ | 改为 SPU 变更时主动 sync |
@@ -142,9 +141,8 @@
 
 | 功能 | 状态 |
 |------|------|
-| OSS 对象存储 | ⚠️ 公共 `oss-config.yaml` + starpivot-file / product |
+| OSS 对象存储 | ✅ 公共 `oss-config.yaml` + starpivot-file / product / promotion |
 | 短信 | ⚠️ member 内短信登录 |
-| 本地静态资源 | ✅ mall-app `/local-storage/**` |
 | 统一文件中心 objectKey | ❌ 待规范 |
 
 ---
@@ -171,18 +169,9 @@
 
 ---
 
-## mall-app 清理说明
+## 历史：原 monolith 拆分说明
 
-`starpivot-mall-app`（artifactId: `starpivot-mall`）**仅保留静态资源 BFF**，网关只路由 `/local-storage/**` 到此服务。
-
-### 保留文件
-
-| 文件 | 作用 |
-|------|------|
-| `StarPivotMallApplication.java` | 启动类 |
-| `config/LocalStorageResourceConfig.java` | 映射 `/local-storage/**` |
-| `config/MallAppSecurityConfig.java` | 仅放行静态资源 |
-| `application.yml` | Nacos + 本地存储路径 |
+原单体 `starpivot-mall-app`（artifactId: `starpivot-mall`）已移除；业务代码已迁移至 5 个领域微服务，静态文件统一走 OSS，不再提供 `/local-storage/**` 本地映射。
 
 ### 原 monolith Controller 迁移去向
 
@@ -198,7 +187,7 @@
 | Portal | Region | ware |
 | Internal | MallOrderInternalController | order |
 
-拆分服务新增（mall-app 从未有）：`MemberInternalController`、`ProductInternalController`、`WareInternalController`、`PromotionInternalController`、`MallStockInternalController`、`PortalMemberAuthController`、`UmsMemberCollectController`、`UmsMemberLoginLogController` 等。
+拆分服务新增：`MemberInternalController`、`ProductInternalController`、`WareInternalController`、`PromotionInternalController`、`MallStockInternalController`、`PortalMemberAuthController`、`UmsMemberCollectController`、`UmsMemberLoginLogController` 等。
 
 ---
 
@@ -206,7 +195,7 @@
 
 | 优先级 | 项 | 说明 |
 |--------|-----|------|
-| P1 | mall-app 清理已提交 | 消除 Git 中遗留业务代码 |
+| P1 | mall-app 已移除 | 静态资源改 OSS，业务已迁至五域微服务 |
 | P2 | 启用 ES | `MALL_ES_ENABLED=true` + 重建索引 |
 | P2 | 省市区数据 | 执行 `sql/gulimall/gulimall_address_data.sql` |
 | P3 | Seata 或 mq_message | 跨服务强一致 |

@@ -1,6 +1,6 @@
 # C 端会员认证方案总览
 
-> **模块**：`starpivot-mall`（`/portal`） · **前端**：`star-pivot-ui/views/portal`  
+> **模块**：商城微服务 `starpivot-mall-*`（`/portal`） · **前端**：`star-pivot-ui/views/portal`  
 > **目标**：支持密码、手机号、微信、QQ 等多种登录方式；**一个会员账号可绑定多种登录方式（一对多）**，体验对齐京东账号体系。  
 > **详细 P1 设计**：[portal-auth-p1-design.md](./portal-auth-p1-design.md) · **DDL**：[sql/patch_portal_member_auth.sql](../../sql/patch_portal_member_auth.sql)
 
@@ -102,7 +102,7 @@ flowchart LR
     OAuth[微信/QQ...]
   end
 
-  subgraph Mall["starpivot-mall"]
+  subgraph Mall["starpivot-mall-member / order / product …"]
     Auth["/portal/auth/**"]
     Bind["/portal/member/auth/**"]
     Token[issueMemberToken]

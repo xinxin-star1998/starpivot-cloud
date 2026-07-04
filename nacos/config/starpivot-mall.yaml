@@ -1,9 +1,0 @@
-# starpivot-mall 专属配置（静态资源 BFF）
-# Nacos Data ID: starpivot-mall.yaml  |  Group: DEFAULT_GROUP
-
-file:
-  storage:
-    local-path: ${FILE_STORAGE_LOCAL_PATH:${user.home}/starpivot/uploads}
-
-oss:
-  enabled: ${OSS_ENABLED:false}

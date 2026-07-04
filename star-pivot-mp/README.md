@@ -1,13 +1,13 @@
 # StarPivot 微信小程序
 
-基于 **uni-app (Vue3 + TypeScript)**，与 `star-pivot-ui` 管理端、`starpivot-mall` Portal API 共用同一后端。
+基于 **uni-app (Vue3 + TypeScript)**，与 `star-pivot-ui` 管理端、商城 Portal API（`starpivot-mall-*`）共用同一后端。
 
 详细设计见 [docs/miniprogram.md](../docs/miniprogram.md)。
 
 ## 快速开始
 
 ```bash
-# 1. 确保 Gateway(:8080) + Mall(:9205) 已启动
+# 1. 确保 Gateway(:8080) + 商城微服务(member/product/ware/order/promotion) 已启动
 
 # 2. 安装依赖
 npm install

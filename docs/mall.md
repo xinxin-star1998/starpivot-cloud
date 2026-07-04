@@ -7,7 +7,7 @@
 
 | 项 | 值 |
 |---|---|
-| 微服务 | `starpivot-mall-member` (9206)、`product` (9207)、`ware` (9208)、`order` (9209)、`promotion` (9212)、静态 BFF `starpivot-mall` (9205) |
+| 微服务 | `starpivot-mall-member` (9206)、`product` (9207)、`ware` (9208)、`order` (9209)、`promotion` (9212) |
 | 统一入口 | 网关 `starpivot-gateway:8080` |
 | API 前缀 | `/api/v1`（环境变量 `API_VERSION`） |
 | 业务库 | 五域分库：`star_pivot_product` / `star_pivot_ware` / `star_pivot_order` / `star_pivot_member` / `star_pivot_promotion` |

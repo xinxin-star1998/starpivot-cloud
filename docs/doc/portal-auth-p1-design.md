@@ -1,6 +1,6 @@
 # C 端会员认证 P1 设计：一对多绑定 + 短信登录
 
-> 模块：`starpivot-mall` · 前端：`star-pivot-ui/views/portal`  
+> 模块：商城微服务 `starpivot-mall-*` · 前端：`star-pivot-ui/views/portal`  
 > 范围：**P1** — 绑定表、密码/短信登录、绑定管理基础能力；微信/QQ 在 P2 按同一模型扩展。  
 > DDL：`sql/patch_portal_member_auth.sql`
 
@@ -595,7 +595,7 @@ starpivot.mall.portal-auth.sms.mock-code: "123456"
 | 文件 | 说明 |
 |------|------|
 | `sql/patch_portal_member_auth.sql` | 建表 + 历史迁移 |
-| `starpivot-mall/.../portal/service/impl/PortalMemberServiceImpl.java` | 现有登录实现（改造入口） |
+| `starpivot-mall-member/.../portal/service/impl/PortalMemberServiceImpl.java` | 现有登录实现（改造入口） |
 | `starpivot-gateway/.../GatewayAuthProperties.java` | 白名单 |
 | `star-pivot-ui/src/views/portal/auth/login.vue` | C 端登录页 |
 

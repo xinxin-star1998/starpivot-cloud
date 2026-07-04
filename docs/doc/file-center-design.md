@@ -130,7 +130,6 @@ public enum FileCategory {
 | `storage/StoragePathValidator.java` | `ALLOWED_PRESIGNED_PREFIXES` 增加 `"file/"` |
 | `storage/FileStorageService.java` | 新增 `default void deleteObject(String objectName)`（可选 Phase 2 物理清理） |
 | `storage/impl/OssFileStorageService.java` | 实现 `deleteObject` |
-| `storage/impl/LocalFileStorageService.java` | 实现 `deleteObject` |
 | `storage/FileCenterUploadHelper.java`（新建） | 封装 category + folderId → objectName 生成 |
 | `storage/FileMediaTypeResolver.java`（新建） | 由 MIME + 扩展名解析 `FileMediaType` |
 

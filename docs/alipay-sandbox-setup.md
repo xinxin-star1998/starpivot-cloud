@@ -9,10 +9,10 @@
 | 服务 | 默认端口 | 说明 |
 |------|----------|------|
 | `starpivot-gateway` | **8080** | 对外统一入口，notify 须指向网关 |
-| `starpivot-mall` | 9205 | 商城微服务（内网，不直接暴露给支付宝） |
+| `starpivot-mall-order` | 9209 | 订单与支付服务（内网，不直接暴露给支付宝） |
 | `star-pivot-ui` | **5173** | C 端前端，`return-url` 指向此地址 |
 
-确保网关、商城、Redis、MySQL 已启动，C 端可正常登录并下单。
+确保网关、商城订单服务、Redis、MySQL 已启动，C 端可正常登录并下单。
 
 ---
 
@@ -50,7 +50,7 @@
 
 ### 3.1 方式 A：本地环境变量（推荐联调）
 
-在启动 `starpivot-mall` 前设置（PowerShell 示例）：
+在启动 `starpivot-mall-order` 前设置（PowerShell 示例）：
 
 ```powershell
 $env:MALL_ALIPAY_ENABLED = "true"
@@ -64,9 +64,9 @@ $env:MALL_ALIPAY_NOTIFY_URL = "https://YOUR-NGROK-ID.ngrok-free.app/api/v1/porta
 $env:MALL_ALIPAY_RETURN_URL = "http://127.0.0.1:5173/portal/orders"
 ```
 
-### 3.2 方式 B：Nacos `starpivot-mall.yaml`
+### 3.2 方式 B：Nacos `starpivot-mall-order.yaml`
 
-在 `nacos/config/starpivot-mall.yaml` 或 Nacos 控制台增加：
+在 `nacos/config/starpivot-mall-order.yaml` 或 Nacos 控制台增加：
 
 ```yaml
 starpivot:
@@ -84,7 +84,7 @@ starpivot:
       return-url: http://127.0.0.1:5173/portal/orders
 ```
 
-修改 Nacos 后重启 `starpivot-mall`（若已开 refresh，部分项可热更新，密钥类建议重启）。
+修改 Nacos 后重启 `starpivot-mall-order`（若已开 refresh，部分项可热更新，密钥类建议重启）。
 
 ### 3.3 网关白名单（已内置，一般无需改）
 
@@ -129,7 +129,7 @@ Forwarding  https://a1b2c3d4.ngrok-free.app -> http://localhost:8080
 https://a1b2c3d4.ngrok-free.app/api/v1/portal/pay/alipay/notify
 ```
 
-更新 `MALL_ALIPAY_NOTIFY_URL` 或 Nacos 配置后 **重启 starpivot-mall**。
+更新 `MALL_ALIPAY_NOTIFY_URL` 或 Nacos 配置后 **重启 starpivot-mall-order**。
 
 > ngrok 免费域名每次重启会变，需同步更新 notify-url。  
 > `return-url` 仍可用 `http://127.0.0.1:5173/portal/orders`（浏览器本地跳回）。

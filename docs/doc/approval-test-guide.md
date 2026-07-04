@@ -14,7 +14,11 @@
 | starpivot-auth | 9200 | 登录、验证码 |
 | starpivot-system | 9201 | 用户/角色/菜单 |
 | starpivot-approval | 9213 | 审批引擎 |
-| starpivot-mall | 9205 | 商城业务 + MQ 消费 |
+| starpivot-mall-member | 9206 | 会员、C 端认证 |
+| starpivot-mall-product | 9207 | 商品、审批 MQ 消费（采购等） |
+| starpivot-mall-ware | 9208 | 仓储、审批 MQ 消费 |
+| starpivot-mall-order | 9209 | 订单 |
+| starpivot-mall-promotion | 9212 | 营销、审批 MQ 消费 |
 | RabbitMQ | 5672 / 15672 | 审批完结事件（建议开启） |
 | MySQL | 3307 | `star_pivot` + 商城五域库（至少 `star_pivot_ware` 等） |
 
@@ -29,7 +33,7 @@ mysql -u root -p star_pivot       < sql/patch_approval_notify.sql
 mysql -u root -p star_pivot       < sql/patch_approval_phase3.sql
 ```
 
-执行后 **重启 starpivot-approval、starpivot-mall**。
+执行后 **重启 starpivot-approval 及对应商城微服务**（ware/product/promotion 等 MQ 消费者）。
 
 ### 1.3 MQ 与环境变量
 

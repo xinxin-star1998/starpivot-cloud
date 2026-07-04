@@ -73,7 +73,7 @@ starpivot-cloud/
 ├── starpivot-file/                   # 文件上传与文件中心
 ├── starpivot-generator/              # 代码生成
 ├── starpivot-monitor/                # 监控与 Quartz 定时任务
-├── starpivot-mall/                   # 商城父模块（5 个领域微服务 + 静态 BFF）
+├── starpivot-mall/                   # 商城父模块（5 个领域微服务）
 ├── starpivot-approval/               # 审批中台
 ├── star-pivot-ui/                    # Vue 3 管理前端 + H5 Portal
 ├── star-pivot-mp/                    # 微信小程序（uni-app）
@@ -94,7 +94,6 @@ starpivot-cloud/
 | starpivot-system    | 8082 | RBAC、系统配置    |
 | starpivot-generator | 9203 | 代码生成         |
 | starpivot-monitor   | 9204 | 在线用户、定时任务    |
-| starpivot-mall      | 9205 | 商城静态资源 BFF   |
 | starpivot-mall-member | 9206 | 商城会员       |
 | starpivot-mall-product | 9207 | 商城商品 + ES  |
 | starpivot-mall-ware | 9208 | 商城仓储       |
@@ -238,8 +237,6 @@ mvn spring-boot:run -pl starpivot-mall/starpivot-mall-product -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-ware -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-promotion -am
 mvn spring-boot:run -pl starpivot-mall/starpivot-mall-order -am
-# 可选：静态资源 BFF
-mvn spring-boot:run -pl starpivot-mall/starpivot-mall-app -am
 ```
 
 
@@ -295,7 +292,7 @@ pnpm dev
 
 各微服务使用 **Knife4j** 提供 OpenAPI 文档（不含 Swagger 默认 UI）。启动后访问：
 
-- 直连服务：`http://localhost:{port}/api/v1/doc.html`（如 auth `8081`、system `8082`、mall `9205`）
+- 直连服务：`http://localhost:{port}/api/v1/doc.html`（如 auth `8081`、system `8082`、product `9207`）
 - 经网关：对应服务路由下的 `/doc.html`（网关白名单已放行）
 
 代码中继续使用 `@Tag`、`@Operation` 等 OpenAPI 3 注解（`io.swagger.v3.oas.annotations`）。

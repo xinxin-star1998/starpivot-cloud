@@ -69,11 +69,6 @@ spring:
           uri: lb://starpivot-mall-promotion
           predicates:
             - Path=/api/${starpivot.api.version}/portal/home/**,/api/${starpivot.api.version}/portal/coupon/**,/api/${starpivot.api.version}/portal/seckill/**,/api/${starpivot.api.version}/portal/subject/**,/api/${starpivot.api.version}/mall/coupon/**,/api/${starpivot.api.version}/mall/coupon-history/**,/api/${starpivot.api.version}/mall/home-adv/**,/api/${starpivot.api.version}/mall/category-hot/**,/api/${starpivot.api.version}/mall/subject/**,/api/${starpivot.api.version}/mall/member-price/**,/api/${starpivot.api.version}/mall/sku-ladder/**,/api/${starpivot.api.version}/mall/sku-full-reduction/**,/api/${starpivot.api.version}/mall/spu-bounds/**,/api/${starpivot.api.version}/mall/seckill-session/**,/api/${starpivot.api.version}/mall/seckill-promotion/**
-        # 商城静态资源 BFF（本地磁盘 /local-storage/**）
-        - id: starpivot-mall-local-storage
-          uri: lb://starpivot-mall
-          predicates:
-            - Path=/local-storage/**
         # 审批中台
         - id: starpivot-approval
           uri: lb://starpivot-approval

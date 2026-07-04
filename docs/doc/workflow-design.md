@@ -25,7 +25,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ 业务服务（starpivot-mall / system / …）                          │
+│ 业务服务（starpivot-mall-* / system / …）                          │
 │  提交单据 → ApprovalInternalClient.submit()（/internal/**）      │
 │  消费 MQ → MallApprovalFinishedMqListener 回写 audit_status      │
 └───────────────┬───────────────────────────────┬─────────────────┘
@@ -418,7 +418,7 @@ public interface ApprovalClient {
 }
 ```
 
-`starpivot-mall` 引入 `starpivot-api` + OpenFeign 即可，**无需**依赖审批服务实现 jar。内部接口需配置 `starpivot.internal.token`（各服务一致）。
+各商城微服务（`starpivot-mall-*`）引入 `starpivot-api` + OpenFeign 即可，**无需**依赖审批服务实现 jar。内部接口需配置 `starpivot.internal.token`（各服务一致）。
 
 ---
 

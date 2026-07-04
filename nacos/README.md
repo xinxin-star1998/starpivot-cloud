@@ -7,7 +7,7 @@ StarPivot 微服务配置统一托管在 Nacos，本地 `application.yml` 仅保
 | Data ID | 说明 |
 |---------|------|
 | `common-config.yaml` | 公共配置：Redis、JWT、内部 Token、日志、MQ 开关 |
-| `oss-config.yaml` | 阿里云 OSS（system、file、product、promotion、mall-app 共用） |
+| `oss-config.yaml` | 阿里云 OSS（system、file、product、promotion 等商城服务共用） |
 | `mq-config.yaml` | RabbitMQ（审批/MQ 消费者） |
 | `starpivot-gateway.yaml` | 网关 Redis、日志 |
 | `starpivot-auth.yaml` | 认证服务 Redis、健康检查 |
@@ -16,7 +16,6 @@ StarPivot 微服务配置统一托管在 Nacos，本地 `application.yml` 仅保
 | `starpivot-generator.yaml` | 数据源、代码生成参数 |
 | `starpivot-monitor.yaml` | 数据源、Druid 监控、Quartz |
 | `starpivot-approval.yaml` | 审批服务 |
-| `starpivot-mall.yaml` | 商城静态资源 BFF（本地磁盘路径，默认 `oss.enabled=false`） |
 | `starpivot-mall-member.yaml` | 会员服务：数据源、短信/微信登录 |
 | `starpivot-mall-product.yaml` | 商品服务：数据源、ES |
 | `starpivot-mall-ware.yaml` | 仓储服务：数据源 |
@@ -80,7 +79,7 @@ $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
 | `TRUST_GATEWAY_HEADERS` | 微服务是否信任网关透传身份 Header | `false`（生产保持 false） |
 | `REDIS_PASSWORD` | Redis 密码 | `root`（与 docker-compose 一致） |
 | `MQ_ENABLED` | 是否启用 RabbitMQ | `false` |
-| `OSS_ENABLED` | 是否启用 OSS | `true`（`oss-config.yaml`）；mall-app 默认 `false` |
+| `OSS_ENABLED` | 是否启用 OSS | `true`（`oss-config.yaml`） |
 | `OSS_ENDPOINT` | OSS 端点 | `oss-cn-beijing.aliyuncs.com` |
 | `OSS_ACCESS_KEY_ID` | OSS AccessKey | 空（通过环境变量注入） |
 | `OSS_ACCESS_KEY_SECRET` | OSS AccessKey Secret | 空 |
@@ -101,7 +100,7 @@ spring:
       - optional:nacos:${spring.application.name}.yaml
 ```
 
-- Nacos 配置**覆盖**本地同名属性（如 `starpivot-mall.yaml` 中 `oss.enabled=false` 覆盖公共 `oss-config.yaml`）
+- Nacos 配置**覆盖**本地同名属性（后导入的 Data ID 优先级更高）
 - `optional:` 表示 Nacos 不可用时仍可用本地 fallback 启动
 - 修改 Nacos 配置后支持热刷新（`refreshEnabled=true`）
 

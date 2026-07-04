@@ -47,11 +47,6 @@
                 <artifactId>starpivot-mall-promotion</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>cn.org.starpivot</groupId>
-                <artifactId>starpivot-mall</artifactId>
-                <version>${project.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -62,6 +57,5 @@
         <module>starpivot-mall-ware</module>
         <module>starpivot-mall-order</module>
         <module>starpivot-mall-promotion</module>
-        <module>starpivot-mall-app</module>
     </modules>
 </project>

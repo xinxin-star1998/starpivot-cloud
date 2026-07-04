@@ -1,13 +1,13 @@
 # StarPivot 微信小程序
 
 > 工程：`star-pivot-mp`（uni-app Vue3 + TypeScript）  
-> 后端：复用 `starpivot-mall` 的 `/api/v1/portal/**`，新增小程序登录与 JSAPI 支付
+> 后端：复用商城微服务 `starpivot-mall-*` 的 `/api/v1/portal/**`，新增小程序登录与 JSAPI 支付
 
 ## 1. 整体架构
 
 ```
 ┌──────────────────┐     ┌──────────────┐     ┌─────────────────────────┐
-│  star-pivot-mp   │────▶│   Gateway    │────▶│  starpivot-mall         │
+│  star-pivot-mp   │────▶│   Gateway    │────▶│  starpivot-mall-*       │
 │  (微信小程序)     │     │   :8080      │     │  /portal/** + 管理端 API │
 └──────────────────┘     └──────────────┘     └─────────────────────────┘
          │                                              │
@@ -64,7 +64,7 @@ Mock 模式（未配置商户号）：返回 `mock: true`，可再调 `POST /por
 
 ## 4. 后端配置
 
-`starpivot.mall.portal-auth.mini-program`（Nacos `starpivot-mall.yaml`）：
+`starpivot.mall.portal-auth.mini-program`（Nacos `starpivot-mall-member.yaml`）：
 
 | 配置项 | 环境变量 | 说明 |
 |---|---|---|
@@ -80,9 +80,9 @@ Mock 模式（未配置商户号）：返回 `mock: true`，可再调 `POST /por
 
 ### 5.1 启动后端
 
-按 [README](../README.md) 启动 Gateway + Mall（及 MySQL/Redis/Nacos）。
+按 [README](../README.md) 启动 Gateway + 商城五域微服务（及 MySQL/Redis/Nacos）。
 
-**商品图片：** `starpivot-mall` 须启用 OSS（`nacos/config/oss-config.yaml` 中 `oss.enabled=true`，或在 `starpivot-mall.yaml` 中覆盖为 `true`，与 system 服务共用桶）。未启用时预签名接口会返回 `/local-storage/...`，而实际文件在 OSS，小程序图片会 404。修改 Nacos 配置后需**重启 mall** 并执行 `.\nacos\import-config.ps1` 同步。
+**商品图片：** 须在 Nacos `oss-config.yaml` 中启用 OSS（`oss.enabled=true`，与 system 服务共用桶）。修改配置后需**重启 product 等相关服务**并执行 `.\nacos\import-config.ps1` 同步。
 
 ### 5.2 启动小程序
 

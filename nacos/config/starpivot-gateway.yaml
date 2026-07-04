@@ -35,7 +35,6 @@ starpivot:
       - /api/${starpivot.api.version}/portal/auth/login/password
       - /api/${starpivot.api.version}/portal/auth/wechat/**
       - /api/${starpivot.api.version}/portal/image/presigned-urls
-      - /local-storage/**
       - /api/${starpivot.api.version}/portal/pay/alipay/notify
       - /**/actuator/**
       - /**/doc.html
