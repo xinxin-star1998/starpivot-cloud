@@ -1,0 +1,37 @@
+# starpivot-tms 专属配置
+# Nacos Data ID: starpivot-tms.yaml  |  Group: DEFAULT_GROUP
+
+spring:
+  datasource:
+    url: ${TMS_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot_tms?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 2
+      logic-not-delete-value: 0
+
+starpivot:
+  security:
+    authority-strategy: menu-permission
+  tms:
+    system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
+    track-refresh-scan-ms: ${TMS_TRACK_REFRESH_MS:300000}
+    track-refresh-batch-size: ${TMS_TRACK_REFRESH_BATCH:20}
+    auto-confirm-on-delivered: ${TMS_AUTO_CONFIRM:false}
+    default-item-weight-kg: ${TMS_DEFAULT_ITEM_WEIGHT:0.5}
+    kuaidi100:
+      enabled: ${KUAIDI100_ENABLED:false}
+      customer: ${KUAIDI100_CUSTOMER:}
+      key: ${KUAIDI100_KEY:}
+      query-url: https://poll.kuaidi100.com/poll/query.do
+
+logging:
+  level:
+    cn.org.starpivot.tms: INFO

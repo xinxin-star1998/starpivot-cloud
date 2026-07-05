@@ -39,6 +39,9 @@ services:
       - ./sql/star_pivot.sql:/docker-entrypoint-initdb.d/01_star_pivot.sql:ro
       - ./sql/sys_menu.sql:/docker-entrypoint-initdb.d/02_sys_menu.sql:ro
       - ./sql/star_pivot_approval.sql:/docker-entrypoint-initdb.d/03_star_pivot_approval.sql:ro
+      - ./sql/star_pivot_tms.sql:/docker-entrypoint-initdb.d/04_star_pivot_tms.sql:ro
+      - ./sql/patch_tms_menu.sql:/docker-entrypoint-initdb.d/05_patch_tms_menu.sql:ro
+      - ./sql/patch_tms_phase3.sql:/docker-entrypoint-initdb.d/06_patch_tms_phase3.sql:ro
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci

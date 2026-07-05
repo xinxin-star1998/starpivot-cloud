@@ -1,11 +1,18 @@
 <template>
   <ElDialog v-model="dialogVisible" title="订单发货" width="480px" destroy-on-close @closed="resetForm">
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="96px">
-      <ElFormItem label="物流公司" prop="deliveryCompany">
-        <ElInput v-model="form.deliveryCompany" placeholder="如：顺丰速运" />
+      <ElFormItem label="承运商" prop="carrierId">
+        <ElSelect v-model="form.carrierId" placeholder="请选择承运商" filterable style="width: 100%">
+          <ElOption
+            v-for="item in carriers"
+            :key="item.id"
+            :label="item.carrierName"
+            :value="item.id!"
+          />
+        </ElSelect>
       </ElFormItem>
-      <ElFormItem label="物流单号" prop="deliverySn">
-        <ElInput v-model="form.deliverySn" placeholder="请输入物流单号" />
+      <ElFormItem label="物流单号" prop="trackingNo">
+        <ElInput v-model="form.trackingNo" placeholder="请输入物流单号" />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -16,57 +23,74 @@
 </template>
 
 <script setup lang="ts">
-import {fetchOmsOrderDeliver} from '@/api/mall/order'
+import {fetchTmsCarrierEnabled} from '@/api/tms/carrier'
+import type {TmsCarrier} from '@/api/tms/carrier'
+import {fetchTmsShipmentShip} from '@/api/tms/shipment'
 import type {FormInstance, FormRules} from 'element-plus'
+import {handleMutationError} from '@/utils/http/mutation'
 
 interface Props {
-    visible: boolean
-    orderId?: number
-  }
-  interface Emits {
-    (e: 'update:visible', value: boolean): void
-    (e: 'submit'): void
-  }
+  visible: boolean
+  orderId?: number
+}
 
-  const props = defineProps<Props>()
-  const emit = defineEmits<Emits>()
+interface Emits {
+  (e: 'update:visible', value: boolean): void
+  (e: 'submit'): void
+}
 
-  const dialogVisible = computed({
-    get: () => props.visible,
-    set: (value) => emit('update:visible', value)
-  })
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
 
-  const formRef = ref<FormInstance>()
-  const submitting = ref(false)
-  const form = ref({
-    deliveryCompany: '',
-    deliverySn: ''
-  })
+const dialogVisible = computed({
+  get: () => props.visible,
+  set: (value) => emit('update:visible', value)
+})
 
-  const rules: FormRules = {
-    deliveryCompany: [{ required: true, message: '请输入物流公司', trigger: 'blur' }],
-    deliverySn: [{ required: true, message: '请输入物流单号', trigger: 'blur' }]
-  }
+const formRef = ref<FormInstance>()
+const submitting = ref(false)
+const carriers = ref<TmsCarrier[]>([])
+const form = ref({
+  carrierId: undefined as number | undefined,
+  trackingNo: ''
+})
 
-  function resetForm() {
-    form.value = { deliveryCompany: '', deliverySn: '' }
-    formRef.value?.resetFields()
-  }
+const rules: FormRules = {
+  carrierId: [{ required: true, message: '请选择承运商', trigger: 'change' }],
+  trackingNo: [{ required: true, message: '请输入物流单号', trigger: 'blur' }]
+}
 
-  async function handleSubmit() {
-    if (props.orderId == null) return
-    await formRef.value?.validate()
-    submitting.value = true
+watch(
+  () => props.visible,
+  async (visible) => {
+    if (!visible) return
     try {
-      await fetchOmsOrderDeliver({
-        orderId: props.orderId,
-        deliveryCompany: form.value.deliveryCompany,
-        deliverySn: form.value.deliverySn
-      })
-      dialogVisible.value = false
-      emit('submit')
-    } finally {
-      submitting.value = false
+      carriers.value = await fetchTmsCarrierEnabled()
+    } catch (error) {
+      handleMutationError(error, '加载承运商失败')
     }
   }
+)
+
+function resetForm() {
+  form.value = { carrierId: undefined, trackingNo: '' }
+  formRef.value?.resetFields()
+}
+
+async function handleSubmit() {
+  if (props.orderId == null || form.value.carrierId == null) return
+  await formRef.value?.validate()
+  submitting.value = true
+  try {
+    await fetchTmsShipmentShip({
+      orderId: props.orderId,
+      carrierId: form.value.carrierId,
+      trackingNo: form.value.trackingNo
+    })
+    dialogVisible.value = false
+    emit('submit')
+  } finally {
+    submitting.value = false
+  }
+}
 </script>

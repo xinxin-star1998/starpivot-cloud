@@ -16,6 +16,12 @@
           <button size="mini" class="btn-outline" @click="trackLogistics">查看物流</button>
           <button v-if="order.deliverySn" size="mini" class="btn-outline" @click="copySn">复制运单号</button>
         </view>
+        <view v-if="logistics?.events?.length" class="track-list">
+          <view v-for="(event, idx) in logistics.events" :key="idx" class="track-item">
+            <text class="track-time">{{ event.eventTime }}</text>
+            <text class="track-desc">{{ event.eventDesc }}</text>
+          </view>
+        </view>
       </view>
 
       <view class="card">
@@ -82,15 +88,16 @@
 <script setup lang="ts">
 import {onLoad} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
-import {cancelOrder, confirmReceive, fetchOrderDetail} from '@/api/order'
+import {cancelOrder, confirmReceive, fetchOrderDetail, fetchOrderLogistics} from '@/api/order'
 import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
-import type {PortalOrder, PortalOrderItem} from '@/api/types'
+import type {PortalOrder, PortalOrderItem, PortalShipmentTracking} from '@/api/types'
 import {isLogin} from '@/stores/member'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
 
 const loading = ref(true)
 const order = ref<PortalOrder | null>(null)
+const logistics = ref<PortalShipmentTracking | null>(null)
 let orderId = 0
 
 const { imageSrc, prefetchImages } = useGoodsImages()
@@ -134,6 +141,15 @@ async function loadDetail() {
     order.value = await fetchOrderDetail(orderId)
     const pics = (order.value?.orderItemList || []).map((item) => itemPic(item))
     await prefetchImages(pics)
+    if (canShowLogistics(order.value)) {
+      try {
+        logistics.value = await fetchOrderLogistics(orderId)
+      } catch {
+        logistics.value = null
+      }
+    } else {
+      logistics.value = null
+    }
   } catch (e) {
     order.value = null
     uni.showToast({ title: (e as Error).message, icon: 'none' })
@@ -264,6 +280,26 @@ onLoad((query) => {
   display: flex;
   gap: 16rpx;
   margin-top: 20rpx;
+}
+.track-list {
+  margin-top: 24rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid $sp-border;
+}
+.track-item {
+  margin-bottom: 16rpx;
+}
+.track-time {
+  display: block;
+  font-size: 22rpx;
+  color: $sp-text-muted;
+}
+.track-desc {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: $sp-text-secondary;
+  line-height: 1.4;
 }
 .receiver {
   display: block;

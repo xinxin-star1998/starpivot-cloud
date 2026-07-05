@@ -345,6 +345,24 @@ public class WmsWareOrderTaskServiceImpl extends ServiceImpl<WmsWareOrderTaskMap
         throw new BizException("SKU[" + detail.getSkuId() + "]库存不足");
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateTrackingByOrderId(Long orderId, String trackingNo) {
+        if (orderId == null || !org.springframework.util.StringUtils.hasText(trackingNo)) {
+            return;
+        }
+        WmsWareOrderTask task = baseMapper.selectOne(new LambdaQueryWrapper<WmsWareOrderTask>()
+                .eq(WmsWareOrderTask::getOrderId, orderId)
+                .last("LIMIT 1"));
+        if (task == null) {
+            return;
+        }
+        WmsWareOrderTask patch = new WmsWareOrderTask();
+        patch.setId(task.getId());
+        patch.setTrackingNo(trackingNo.trim());
+        baseMapper.updateById(patch);
+    }
+
     private WareOrderTaskVo toVo(WmsWareOrderTask task) {
         WareOrderTaskVo vo = new WareOrderTaskVo();
         BeanUtils.copyProperties(task, vo);

@@ -1,5 +1,7 @@
 package cn.org.starpivot.mall.portal.service;
 
+import cn.org.starpivot.api.tms.vo.ShipmentTrackingVo;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderPriceTrialBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderQueryBo;
@@ -58,4 +60,7 @@ public interface PortalOrderService {
 
     /** 各状态订单数量（含待评价） */
     Map<String, Integer> statusCounts(Long memberId);
+
+    /** 物流轨迹 */
+    ShipmentTrackingVo getLogistics(Long memberId, Long orderId);
 }

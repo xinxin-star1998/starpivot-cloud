@@ -71,6 +71,7 @@ defineOptions({ name: 'WareTask' })
       columnsFactory: () => [
         { prop: 'id', label: 'ID', width: 80 },
         { prop: 'orderSn', label: '订单号', minWidth: 140, showOverflowTooltip: true },
+        { prop: 'trackingNo', label: '物流单号', minWidth: 140, showOverflowTooltip: true },
         { prop: 'consignee', label: '收货人', width: 100 },
         { prop: 'consigneeTel', label: '电话', width: 120 },
         { prop: 'wareId', label: '仓库', width: 80 },

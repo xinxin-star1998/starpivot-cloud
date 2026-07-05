@@ -1,0 +1,13 @@
+server:
+  port: ${SERVER_PORT:9214}
+  servlet:
+    context-path: /api/${starpivot.api.version}
+
+spring:
+  application:
+    name: starpivot-tms
+  config:
+    import:
+      - optional:classpath:application-nacos.yml
+      - optional:nacos:common-config.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true
+      - optional:nacos:${spring.application.name}.yaml?group=${NACOS_GROUP:DEFAULT_GROUP}&refreshEnabled=true

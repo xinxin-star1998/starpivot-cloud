@@ -52,4 +52,9 @@ public interface WmsWareOrderTaskService extends IService<WmsWareOrderTask> {
      * 支付成功后自动生成已完成工作单（库存已在支付时扣减，仅作发货记录）。
      */
     Long createFinishedRecordForPaidOrder(Long orderId, List<StockDeductionLineDto> deductions);
+
+    /**
+     * TMS 发货后回写物流单号。
+     */
+    void updateTrackingByOrderId(Long orderId, String trackingNo);
 }

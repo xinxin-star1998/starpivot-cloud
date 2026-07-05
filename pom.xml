@@ -22,6 +22,7 @@
         <module>starpivot-monitor</module>
         <module>starpivot-mall</module>
         <module>starpivot-approval</module>
+        <module>starpivot-tms</module>
     </modules>
     <properties>
         <java.version>17</java.version>

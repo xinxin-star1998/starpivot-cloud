@@ -64,6 +64,10 @@ public class WareInternalService {
         return wmsWareOrderTaskService.createFinishedRecordForPaidOrder(orderId, deductions);
     }
 
+    public void updateTrackingByOrderId(Long orderId, String trackingNo) {
+        wmsWareOrderTaskService.updateTrackingByOrderId(orderId, trackingNo);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public Map<Long, Integer> restoreStockForOrder(Long orderId) {
         if (orderId == null) {

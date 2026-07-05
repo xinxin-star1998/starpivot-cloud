@@ -59,4 +59,10 @@ public class WareInternalController {
             @RequestParam("skuId") Long skuId) {
         return Result.success(wareInternalService.findOutboundWareId(orderId, skuId));
     }
+
+    @PutMapping("/order-task/tracking")
+    public Result<Void> updateTrackingByOrderId(@Valid @RequestBody OrderTaskTrackingRequest request) {
+        wareInternalService.updateTrackingByOrderId(request.getOrderId(), request.getTrackingNo());
+        return Result.success();
+    }
 }

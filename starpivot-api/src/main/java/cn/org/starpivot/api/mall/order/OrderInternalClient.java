@@ -3,10 +3,12 @@ package cn.org.starpivot.api.mall.order;
 import cn.org.starpivot.api.fallback.OrderInternalClientFallbackFactory;
 import cn.org.starpivot.api.mall.order.dto.*;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.api.tms.dto.InternalOrderDeliverRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -40,4 +42,10 @@ public interface OrderInternalClient {
 
     @GetMapping("/internal/mall/order/member/{memberId}/reviewable-purchase-items")
     Result<List<PendingReviewItemDto>> listReviewablePurchaseItems(@PathVariable("memberId") Long memberId);
+
+    @PutMapping("/internal/mall/order/deliver")
+    Result<Void> syncDeliver(@RequestBody InternalOrderDeliverRequest request);
+
+    @PutMapping("/internal/mall/order/{orderId}/confirm-receive")
+    Result<Void> syncConfirmReceive(@PathVariable("orderId") Long orderId);
 }

@@ -7,6 +7,10 @@ import cn.org.starpivot.api.mall.promotion.dto.SkuPriceRulesDto;
 import cn.org.starpivot.api.member.dto.MemberDto;
 import cn.org.starpivot.api.member.dto.MemberLevelDto;
 import cn.org.starpivot.api.product.dto.SkuDto;
+import cn.org.starpivot.api.tms.TmsInternalClient;
+import cn.org.starpivot.api.tms.dto.FreightCalculateRequest;
+import cn.org.starpivot.api.tms.dto.FreightCalculateResult;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.common.MemberFeignSupport;
 import cn.org.starpivot.mall.common.ProductFeignSupport;
@@ -19,6 +23,7 @@ import cn.org.starpivot.mall.portal.domain.vo.PortalOrderPriceTrialVo;
 import cn.org.starpivot.mall.portal.service.PortalOrderPricingResult;
 import cn.org.starpivot.mall.portal.service.PortalOrderPricingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -33,6 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PortalOrderPricingServiceImpl implements PortalOrderPricingService {
 
     private static final int MONEY_SCALE = 2;
@@ -41,6 +47,7 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
     private final ProductFeignSupport productFeignSupport;
     private final PromotionFeignSupport promotionFeignSupport;
     private final MallOrderProperties mallOrderProperties;
+    private final TmsInternalClient tmsInternalClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -133,7 +140,7 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
 
         BigDecimal afterIntegration = money(afterCoupon.subtract(integrationAmount).max(BigDecimal.ZERO));
         boolean freeFreight = isFreeFreight(level, merchandiseAmount);
-        BigDecimal freight = freeFreight ? BigDecimal.ZERO : money(mallOrderProperties.getDefaultFreight());
+        BigDecimal freight = freeFreight ? BigDecimal.ZERO : resolveFreight(orderItems, merchandiseAmount);
         BigDecimal payAmount = money(afterIntegration.add(freight));
 
         PortalOrderPricingResult result = new PortalOrderPricingResult();
@@ -255,6 +262,30 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
             lineAmount = money(lineAmount.subtract(bestReduce).max(BigDecimal.ZERO));
         }
         return lineAmount;
+    }
+
+    private BigDecimal resolveFreight(List<PortalOrderItemBo> orderItems, BigDecimal merchandiseAmount) {
+        if (!mallOrderProperties.isUseTmsFreight()) {
+            return money(mallOrderProperties.getDefaultFreight());
+        }
+        try {
+            FreightCalculateRequest request = new FreightCalculateRequest();
+            request.setMerchandiseAmount(merchandiseAmount);
+            request.setLines(orderItems.stream().map(item -> {
+                FreightCalculateRequest.FreightLine line = new FreightCalculateRequest.FreightLine();
+                line.setSkuId(item.getSkuId());
+                line.setQuantity(item.getQuantity());
+                return line;
+            }).collect(Collectors.toList()));
+            Result<FreightCalculateResult> result = tmsInternalClient.calculateFreight(request);
+            if (result != null && result.isSuccess() && result.getData() != null
+                    && result.getData().getFreightAmount() != null) {
+                return money(result.getData().getFreightAmount());
+            }
+        } catch (Exception ex) {
+            log.warn("TMS freight calculate failed, fallback to defaultFreight", ex);
+        }
+        return money(mallOrderProperties.getDefaultFreight());
     }
 
     private boolean isFreeFreight(MemberLevelDto level, BigDecimal merchandiseAmount) {

@@ -311,6 +311,7 @@ public class ProductInternalService {
         dto.setBrandId(spu.getBrandId());
         dto.setPublishStatus(spu.getPublishStatus());
         dto.setAuditStatus(spu.getAuditStatus());
+        dto.setWeight(spu.getWeight());
         return dto;
     }
 

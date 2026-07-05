@@ -11,6 +11,7 @@
         <ElDescriptionsItem label="状态">
           {{ TASK_STATUS_MAP[detail.taskStatus ?? 0] ?? detail.taskStatus }}
         </ElDescriptionsItem>
+        <ElDescriptionsItem label="物流单号">{{ detail.trackingNo || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="仓库">{{ detail.wareId ?? '-' }}</ElDescriptionsItem>
       </ElDescriptions>
 

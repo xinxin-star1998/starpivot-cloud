@@ -75,6 +75,11 @@ public class InternalFeignAutoConfiguration {
     }
 
     @Bean
+    public CartInternalClientFallbackFactory cartInternalClientFallbackFactory() {
+        return new CartInternalClientFallbackFactory();
+    }
+
+    @Bean
     public MallOrderInternalClientFallbackFactory mallOrderInternalClientFallbackFactory() {
         return new MallOrderInternalClientFallbackFactory();
     }
@@ -110,7 +115,7 @@ public class InternalFeignAutoConfiguration {
     }
 
     @Bean
-    public CartInternalClientFallbackFactory cartInternalClientFallbackFactory() {
-        return new CartInternalClientFallbackFactory();
+    public TmsInternalClientFallbackFactory tmsInternalClientFallbackFactory() {
+        return new TmsInternalClientFallbackFactory();
     }
 }

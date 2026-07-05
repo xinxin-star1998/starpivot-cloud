@@ -40,4 +40,7 @@ public interface WareInternalClient {
 
     @GetMapping("/internal/ware/outbound-ware")
     Result<Long> findOutboundWareId(@RequestParam("orderId") Long orderId, @RequestParam("skuId") Long skuId);
+
+    @PutMapping("/internal/ware/order-task/tracking")
+    Result<Void> updateTrackingByOrderId(@RequestBody OrderTaskTrackingRequest request);
 }

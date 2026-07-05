@@ -45,6 +45,10 @@ export function fetchOrderDetail(id: number) {
   return request<PortalOrder>({ url: `/portal/order/${id}` })
 }
 
+export function fetchOrderLogistics(id: number) {
+  return request<import('./types').PortalShipmentTracking>({ url: `/portal/order/${id}/logistics` })
+}
+
 export function cancelOrder(id: number) {
   return request<void>({ url: `/portal/order/${id}/cancel`, method: 'PUT' })
 }

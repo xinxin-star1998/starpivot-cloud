@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.portal.controller;
 
+import cn.org.starpivot.api.tms.vo.ShipmentTrackingVo;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.mall.portal.PortalConstants;
@@ -128,6 +129,13 @@ public class PortalOrderController {
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<List<Long>> applyReturn(@Valid @RequestBody cn.org.starpivot.mall.portal.domain.bo.PortalOrderReturnApplyBo bo) {
         return Result.success(portalOrderService.applyReturn(PortalMemberContext.requireMemberId(), bo));
+    }
+
+    @Operation(summary = "物流轨迹")
+    @GetMapping("/{id}/logistics")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<ShipmentTrackingVo> logistics(@PathVariable("id") Long id) {
+        return Result.success(portalOrderService.getLogistics(PortalMemberContext.requireMemberId(), id));
     }
 
     @Operation(summary = "订单状态数量")

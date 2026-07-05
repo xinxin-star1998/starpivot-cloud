@@ -36,6 +36,7 @@ starpivot:
       flush-ms: ${MALL_LOCAL_MESSAGE_FLUSH_MS:60000}
     order:
       default-freight: ${MALL_ORDER_DEFAULT_FREIGHT:10.00}
+      use-tms-freight: ${MALL_USE_TMS_FREIGHT:true}
       integration-yuan-rate: ${MALL_INTEGRATION_YUAN_RATE:0.01}
       integration-max-rate: ${MALL_INTEGRATION_MAX_RATE:0.50}
     seckill:

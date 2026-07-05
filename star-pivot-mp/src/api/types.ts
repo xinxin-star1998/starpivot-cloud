@@ -380,3 +380,18 @@ export interface PortalBrowseRecord {
   price?: number
   viewedAt: number
 }
+
+export interface PortalTrackEvent {
+  eventTime?: string
+  eventDesc?: string
+  location?: string
+  source?: string
+}
+
+export interface PortalShipmentTracking {
+  carrierName?: string
+  kuaidi100Com?: string
+  trackingNo?: string
+  status?: string
+  events?: PortalTrackEvent[]
+}

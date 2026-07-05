@@ -75,6 +75,7 @@ starpivot-cloud/
 ├── starpivot-monitor/                # 监控与 Quartz 定时任务
 ├── starpivot-mall/                   # 商城父模块（5 个领域微服务）
 ├── starpivot-approval/               # 审批中台
+├── starpivot-tms/                    # 运输/物流 TMS
 ├── star-pivot-ui/                    # Vue 3 管理前端 + H5 Portal
 ├── star-pivot-mp/                    # 微信小程序（uni-app）
 ├── nacos/config/                     # Nacos 配置模板
@@ -100,6 +101,7 @@ starpivot-cloud/
 | starpivot-mall-order | 9209 | 商城订单 + 支付  |
 | starpivot-mall-promotion | 9212 | 商城营销       |
 | starpivot-approval  | 9213 | 审批流程       |
+| starpivot-tms       | 9214 | 运输/物流 TMS  |
 | starpivot-file      | 9202 | 文件服务         |
 | star-pivot-ui       | 3000 | 前端开发服务器      |
 

@@ -2,11 +2,15 @@ package cn.org.starpivot.mall.mall.controller.internal;
 
 import cn.org.starpivot.api.mall.order.dto.*;
 import cn.org.starpivot.api.mall.promotion.dto.CouponTrialItemDto;
+import cn.org.starpivot.api.tms.dto.InternalOrderDeliverRequest;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.mall.oms.domain.bo.OmsDeliverBo;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
+import cn.org.starpivot.mall.oms.service.OmsOrderService;
+import cn.org.starpivot.mall.oms.service.impl.OmsOrderLifecycleService;
 import cn.org.starpivot.mall.order.internal.OrderMemberInternalService;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
@@ -17,6 +21,7 @@ import cn.org.starpivot.mall.portal.service.PortalCartService;
 import cn.org.starpivot.mall.portal.service.PortalOrderService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +39,8 @@ public class MallOrderInternalExtensionsController {
     private final PortalCartService portalCartService;
     private final PortalOrderService portalOrderService;
     private final OrderMemberInternalService orderMemberInternalService;
+    private final OmsOrderService omsOrderService;
+    private final OmsOrderLifecycleService omsOrderLifecycleService;
 
     @GetMapping("/internal/mall/order/{orderId}/summary")
     public Result<OrderInternalDto> getOrderSummary(@PathVariable("orderId") Long orderId) {
@@ -109,6 +116,22 @@ public class MallOrderInternalExtensionsController {
     @GetMapping("/internal/mall/order/member/{memberId}/reviewable-purchase-items")
     public Result<List<PendingReviewItemDto>> listReviewablePurchaseItems(@PathVariable("memberId") Long memberId) {
         return Result.success(orderMemberInternalService.listReviewablePurchaseItems(memberId));
+    }
+
+    @PutMapping("/internal/mall/order/deliver")
+    public Result<Void> syncDeliver(@Valid @RequestBody InternalOrderDeliverRequest request) {
+        OmsDeliverBo bo = new OmsDeliverBo();
+        bo.setOrderId(request.getOrderId());
+        bo.setDeliveryCompany(request.getDeliveryCompany());
+        bo.setDeliverySn(request.getDeliverySn());
+        omsOrderService.deliver(bo);
+        return Result.success();
+    }
+
+    @PutMapping("/internal/mall/order/{orderId}/confirm-receive")
+    public Result<Void> syncConfirmReceive(@PathVariable("orderId") Long orderId) {
+        omsOrderLifecycleService.confirmReceive(orderId, "tms-auto");
+        return Result.success();
     }
 
     private OrderItemInternalDto toItemDto(OmsOrderItem item) {

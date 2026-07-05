@@ -74,3 +74,8 @@ spring:
           uri: lb://starpivot-approval
           predicates:
             - Path=/api/${starpivot.api.version}/approval/**
+        # TMS 运输物流
+        - id: starpivot-tms
+          uri: lb://starpivot-tms
+          predicates:
+            - Path=/api/${starpivot.api.version}/tms/**

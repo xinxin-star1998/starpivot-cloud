@@ -2,6 +2,9 @@ package cn.org.starpivot.mall.portal.service.impl;
 
 import cn.org.starpivot.api.member.dto.MemberAddressDto;
 import cn.org.starpivot.api.member.dto.MemberDto;
+import cn.org.starpivot.api.tms.TmsInternalClient;
+import cn.org.starpivot.api.tms.vo.ShipmentTrackingVo;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
@@ -66,6 +69,7 @@ public class PortalOrderServiceImpl implements PortalOrderService {
     private final PortalOrderItemResolver portalOrderItemResolver;
     private final PortalOrderAssembler portalOrderAssembler;
     private final ObjectProvider<PortalOrderCloseDelayPublisher> orderCloseDelayPublisherProvider;
+    private final TmsInternalClient tmsInternalClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -220,6 +224,26 @@ public class PortalOrderServiceImpl implements PortalOrderService {
                 Wrappers.<OmsOrderItem>lambdaQuery().eq(OmsOrderItem::getOrderId, orderId));
         vo.setOrderItemList(items.stream().map(portalOrderAssembler::toItemVo).collect(Collectors.toList()));
         return vo;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ShipmentTrackingVo getLogistics(Long memberId, Long orderId) {
+        OmsOrder order = requireMemberOrder(memberId, orderId);
+        if (!StringUtils.hasText(order.getDeliverySn())) {
+            throw new BizException("订单尚未发货");
+        }
+        Result<ShipmentTrackingVo> result =
+                tmsInternalClient.getTracking("mall", "order", order.getId());
+        if (result != null && result.isSuccess() && result.getData() != null) {
+            return result.getData();
+        }
+        ShipmentTrackingVo fallback = new ShipmentTrackingVo();
+        fallback.setOrderSn(order.getOrderSn());
+        fallback.setCarrierName(order.getDeliveryCompany());
+        fallback.setTrackingNo(order.getDeliverySn());
+        fallback.setEvents(List.of());
+        return fallback;
     }
 
     @Override

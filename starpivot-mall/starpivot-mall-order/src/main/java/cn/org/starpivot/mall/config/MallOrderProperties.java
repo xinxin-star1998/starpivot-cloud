@@ -14,8 +14,11 @@ import java.math.BigDecimal;
 @ConfigurationProperties(prefix = "starpivot.mall.order")
 public class MallOrderProperties {
 
-    /** 默认运费（元），会员免邮未命中时使用 */
+    /** 默认运费（元），会员免邮未命中且 TMS 不可用时使用 */
     private BigDecimal defaultFreight = new BigDecimal("10.00");
+
+    /** 是否通过 TMS 计算运费（默认开启，失败时回退 defaultFreight） */
+    private boolean useTmsFreight = true;
 
     /** 1 积分可抵扣金额（元），默认 100 积分 = 1 元 */
     private BigDecimal integrationYuanRate = new BigDecimal("0.01");

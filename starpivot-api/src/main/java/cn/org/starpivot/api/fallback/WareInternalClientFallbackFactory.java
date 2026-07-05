@@ -50,6 +50,11 @@ public class WareInternalClientFallbackFactory implements FallbackFactory<WareIn
             public Result<Long> findOutboundWareId(Long orderId, Long skuId) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }
+
+            @Override
+            public Result<Void> updateTrackingByOrderId(OrderTaskTrackingRequest request) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
         };
     }
 }

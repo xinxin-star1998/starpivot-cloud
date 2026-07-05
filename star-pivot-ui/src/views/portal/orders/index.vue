@@ -171,6 +171,7 @@
     </ElDrawer>
 
     <ReturnDialog v-model="returnDialogVisible" :order="returnOrder" @success="onReturnSuccess" />
+    <LogisticsDialog v-model:visible="logisticsVisible" v-model:order-id="logisticsOrderId" />
   </div>
 </template>
 
@@ -191,7 +192,7 @@ import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
 import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
 import {handleMutationError} from '@/utils/http/mutation'
 import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/portal/order-status'
-import {buildLogisticsTrackUrl} from '@/utils/portal/logistics'
+import LogisticsDialog from './modules/logistics-dialog.vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import ReturnDialog from './modules/return-dialog.vue'
 import PortalPageHeader from '../components/portal-page-header.vue'
@@ -216,6 +217,8 @@ defineOptions({ name: 'PortalOrders' })
   const actionType = ref<'pay' | 'cancel'>()
   const alipayEnabled = ref(false)
   const returnDialogVisible = ref(false)
+  const logisticsVisible = ref(false)
+  const logisticsOrderId = ref<number>()
   const returnOrder = ref<PortalOrder | null>(null)
   const reviewableSpuIds = ref(new Set<number>())
   const tabCounts = ref<Record<string, number>>({})
@@ -431,8 +434,9 @@ defineOptions({ name: 'PortalOrders' })
   }
 
   function openLogisticsTrack(order: PortalOrder) {
-    if (!order.deliverySn?.trim()) return
-    window.open(buildLogisticsTrackUrl(order.deliverySn, order.deliveryCompany), '_blank', 'noopener')
+    if (!order.id || !order.deliverySn?.trim()) return
+    logisticsOrderId.value = order.id
+    logisticsVisible.value = true
   }
 
   async function copyDeliverySn(deliverySn: string) {

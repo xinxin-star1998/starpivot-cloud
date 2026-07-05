@@ -347,6 +347,11 @@
                 <version>${star-pivot.version}</version>
             </dependency>
             <dependency>
+                <groupId>cn.org.starpivot</groupId>
+                <artifactId>starpivot-tms</artifactId>
+                <version>${star-pivot.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.alipay.sdk</groupId>
                 <artifactId>alipay-sdk-java</artifactId>
                 <version>${alipay-sdk.version}</version>
