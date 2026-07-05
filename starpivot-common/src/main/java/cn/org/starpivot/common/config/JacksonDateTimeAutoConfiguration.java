@@ -2,6 +2,8 @@ package cn.org.starpivot.common.config;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -13,8 +15,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 统一 Jackson 日期时间序列化格式，与 {@link cn.org.starpivot.common.utils.date.DateUtils} 及
- * {@code @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")} 保持一致，避免 API 返回 ISO-8601（含 T）。
+ * 统一 Jackson 日期时间序列化/反序列化格式，与 {@link cn.org.starpivot.common.utils.date.DateUtils} 及
+ * {@code @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")} 保持一致，避免 API 返回 ISO-8601（含 T），
+ * 并确保 Feign 等客户端能解析 {@code yyyy-MM-dd HH:mm:ss} 格式的 LocalDateTime。
  */
 @Configuration
 public class JacksonDateTimeAutoConfiguration {
@@ -27,12 +30,14 @@ public class JacksonDateTimeAutoConfiguration {
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN);
 
     /**
-     * 为 {@link com.fasterxml.jackson.databind.ObjectMapper} 注册 JSR-310 序列化格式。
+     * 为 {@link com.fasterxml.jackson.databind.ObjectMapper} 注册 JSR-310 序列化/反序列化格式。
      */
     public static JavaTimeModule createJavaTimeModule() {
         JavaTimeModule module = new JavaTimeModule();
         module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMATTER));
+        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DATE_TIME_FORMATTER));
         module.addSerializer(LocalDate.class, new LocalDateSerializer(DATE_FORMATTER));
+        module.addDeserializer(LocalDate.class, new LocalDateDeserializer(DATE_FORMATTER));
         return module;
     }
 
