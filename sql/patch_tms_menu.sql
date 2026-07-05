@@ -28,3 +28,6 @@ ON DUPLICATE KEY UPDATE menu_name = VALUES(menu_name);
 -- admin 角色绑定 TMS 菜单
 INSERT IGNORE INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (1, 323), (1, 324), (1, 325), (1, 326), (1, 327), (1, 328), (1, 329), (1, 330);
+
+-- 修正历史发货通知跳转路径（动态路由为 /tms/shipment，非 /tms/shipment/index）
+UPDATE `sys_user_message` SET `link_path` = '/tms/shipment' WHERE `link_path` = '/tms/shipment/index';

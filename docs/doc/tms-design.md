@@ -111,8 +111,8 @@ starpivot:
 
 ## 管理端页面
 
-- 承运商：`/tms/carrier/index`
-- 运单：`/tms/shipment/index`
+- 承运商：`/tms/carrier`
+- 运单：`/tms/shipment`
 - 订单发货弹窗：承运商下拉 + 运单号（走 TMS）
 
 ## 已接入场景

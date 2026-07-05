@@ -7,6 +7,14 @@ export interface MessageBizNav {
   label: string
 }
 
+/** 兼容历史 linkPath：TMS 子菜单注册路由为 /tms/{page}，不含 /index */
+function normalizeMessageLinkPath(linkPath: string): string {
+  if (/^\/tms\/[^/]+\/index$/.test(linkPath)) {
+    return linkPath.replace(/\/index$/, '')
+  }
+  return linkPath
+}
+
 export function resolveMessageBizNav(
   bizModule?: string,
   bizType?: string,
@@ -14,7 +22,7 @@ export function resolveMessageBizNav(
   linkPath?: string
 ): MessageBizNav | null {
   if (linkPath) {
-    return { path: linkPath, label: '查看详情' }
+    return { path: normalizeMessageLinkPath(linkPath), label: '查看详情' }
   }
   if (!bizModule || !bizType || !bizKey) return null
   const parts = bizKey.split(':')

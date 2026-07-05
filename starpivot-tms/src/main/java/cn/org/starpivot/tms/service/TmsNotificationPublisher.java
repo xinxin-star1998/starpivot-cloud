@@ -26,7 +26,7 @@ public class TmsNotificationPublisher {
             request.setBizModule(MessageConstants.BIZ_MODULE_MALL);
             request.setBizType("order");
             request.setBizKey("mall:order:ship:" + orderSn);
-            request.setLinkPath("/tms/shipment/index");
+            request.setLinkPath("/tms/shipment");
             sysMessageClient.sendToRoles(request);
         } catch (Exception ex) {
             log.warn("Ship notification failed, orderSn={}", orderSn, ex);
