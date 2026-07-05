@@ -1,16 +1,16 @@
 <template>
-  <ElDrawer v-model="visible" destroy-on-close size="420px" title="审批通知">
+  <ElDrawer v-model="visible" destroy-on-close size="420px" title="我的消息">
     <div class="notify-toolbar">
       <span class="notify-hint">未读 {{ unreadCount }} 条</span>
       <ElButton link type="primary" @click="handleReadAll">全部已读</ElButton>
     </div>
     <ElSkeleton v-if="loading" :rows="6" animated />
     <template v-else>
-      <div v-if="!items.length" class="notify-empty">暂无通知</div>
+      <div v-if="!items.length" class="notify-empty">暂无消息</div>
       <ul v-else class="notify-list">
         <li
           v-for="item in items"
-          :key="item.notifyId"
+          :key="item.messageId"
           :class="{ unread: item.readFlag === '0' }"
           class="notify-item"
           @click="handleClick(item)"
@@ -25,120 +25,123 @@
 </template>
 
 <script lang="ts" setup>
+import { useRouter } from 'vue-router'
 import {
-  type ApNotificationVo,
-  fetchApprovalNotificationList,
-  fetchApprovalNotificationRead,
-  fetchApprovalNotificationReadAll,
-  fetchApprovalUnreadCount
-} from '@/api/approval/notification'
-import {formatDateTime} from '@/utils/common/datetime'
+  fetchUserMessageList,
+  fetchUserMessageRead,
+  fetchUserMessageReadAll,
+  fetchUserMessageUnreadCount,
+  type UserMessageVo
+} from '@/api/system/message'
+import { formatDateTime } from '@/utils/common/datetime'
+import { resolveMessageBizNav } from '@/utils/system/message-nav'
 
 const visible = defineModel<boolean>('visible', { default: false })
-  const emit = defineEmits<{
-    navigate: [instanceId?: number]
-    'unread-change': [count: number]
-  }>()
+const emit = defineEmits<{
+  navigate: [instanceId?: number]
+  'unread-change': [count: number]
+}>()
 
-  const loading = ref(false)
-  const items = ref<ApNotificationVo[]>([])
-  const unreadCount = ref(0)
+const router = useRouter()
+const loading = ref(false)
+const items = ref<UserMessageVo[]>([])
+const unreadCount = ref(0)
 
-  async function loadData() {
-    loading.value = true
-    try {
-      const [count, page] = await Promise.all([
-        fetchApprovalUnreadCount(),
-        fetchApprovalNotificationList({ pageNum: 1, pageSize: 30 })
-      ])
-      unreadCount.value = Number(count) || 0
-      items.value = page.rows || []
-      emit('unread-change', unreadCount.value)
-    } finally {
-      loading.value = false
-    }
+async function loadData() {
+  loading.value = true
+  try {
+    const [count, page] = await Promise.all([
+      fetchUserMessageUnreadCount(),
+      fetchUserMessageList({ pageNum: 1, pageSize: 30 })
+    ])
+    unreadCount.value = Number(count) || 0
+    items.value = page.rows || []
+    emit('unread-change', unreadCount.value)
+  } finally {
+    loading.value = false
   }
+}
 
-  watch(visible, (open) => {
-    if (open) loadData()
-  })
+watch(visible, (open) => {
+  if (open) loadData()
+})
 
-  async function handleClick(item: ApNotificationVo) {
-    if (item.notifyId && item.readFlag === '0') {
-      await fetchApprovalNotificationRead(item.notifyId)
-      item.readFlag = '1'
-      unreadCount.value = Math.max(0, unreadCount.value - 1)
-      emit('unread-change', unreadCount.value)
-    }
-    visible.value = false
-    emit('navigate', item.instanceId)
+async function handleClick(item: UserMessageVo) {
+  if (item.messageId && item.readFlag === '0') {
+    await fetchUserMessageRead(item.messageId)
+    item.readFlag = '1'
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+    emit('unread-change', unreadCount.value)
   }
-
-  async function handleReadAll() {
-    await fetchApprovalNotificationReadAll()
-    unreadCount.value = 0
-    items.value = items.value.map((item) => ({ ...item, readFlag: '1' }))
-    emit('unread-change', 0)
+  visible.value = false
+  if (item.bizId) {
+    emit('navigate', item.bizId)
+    return
   }
+  const nav = resolveMessageBizNav(item.bizModule, item.bizType, item.bizKey, item.linkPath)
+  if (nav) {
+    await router.push({ path: nav.path, query: nav.query })
+  }
+}
 
-  defineExpose({ refresh: loadData })
+async function handleReadAll() {
+  await fetchUserMessageReadAll()
+  unreadCount.value = 0
+  items.value = items.value.map((item) => ({ ...item, readFlag: '1' }))
+  emit('unread-change', 0)
+}
+
+defineExpose({ loadData })
 </script>
 
-<style lang="scss" scoped>
-  .notify-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
+<style scoped>
+.notify-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
 
-  .notify-hint {
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
-  }
+.notify-hint {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
 
-  .notify-empty {
-    padding: 48px 0;
-    text-align: center;
-    color: var(--el-text-color-secondary);
-  }
+.notify-empty {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--el-text-color-secondary);
+}
 
-  .notify-list {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
+.notify-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
-  .notify-item {
-    padding: 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 8px;
+.notify-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  cursor: pointer;
+}
 
-    &.unread {
-      background: var(--el-color-primary-light-9);
-    }
+.notify-item.unread .notify-title {
+  font-weight: 600;
+}
 
-    &:hover {
-      border-color: var(--el-color-primary-light-5);
-    }
-  }
+.notify-title {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
 
-  .notify-title {
-    font-size: 14px;
-    font-weight: 500;
-  }
+.notify-content {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  margin-bottom: 4px;
+}
 
-  .notify-content {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-  }
-
-  .notify-time {
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--el-text-color-placeholder);
-  }
+.notify-time {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
 </style>

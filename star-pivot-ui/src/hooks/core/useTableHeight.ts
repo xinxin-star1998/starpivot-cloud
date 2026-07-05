@@ -71,11 +71,10 @@ class TableHeightCalculator {
   }
 
   /**
-   * 计算分页器偏移量
+   * 分页器在 ArtTable 内部 flex 布局中占位，容器高度不再额外扣减。
    */
   private calculatePaginationOffset(): number {
-    const { paginationHeight, paginationSpacing } = this.options
-    return paginationHeight.value === 0 ? 0 : paginationHeight.value + paginationSpacing.value
+    return 0
   }
 }
 

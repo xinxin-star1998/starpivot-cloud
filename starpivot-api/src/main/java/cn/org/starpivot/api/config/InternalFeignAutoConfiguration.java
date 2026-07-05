@@ -55,6 +55,11 @@ public class InternalFeignAutoConfiguration {
     }
 
     @Bean
+    public SysMessageClientFallbackFactory sysMessageClientFallbackFactory() {
+        return new SysMessageClientFallbackFactory();
+    }
+
+    @Bean
     public FileRefClientFallbackFactory fileRefClientFallbackFactory() {
         return new FileRefClientFallbackFactory();
     }

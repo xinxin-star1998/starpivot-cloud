@@ -1094,6 +1094,10 @@ INSERT INTO `sys_menu` VALUES (236, '退货查询', 228, 2, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (237, '支付流水查询', 230, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:payment:query', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (238, '退款流水查询', 231, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:refund:query', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (318, '退款操作', 231, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:refund:edit', '#', 'admin', '2026-07-05 13:30:00', '', NULL, '同步/重试退款及告警确认');
+INSERT INTO `sys_menu` VALUES (319, '消息中心', 1, 9, 'message', '/system/message/index', NULL, 'MessageCenter', 1, 0, 'C', '0', '0', 'system:message:list', 'ri:mail-line', 'admin', '2026-07-05 14:00:00', '', NULL, '全平台站内消息收件箱');
+INSERT INTO `sys_menu` VALUES (320, '消息查询', 319, 1, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:query', '#', 'admin', '2026-07-05 14:00:00', '', NULL, '站内消息查询');
+INSERT INTO `sys_menu` VALUES (321, '消息已读', 319, 2, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:edit', '#', 'admin', '2026-07-05 14:00:00', '', NULL, '站内消息标记已读');
+INSERT INTO `sys_menu` VALUES (322, '消息群发', 319, 3, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:send', '#', 'admin', '2026-07-05 14:30:00', '', NULL, '管理员群发站内消息');
 INSERT INTO `sys_menu` VALUES (239, '会员列表', 33, 1, 'member', '/mall/ums/member/member/index', NULL, 'MemberList', 1, 1, 'C', '0', '0', 'mall:member:list', '#', 'admin', '2026-06-23 17:13:52', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (240, '会员等级', 33, 2, 'level', '/mall/ums/member/level/index', NULL, 'MemberLevel', 1, 1, 'C', '0', '0', 'mall:member:level', '#', 'admin', '2026-06-23 17:14:34', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (241, '积分变化', 33, 3, 'growth', '/mall/ums/member/growth/index', NULL, 'GrowthRecord', 1, 1, 'C', '0', '0', 'mall:member:growth', '#', 'admin', '2026-06-23 17:15:27', 'admin', '2026-06-24 13:11:09', '');
@@ -1430,6 +1434,28 @@ INSERT INTO `sys_menu_bak` VALUES (343, '审批操作', 337, 2, '', '', NULL, ''
 INSERT INTO `sys_menu_bak` VALUES (344, '提交审批', 337, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:submit', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu_bak` VALUES (345, '发起查询', 338, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:query', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu_bak` VALUES (346, '撤回审批', 338, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:withdraw', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
+
+-- ----------------------------
+-- Table structure for sys_user_message
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_message`;
+CREATE TABLE `sys_user_message`  (
+  `message_id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+  `user_id` bigint(0) NOT NULL COMMENT '接收用户ID',
+  `msg_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息类型',
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '标题',
+  `content` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '内容摘要',
+  `biz_module` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '业务模块',
+  `biz_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '业务类型',
+  `biz_key` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '业务唯一键',
+  `biz_id` bigint(0) NULL DEFAULT NULL COMMENT '业务主键',
+  `link_path` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '前端路由',
+  `read_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '0未读 1已读',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`message_id`) USING BTREE,
+  INDEX `idx_user_read_time`(`user_id`, `read_flag`, `create_time`) USING BTREE,
+  INDEX `idx_user_type_time`(`user_id`, `msg_type`, `create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户站内消息收件箱' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sys_notice

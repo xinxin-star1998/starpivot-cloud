@@ -1,6 +1,6 @@
 # StarPivot Cloud
 
-星枢微服务 — 基于 **Spring Cloud Alibaba** 的企业级微服务脚手架，涵盖认证授权、系统管理、文件中心、代码生成、监控调度、商城（B 端 + C 端 Portal + 微信小程序）与审批中台，配套 **Vue 3** 管理前端。
+星枢微服务 — 基于 **Spring Cloud Alibaba** 的企业级微服务脚手架，涵盖认证授权、系统管理、**全平台消息中心**、文件中心、代码生成、监控调度、商城（B 端 + C 端 Portal + 微信小程序）与审批中台，配套 **Vue 3** 管理前端。
 
 ---
 
@@ -69,7 +69,7 @@ starpivot-cloud/
 ├── starpivot-mq/                     # RabbitMQ 发布/消费模板
 ├── starpivot-gateway/                # API 网关
 ├── starpivot-auth/                   # 认证授权
-├── starpivot-system/                 # 系统管理（用户/角色/菜单/部门/字典…）
+├── starpivot-system/                 # 系统管理（用户/角色/菜单/部门/字典/站内消息…）
 ├── starpivot-file/                   # 文件上传与文件中心
 ├── starpivot-generator/              # 代码生成
 ├── starpivot-monitor/                # 监控与 Quartz 定时任务
@@ -103,7 +103,7 @@ starpivot-cloud/
 | starpivot-file      | 9202 | 文件服务         |
 | star-pivot-ui       | 3000 | 前端开发服务器      |
 
-商城微服务拆分、Nacos 导入与启动顺序详见 [docs/mall-startup.md](docs/mall-startup.md)。
+商城微服务拆分、Nacos 导入与启动顺序：先 `.\nacos\import-config.ps1 -Profile Mall`，再按上表端口启动各 mall 子服务。
 
 
 ---
@@ -159,8 +159,18 @@ docker compose up -d
 MySQL 容器**首次启动**会自动执行：
 
 - `sql/00_create_mall_database.sql` — 创建商城五域库（product / ware / order / member / promotion）
-- `sql/star_pivot.sql` — 核心库表与初始数据（含 RBAC、审批、代码生成等）
+- `sql/star_pivot.sql` — 核心库表与初始数据（含 RBAC、审批、代码生成、消息中心等）
 - `sql/sys_menu.sql` — 补充菜单
+
+**消息中心**（若库为旧版本、无 `sys_user_message` 或菜单 319–322，需额外执行）：
+
+```powershell
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot < sql/patch_sys_user_message.sql
+# 可选：历史审批通知迁移
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot < sql/patch_migrate_ap_notification_to_sys_user_message.sql
+```
+
+执行后重启 `starpivot-system`、`starpivot-approval`、`starpivot-mall-order`、网关，并**重新登录**以刷新菜单与 SSE 连接。详见 [docs/doc/message-center.md](docs/doc/message-center.md)。
 
 **商城业务数据**（按微服务分库，未随容器自动导入）需手动执行：
 
@@ -228,7 +238,7 @@ mvn spring-boot:run -pl starpivot-monitor
 mvn spring-boot:run -pl starpivot-approval
 ```
 
-**商城微服务（需先 `.\nacos\import-config.ps1 -Profile Mall`，详见 [docs/mall-startup.md](docs/mall-startup.md)）：**
+**商城微服务（需先 `.\nacos\import-config.ps1 -Profile Mall`）：**
 
 ```bash
 mvn spring-boot:run -pl starpivot-gateway
@@ -298,6 +308,35 @@ pnpm dev
 代码中继续使用 `@Tag`、`@Operation` 等 OpenAPI 3 注解（`io.swagger.v3.oas.annotations`）。
 
 登录后在请求头携带 `Authorization: Bearer <token>`。响应头含 `X-Trace-Id` 便于链路排查。
+
+---
+
+## 全平台消息中心
+
+统一站内信收件箱（`star_pivot.sys_user_message`），由 **starpivot-system** 提供 API，网关路由 `/api/v1/message/**`。
+
+| 能力 | 说明 |
+|------|------|
+| 用户收件箱 | 分页查询、未读数、单条/全部已读；管理端 **系统管理 → 消息中心** |
+| 顶栏铃铛 | 最近消息预览 + 未读角标，SSE 实时刷新 |
+| 业务自动通知 | 审批待办/完结、退款失败告警等，各服务经 Feign `SysMessageClient` 投递 |
+| 管理员群发 | `POST /api/v1/message/broadcast`，权限 `system:message:send`（admin 角色亦可） |
+| 实时推送 | SSE `GET /api/v1/message/sse/subscribe` + Redis 频道 `starpivot:message:push` |
+
+**主要接口（均需登录，群发另需权限）：**
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/message/messagePageList` | 我的消息分页 |
+| GET | `/api/v1/message/unread-count` | 未读数量 |
+| POST | `/api/v1/message/{id}/read` | 标记已读 |
+| POST | `/api/v1/message/read-all` | 全部已读 |
+| POST | `/api/v1/message/broadcast` | 管理员群发 |
+| GET | `/api/v1/message/sse/subscribe` | SSE 订阅（长连接） |
+
+内部投递（不经网关）：`POST /internal/message/send`、`POST /internal/message/send-to-roles` + `X-Internal-Token`。
+
+接入示例、已对接场景与部署步骤见 **[docs/doc/message-center.md](docs/doc/message-center.md)**。
 
 ---
 
@@ -489,8 +528,6 @@ Docker 中间件启动与故障排查详见 [docs/docker-deploy.md](docs/docker-
 
 ## 可观测性
 
-详见 [docs/observability.md](docs/observability.md)。
-
 - **TraceId**：网关与各 Servlet 微服务自动生成/透传 `X-Trace-Id`，日志格式含 `%X{traceId}`
 - **Actuator**：各服务暴露 `health`、`info`、`metrics`、`prometheus`
 - **Zipkin**：`docker compose up -d zipkin` 后访问 [http://localhost:9411](http://localhost:9411)
@@ -508,10 +545,10 @@ Docker 中间件启动与故障排查详见 [docs/docker-deploy.md](docs/docker-
 | [nacos/README.md](nacos/README.md)                                           | 配置中心结构与导入      |
 | [docs/docker-deploy.md](docs/docker-deploy.md)                               | Docker 中间件部署    |
 | [docs/security/permission-strategy.md](docs/security/permission-strategy.md) | 权限策略           |
-| [docs/observability.md](docs/observability.md)                               | 链路追踪与指标        |
-| [docs/mall.md](docs/mall.md)                                                 | 商城菜单与接口对照      |
 | [docs/doc/mq-usage.md](docs/doc/mq-usage.md)                                 | MQ 使用说明        |
 | [docs/doc/workflow-design.md](docs/doc/workflow-design.md)                   | 审批开发规格         |
+| [docs/doc/approval-test-guide.md](docs/doc/approval-test-guide.md)           | 审批联调与测试指南      |
+| [docs/doc/message-center.md](docs/doc/message-center.md)                     | 全平台消息中心        |
 | [Java微服务版本审批中心设计方案.md](docs/Java微服务版本审批中心设计方案.md)                                 | 审批中心设计方案       |
 
 

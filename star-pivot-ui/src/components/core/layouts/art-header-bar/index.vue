@@ -116,7 +116,10 @@
           class="notice-button relative"
           @click="visibleNotice"
         >
-          <div class="absolute top-2 right-2 size-1.5 !bg-danger rounded-full"></div>
+          <div
+            v-if="noticeUnreadCount > 0"
+            class="absolute top-2 right-2 size-1.5 !bg-danger rounded-full"
+          ></div>
         </ArtIconButton>
 
         <!-- 聊天按钮 -->
@@ -164,7 +167,7 @@
     <ArtWorkTab />
 
     <!-- 通知 -->
-    <ArtNotification v-model:value="showNotice" ref="notice" />
+    <ArtNotification v-model:value="showNotice" ref="noticeRef" @unread-change="noticeUnreadCount = $event" />
   </div>
 </template>
 
@@ -192,6 +195,7 @@ import ArtMixedMenu from '@/components/core/layouts/art-menus/art-mixed-menu/ind
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import ArtWorkTab from '@/components/core/layouts/art-work-tab/index.vue'
 import ArtNotification from '@/components/core/layouts/art-notification/index.vue'
+import { useMessageSse } from '@/hooks/core/useMessageSse'
 
 defineOptions({ name: 'ArtHeaderBar' })
 
@@ -229,7 +233,13 @@ defineOptions({ name: 'ArtHeaderBar' })
   const { menuList } = storeToRefs(menuStore)
 
   const showNotice = ref(false)
-  const notice = ref(null)
+  const noticeRef = ref<{ refreshUnreadCount?: () => Promise<void> } | null>(null)
+  const noticeUnreadCount = ref(0)
+
+  const { connect: connectMessageSse, disconnect: disconnectMessageSse } = useMessageSse((payload) => {
+    noticeUnreadCount.value = Number(payload.unreadCount) || noticeUnreadCount.value + 1
+    noticeRef.value?.refreshUnreadCount?.()
+  })
 
   // 菜单类型判断
   const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT)
@@ -242,11 +252,27 @@ defineOptions({ name: 'ArtHeaderBar' })
   onMounted(() => {
     initLanguage()
     document.addEventListener('click', bodyCloseNotice)
+    if (userStore.isLogin) {
+      connectMessageSse()
+    }
   })
 
   onUnmounted(() => {
     document.removeEventListener('click', bodyCloseNotice)
+    disconnectMessageSse()
   })
+
+  watch(
+    () => userStore.isLogin,
+    (login) => {
+      if (login) {
+        connectMessageSse()
+      } else {
+        disconnectMessageSse()
+        noticeUnreadCount.value = 0
+      }
+    }
+  )
 
   /**
    * 切换全屏状态

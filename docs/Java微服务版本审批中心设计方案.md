@@ -628,7 +628,6 @@ starpivot-approval/
 | 文档 | 用途 |
 |------|------|
 | [`docs/doc/workflow-design.md`](doc/workflow-design.md) | 开发规格书（DDL、引擎伪代码、FAQ） |
-| [`docs/doc/file-center-design.md`](doc/file-center-design.md) | 中台服务落地参照 |
 | [`docs/商城开发事项.md`](商城开发事项.md) | 商城模块与首批接入场景 |
 
 ## 11.3 旧方案对照（迁移参考）

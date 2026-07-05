@@ -321,6 +321,10 @@ INSERT INTO `sys_menu` VALUES (270, '审批统计', 6, 5, 'statistics', '/approv
 INSERT INTO `sys_menu` VALUES (271, '登录日志', 33, 5, 'login-log', '/mall/ums/member/login-log/index', NULL, 'MemberLoginLog', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, 'C端会员登录审计');
 INSERT INTO `sys_menu` VALUES (272, '会员收藏', 33, 6, 'collect', '/mall/ums/member/collect/index', NULL, 'MemberCollect', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, '商品/专题收藏查询');
 INSERT INTO `sys_menu` VALUES (317, '收货地址', 33, 7, 'receive-address', '/mall/ums/member/receive-address/index', NULL, 'MemberReceiveAddress', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-05 10:00:00', '', NULL, 'C端会员收货地址查询');
+INSERT INTO `sys_menu` VALUES (319, '消息中心', 1, 9, 'message', '/system/message/index', NULL, 'MessageCenter', 1, 0, 'C', '0', '0', 'system:message:list', 'ri:mail-line', 'admin', '2026-07-05 14:00:00', '', NULL, '全平台站内消息收件箱');
+INSERT INTO `sys_menu` VALUES (320, '消息查询', 319, 1, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:query', '#', 'admin', '2026-07-05 14:00:00', '', NULL, '站内消息查询');
+INSERT INTO `sys_menu` VALUES (321, '消息已读', 319, 2, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:edit', '#', 'admin', '2026-07-05 14:00:00', '', NULL, '站内消息标记已读');
+INSERT INTO `sys_menu` VALUES (322, '消息群发', 319, 3, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:send', '#', 'admin', '2026-07-05 14:30:00', '', NULL, '管理员群发站内消息');
 INSERT INTO `sys_menu` VALUES (306, '商品查询', 143, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:query', '#', 'admin', '2026-07-01 17:22:16', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (310, '分类热门新增', 249, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:add', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (311, '分类热门修改', 249, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:edit', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');

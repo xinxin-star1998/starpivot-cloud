@@ -77,7 +77,7 @@ import {handleMutationError} from '@/utils/http/mutation'
 import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
 import ApprovalNotificationDrawer from '../components/ApprovalNotificationDrawer.vue'
 import {useApprovalTimelineDialog} from '../composables/useApprovalTimelineDialog'
-import {fetchApprovalUnreadCount} from '@/api/approval/notification'
+import {fetchUserMessageUnreadCount} from '@/api/system/message'
 import {formatDateTime} from '@/utils/common/datetime'
 
 defineOptions({ name: 'ApprovalTodo' })
@@ -91,7 +91,7 @@ defineOptions({ name: 'ApprovalTodo' })
 
   async function refreshNotifyCount() {
     try {
-      notifyUnread.value = Number(await fetchApprovalUnreadCount()) || 0
+      notifyUnread.value = Number(await fetchUserMessageUnreadCount()) || 0
     } catch {
       notifyUnread.value = 0
     }

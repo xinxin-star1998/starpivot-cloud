@@ -2,7 +2,7 @@
 
 > **模块**：商城微服务 `starpivot-mall-*`（`/portal`） · **前端**：`star-pivot-ui/views/portal`  
 > **目标**：支持密码、手机号、微信、QQ 等多种登录方式；**一个会员账号可绑定多种登录方式（一对多）**，体验对齐京东账号体系。  
-> **详细 P1 设计**：[portal-auth-p1-design.md](./portal-auth-p1-design.md) · **DDL**：[sql/patch_portal_member_auth.sql](../../sql/patch_portal_member_auth.sql)
+> **DDL**：[sql/patch_portal_member_auth.sql](../../sql/patch_portal_member_auth.sql)
 
 ---
 
@@ -258,7 +258,6 @@ starpivot.mall.portal-auth.sms.mock-code: "123456"
 | 文档 / 脚本 | 说明 |
 |-------------|------|
 | **本文档** | 方案总览（读这一份即可了解全貌） |
-| [portal-auth-p1-design.md](./portal-auth-p1-design.md) | P1 详设：完整 API、状态机、Redis、验收用例 |
 | [patch_portal_member_auth.sql](../../sql/patch_portal_member_auth.sql) | 建表 + 历史数据迁移 |
 | [商城开发事项.md](../商城开发事项.md) | 商城整体进度 |
 | [mall.md](../mall.md) | 菜单与 API 对照 |

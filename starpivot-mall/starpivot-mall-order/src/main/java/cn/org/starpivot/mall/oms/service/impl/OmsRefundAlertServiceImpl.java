@@ -1,5 +1,8 @@
 package cn.org.starpivot.mall.oms.service.impl;
 
+import cn.org.starpivot.api.system.SysMessageClient;
+import cn.org.starpivot.api.system.constant.MessageConstants;
+import cn.org.starpivot.api.system.dto.MessageSendToRolesRequest;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.oms.OmsConstants;
 import cn.org.starpivot.mall.oms.domain.vo.RefundAlertSummaryVo;
@@ -31,6 +34,7 @@ public class OmsRefundAlertServiceImpl implements OmsRefundAlertService {
 
     private final OmsRefundInfoMapper omsRefundInfoMapper;
     private final OmsOrderReturnApplyMapper omsOrderReturnApplyMapper;
+    private final SysMessageClient sysMessageClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -84,6 +88,29 @@ public class OmsRefundAlertServiceImpl implements OmsRefundAlertService {
         patch.setAlertAck(ALERT_ACK_UNREAD);
         omsRefundInfoMapper.updateById(patch);
         log.error("Refund failure alert: refundId={}, refundSn={}, orderSn={}", refundId, refundSn, orderSn);
+        notifyRefundFailure(refundId, refundSn, orderSn);
+    }
+
+    private void notifyRefundFailure(Long refundId, String refundSn, String orderSn) {
+        try {
+            MessageSendToRolesRequest request = new MessageSendToRolesRequest();
+            request.setRoleKeys(List.of("finance", "admin"));
+            request.setMsgType(MessageConstants.MSG_TYPE_REFUND_ALERT);
+            request.setTitle("退款失败告警");
+            request.setContent("订单 " + nullToDash(orderSn) + " 退款单 " + nullToDash(refundSn) + " 处理失败，请及时处理");
+            request.setBizModule(MessageConstants.BIZ_MODULE_MALL);
+            request.setBizType("refund");
+            request.setBizKey("mall:refund:" + refundId);
+            request.setBizId(refundId);
+            request.setLinkPath("/mall/oms/refund/refund");
+            sysMessageClient.sendToRoles(request);
+        } catch (Exception ex) {
+            log.warn("Refund failure message push failed, refundId={}", refundId, ex);
+        }
+    }
+
+    private String nullToDash(String value) {
+        return value != null ? value : "-";
     }
 
     private long countUnreadFailures() {

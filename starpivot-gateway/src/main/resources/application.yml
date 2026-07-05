@@ -23,7 +23,7 @@ spring:
         - id: starpivot-system
           uri: lb://starpivot-system
           predicates:
-            - Path=/api/${starpivot.api.version}/sys/**,/api/${starpivot.api.version}/router/**,/api/${starpivot.api.version}/avatar/**,/api/${starpivot.api.version}/notice/**,/api/${starpivot.api.version}/config/**,/api/${starpivot.api.version}/dashboard/**,/api/${starpivot.api.version}/health
+            - Path=/api/${starpivot.api.version}/sys/**,/api/${starpivot.api.version}/router/**,/api/${starpivot.api.version}/avatar/**,/api/${starpivot.api.version}/notice/**,/api/${starpivot.api.version}/message/**,/api/${starpivot.api.version}/config/**,/api/${starpivot.api.version}/dashboard/**,/api/${starpivot.api.version}/health
         # 文件服务（通用上传）
         - id: starpivot-file
           uri: lb://starpivot-file
