@@ -1,6 +1,7 @@
 package cn.org.starpivot.mall.oms.service.impl;
 
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.oms.domain.bo.RefundReqBo;
 import cn.org.starpivot.mall.oms.domain.vo.RefundVo;
 import cn.org.starpivot.mall.oms.entity.OmsOrderReturnApply;
@@ -10,6 +11,7 @@ import cn.org.starpivot.mall.oms.mapper.OmsRefundInfoMapper;
 import cn.org.starpivot.mall.oms.service.OmsRefundInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +22,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
-/**
- * 退款信息服务实现类。
- * <p>
- * 实现 {@link OmsRefundInfoService}，处理退款信息相关业务。
- * </p>
- * <ul>
- *   <li>{@link Service} — Spring 服务 Bean</li>
- *   <li>{@link RequiredArgsConstructor} — 构造器注入依赖</li>
- * </ul>
- *
- * @see OmsRefundInfoService
- */
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +48,9 @@ public class OmsRefundInfoServiceImpl extends ServiceImpl<OmsRefundInfoMapper, O
         wrapper.orderByDesc(OmsRefundInfo::getId);
         IPage<OmsRefundInfo> refundPage = baseMapper.selectPage(page, wrapper);
 
+        Map<Long, String> orderSnByReturnId = loadOrderSnMap(refundPage.getRecords());
         List<RefundVo> rows = refundPage.getRecords().stream()
-                .map(this::toVo)
+                .map(entity -> toVo(entity, orderSnByReturnId))
                 .collect(Collectors.toList());
 
         PageResponse<RefundVo> response = new PageResponse<>();
@@ -68,6 +60,17 @@ public class OmsRefundInfoServiceImpl extends ServiceImpl<OmsRefundInfoMapper, O
         response.setPageSize(refundPage.getSize());
         response.setPageCount(refundPage.getPages());
         return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RefundVo getDetailById(Long id) {
+        OmsRefundInfo entity = baseMapper.selectById(id);
+        if (entity == null) {
+            throw new BizException("退款记录不存在");
+        }
+        Map<Long, String> orderSnByReturnId = loadOrderSnMap(List.of(entity));
+        return toVo(entity, orderSnByReturnId);
     }
 
     private List<Long> findReturnIdsByOrderSn(String orderSn) {
@@ -81,6 +84,26 @@ public class OmsRefundInfoServiceImpl extends ServiceImpl<OmsRefundInfoMapper, O
         return applies.stream().map(OmsOrderReturnApply::getId).collect(Collectors.toList());
     }
 
+    private Map<Long, String> loadOrderSnMap(List<OmsRefundInfo> records) {
+        List<Long> returnIds = records.stream()
+                .map(OmsRefundInfo::getOrderReturnId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (returnIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return omsOrderReturnApplyMapper.selectList(
+                        Wrappers.<OmsOrderReturnApply>lambdaQuery()
+                                .in(OmsOrderReturnApply::getId, returnIds)
+                                .select(OmsOrderReturnApply::getId, OmsOrderReturnApply::getOrderSn))
+                .stream()
+                .collect(Collectors.toMap(
+                        OmsOrderReturnApply::getId,
+                        OmsOrderReturnApply::getOrderSn,
+                        (left, right) -> left));
+    }
+
     private PageResponse<RefundVo> emptyPage(RefundReqBo reqBo) {
         PageResponse<RefundVo> response = new PageResponse<>();
         response.setTotal(0L);
@@ -91,9 +114,12 @@ public class OmsRefundInfoServiceImpl extends ServiceImpl<OmsRefundInfoMapper, O
         return response;
     }
 
-    private RefundVo toVo(OmsRefundInfo entity) {
+    private RefundVo toVo(OmsRefundInfo entity, Map<Long, String> orderSnByReturnId) {
         RefundVo vo = new RefundVo();
         BeanUtils.copyProperties(entity, vo);
+        if (entity.getOrderReturnId() != null) {
+            vo.setOrderSn(orderSnByReturnId.get(entity.getOrderReturnId()));
+        }
         return vo;
     }
 }

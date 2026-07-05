@@ -5,7 +5,7 @@
 
 **图例**：✅ 已实现 · ⚠️ 部分实现或实现方式不同 · ❌ 未做 · ➕ StarPivot 增强（谷粒原版无）
 
-**总体**：核心业务约 **85% 对齐**；课程后半分布式专题（Seata、MQ 关单、Sentinel、Canal）约 **30% 对齐**。
+**总体**：核心业务约 **88% 对齐**；课程后半分布式专题（Seata、MQ 关单、Sentinel、Canal）约 **30% 对齐**。
 
 ---
 
@@ -29,7 +29,7 @@
 | gulimall-product | starpivot-mall-product | 9207 |
 | gulimall-ware | starpivot-mall-ware | 9208 |
 | gulimall-order | starpivot-mall-order | 9209 |
-| gulimall-coupon | starpivot-mall-promotion | 9210 |
+| gulimall-coupon | starpivot-mall-promotion | 9212 |
 | gulimall-search | （合并在 product） | — |
 | gulimall-third-party | starpivot-file + 各服务 OSS 配置 | 9202 |
 
@@ -60,7 +60,7 @@
 |------|------|----------|
 | 仓库维护 | ✅ | ware |
 | 商品库存 wms_ware_sku | ✅ | ware |
-| 省市区三级联动 | ✅ | ware（`address` 表） |
+| 省市区四级联动 | ✅ | ware（`address` 表，`sql/address.sql`） |
 | 采购单 / 采购明细 | ✅ | ware |
 | 库存工作单（锁库/扣库） | ✅ | ware |
 | 采购需求独立表 | ❌ | `wms_purchase_demand` 未建 |
@@ -82,6 +82,7 @@
 | C 端收藏 | ✅ | member |
 | B 端登录日志 | ✅ | member |
 | B 端收藏管理 | ✅ | member |
+| B 端收货地址 | ✅ | member |
 | 下单后积分/成长值回写 | ✅ | member ← order Feign |
 
 ---
@@ -119,9 +120,12 @@
 | 支付 / 退款流水 | ✅ | order |
 | 订单设置（超时规则） | ✅ | order |
 | 自动确认收货 / 评价期结束 | ✅ | order 定时任务 |
-| 超时关单 | ⚠️ | 定时扫描，非 RabbitMQ 死信队列 |
+| 超时关单 | ⚠️ | 延迟 MQ（可选）或 Redis ZSET 定时扫描 |
 | RabbitMQ 订单延迟关单 | ❌ | 谷粒经典方案未采用 |
-| 支付宝原路退款 | ⚠️ | 部分待完善 |
+| 支付宝原路退款 | ✅ | order，含查询/重试 |
+| 微信原路退款 | ✅ | order，含异步通知/查询/重试 |
+| 退款状态定时同步 | ✅ | order 定时任务 |
+| 退款失败运维告警 | ✅ | order `alert_ack` + B 端告警条 |
 
 ---
 
@@ -143,7 +147,7 @@
 |------|------|
 | OSS 对象存储 | ✅ 公共 `oss-config.yaml` + starpivot-file / product / promotion |
 | 短信 | ⚠️ member 内短信登录 |
-| 统一文件中心 objectKey | ❌ 待规范 |
+| 统一文件中心 objectKey | ✅ | `FileObjectKeyUtils` + [mall-file-objectkey.md](./mall-file-objectkey.md) |
 
 ---
 
@@ -151,8 +155,8 @@
 
 | 功能 | 谷粒 | StarPivot |
 |------|------|-----------|
-| Seata AT 分布式事务 | ✅ 课程重点 | ❌ 规划 P3 |
-| mq_message 可靠消息 | ✅ | ❌ 表有，业务未接 |
+| Seata AT 分布式事务 | ✅ 课程重点 | ❌ 暂缓，见 [mall-p3-distributed.md](./mall-p3-distributed.md) |
+| mq_message 可靠消息 | ✅ | ✅ 支付成功 ware 扣库存（Outbox 可选） |
 | Sentinel 限流熔断 | ✅ | ❌ |
 | RabbitMQ 业务消息 | ✅ 关单/解锁 | ⚠️ 仅审批回调 MQ |
 | 接口幂等 / 防重复提交 | ✅ | ✅ orderToken |
@@ -197,11 +201,10 @@
 |--------|-----|------|
 | P1 | mall-app 已移除 | 静态资源改 OSS，业务已迁至五域微服务 |
 | P2 | 启用 ES | `MALL_ES_ENABLED=true` + 重建索引 |
-| P2 | 省市区数据 | 执行 `sql/gulimall/gulimall_address_data.sql` |
-| P3 | Seata 或 mq_message | 跨服务强一致 |
-| P3 | RabbitMQ 延迟关单 | 替代/补充定时扫描 |
+| P3 | Seata | 跨服务强一致，暂缓 |
+| P3 | mq_message 业务扩展 | 优惠券/积分 Outbox 化、投递失败重试 |
+| P3 | RabbitMQ 延迟关单 | 已支持，开关 `order-close-delay-mq-enabled` |
 | P3 | Sentinel | 秒杀/下单限流 |
-| P4 | 支付宝原路退款 | 退货闭环 |
 
 ---
 
@@ -210,3 +213,5 @@
 - [mall-startup.md](./mall-startup.md) — 微服务启动与 Nacos 配置
 - [mall.md](./mall.md) — 菜单与 API 对照
 - [商城开发事项.md](./商城开发事项.md) — 表设计与开发进度
+- [mall-file-objectkey.md](./mall-file-objectkey.md) — 文件 objectKey 规范
+- [mall-p3-distributed.md](./mall-p3-distributed.md) — Seata / mq_message 规划

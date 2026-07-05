@@ -14,6 +14,7 @@ import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.oms.service.impl.OmsOrderLifecycleService;
+import cn.org.starpivot.mall.oms.service.impl.PortalOrderCloseDelayPublisher;
 import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.domain.bo.*;
@@ -27,6 +28,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -63,6 +65,7 @@ public class PortalOrderServiceImpl implements PortalOrderService {
     private final PortalOrderSkuSupport portalOrderSkuSupport;
     private final PortalOrderItemResolver portalOrderItemResolver;
     private final PortalOrderAssembler portalOrderAssembler;
+    private final ObjectProvider<PortalOrderCloseDelayPublisher> orderCloseDelayPublisherProvider;
 
     @Override
     @Transactional(readOnly = true)
@@ -163,6 +166,7 @@ public class PortalOrderServiceImpl implements PortalOrderService {
             vo.setOrderId(order.getId());
             vo.setOrderSn(orderSn);
             vo.setStatus(PortalConstants.ORDER_STATUS_UNPAID);
+            scheduleOrderCloseIfEnabled(orderSn, order.getId());
             return vo;
         } catch (RuntimeException ex) {
             portalStockLockService.releaseForOrder(orderSn);
@@ -308,5 +312,15 @@ public class PortalOrderServiceImpl implements PortalOrderService {
             quantityBySku.merge(item.getSkuId(), item.getQuantity(), Integer::sum);
         }
         return quantityBySku;
+    }
+
+    private void scheduleOrderCloseIfEnabled(String orderSn, Long orderId) {
+        if (!mallSecurityProperties.isOrderCloseDelayMqEnabled()) {
+            return;
+        }
+        PortalOrderCloseDelayPublisher publisher = orderCloseDelayPublisherProvider.getIfAvailable();
+        if (publisher != null) {
+            publisher.scheduleClose(orderSn, orderId);
+        }
     }
 }

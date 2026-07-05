@@ -1,19 +1,18 @@
 package cn.org.starpivot.mall.portal.service.impl;
 
+import cn.org.starpivot.api.mall.order.dto.OrderPaidLineDto;
 import cn.org.starpivot.api.mall.ware.dto.StockDeductionLineDto;
 import cn.org.starpivot.common.exception.BizException;
-import cn.org.starpivot.mall.common.PromotionFeignSupport;
 import cn.org.starpivot.mall.common.WareFeignSupport;
+import cn.org.starpivot.mall.config.MallSecurityProperties;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
-import cn.org.starpivot.mall.oms.entity.OmsOrderOperateHistory;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
-import cn.org.starpivot.mall.oms.mapper.OmsOrderOperateHistoryMapper;
 import cn.org.starpivot.mall.oms.service.OmsOrderSettingService;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.service.PortalAvailableStockService;
-import cn.org.starpivot.mall.portal.service.PortalMemberIntegrationService;
+import cn.org.starpivot.mall.portal.service.PortalOrderCloseService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -49,21 +49,42 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PortalStockLockServiceImpl implements PortalStockLockService {
 
     private static final TypeReference<Map<String, Integer>> LOCK_PAYLOAD_TYPE = new TypeReference<>() {};
+
+    private static final Duration PAID_LOCK_CONFIRMED_TTL = Duration.ofDays(7);
 
     private final StringRedisTemplate stringRedisTemplate;
     private final WareFeignSupport wareFeignSupport;
     private final OmsOrderMapper omsOrderMapper;
     private final OmsOrderItemMapper omsOrderItemMapper;
-    private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
     private final OmsOrderSettingService omsOrderSettingService;
     private final PortalAvailableStockService portalAvailableStockService;
-    private final PromotionFeignSupport promotionFeignSupport;
-    private final PortalMemberIntegrationService portalMemberIntegrationService;
+    private final PortalOrderCloseService portalOrderCloseService;
+    private final MallSecurityProperties mallSecurityProperties;
     private final ObjectMapper objectMapper;
+
+    public PortalStockLockServiceImpl(
+            StringRedisTemplate stringRedisTemplate,
+            WareFeignSupport wareFeignSupport,
+            OmsOrderMapper omsOrderMapper,
+            OmsOrderItemMapper omsOrderItemMapper,
+            OmsOrderSettingService omsOrderSettingService,
+            PortalAvailableStockService portalAvailableStockService,
+            @Lazy PortalOrderCloseService portalOrderCloseService,
+            MallSecurityProperties mallSecurityProperties,
+            ObjectMapper objectMapper) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.wareFeignSupport = wareFeignSupport;
+        this.omsOrderMapper = omsOrderMapper;
+        this.omsOrderItemMapper = omsOrderItemMapper;
+        this.omsOrderSettingService = omsOrderSettingService;
+        this.portalAvailableStockService = portalAvailableStockService;
+        this.portalOrderCloseService = portalOrderCloseService;
+        this.mallSecurityProperties = mallSecurityProperties;
+        this.objectMapper = objectMapper;
+    }
 
     private final DefaultRedisScript<Long> reserveScript = loadScript("lua/portal_stock_reserve.lua");
     private final DefaultRedisScript<Long> releaseScript = loadScript("lua/portal_stock_release.lua");
@@ -111,9 +132,11 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
             stringRedisTemplate
                     .opsForValue()
                     .set(PortalConstants.stockLockOrderKey(orderSn), writePayload(payload), ttl);
-            stringRedisTemplate
-                    .opsForZSet()
-                    .add(PortalConstants.STOCK_LOCK_EXPIRY_ZSET, orderSn, expireAtMs);
+            if (!mallSecurityProperties.isOrderCloseDelayMqEnabled()) {
+                stringRedisTemplate
+                        .opsForZSet()
+                        .add(PortalConstants.STOCK_LOCK_EXPIRY_ZSET, orderSn, expireAtMs);
+            }
         } catch (RuntimeException ex) {
             rollbackReserve(orderSn, lockedSkuIds, skuQuantities);
             if (ex instanceof BizException bizException) {
@@ -163,6 +186,41 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
         stringRedisTemplate.delete(PortalConstants.stockLockConfirmedKey(orderSn));
         cleanupSchedule(orderSn);
         return deductions;
+    }
+
+    @Override
+    public List<OrderPaidLineDto> preparePaidStockFulfillment(String orderSn) {
+        if (!StringUtils.hasText(orderSn)) {
+            return List.of();
+        }
+        Map<Long, String> skuNameMap = loadSkuNameMap(orderSn);
+        Map<Long, Integer> toDeduct = resolveDeductQuantities(orderSn);
+        List<OrderPaidLineDto> lines = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : toDeduct.entrySet()) {
+            int qty = safeQty(entry.getValue());
+            if (entry.getKey() == null || qty <= 0) {
+                continue;
+            }
+            OrderPaidLineDto line = new OrderPaidLineDto();
+            line.setSkuId(entry.getKey());
+            line.setSkuName(skuNameMap.get(entry.getKey()));
+            line.setQuantity(qty);
+            lines.add(line);
+        }
+        markPaidAndReleaseRedisLocks(orderSn);
+        return lines;
+    }
+
+    private void markPaidAndReleaseRedisLocks(String orderSn) {
+        stringRedisTemplate
+                .opsForValue()
+                .set(PortalConstants.stockLockConfirmedKey(orderSn), "1", PAID_LOCK_CONFIRMED_TTL);
+        Map<Long, Integer> locked = readLockPayload(orderSn);
+        for (Map.Entry<Long, Integer> entry : locked.entrySet()) {
+            releaseReserve(entry.getKey(), safeQty(entry.getValue()));
+        }
+        stringRedisTemplate.delete(PortalConstants.stockLockOrderKey(orderSn));
+        cleanupSchedule(orderSn);
     }
 
     private Map<Long, String> loadSkuNameMap(String orderSn) {
@@ -220,8 +278,7 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
         for (String orderSn : expiredOrderSns) {
             try {
                 if (shouldReleaseExpiredLock(orderSn)) {
-                    releaseForOrder(orderSn);
-                    closeUnpaidOrderIfNeeded(orderSn);
+                    portalOrderCloseService.closeUnpaidOrderAndReleaseStock(orderSn);
                 } else {
                     cleanupSchedule(orderSn);
                 }
@@ -241,33 +298,6 @@ public class PortalStockLockServiceImpl implements PortalStockLockService {
             return true;
         }
         return Integer.valueOf(PortalConstants.ORDER_STATUS_UNPAID).equals(order.getStatus());
-    }
-
-    private void closeUnpaidOrderIfNeeded(String orderSn) {
-        OmsOrder order = omsOrderMapper.selectOne(
-                Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
-        if (order == null
-                || !Integer.valueOf(PortalConstants.ORDER_STATUS_UNPAID).equals(order.getStatus())) {
-            return;
-        }
-        order.setStatus(PortalConstants.ORDER_STATUS_CLOSED);
-        order.setModifyTime(LocalDateTime.now());
-        omsOrderMapper.updateById(order);
-        promotionFeignSupport.releaseCoupon(order.getId());
-        promotionFeignSupport.releaseSeckillByOrderSn(orderSn);
-        portalMemberIntegrationService.restoreForOrder(order);
-        saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_CLOSED, "system", "超时未支付自动关闭");
-        log.info("Closed unpaid order due to stock lock timeout: {}", orderSn);
-    }
-
-    private void saveOperateHistory(Long orderId, Integer status, String operator, String note) {
-        OmsOrderOperateHistory history = new OmsOrderOperateHistory();
-        history.setOrderId(orderId);
-        history.setOperateMan(operator);
-        history.setCreateTime(LocalDateTime.now());
-        history.setOrderStatus(status);
-        history.setNote(note);
-        omsOrderOperateHistoryMapper.insert(history);
     }
 
     private void rollbackReserve(String orderSn, List<Long> lockedSkuIds, Map<Long, Integer> skuQuantities) {

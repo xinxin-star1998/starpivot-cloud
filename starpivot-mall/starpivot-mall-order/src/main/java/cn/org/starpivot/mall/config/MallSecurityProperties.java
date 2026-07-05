@@ -23,6 +23,21 @@ public class MallSecurityProperties {
      */
     private boolean mockPayEnabled = false;
 
+    /**
+     * 支付成功后经 mq_message Outbox 异步通知 ware 扣库存（需 starpivot.mq.enabled=true）。
+     */
+    private boolean orderPaidOutboxEnabled = false;
+
+    /**
+     * 待付款订单超时关单走 RabbitMQ 延迟队列（需 starpivot.mq.enabled=true）。
+     */
+    private boolean orderCloseDelayMqEnabled = false;
+
+    /**
+     * 支付成功后经 mq_message Outbox 异步确认优惠券并发放积分/成长值（需 starpivot.mq.enabled=true）。
+     */
+    private boolean orderPaidFollowupOutboxEnabled = false;
+
     public String validatedSystemDbSchema() {
         if (!StringUtils.hasText(systemDbSchema) || !systemDbSchema.matches("[a-zA-Z0-9_]+")) {
             throw new IllegalStateException("Invalid starpivot.mall.system-db-schema: " + systemDbSchema);

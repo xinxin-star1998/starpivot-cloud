@@ -28,6 +28,8 @@ mybatis-plus:
 starpivot:
   security:
     authority-strategy: menu-permission
+  mq:
+    enabled: ${MQ_ENABLED:true}
   mall:
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     portal-auth:

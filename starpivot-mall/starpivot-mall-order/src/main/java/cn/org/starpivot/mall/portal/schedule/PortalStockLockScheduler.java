@@ -4,6 +4,7 @@ import cn.org.starpivot.common.annotation.DistributedScheduled;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "starpivot.mall", name = "order-close-delay-mq-enabled", havingValue = "false", matchIfMissing = true)
 public class PortalStockLockScheduler {
 
     private final PortalStockLockService portalStockLockService;

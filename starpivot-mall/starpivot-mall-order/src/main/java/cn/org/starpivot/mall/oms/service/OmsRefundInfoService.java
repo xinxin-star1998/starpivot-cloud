@@ -19,4 +19,9 @@ public interface OmsRefundInfoService extends IService<OmsRefundInfo> {
      * 分页查询列表。
      */
     PageResponse<RefundVo> pageList(RefundReqBo reqBo);
+
+    /**
+     * 退款详情。
+     */
+    RefundVo getDetailById(Long id);
 }

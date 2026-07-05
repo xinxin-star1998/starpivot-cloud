@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "oss", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "oss", name = "enabled", havingValue = "true")
 public class OssFileStorageService implements FileStorageService {
 
     private final OssUtil ossUtil;

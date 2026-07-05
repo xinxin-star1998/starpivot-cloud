@@ -66,4 +66,11 @@ public class PortalWxPayController {
         String body = WxPayServiceImpl.readBody(request);
         return wxPayService.handleNotify(request, body);
     }
+
+    @Operation(summary = "微信退款异步通知")
+    @PostMapping("/refund/notify")
+    public String refundNotify(HttpServletRequest request) throws Exception {
+        String body = WxPayServiceImpl.readBody(request);
+        return wxPayService.handleRefundNotify(request, body);
+    }
 }

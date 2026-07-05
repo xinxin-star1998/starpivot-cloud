@@ -318,6 +318,7 @@ CREATE TABLE `oms_refund_info`  (
   `refund_status` tinyint(0) NULL DEFAULT NULL COMMENT '退款状态',
   `refund_channel` tinyint(0) NULL DEFAULT NULL COMMENT '1支付宝 2微信 3银联 4汇款',
   `refund_content` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '回调内容',
+  `alert_ack` tinyint(0) NOT NULL DEFAULT 1 COMMENT '失败告警已读：0未读 1已读',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_order_return_id`(`order_return_id`) USING BTREE,
   INDEX `idx_refund_sn`(`refund_sn`) USING BTREE

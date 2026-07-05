@@ -1,10 +1,13 @@
 package cn.org.starpivot.mall.pay.service.impl;
 
+import cn.org.starpivot.api.mall.order.dto.OrderPaidLineDto;
+import cn.org.starpivot.api.mall.order.dto.OrderPaidMessage;
 import cn.org.starpivot.api.mall.ware.dto.StockDeductionLineDto;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.common.ProductFeignSupport;
 import cn.org.starpivot.mall.common.PromotionFeignSupport;
 import cn.org.starpivot.mall.common.WareFeignSupport;
+import cn.org.starpivot.mall.config.MallSecurityProperties;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.entity.OmsOrderItem;
 import cn.org.starpivot.mall.oms.entity.OmsOrderOperateHistory;
@@ -13,12 +16,15 @@ import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderOperateHistoryMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsPaymentInfoMapper;
+import cn.org.starpivot.mall.oms.service.impl.PortalOrderPaidFollowupOutboxPublisher;
+import cn.org.starpivot.mall.oms.service.impl.PortalOrderPaidOutboxPublisher;
 import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.service.PortalMemberRewardService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -41,6 +47,9 @@ public class PortalOrderPayServiceImpl implements PortalOrderPayService {
     private final WareFeignSupport wareFeignSupport;
     private final PromotionFeignSupport promotionFeignSupport;
     private final PortalMemberRewardService portalMemberRewardService;
+    private final MallSecurityProperties mallSecurityProperties;
+    private final ObjectProvider<PortalOrderPaidOutboxPublisher> orderPaidOutboxPublisherProvider;
+    private final ObjectProvider<PortalOrderPaidFollowupOutboxPublisher> orderPaidFollowupOutboxPublisherProvider;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -96,13 +105,49 @@ public class PortalOrderPayServiceImpl implements PortalOrderPayService {
         }
         omsPaymentInfoMapper.insert(payment);
 
-        List<StockDeductionLineDto> deductions = portalStockLockService.confirmForOrder(order.getOrderSn());
-        wareFeignSupport.createFinishedRecordForPaidOrder(order.getId(), deductions);
+        if (useOrderPaidOutbox()) {
+            fulfillPaidOrderViaOutbox(order);
+        } else {
+            fulfillPaidOrderSynchronously(order);
+        }
         incrementSkuSaleCount(order.getId());
-        promotionFeignSupport.confirmCoupon(order.getId());
-        portalMemberRewardService.grantOnPaid(order);
+        if (useOrderPaidFollowupOutbox()) {
+            fulfillPaidFollowupViaOutbox(order);
+        } else {
+            promotionFeignSupport.confirmCoupon(order.getId());
+            portalMemberRewardService.grantOnPaid(order);
+        }
         saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_WAIT_DELIVER, order.getMemberUsername(), historyNote);
         return true;
+    }
+
+    private boolean useOrderPaidOutbox() {
+        return mallSecurityProperties.isOrderPaidOutboxEnabled()
+                && orderPaidOutboxPublisherProvider.getIfAvailable() != null;
+    }
+
+    private boolean useOrderPaidFollowupOutbox() {
+        return mallSecurityProperties.isOrderPaidFollowupOutboxEnabled()
+                && orderPaidFollowupOutboxPublisherProvider.getIfAvailable() != null;
+    }
+
+    private void fulfillPaidFollowupViaOutbox(OmsOrder order) {
+        orderPaidFollowupOutboxPublisherProvider.getObject()
+                .enqueuePaidFollowup(order.getId(), order.getOrderSn());
+    }
+
+    private void fulfillPaidOrderViaOutbox(OmsOrder order) {
+        List<OrderPaidLineDto> lines = portalStockLockService.preparePaidStockFulfillment(order.getOrderSn());
+        OrderPaidMessage message = new OrderPaidMessage();
+        message.setOrderId(order.getId());
+        message.setOrderSn(order.getOrderSn());
+        message.setLines(lines);
+        orderPaidOutboxPublisherProvider.getObject().enqueueOrderPaid(message);
+    }
+
+    private void fulfillPaidOrderSynchronously(OmsOrder order) {
+        List<StockDeductionLineDto> deductions = portalStockLockService.confirmForOrder(order.getOrderSn());
+        wareFeignSupport.createFinishedRecordForPaidOrder(order.getId(), deductions);
     }
 
     private boolean hasSuccessfulPayment(Long orderId) {

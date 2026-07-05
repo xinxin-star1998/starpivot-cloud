@@ -60,4 +60,9 @@ public class OmsRefundInfo {
      */
     private String refundContent;
 
+    /**
+     * 失败告警已读：0未读 1已读
+     */
+    private Integer alertAck;
+
 }

@@ -26,6 +26,14 @@ starpivot:
     public-base-url: ${MALL_PUBLIC_BASE_URL:http://localhost:8080}
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     mock-pay-enabled: ${MALL_MOCK_PAY_ENABLED:false}
+    order-paid-outbox-enabled: ${MALL_ORDER_PAID_OUTBOX_ENABLED:false}
+    order-paid-followup-outbox-enabled: ${MALL_ORDER_PAID_FOLLOWUP_OUTBOX_ENABLED:false}
+    order-close-delay-mq-enabled: ${MALL_ORDER_CLOSE_DELAY_MQ_ENABLED:false}
+    order-lifecycle-scan-ms: ${MALL_ORDER_LIFECYCLE_SCAN_MS:300000}
+    refund-sync-scan-ms: ${MALL_REFUND_SYNC_SCAN_MS:300000}
+    local-message:
+      enabled: ${MALL_LOCAL_MESSAGE_ENABLED:true}
+      flush-ms: ${MALL_LOCAL_MESSAGE_FLUSH_MS:60000}
     order:
       default-freight: ${MALL_ORDER_DEFAULT_FREIGHT:10.00}
       integration-yuan-rate: ${MALL_INTEGRATION_YUAN_RATE:0.01}
@@ -50,6 +58,7 @@ starpivot:
       merchant-serial-number: ${MALL_WXPAY_MERCHANT_SERIAL:}
       private-key: ${MALL_WXPAY_PRIVATE_KEY:}
       notify-url: ${MALL_WXPAY_NOTIFY_URL:}
+      refund-notify-url: ${MALL_WXPAY_REFUND_NOTIFY_URL:}
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml

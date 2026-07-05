@@ -36,7 +36,13 @@
       <ElButton type="primary" @click="openDialog()">添加地址</ElButton>
     </ElEmpty>
 
-    <ElDialog v-model="dialogVisible" :title="form.id ? '编辑地址' : '新增地址'" width="520px" destroy-on-close>
+    <ElDialog
+      v-model="dialogVisible"
+      :title="form.id ? '编辑地址' : '新增地址'"
+      width="520px"
+      destroy-on-close
+      @opened="onAddressDialogOpened"
+    >
       <ElForm ref="formRef" :model="form" :rules="rules" label-width="88px">
         <ElFormItem label="收货人" prop="name">
           <ElInput v-model="form.name" />
@@ -112,8 +118,20 @@ defineOptions({ name: 'PortalAddresses' })
   function openDialog(item?: PortalAddress) {
     Object.assign(form, item ? { ...item } : emptyForm())
     defaultSwitch.value = form.defaultStatus === 1
-    regionFieldsRef.value?.resetRegionPicker()
     dialogVisible.value = true
+  }
+
+  async function onAddressDialogOpened() {
+    const hasRegion = !!(form.province?.trim() || form.city?.trim() || form.region?.trim())
+    if (hasRegion) {
+      await regionFieldsRef.value?.restoreRegionFromNames({
+        province: form.province || '',
+        city: form.city || '',
+        region: form.region || ''
+      })
+    } else {
+      regionFieldsRef.value?.resetRegionPicker()
+    }
   }
 
   async function handleSave() {

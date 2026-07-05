@@ -29,83 +29,102 @@
 | oms | 订单系统 | order | `mall.oms` | 订单、支付、退货、购物车 |
 | sms | 营销中心 | promotion | `mall.sms` | 优惠券、专题、秒杀、满减/阶梯价、轮播 |
 
-## 菜单对照（以 `star_pivot.sql` 为准）
+## 菜单对照（以 `sql/sys_menu.sql` 为准）
 
 > 组件路径 = 前端 `views` 下路径（不含 `.vue`）。  
-> 菜单 ID 以 `star_pivot.sql` 的 **180~210** 为准；`sys_menu.sql` 可补充 C 端/SKU/按钮权限。
+> 菜单 ID 以 `sql/sys_menu.sql` / `sql/star_pivot.sql` 为准（商城父菜单 **5**，子模块 **29~34**）。
 
-### 商品系统 PMS（menu 24~31, 28, 281）
+### 商品系统 PMS（parent 29）
 
-| 菜单 | 中文 | 前端 component | 后端 API | 前端 |
+| 菜单 ID | 中文 | 前端 component | 后端 API | 前端 |
 |---|---|---|---|---|
-| 25 | 分类维护 | `/mall/pms/category/index` | `/mall/category` | ✅ |
-| 26 | 品牌列表 | `/mall/pms/brand/index` | `/mall/brand` | ✅ |
-| 29~31 | 属性分组/规格/销售 | `/mall/pms/group/index` 等 | `/mall/group`、`/mall/attr` | ✅ |
+| 126 | 分类维护 | `/mall/pms/category/index` | `/mall/category` | ✅ |
+| 127 | 品牌列表 | `/mall/pms/brand/index` | `/mall/brand` | ✅ |
+| 138 | 属性分组 | `/mall/pms/group/index` | `/mall/group` | ✅ |
+| 139 | 规格参数 | `/mall/pms/attr/base/index` | `/mall/attr` | ✅ |
+| 140 | 销售属性 | `/mall/pms/attr/sale/index` | `/mall/attr` | ✅ |
 | 141 | spu管理 | `/mall/pms/product/spu/index` | `/mall/product` | ✅ SPU 列表 + 分类树 |
 | 142 | 发布商品 | `/mall/pms/product/publish/index` | — | ✅ 跳转 `/mall/product/add` 发布向导 |
-| 143 | 商品管理 | `/mall/pms/product/manager/index` | `/mall/sku` | ✅ SKU 只读检索（无操作按钮） |
-| 144 | ~~SKU 管理~~ | `/mall/pms/sku/index` | `/mall/sku` | 已隐藏，与 143 合并 |
+| 143 | 商品管理 | `/mall/pms/product/manager/index` | `/mall/sku` | ✅ SKU 只读检索 |
+| 144 | SKU 管理 | `/mall/pms/sku/index` | `/mall/sku` | 已隐藏，与 143 合并 |
 
 动态路由（无菜单）：`/mall/product/add`、`/mall/product/edit/:id` → `pms/product/modules/addSpu`
 
-### 仓储 WMS（menu 131~149, 183~186, 273）
+### 仓储 WMS（parent 30）
 
-| 菜单 | 中文 | 前端 component | 后端 API | 前端 |
+| 菜单 ID | 中文 | 前端 component | 后端 API | 前端 |
 |---|---|---|---|---|
-| 132 | 仓库维护 | `/mall/wms/warehouse/index` | `/mall/wareinfo` | ✅ |
-| 133 | 地区管理 | `/mall/wms/address/index` | `/mall/address` | ✅ |
-| 144 | 商品库存 | `/mall/wms/sku/index` | `/mall/ware-sku` | ✅ |
-| 183 | 库存工作单 | `/mall/wms/task/index` | `/mall/ware-task` | ✅ |
-| 185 | 采购需求 | `/mall/wms/purchaseitem/index` | `/mall/purchase/detail/*` | ✅ |
-| 186 | 采购单 | `/mall/wms/purchaseorder/index` | `/mall/purchase/*` | ✅ |
+| 167 | 仓库维护 | `/mall/wms/warehouse/index` | `/mall/wareinfo` | ✅ |
+| 168 | 地区管理 | `/mall/wms/address/index` | `/mall/address` | ✅ |
+| 169 | 商品库存 | `/mall/wms/sku/index` | `/mall/ware-sku` | ✅ |
+| 170 | 库存工作单 | `/mall/wms/task/index` | `/mall/ware-task` | ✅ |
+| 189 | 采购需求 | `/mall/wms/purchaseitem/index` | `/mall/purchase/detail/*` | ✅ |
+| 190 | 采购单 | `/mall/wms/purchaseorder/index` | `/mall/purchase/*` | ✅ |
 
-### 优惠营销 SMS（menu 187~195）
+### 优惠营销 SMS（parent 31）
 
-| 菜单 | 中文 | 前端 component | 后端 API | 前端 |
+| 菜单 ID | 中文 | 前端 component | 后端 API | 前端 |
 |---|---|---|---|---|
-| 188 | 优惠券 | `/mall/sms/coupon/coupon/index` | `/mall/coupon` | ✅ |
-| 189 | 发放记录 | `/mall/sms/coupon/history/index` | `/mall/coupon-history` | ✅ |
-| 190~195 | 专题/秒杀/积分/满减/会员价 | `/mall/sms/coupon/*/index` | 见 [商城开发事项](./商城开发事项.md) | ✅ |
+| 193 | 优惠券 | `/mall/sms/coupon/coupon/index` | `/mall/coupon` | ✅ |
+| 194 | 发放记录 | `/mall/sms/coupon/history/index` | `/mall/coupon-history` | ✅ |
+| 195 | 专题活动 | `/mall/sms/coupon/subject/index` | `/mall/subject` | ✅ |
+| 196 | 秒杀活动 | `/mall/sms/coupon/seckill/index` | `/mall/seckill` | ✅ |
+| 197 | 积分维护 | `/mall/sms/coupon/bounds/index` | `/mall/bounds` | ✅ |
+| 198 | 满减折扣 | `/mall/sms/coupon/full/index` | `/mall/reduction` | ✅ |
+| 199 | 会员价格 | `/mall/sms/coupon/memberprice/index` | `/mall/memberprice` | ✅ |
+| 200 | 每日秒杀 | `/mall/sms/coupon/seckillsession/index` | `/mall/seckill-session` | ✅ |
 
-### 订单 OMS（menu 196~201）
+### 订单 OMS（parent 32）
 
-| 菜单 | 中文 | 前端 component | 后端 API | 前端 |
+| 菜单 ID | 中文 | 前端 component | 后端 API | 前端 |
 |---|---|---|---|---|
-| 197 | 订单查询 | `/mall/oms/order/order/index` | `/mall/order` | ✅ |
-| 198 | 退货处理 | `/mall/oms/order/return/index` | `/mall/order-return` | ✅ |
-| 199 | 订单设置 | `/mall/oms/order/level/index` | `/mall/order-setting` | ✅ |
-| 200 | 支付流水 | `/mall/oms/order/payment/index` | `/mall/payment` | ✅ |
-| 201 | 退款流水 | `/mall/oms/order/refund/index` | `/mall/refund` | ✅ |
+| 227 | 订单查询 | `/mall/oms/order/order/index` | `/mall/order` | ✅ |
+| 228 | 退货单处理 | `/mall/oms/order/return/index` | `/mall/order-return` | ✅ |
+| 229 | 等级规则 | `/mall/oms/order/level/index` | `/mall/order-setting` | ✅ |
+| 230 | 支付流水 | `/mall/oms/order/payment/index` | `/mall/payment` | ✅ |
+| 231 | 退款流水 | `/mall/oms/order/refund/index` | `/mall/refund` | ✅ 含同步/重试/失败告警 |
 
-### 会员 UMS（menu 202~206）
+退款流水扩展 API：`GET /mall/refund/{id}` · `PUT /mall/refund/{id}/sync` · `PUT /mall/refund/{id}/retry` · `GET /mall/refund/alert/summary` · `POST /mall/refund/{id}/ack-alert`
 
-| 菜单 | 中文 | 前端 component | 后端 API | 前端 |
+### 会员 UMS（parent 33）
+
+| 菜单 ID | 中文 | 前端 component | 后端 API | 前端 |
 |---|---|---|---|---|
-| 203 | 会员列表 | `/mall/ums/member/member/index` | `/mall/member` | ✅ |
-| 204 | 会员等级 | `/mall/ums/member/level/index` | `/mall/member-level` | ✅ |
-| 205 | 积分变化 | `/mall/ums/member/growth/index` | `/mall/member-growth` | ✅ |
-| 206 | 统计信息 | `/mall/ums/member/statistics/index` | `/mall/member-statistics` | ✅ |
+| 239 | 会员列表 | `/mall/ums/member/member/index` | `/mall/member` | ✅ |
+| 240 | 会员等级 | `/mall/ums/member/level/index` | `/mall/member-level` | ✅ |
+| 241 | 积分变化 | `/mall/ums/member/growth/index` | `/mall/member-growth` | ✅ |
+| 242 | 统计信息 | `/mall/ums/member/statistics/index` | `/mall/member-statistics` | ✅ |
+| 271 | 登录日志 | `/mall/ums/member/login-log/index` | `/mall/member-login-log` | ✅ |
+| 272 | 会员收藏 | `/mall/ums/member/collect/index` | `/mall/member-collect` | ✅ |
+| 317 | 收货地址 | `/mall/ums/member/receive-address/index` | `/mall/member-receive-address` | ✅ |
 
-### 内容 CMS（menu 207~210）
+### 内容 CMS（parent 34）
 
-| 菜单 | 中文 | 前端 component | 后端 API | 前端 |
+| 菜单 ID | 中文 | 前端 component | 后端 API | 前端 |
 |---|---|---|---|---|
-| 208 | 首页轮播 | `/mall/cms/content/home/index` | `/mall/home-adv` | ✅ |
-| 209 | 分类热门 | `/mall/cms/content/category/index` | — | ✅（引导至专题活动） |
-| 210 | 评论管理 | `/mall/cms/content/comments/index` | `/mall/comment` | ✅ |
+| 248 | 首页推荐 | `/mall/cms/content/home/index` | `/mall/home-adv` | ✅ |
+| 249 | 分类热门 | `/mall/cms/content/category/index` | — | ✅（引导至专题活动） |
+| 250 | 评论管理 | `/mall/cms/content/comments/index` | `/mall/comment` | ✅ |
 
 ## C 端 Portal
 
 | 路由 | 页面 | API |
 |---|---|---|
 | `/portal` | 首页 | `/portal/home`、`/portal/product/search` |
-| `/portal/product/:id` | 商品详情 | `/portal/product/{id}` |
+| `/portal/search` | 搜索 | `/portal/product/search` |
+| `/portal/product/:id` | 商品详情 | `/portal/product/{id}`、`/portal/comment` |
 | `/portal/cart` | 购物车 | `/portal/cart` |
-| `/portal/checkout` | 结算 | `/portal/order/submit` |
+| `/portal/checkout` | 结算 | `/portal/order/submit`、`/portal/coupon` |
 | `/portal/orders` | 我的订单 | `/portal/order/*` |
-| `/portal/login` | 登录/注册 | `/portal/member` |
+| `/portal/coupons` | 优惠券 | `/portal/coupon` |
+| `/portal/seckill` | 秒杀 | `/portal/seckill` |
+| `/portal/subject` | 专题 | `/portal/subject` |
+| `/portal/account` | 个人中心 | `/portal/member` |
+| `/portal/account/addresses` | 收货地址 | `/portal/address`、`/portal/region/children` |
+| `/portal/account/favorites` | 我的收藏 | `/portal/collect` |
+| `/portal/login` · `/portal/register` | 登录/注册 | `/portal/auth`、`/portal/member` |
 
-前端 API：`star-pivot-ui/src/api/portal/`
+前端 API：`star-pivot-ui/src/api/portal/` · 微信小程序 `star-pivot-mp/` 复用同一套 Portal API（见 [miniprogram.md](./miniprogram.md)）
 
 ## 数据库初始化
 
@@ -123,6 +142,12 @@ mysql -uroot -p star_pivot_ware     < sql/star_pivot_ware.sql
 mysql -uroot -p star_pivot_order    < sql/star_pivot_order.sql
 mysql -uroot -p star_pivot_member   < sql/star_pivot_member.sql
 mysql -uroot -p star_pivot_promotion < sql/star_pivot_promotion.sql
+
+# 3. 可选：仅刷新省市区（约 5.6 万条，省/市/区/乡镇）
+mysql -uroot -p star_pivot_ware < sql/address.sql
+
+# 4. 已有库补丁（退款失败告警字段）
+mysql -uroot -p star_pivot_order < sql/patch_oms_refund_alert_ack.sql
 ```
 
 ## 实体代码生成

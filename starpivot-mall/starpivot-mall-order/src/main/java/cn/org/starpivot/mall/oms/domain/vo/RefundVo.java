@@ -29,6 +29,11 @@ public class RefundVo {
     private Long orderReturnId;
 
     /**
+     * 关联订单号
+     */
+    private String orderSn;
+
+    /**
      * refund
      */
     private BigDecimal refund;

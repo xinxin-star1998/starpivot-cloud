@@ -87,6 +87,10 @@ public class GatewayAuthProperties {
 
             "/api/v1/portal/pay/alipay/notify",
 
+            "/api/v1/portal/pay/wx/notify",
+
+            "/api/v1/portal/pay/wx/refund/notify",
+
             "/**/actuator/**",
 
             "/**/doc.html",

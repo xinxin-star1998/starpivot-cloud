@@ -5,6 +5,7 @@ import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.pay.config.AlipayProperties;
 import cn.org.starpivot.mall.pay.domain.vo.AlipayPagePayVo;
+import cn.org.starpivot.mall.pay.domain.vo.AlipayRefundResult;
 import cn.org.starpivot.mall.pay.service.AlipayPayService;
 import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.portal.PortalConstants;
@@ -12,8 +13,10 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.alipay.api.request.AlipayTradeFastpayRefundQueryRequest;
 import com.alipay.api.request.AlipayTradeRefundRequest;
 import com.alipay.api.response.AlipayTradePagePayResponse;
+import com.alipay.api.response.AlipayTradeFastpayRefundQueryResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -90,9 +93,12 @@ public class AlipayPayServiceImpl implements AlipayPayService {
 
     @Override
     @Transactional(readOnly = true)
-    public String refund(String orderSn, String alipayTradeNo, BigDecimal refundAmount, String outRequestNo) {
+    public AlipayRefundResult refund(String orderSn, String alipayTradeNo, BigDecimal refundAmount, String outRequestNo) {
         if (!isAvailable()) {
             throw new BizException("支付宝未启用，无法原路退款");
+        }
+        if (!StringUtils.hasText(orderSn)) {
+            throw new BizException("商户订单号不能为空");
         }
         if (refundAmount == null || refundAmount.signum() <= 0) {
             throw new BizException("退款金额无效");
@@ -118,12 +124,83 @@ public class AlipayPayServiceImpl implements AlipayPayService {
             if (!response.isSuccess()) {
                 throw new BizException("支付宝退款失败：" + response.getSubMsg());
             }
-            return response.getTradeNo();
+            if (!StringUtils.hasText(response.getFundChange())) {
+                log.warn("Alipay refund missing fund_change, orderSn={}, outRequestNo={}", orderSn, outRequestNo);
+            } else if (!"Y".equalsIgnoreCase(response.getFundChange())
+                    && !"N".equalsIgnoreCase(response.getFundChange())) {
+                throw new BizException("支付宝退款异常：fund_change=" + response.getFundChange());
+            }
+
+            Map<String, Object> raw = new HashMap<>();
+            raw.put("trade_no", response.getTradeNo());
+            raw.put("out_trade_no", response.getOutTradeNo());
+            raw.put("buyer_logon_id", response.getBuyerLogonId());
+            raw.put("fund_change", response.getFundChange());
+            raw.put("refund_fee", response.getRefundFee());
+            raw.put("gmt_refund_pay", response.getGmtRefundPay());
+
+            AlipayRefundResult result = new AlipayRefundResult();
+            result.setTradeNo(response.getTradeNo());
+            result.setFundChange(response.getFundChange());
+            result.setRefundFee(response.getRefundFee());
+            result.setRawResponse(objectMapper.writeValueAsString(raw));
+            return result;
         } catch (BizException ex) {
             throw ex;
         } catch (Exception ex) {
             log.error("Alipay refund failed, orderSn={}, outRequestNo={}", orderSn, outRequestNo, ex);
             throw new BizException("支付宝退款失败：" + ex.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AlipayRefundResult queryRefund(String orderSn, String alipayTradeNo, String outRequestNo) {
+        if (!isAvailable()) {
+            throw new BizException("支付宝未启用，无法查询退款");
+        }
+        if (!StringUtils.hasText(outRequestNo)) {
+            throw new BizException("退款请求号不能为空");
+        }
+        if (!StringUtils.hasText(alipayTradeNo) && !StringUtils.hasText(orderSn)) {
+            throw new BizException("商户订单号或支付宝交易号不能为空");
+        }
+        try {
+            AlipayClient client = buildClient();
+            AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
+            Map<String, Object> biz = new HashMap<>();
+            if (StringUtils.hasText(alipayTradeNo)) {
+                biz.put("trade_no", alipayTradeNo);
+            } else {
+                biz.put("out_trade_no", orderSn);
+            }
+            biz.put("out_request_no", outRequestNo);
+            request.setBizContent(objectMapper.writeValueAsString(biz));
+
+            AlipayTradeFastpayRefundQueryResponse response = client.execute(request);
+            if (!response.isSuccess()) {
+                throw new BizException("支付宝退款查询失败：" + response.getSubMsg());
+            }
+
+            Map<String, Object> raw = new HashMap<>();
+            raw.put("trade_no", response.getTradeNo());
+            raw.put("out_trade_no", response.getOutTradeNo());
+            raw.put("out_request_no", response.getOutRequestNo());
+            raw.put("refund_status", response.getRefundStatus());
+            raw.put("refund_amount", response.getRefundAmount());
+            raw.put("total_amount", response.getTotalAmount());
+
+            AlipayRefundResult result = new AlipayRefundResult();
+            result.setTradeNo(response.getTradeNo());
+            result.setFundChange(response.getRefundStatus());
+            result.setRefundFee(response.getRefundAmount());
+            result.setRawResponse(objectMapper.writeValueAsString(raw));
+            return result;
+        } catch (BizException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Alipay refund query failed, orderSn={}, outRequestNo={}", orderSn, outRequestNo, ex);
+            throw new BizException("支付宝退款查询失败：" + ex.getMessage());
         }
     }
 

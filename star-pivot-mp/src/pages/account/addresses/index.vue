@@ -35,7 +35,7 @@
       </view>
       <view class="field">
         <text class="label">所在地区</text>
-        <RegionPicker v-model="region" />
+        <RegionPicker ref="regionPickerRef" v-model="region" />
       </view>
       <view class="field">
         <text class="label">详细地址</text>
@@ -55,10 +55,10 @@
 
 <script setup lang="ts">
 import {onShow} from '@dcloudio/uni-app'
-import {reactive, ref} from 'vue'
+import {nextTick, reactive, ref} from 'vue'
 import {fetchAddressList, fetchAddressRemove, fetchAddressSave, fetchAddressUpdate} from '@/api/address'
 import type {PortalAddress, PortalAddressSavePayload} from '@/api/types'
-import RegionPicker from '@/components/region-picker.vue'
+import RegionPicker, {type RegionNames} from '@/components/region-picker.vue'
 import {isLogin} from '@/stores/member'
 
 const addresses = ref<PortalAddress[]>([])
@@ -76,7 +76,8 @@ const emptyForm = (): PortalAddressSavePayload => ({
 })
 
 const form = reactive<PortalAddressSavePayload>(emptyForm())
-const region = ref({ province: '', city: '', region: '' })
+const region = ref<RegionNames>({ province: '', city: '', region: '' })
+const regionPickerRef = ref<InstanceType<typeof RegionPicker>>()
 
 function syncRegionToForm() {
   form.province = region.value.province
@@ -84,7 +85,7 @@ function syncRegionToForm() {
   form.region = region.value.region
 }
 
-function openForm(item?: PortalAddress) {
+async function openForm(item?: PortalAddress) {
   if (item) {
     Object.assign(form, {
       id: item.id,
@@ -106,6 +107,12 @@ function openForm(item?: PortalAddress) {
     region.value = { province: '', city: '', region: '' }
   }
   showForm.value = true
+  await nextTick()
+  if (item?.province?.trim()) {
+    await regionPickerRef.value?.restoreFromNames(region.value)
+  } else {
+    regionPickerRef.value?.resetPickerState()
+  }
 }
 
 function onDefaultChange(e: { detail: { value: boolean } }) {

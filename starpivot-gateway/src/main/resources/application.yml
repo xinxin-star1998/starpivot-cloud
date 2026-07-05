@@ -48,7 +48,7 @@ spring:
         - id: starpivot-mall-member
           uri: lb://starpivot-mall-member
           predicates:
-            - Path=/api/${starpivot.api.version}/portal/member/**,/api/${starpivot.api.version}/portal/auth/**,/api/${starpivot.api.version}/portal/address/**,/api/${starpivot.api.version}/portal/collect/**,/api/${starpivot.api.version}/mall/member/**,/api/${starpivot.api.version}/mall/member-level/**,/api/${starpivot.api.version}/mall/member-growth/**,/api/${starpivot.api.version}/mall/member-statistics/**,/api/${starpivot.api.version}/mall/member-collect/**,/api/${starpivot.api.version}/mall/member-login-log/**
+            - Path=/api/${starpivot.api.version}/portal/member/**,/api/${starpivot.api.version}/portal/auth/**,/api/${starpivot.api.version}/portal/address/**,/api/${starpivot.api.version}/portal/collect/**,/api/${starpivot.api.version}/mall/member/**,/api/${starpivot.api.version}/mall/member-level/**,/api/${starpivot.api.version}/mall/member-growth/**,/api/${starpivot.api.version}/mall/member-statistics/**,/api/${starpivot.api.version}/mall/member-collect/**,/api/${starpivot.api.version}/mall/member-login-log/**,/api/${starpivot.api.version}/mall/member-receive-address/**
         # 商城商品服务（PMS + ES + C 端商品/评价/图片）
         - id: starpivot-mall-product
           uri: lb://starpivot-mall-product

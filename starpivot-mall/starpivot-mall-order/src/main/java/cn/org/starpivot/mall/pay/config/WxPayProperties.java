@@ -36,6 +36,9 @@ public class WxPayProperties {
     /** 异步通知地址（须公网可达，经网关） */
     private String notifyUrl;
 
+    /** 退款异步通知地址（须公网可达，经网关）；为空则不向微信注册退款回调 */
+    private String refundNotifyUrl;
+
     public boolean isConfigured() {
         return enabled
                 && StringUtils.hasText(appId)

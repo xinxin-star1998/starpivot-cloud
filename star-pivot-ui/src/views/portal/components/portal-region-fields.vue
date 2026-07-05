@@ -45,12 +45,13 @@ defineOptions({ name: 'PortalRegionFields' })
     onProvinceChange,
     onCityChange,
     onDistrictChange,
-    resetRegionPicker
+    resetRegionPicker,
+    restoreRegionFromNames
   } = usePortalRegionPicker(props.form)
 
   onMounted(() => {
     loadProvinces()
   })
 
-  defineExpose({ resetRegionPicker, loadProvinces })
+  defineExpose({ resetRegionPicker, restoreRegionFromNames, loadProvinces })
 </script>

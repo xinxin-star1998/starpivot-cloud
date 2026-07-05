@@ -1,6 +1,7 @@
 package cn.org.starpivot.common.storage;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.util.UUID;
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(FileStorageService.class)
 public class FileCenterUploadHelper {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy/MM/dd");

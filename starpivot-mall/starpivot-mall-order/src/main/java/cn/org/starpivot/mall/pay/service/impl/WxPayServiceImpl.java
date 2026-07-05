@@ -4,9 +4,11 @@ import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.common.MemberFeignSupport;
 import cn.org.starpivot.mall.oms.entity.OmsOrder;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
+import cn.org.starpivot.mall.oms.service.OmsRefundNotifyService;
 import cn.org.starpivot.mall.pay.config.WxPayProperties;
 import cn.org.starpivot.mall.pay.domain.vo.WxJsapiPayVo;
 import cn.org.starpivot.mall.pay.domain.vo.WxNativePayVo;
+import cn.org.starpivot.mall.pay.domain.vo.WxRefundResult;
 import cn.org.starpivot.mall.pay.service.PortalOrderPayService;
 import cn.org.starpivot.mall.pay.service.WxPayService;
 import cn.org.starpivot.mall.portal.PortalConstants;
@@ -14,6 +16,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wechat.pay.java.core.Config;
 import com.wechat.pay.java.core.RSAAutoCertificateConfig;
+import com.wechat.pay.java.core.exception.ServiceException;
 import com.wechat.pay.java.core.notification.NotificationConfig;
 import com.wechat.pay.java.core.notification.NotificationParser;
 import com.wechat.pay.java.core.notification.RequestParam;
@@ -25,12 +28,20 @@ import com.wechat.pay.java.service.payments.nativepay.NativePayService;
 import com.wechat.pay.java.service.payments.nativepay.model.Amount;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayRequest;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayResponse;
+import com.wechat.pay.java.service.refund.RefundService;
+import com.wechat.pay.java.service.refund.model.AmountReq;
+import com.wechat.pay.java.service.refund.model.CreateRequest;
+import com.wechat.pay.java.service.refund.model.QueryByOutRefundNoRequest;
+import com.wechat.pay.java.service.refund.model.Refund;
+import com.wechat.pay.java.service.refund.model.RefundNotification;
+import com.wechat.pay.java.service.refund.model.Status;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,10 +57,16 @@ public class WxPayServiceImpl implements WxPayService {
     private final PortalOrderPayService portalOrderPayService;
     private final MemberFeignSupport memberFeignSupport;
     private final ObjectMapper objectMapper;
+    private final OmsRefundNotifyService omsRefundNotifyService;
 
     @Override
     public boolean isAvailable() {
         return wxPayProperties.isUsable();
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return wxPayProperties.isConfigured();
     }
 
     @Override
@@ -171,6 +188,112 @@ public class WxPayServiceImpl implements WxPayService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public WxRefundResult refund(
+            String orderSn,
+            String wxTransactionId,
+            BigDecimal refundAmount,
+            BigDecimal orderPayAmount,
+            String outRefundNo) {
+        if (!isConfigured()) {
+            throw new BizException("微信支付未配置，无法原路退款");
+        }
+        if (!StringUtils.hasText(orderSn)) {
+            throw new BizException("商户订单号不能为空");
+        }
+        if (refundAmount == null || refundAmount.signum() <= 0) {
+            throw new BizException("退款金额无效");
+        }
+        if (orderPayAmount == null || orderPayAmount.signum() <= 0) {
+            throw new BizException("订单原支付金额无效");
+        }
+        if (!StringUtils.hasText(outRefundNo)) {
+            throw new BizException("退款请求号不能为空");
+        }
+        try {
+            RefundService refundService = new RefundService.Builder().config(buildConfig()).build();
+            CreateRequest request = new CreateRequest();
+            if (StringUtils.hasText(wxTransactionId)) {
+                request.setTransactionId(wxTransactionId);
+            } else {
+                request.setOutTradeNo(orderSn);
+            }
+            request.setOutRefundNo(outRefundNo);
+            request.setReason("商城退货退款");
+            if (StringUtils.hasText(wxPayProperties.getRefundNotifyUrl())) {
+                request.setNotifyUrl(wxPayProperties.getRefundNotifyUrl());
+            }
+
+            AmountReq amount = new AmountReq();
+            amount.setCurrency("CNY");
+            amount.setRefund((long) toFen(refundAmount));
+            amount.setTotal((long) toFen(orderPayAmount));
+            request.setAmount(amount);
+
+            Refund response = refundService.create(request);
+            if (response == null) {
+                throw new BizException("微信退款失败：无响应");
+            }
+            Status status = response.getStatus();
+            if (status != Status.SUCCESS && status != Status.PROCESSING) {
+                throw new BizException("微信退款失败：status=" + (status != null ? status.name() : "UNKNOWN"));
+            }
+
+            WxRefundResult result = new WxRefundResult();
+            result.setRefundId(response.getRefundId());
+            result.setOutRefundNo(response.getOutRefundNo());
+            result.setTransactionId(response.getTransactionId());
+            result.setStatus(status != null ? status.name() : null);
+            result.setRawResponse(objectMapper.writeValueAsString(response));
+            return result;
+        } catch (BizException ex) {
+            throw ex;
+        } catch (ServiceException ex) {
+            log.error("Wx refund service failed, orderSn={}, outRefundNo={}", orderSn, outRefundNo, ex);
+            throw new BizException("微信退款失败：" + ex.getErrorMessage());
+        } catch (Exception ex) {
+            log.error("Wx refund failed, orderSn={}, outRefundNo={}", orderSn, outRefundNo, ex);
+            throw new BizException("微信退款失败：" + ex.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WxRefundResult queryRefund(String outRefundNo) {
+        if (!isConfigured()) {
+            throw new BizException("微信支付未配置，无法查询退款");
+        }
+        if (!StringUtils.hasText(outRefundNo)) {
+            throw new BizException("退款请求号不能为空");
+        }
+        try {
+            RefundService refundService = new RefundService.Builder().config(buildConfig()).build();
+            QueryByOutRefundNoRequest request = new QueryByOutRefundNoRequest();
+            request.setOutRefundNo(outRefundNo);
+            Refund response = refundService.queryByOutRefundNo(request);
+            if (response == null) {
+                throw new BizException("微信退款查询失败：无响应");
+            }
+            Status status = response.getStatus();
+            WxRefundResult result = new WxRefundResult();
+            result.setRefundId(response.getRefundId());
+            result.setOutRefundNo(response.getOutRefundNo());
+            result.setTransactionId(response.getTransactionId());
+            result.setStatus(status != null ? status.name() : null);
+            result.setRawResponse(objectMapper.writeValueAsString(response));
+            return result;
+        } catch (BizException ex) {
+            throw ex;
+        } catch (ServiceException ex) {
+            log.error("Wx refund query service failed, outRefundNo={}", outRefundNo, ex);
+            throw new BizException("微信退款查询失败：" + ex.getErrorMessage());
+        } catch (Exception ex) {
+            log.error("Wx refund query failed, outRefundNo={}", outRefundNo, ex);
+            throw new BizException("微信退款查询失败：" + ex.getMessage());
+        }
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public String handleNotify(HttpServletRequest request, String body) {
         if (!wxPayProperties.isConfigured()) {
@@ -213,6 +336,40 @@ public class WxPayServiceImpl implements WxPayService {
             return successBody();
         } catch (Exception ex) {
             log.error("Wx notify handle failed", ex);
+            return failureBody("HANDLE_ERROR");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String handleRefundNotify(HttpServletRequest request, String body) {
+        if (!wxPayProperties.isConfigured()) {
+            return failureBody("NOT_CONFIGURED");
+        }
+        try {
+            RequestParam requestParam = new RequestParam.Builder()
+                    .serialNumber(request.getHeader("Wechatpay-Serial"))
+                    .nonce(request.getHeader("Wechatpay-Nonce"))
+                    .signature(request.getHeader("Wechatpay-Signature"))
+                    .timestamp(request.getHeader("Wechatpay-Timestamp"))
+                    .signType(request.getHeader("Wechatpay-Signature-Type"))
+                    .body(body)
+                    .build();
+
+            NotificationParser parser = new NotificationParser((NotificationConfig) buildConfig());
+            RefundNotification notification = parser.parse(requestParam, RefundNotification.class);
+            if (notification == null) {
+                return successBody();
+            }
+
+            Status refundStatus = notification.getRefundStatus();
+            String statusName = refundStatus != null ? refundStatus.name() : null;
+            String callbackJson = objectMapper.writeValueAsString(notification);
+            omsRefundNotifyService.handleWxRefundNotify(
+                    notification.getOutRefundNo(), statusName, callbackJson);
+            return successBody();
+        } catch (Exception ex) {
+            log.error("Wx refund notify handle failed", ex);
             return failureBody("HANDLE_ERROR");
         }
     }

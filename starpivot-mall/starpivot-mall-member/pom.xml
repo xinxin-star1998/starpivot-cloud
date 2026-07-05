@@ -21,6 +21,10 @@
         </dependency>
         <dependency>
             <groupId>cn.org.starpivot</groupId>
+            <artifactId>starpivot-mq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.org.starpivot</groupId>
             <artifactId>starpivot-mall-common</artifactId>
         </dependency>
         <dependency>

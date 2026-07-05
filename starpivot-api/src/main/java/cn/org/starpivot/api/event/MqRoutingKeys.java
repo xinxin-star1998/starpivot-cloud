@@ -16,6 +16,18 @@ public final class MqRoutingKeys {
     public static final String APPROVAL_INSTANCE_FINISHED_MALL_PREFIX =
             APPROVAL_INSTANCE_FINISHED + ".mall.";
 
+    /** 商城订单支付成功（本地消息表 Outbox → ware 扣库存） */
+    public static final String MALL_ORDER_PAID = "mall.order.paid";
+
+    /** 商城订单支付成功 — 优惠券核销确认 */
+    public static final String MALL_ORDER_PAID_COUPON = "mall.order.paid.coupon";
+
+    /** 商城订单支付成功 — 会员积分/成长值发放 */
+    public static final String MALL_ORDER_PAID_REWARD = "mall.order.paid.reward";
+
+    /** 待付款订单超时关单（延迟队列到期后 DLX 路由） */
+    public static final String MALL_ORDER_CLOSE = "mall.order.close";
+
     /**
      * 商城审批完结 routing key，按 bizType 路由到对应微服务队列。
      *

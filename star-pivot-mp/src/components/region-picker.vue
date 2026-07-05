@@ -25,20 +25,22 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch} from 'vue'
+import {onMounted, ref} from 'vue'
 import {fetchRegionChildren} from '@/api/region'
 import type {PortalRegion} from '@/api/types'
 
+export interface RegionNames {
+  province: string
+  city: string
+  region: string
+}
+
 const props = defineProps<{
-  modelValue: {
-    province: string
-    city: string
-    region: string
-  }
+  modelValue: RegionNames
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: { province: string; city: string; region: string }]
+  'update:modelValue': [value: RegionNames]
 }>()
 
 const provinces = ref<PortalRegion[]>([])
@@ -47,6 +49,12 @@ const districts = ref<PortalRegion[]>([])
 
 const provinceCode = ref('')
 const cityCode = ref('')
+
+function findRegionByName(list: PortalRegion[], name: string) {
+  const trimmed = name.trim()
+  if (!trimmed) return undefined
+  return list.find((item) => item.name === trimmed)
+}
 
 async function loadProvinces() {
   provinces.value = await fetchRegionChildren('0')
@@ -60,11 +68,43 @@ async function loadDistricts(code: string) {
   districts.value = code ? await fetchRegionChildren(code) : []
 }
 
+function resetPickerState() {
+  provinceCode.value = ''
+  cityCode.value = ''
+  cities.value = []
+  districts.value = []
+}
+
+/** 编辑地址：按名称反查并加载市/区列表，便于 picker 正确联动 */
+async function restoreFromNames(names: RegionNames) {
+  resetPickerState()
+  if (!names.province?.trim()) return
+
+  if (!provinces.value.length) {
+    await loadProvinces()
+  }
+
+  const province = findRegionByName(provinces.value, names.province)
+  if (!province?.code) return
+
+  provinceCode.value = province.code
+  await loadCities(province.code)
+
+  if (!names.city?.trim()) return
+
+  const city = findRegionByName(cities.value, names.city)
+  if (!city?.code) return
+
+  cityCode.value = city.code
+  await loadDistricts(city.code)
+}
+
 function onProvinceChange(e: { detail: { value: string } }) {
   const idx = Number(e.detail.value)
   const item = provinces.value[idx]
   if (!item?.name) return
   provinceCode.value = item.code || ''
+  cityCode.value = ''
   emit('update:modelValue', { province: item.name, city: '', region: '' })
   loadCities(provinceCode.value)
   districts.value = []
@@ -86,19 +126,9 @@ function onDistrictChange(e: { detail: { value: string } }) {
   emit('update:modelValue', { ...props.modelValue, region: item.name })
 }
 
-watch(
-  () => props.modelValue.province,
-  async (name) => {
-    if (!name || provinceCode.value) return
-    const found = provinces.value.find((p) => p.name === name)
-    if (found?.code) {
-      provinceCode.value = found.code
-      await loadCities(found.code)
-    }
-  }
-)
-
 onMounted(loadProvinces)
+
+defineExpose({ restoreFromNames, resetPickerState })
 </script>
 
 <style scoped lang="scss">

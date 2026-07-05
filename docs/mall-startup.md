@@ -33,6 +33,9 @@ promotion → member, product, order（购物车/秒杀下单）
 .\sql\import_mall_databases.ps1
 ```
 
+可选：仅刷新省市区数据 → `mysql ... star_pivot_ware < sql/address.sql`（约 5.6 万条）。  
+已有订单库若缺退款告警字段 → `sql/patch_oms_refund_alert_ack.sql`。
+
 3. **环境变量**（PowerShell 示例）：
 
 ```powershell
