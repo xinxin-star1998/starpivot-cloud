@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.ai.mapper.AiKnowledgeChunkMapper">
+
+    <select id="searchFulltext" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
+        SELECT c.chunk_id   AS chunkId,
+               c.doc_id     AS docId,
+               c.kb_id      AS kbId,
+               d.title      AS docTitle,
+               c.content    AS content,
+               MATCH(c.content) AGAINST(#{query} IN NATURAL LANGUAGE MODE) AS score
+        FROM ai_knowledge_chunk c
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id AND d.del_flag = '0' AND d.status = '0'
+                 INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
+        WHERE MATCH(c.content) AGAINST(#{query} IN NATURAL LANGUAGE MODE)
+        ORDER BY score DESC
+        LIMIT #{topK}
+    </select>
+
+    <select id="searchLike" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
+        SELECT c.chunk_id AS chunkId,
+               c.doc_id   AS docId,
+               c.kb_id    AS kbId,
+               d.title    AS docTitle,
+               c.content  AS content,
+               1          AS score
+        FROM ai_knowledge_chunk c
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id AND d.del_flag = '0' AND d.status = '0'
+                 INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
+        WHERE c.content LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY c.chunk_id DESC
+        LIMIT #{topK}
+    </select>
+
+    <select id="listEmbeddableChunks" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
+        SELECT c.chunk_id        AS chunkId,
+               c.doc_id          AS docId,
+               c.kb_id           AS kbId,
+               d.title           AS docTitle,
+               c.content         AS content,
+               c.page_num        AS pageNum,
+               c.embedding_json  AS embeddingJson,
+               0                 AS score
+        FROM ai_knowledge_chunk c
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id AND d.del_flag = '0' AND d.status = '0'
+                 INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
+        WHERE c.embedding_json IS NOT NULL
+        ORDER BY c.chunk_id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

@@ -44,7 +44,7 @@ export const headerBarConfig: HeaderBarFeatureConfig = {
   },
   chat: {
     enabled: true,
-    description: '聊天功能，提供实时沟通'
+    description: 'AI 智能对话，支持多轮会话与流式输出'
   },
   language: {
     enabled: true,

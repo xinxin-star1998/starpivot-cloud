@@ -266,4 +266,14 @@ public interface FileStorageService {
     default void deleteObject(String objectName) throws Exception {
         // 默认空实现，子类按需覆盖
     }
+
+    /**
+     * 下载存储对象字节内容。
+     *
+     * @param objectName 对象路径
+     * @return 文件字节
+     */
+    default byte[] downloadObject(String objectName) throws Exception {
+        throw new UnsupportedOperationException("当前存储驱动不支持 downloadObject");
+    }
 }

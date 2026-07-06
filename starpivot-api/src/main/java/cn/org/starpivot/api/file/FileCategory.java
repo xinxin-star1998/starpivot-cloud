@@ -17,6 +17,7 @@ public enum FileCategory {
     GOODS("GOODS", "商品素材", "file/goods/", 7L),
     FINANCE("FINANCE", "财务单据", "file/finance/", 8L),
     HR("HR", "人事档案", "file/hr/", 9L),
+    AI_KNOWLEDGE("AI_KNOWLEDGE", "AI知识库", "file/ai-knowledge/", 11L),
     OTHER("OTHER", "其他附件", "file/other/", 10L);
 
     private final String code;

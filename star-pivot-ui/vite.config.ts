@@ -188,10 +188,14 @@ export default ({ mode }: { mode: string }) => {
       preprocessorOptions: {
         // sass variable and mixin
         scss: {
-          additionalData: `
-            @use "@styles/core/el-light.scss" as *; 
-            @use "@styles/core/mixin.scss" as *;
-          `
+          additionalData: (content, filename) => {
+            const normalizedPath = filename.replace(/\\/g, '/')
+            // 跳过 node_modules，避免 Element Plus 源码中 $badge 等变量重复定义
+            if (normalizedPath.includes('/node_modules/')) {
+              return content
+            }
+            return `@use "@styles/core/el-light.scss" as *;\n@use "@styles/core/mixin.scss" as *;\n${content}`
+          }
         }
       },
       postcss: {

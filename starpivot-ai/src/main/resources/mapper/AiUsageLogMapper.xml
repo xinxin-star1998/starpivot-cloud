@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.org.starpivot.ai.mapper.AiUsageLogMapper">
+
+    <select id="selectSummary" resultType="cn.org.starpivot.ai.domain.vo.AiUsageSummaryVo">
+        SELECT COUNT(1) AS totalRequests,
+               COALESCE(SUM(total_tokens), 0) AS totalTokens,
+               COALESCE(SUM(CASE WHEN success = '0' THEN 1 ELSE 0 END), 0) AS successRequests,
+               COALESCE(SUM(CASE WHEN success = '1' THEN 1 ELSE 0 END), 0) AS failedRequests,
+               COALESCE(AVG(latency_ms), 0) AS avgLatencyMs,
+               COALESCE(SUM(prompt_tokens), 0) AS promptTokens,
+               COALESCE(SUM(completion_tokens), 0) AS completionTokens
+        FROM ai_usage_log
+        <where>
+            <if test="beginTime != null and beginTime != ''">
+                AND create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

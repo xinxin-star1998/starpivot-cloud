@@ -555,6 +555,10 @@ const api = {
   del<T>(config: ExtendedAxiosRequestConfig) {
     return executeRequest<T>({ ...config, method: 'DELETE' })
   },
+  /** {@link del} 的别名，兼容 axios 风格调用 */
+  delete<T>(config: ExtendedAxiosRequestConfig) {
+    return executeRequest<T>({ ...config, method: 'DELETE' })
+  },
   request<T>(config: ExtendedAxiosRequestConfig) {
     const method = (config.method || 'GET').toUpperCase()
     if (method === 'GET') {

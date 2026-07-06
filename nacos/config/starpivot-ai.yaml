@@ -1,0 +1,76 @@
+# starpivot-ai 专属配置
+# Nacos Data ID: starpivot-ai.yaml  |  Group: DEFAULT_GROUP
+#
+# 推荐：对话用 DeepSeek，RAG 向量用阿里云 DashScope（text-embedding-v3）
+# 两者可共用 spring.ai.openai.api-key，也可分别配置 embedding.api-key
+spring:
+  ai:
+    openai:
+      # 对话模型（DeepSeek / OpenAI 兼容）
+      base-url: ${AI_BASE_URL:https://api.deepseek.com}
+      api-key: ${AI_API_KEY:}
+      chat:
+        options:
+          model: ${AI_MODEL:deepseek-chat}
+          temperature: 0.7
+          max-tokens: 4096
+      # Embedding 单独 endpoint（覆盖上面的 base-url；api-key 不填则继承 spring.ai.openai.api-key）
+      embedding:
+        base-url: ${AI_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        api-key: ${AI_EMBEDDING_API_KEY:}
+        options:
+          model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
+          dimensions: 1024
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:root}
+  datasource:
+    url: ${AI_DB_URL:jdbc:mysql://127.0.0.1:3307/star_pivot?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+starpivot:
+  security:
+    authority-strategy: menu-permission
+  ai:
+    system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
+    max-memory-messages: 30
+    bot-name: ${AI_BOT_NAME:AI 助手}
+    bot-avatar: ${AI_BOT_AVATAR:}
+    default-model: ${AI_MODEL:deepseek-chat}
+    default-temperature: 0.7
+    welcome-message: ${AI_WELCOME_MESSAGE:你好！我是 **{botName}**，可以帮你写作、翻译、编程、分析等各类问题，有什么我可以帮你的吗？}
+    system-prompt: |
+      你是一个智能 AI 助手，能够进行自然、流畅的多轮对话。
+      你可以帮助用户完成写作、翻译、编程、分析、头脑风暴、学习辅导等广泛任务。
+      请根据用户问题选择合适的方式回答：简洁问题简洁答，复杂问题条理清晰。
+      使用 Markdown 格式化代码、列表和重点内容；不确定时请诚实说明，不要编造。
+    models:
+      - id: deepseek-chat
+        label: DeepSeek Chat
+      - id: deepseek-reasoner
+        label: DeepSeek Reasoner
+    rag:
+      enabled: false
+      vector-top-k: 20
+      fulltext-top-k: 20
+      retrieve-top-k: 20
+      min-vector-score: 0.3
+      embedding-cache-ttl: 7d
+      hyde-enabled: false
+      reranker:
+        enabled: false
+        endpoint: ${AI_RERANKER_ENDPOINT:https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank}
+        api-key: ${AI_RERANKER_API_KEY:}
+        model: ${AI_RERANKER_MODEL:gte-rerank}
+        timeout-ms: 800
+
+logging:
+  level:
+    cn.org.starpivot.ai: INFO

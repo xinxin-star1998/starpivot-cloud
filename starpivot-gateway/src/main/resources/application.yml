@@ -79,3 +79,8 @@ spring:
           uri: lb://starpivot-tms
           predicates:
             - Path=/api/${starpivot.api.version}/tms/**
+        # AI 对话
+        - id: starpivot-ai
+          uri: lb://starpivot-ai
+          predicates:
+            - Path=/api/${starpivot.api.version}/ai/**

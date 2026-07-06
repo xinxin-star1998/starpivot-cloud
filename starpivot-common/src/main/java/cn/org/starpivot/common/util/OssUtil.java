@@ -333,5 +333,21 @@ public class OssUtil {
         }
         ossClient.deleteObject(bucketName(), objectName);
     }
+
+    /**
+     * 下载 OSS 对象字节内容。
+     *
+     * @param objectName 对象路径
+     * @return 文件字节
+     */
+    public byte[] downloadObject(String objectName) throws Exception {
+        if (!StringUtils.hasText(objectName) || objectName.contains("..") || objectName.startsWith("/")) {
+            throw new IllegalArgumentException("无效的对象路径");
+        }
+        try (OSSObject ossObject = ossClient.getObject(bucketName(), objectName);
+             java.io.InputStream inputStream = ossObject.getObjectContent()) {
+            return inputStream.readAllBytes();
+        }
+    }
 }
 

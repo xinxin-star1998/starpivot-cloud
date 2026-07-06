@@ -42,6 +42,7 @@ import {resetRouterState} from '@/router/guards/dynamicRouteGuard'
 import {useMenuStore} from './menu'
 import {StorageConfig} from '@/utils/storage/storage-config'
 import {logger} from '@/utils/sys/logger'
+import {clearAiSessionStorage} from '@/utils/ai/session-storage'
 
 /**
  * 清理 Pinia 持久化存储（只清登录态相关）
@@ -222,6 +223,7 @@ export const useUserStore = defineStore(
       clearAuthRelatedPersistedStorage()
       // 移除iframe路由缓存
       sessionStorage.removeItem('iframeRoutes')
+      clearAiSessionStorage()
       // 重置路由状态
       resetRouterState(500)
       // 跳转到登录页，携带当前路由作为 redirect 参数
