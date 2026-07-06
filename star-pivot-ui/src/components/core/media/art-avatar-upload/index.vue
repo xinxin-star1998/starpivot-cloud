@@ -121,7 +121,6 @@ import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/os
       const presigned = response?.presignedUrl ?? response?.data?.presignedUrl
       if (presigned) {
         imageUrl.value = presigned
-        emit('update:modelValue', presigned)
       } else {
         imageUrl.value = ''
       }

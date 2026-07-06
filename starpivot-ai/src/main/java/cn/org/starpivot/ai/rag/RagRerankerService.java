@@ -32,6 +32,9 @@ public class RagRerankerService {
     @Value("${spring.ai.openai.api-key:}")
     private String openAiApiKey;
 
+    private volatile WebClient rerankWebClient;
+    private volatile String rerankClientKey;
+
     public boolean isEnabled() {
         AiProperties.RerankerProperties reranker = aiProperties.getRag().getReranker();
         return reranker.isEnabled()
@@ -66,11 +69,7 @@ public class RagRerankerService {
         request.setInput(new RerankInput(question, docs));
         request.setParameters(new RerankParams(topN, false));
 
-        WebClient client = webClientBuilder
-                .baseUrl(config.getEndpoint())
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + resolveApiKey(config))
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+        WebClient client = getRerankWebClient(config);
 
         RerankResponse response = client.post()
                 .bodyValue(request)
@@ -94,6 +93,25 @@ public class RagRerankerService {
 
         log.info("[Reranker] reranked {} -> {}", candidates.size(), reranked.size());
         return reranked;
+    }
+
+    private WebClient getRerankWebClient(AiProperties.RerankerProperties config) {
+        String clientKey = config.getEndpoint() + "|" + resolveApiKey(config);
+        WebClient cached = rerankWebClient;
+        if (cached != null && clientKey.equals(rerankClientKey)) {
+            return cached;
+        }
+        synchronized (this) {
+            if (rerankWebClient == null || !clientKey.equals(rerankClientKey)) {
+                rerankWebClient = webClientBuilder
+                        .baseUrl(config.getEndpoint())
+                        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + resolveApiKey(config))
+                        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .build();
+                rerankClientKey = clientKey;
+            }
+            return rerankWebClient;
+        }
     }
 
     private String resolveApiKey(AiProperties.RerankerProperties reranker) {

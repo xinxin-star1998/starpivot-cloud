@@ -33,22 +33,30 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
         if (!StringUtils.hasText(conversationId)) {
             return;
         }
-        List<Message> trimmed = trimMessages(messages);
-        aiChatMessageMapper.delete(new LambdaQueryWrapper<AiChatMessage>()
-                .eq(AiChatMessage::getConversationId, conversationId));
-
-        LocalDateTime now = LocalDateTime.now();
-        for (int i = 0; i < trimmed.size(); i++) {
-            Message message = trimmed.get(i);
-            AiChatMessage entity = new AiChatMessage();
-            entity.setConversationId(conversationId);
-            entity.setRole(message.getMessageType().name());
-            entity.setContent(message.getText());
-            entity.setSortOrder(i);
-            entity.setCreateTime(now);
-            aiChatMessageMapper.insert(entity);
+        List<Message> incoming = trimMessages(messages);
+        if (incoming.isEmpty()) {
+            deleteByConversationId(conversationId);
+            return;
         }
-        chatSessionRepository.syncMessageStats(conversationId, trimmed.size());
+
+        List<AiChatMessage> existingRecords = loadRecords(conversationId);
+        ChatMemorySyncLogic.Plan plan = ChatMemorySyncLogic.plan(
+                ChatHistoryConverter.toSnapshots(existingRecords),
+                ChatHistoryConverter.toSnapshotsFromMessages(incoming));
+
+        switch (plan.mode()) {
+            case NOOP -> chatSessionRepository.syncMessageStats(conversationId, existingRecords.size());
+            case APPEND -> {
+                appendMessages(conversationId, incoming.subList(plan.appendFromIndex(), incoming.size()), existingRecords);
+                trimOldestIfNeeded(conversationId);
+                chatSessionRepository.syncMessageStats(conversationId, countRecords(conversationId));
+            }
+            case TRUNCATE -> {
+                truncateTail(conversationId, existingRecords, plan.truncateToSize());
+                chatSessionRepository.syncMessageStats(conversationId, plan.truncateToSize());
+            }
+            case REPLACE -> replaceAll(conversationId, incoming);
+        }
     }
 
     @Override
@@ -57,11 +65,7 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
         if (!StringUtils.hasText(conversationId)) {
             return List.of();
         }
-        List<AiChatMessage> records = aiChatMessageMapper.selectList(new LambdaQueryWrapper<AiChatMessage>()
-                .eq(AiChatMessage::getConversationId, conversationId)
-                .orderByAsc(AiChatMessage::getSortOrder)
-                .orderByAsc(AiChatMessage::getMessageId));
-        return toMessages(trimToEffectiveLimit(records));
+        return toMessages(trimToEffectiveLimit(loadRecords(conversationId)));
     }
 
     @Override
@@ -92,10 +96,81 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
         if (!StringUtils.hasText(conversationId)) {
             return List.of();
         }
+        return loadRecords(conversationId);
+    }
+
+    private void appendMessages(
+            String conversationId, List<Message> delta, List<AiChatMessage> existingRecords) {
+        if (delta.isEmpty()) {
+            return;
+        }
+        int nextSortOrder = existingRecords.isEmpty()
+                ? 0
+                : existingRecords.get(existingRecords.size() - 1).getSortOrder() + 1;
+        LocalDateTime now = LocalDateTime.now();
+        for (int i = 0; i < delta.size(); i++) {
+            Message message = delta.get(i);
+            AiChatMessage entity = new AiChatMessage();
+            entity.setConversationId(conversationId);
+            entity.setRole(message.getMessageType().name());
+            entity.setContent(message.getText());
+            entity.setSortOrder(nextSortOrder + i);
+            entity.setCreateTime(now);
+            aiChatMessageMapper.insert(entity);
+        }
+    }
+
+    private void truncateTail(String conversationId, List<AiChatMessage> existingRecords, int keepSize) {
+        if (existingRecords.size() <= keepSize) {
+            return;
+        }
+        List<Long> removeIds = existingRecords.subList(keepSize, existingRecords.size()).stream()
+                .map(AiChatMessage::getMessageId)
+                .toList();
+        aiChatMessageMapper.deleteBatchIds(removeIds);
+    }
+
+    private void replaceAll(String conversationId, List<Message> incoming) {
+        aiChatMessageMapper.delete(new LambdaQueryWrapper<AiChatMessage>()
+                .eq(AiChatMessage::getConversationId, conversationId));
+        LocalDateTime now = LocalDateTime.now();
+        for (int i = 0; i < incoming.size(); i++) {
+            Message message = incoming.get(i);
+            AiChatMessage entity = new AiChatMessage();
+            entity.setConversationId(conversationId);
+            entity.setRole(message.getMessageType().name());
+            entity.setContent(message.getText());
+            entity.setSortOrder(i);
+            entity.setCreateTime(now);
+            aiChatMessageMapper.insert(entity);
+        }
+        chatSessionRepository.syncMessageStats(conversationId, incoming.size());
+    }
+
+    private void trimOldestIfNeeded(String conversationId) {
+        int effectiveMax = effectiveMaxMessages();
+        List<AiChatMessage> records = loadRecords(conversationId);
+        if (records.size() <= effectiveMax) {
+            return;
+        }
+        int removeCount = records.size() - effectiveMax;
+        List<Long> removeIds = records.subList(0, removeCount).stream()
+                .map(AiChatMessage::getMessageId)
+                .toList();
+        aiChatMessageMapper.deleteBatchIds(removeIds);
+    }
+
+    private List<AiChatMessage> loadRecords(String conversationId) {
         return aiChatMessageMapper.selectList(new LambdaQueryWrapper<AiChatMessage>()
                 .eq(AiChatMessage::getConversationId, conversationId)
                 .orderByAsc(AiChatMessage::getSortOrder)
                 .orderByAsc(AiChatMessage::getMessageId));
+    }
+
+    private int countRecords(String conversationId) {
+        Long count = aiChatMessageMapper.selectCount(new LambdaQueryWrapper<AiChatMessage>()
+                .eq(AiChatMessage::getConversationId, conversationId));
+        return count != null ? count.intValue() : 0;
     }
 
     private List<Message> trimMessages(List<Message> messages) {

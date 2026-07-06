@@ -5,26 +5,23 @@ import cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo;
 import cn.org.starpivot.ai.domain.vo.RagRetrievalResult;
 import cn.org.starpivot.ai.domain.vo.RagSourceVo;
 import cn.org.starpivot.ai.mapper.AiKnowledgeChunkMapper;
-import cn.org.starpivot.ai.rag.EmbeddingService;
-import cn.org.starpivot.ai.rag.RagQueryRewriterService;
-import cn.org.starpivot.ai.rag.RagRerankerService;
-import cn.org.starpivot.ai.rag.VectorUtils;
+import cn.org.starpivot.ai.metrics.AiMetrics;
+import cn.org.starpivot.ai.rag.*;
 import cn.org.starpivot.ai.service.AiKnowledgeRetrievalService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalService {
-
-    private static final int RRF_K = 60;
 
     private final AiKnowledgeChunkMapper aiKnowledgeChunkMapper;
     private final EmbeddingService embeddingService;
@@ -32,6 +29,27 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
     private final RagRerankerService ragRerankerService;
     private final AiProperties aiProperties;
     private final ObjectMapper objectMapper;
+    private final Executor ragRetrievalExecutor;
+    private final AiMetrics aiMetrics;
+
+    public AiKnowledgeRetrievalServiceImpl(
+            AiKnowledgeChunkMapper aiKnowledgeChunkMapper,
+            EmbeddingService embeddingService,
+            RagQueryRewriterService ragQueryRewriterService,
+            RagRerankerService ragRerankerService,
+            AiProperties aiProperties,
+            ObjectMapper objectMapper,
+            @Qualifier("ragRetrievalExecutor") Executor ragRetrievalExecutor,
+            AiMetrics aiMetrics) {
+        this.aiKnowledgeChunkMapper = aiKnowledgeChunkMapper;
+        this.embeddingService = embeddingService;
+        this.ragQueryRewriterService = ragQueryRewriterService;
+        this.ragRerankerService = ragRerankerService;
+        this.aiProperties = aiProperties;
+        this.objectMapper = objectMapper;
+        this.ragRetrievalExecutor = ragRetrievalExecutor;
+        this.aiMetrics = aiMetrics;
+    }
 
     @Override
     public RagRetrievalResult retrieve(String query, int topK) {
@@ -39,18 +57,23 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
             return RagRetrievalResult.builder().context("").sources(List.of()).build();
         }
 
+        long totalStart = System.currentTimeMillis();
         String normalizedQuery = query.trim();
+        AiProperties.RagProperties rag = aiProperties.getRag();
         int configuredMax = Math.max(rag.getRetrieveTopK(), 1);
         int limit = Math.min(Math.max(topK, 1), configuredMax);
-        AiProperties.RagProperties rag = aiProperties.getRag();
         int candidateTopK = Math.max(limit, rag.getRetrieveTopK());
 
         List<AiKnowledgeChunkHitVo> hits = retrieveCandidates(normalizedQuery, candidateTopK);
         if (hits.isEmpty()) {
+            recordRagMetrics(totalStart, 0);
             return RagRetrievalResult.builder().context("").sources(List.of()).build();
         }
 
+        long rerankStart = System.currentTimeMillis();
         hits = ragRerankerService.rerank(normalizedQuery, hits, limit);
+        hits = hits.stream().filter(hit -> StringUtils.hasText(hit.getContent())).toList();
+        aiMetrics.recordRagStage("rerank", System.currentTimeMillis() - rerankStart);
 
         List<RagSourceVo> sources = hits.stream()
                 .map(hit -> RagSourceVo.builder()
@@ -77,6 +100,10 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
             builder.append(hit.getContent().trim()).append("\n\n");
         }
 
+        recordRagMetrics(totalStart, hits.size());
+        log.info("[RAG] retrieve complete queryLen={} hits={} durationMs={}",
+                normalizedQuery.length(), hits.size(), System.currentTimeMillis() - totalStart);
+
         return RagRetrievalResult.builder()
                 .context(builder.toString().trim())
                 .sources(sources)
@@ -88,8 +115,18 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
         int vectorK = Math.max(candidateTopK, rag.getVectorTopK());
         int fulltextK = Math.max(candidateTopK, rag.getFulltextTopK());
 
-        List<AiKnowledgeChunkHitVo> fulltextHits = searchFulltext(query, fulltextK);
-        List<AiKnowledgeChunkHitVo> vectorHits = searchVector(query, vectorK);
+        long parallelStart = System.currentTimeMillis();
+        CompletableFuture<List<AiKnowledgeChunkHitVo>> fulltextFuture = CompletableFuture.supplyAsync(
+                () -> searchFulltext(query, fulltextK), ragRetrievalExecutor);
+        CompletableFuture<List<AiKnowledgeChunkHitVo>> vectorFuture = CompletableFuture.supplyAsync(
+                () -> searchVector(query, vectorK), ragRetrievalExecutor);
+
+        List<AiKnowledgeChunkHitVo> fulltextHits = fulltextFuture.join();
+        List<AiKnowledgeChunkHitVo> vectorHits = vectorFuture.join();
+        long parallelMs = System.currentTimeMillis() - parallelStart;
+        aiMetrics.recordRagStage("parallel_retrieve", parallelMs);
+        log.info("[RAG] stage=parallel_retrieve fulltextHits={} vectorHits={} durationMs={}",
+                fulltextHits.size(), vectorHits.size(), parallelMs);
 
         List<AiKnowledgeChunkHitVo> merged;
         if (vectorHits.isEmpty()) {
@@ -97,41 +134,48 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
         } else if (fulltextHits.isEmpty()) {
             merged = deduplicate(vectorHits, candidateTopK);
         } else {
-            merged = rrfMerge(vectorHits, fulltextHits, candidateTopK);
+            merged = RagRrfMergeUtils.merge(vectorHits, fulltextHits, candidateTopK);
         }
 
         if (ragQueryRewriterService.isEnabled() && embeddingService.isAvailable() && !merged.isEmpty()) {
+            long hydeStart = System.currentTimeMillis();
             String hydeText = ragQueryRewriterService.generateHypotheticalAnswer(query);
-            List<AiKnowledgeChunkHitVo> hydeHits = searchVector(hydeText, vectorK);
-            if (!hydeHits.isEmpty()) {
-                merged = rrfMergeLists(List.of(merged, hydeHits), candidateTopK);
-                log.debug("[RAG] HyDE merged, candidates={}", merged.size());
+            if (StringUtils.hasText(hydeText)) {
+                List<AiKnowledgeChunkHitVo> hydeHits = searchVector(hydeText, vectorK);
+                if (!hydeHits.isEmpty()) {
+                    merged = RagRrfMergeUtils.mergeLists(List.of(merged, hydeHits), candidateTopK);
+                }
             }
+            aiMetrics.recordRagStage("hyde", System.currentTimeMillis() - hydeStart);
+            log.info("[RAG] stage=hyde mergedHits={} durationMs={}",
+                    merged.size(), System.currentTimeMillis() - hydeStart);
         }
 
         return merged;
     }
 
     private List<AiKnowledgeChunkHitVo> searchFulltext(String query, int topK) {
+        long start = System.currentTimeMillis();
         List<AiKnowledgeChunkHitVo> hits = new ArrayList<>();
         try {
             hits.addAll(aiKnowledgeChunkMapper.searchFulltext(query, topK));
         } catch (Exception ex) {
-            log.debug("FULLTEXT search unavailable, fallback to LIKE: {}", ex.getMessage());
+            log.debug("[RAG] FULLTEXT unavailable, fallback to LIKE: {}", ex.getMessage());
         }
-        if (!hits.isEmpty()) {
-            return hits;
-        }
-        for (String keyword : extractKeywords(query)) {
-            hits.addAll(aiKnowledgeChunkMapper.searchLike(keyword, topK));
-            if (hits.size() >= topK) {
-                break;
+        if (hits.isEmpty()) {
+            for (String keyword : extractKeywords(query)) {
+                hits.addAll(aiKnowledgeChunkMapper.searchLike(keyword, topK));
+                if (hits.size() >= topK) {
+                    break;
+                }
             }
         }
+        aiMetrics.recordRagStage("fulltext", System.currentTimeMillis() - start);
         return hits;
     }
 
     private List<AiKnowledgeChunkHitVo> searchVector(String query, int topK) {
+        long start = System.currentTimeMillis();
         if (!embeddingService.isAvailable()) {
             return List.of();
         }
@@ -139,7 +183,7 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
         try {
             queryVector = embeddingService.embed(query);
         } catch (RuntimeException ex) {
-            log.warn("Vector embedding failed, skip vector search: {}", ex.getMessage());
+            log.warn("[RAG] vector embedding failed: {}", ex.getMessage());
             return List.of();
         }
         if (queryVector.length == 0) {
@@ -147,52 +191,55 @@ public class AiKnowledgeRetrievalServiceImpl implements AiKnowledgeRetrievalServ
         }
 
         double minScore = aiProperties.getRag().getMinVectorScore();
-        List<AiKnowledgeChunkHitVo> candidates = aiKnowledgeChunkMapper.listEmbeddableChunks(5000);
-        if (candidates.isEmpty()) {
-            return List.of();
-        }
-        for (AiKnowledgeChunkHitVo candidate : candidates) {
-            float[] vector = VectorUtils.deserialize(candidate.getEmbeddingJson(), objectMapper);
-            candidate.setScore(VectorUtils.cosineSimilarity(queryVector, vector));
-        }
-        return candidates.stream()
-                .filter(hit -> hit.getScore() != null && hit.getScore() > minScore)
-                .sorted(Comparator.comparing(AiKnowledgeChunkHitVo::getScore).reversed())
-                .limit(topK)
-                .collect(Collectors.toList());
-    }
+        int batchSize = Math.max(aiProperties.getRag().getVectorScanBatchSize(), 500);
+        int maxScan = aiProperties.getRag().getVectorScanMaxChunks();
+        int poolSize = Math.max(topK * 3, topK);
+        PriorityQueue<AiKnowledgeChunkHitVo> topCandidates = new PriorityQueue<>(
+                poolSize, Comparator.comparingDouble(hit -> hit.getScore() != null ? hit.getScore() : 0D));
 
-    private List<AiKnowledgeChunkHitVo> rrfMerge(
-            List<AiKnowledgeChunkHitVo> vectorList,
-            List<AiKnowledgeChunkHitVo> fulltextList,
-            int topK) {
-        return rrfMergeLists(List.of(vectorList, fulltextList), topK);
-    }
-
-    private List<AiKnowledgeChunkHitVo> rrfMergeLists(List<List<AiKnowledgeChunkHitVo>> rankedLists, int topK) {
-        Map<Long, Double> scoreMap = new LinkedHashMap<>();
-        Map<Long, AiKnowledgeChunkHitVo> chunkMap = new LinkedHashMap<>();
-
-        for (List<AiKnowledgeChunkHitVo> list : rankedLists) {
-            for (int rank = 0; rank < list.size(); rank++) {
-                AiKnowledgeChunkHitVo chunk = list.get(rank);
-                if (chunk.getChunkId() == null) {
+        Long lastChunkId = null;
+        int scanned = 0;
+        while (true) {
+            List<AiKnowledgeChunkHitVo> batch = aiKnowledgeChunkMapper.listEmbeddableChunkBatch(lastChunkId, batchSize);
+            if (batch.isEmpty()) {
+                break;
+            }
+            for (AiKnowledgeChunkHitVo candidate : batch) {
+                float[] vector = VectorUtils.deserialize(candidate.getEmbeddingJson(), objectMapper);
+                double score = VectorUtils.cosineSimilarity(queryVector, vector);
+                candidate.setScore(score);
+                if (score <= minScore) {
                     continue;
                 }
-                scoreMap.merge(chunk.getChunkId(), 1.0D / (RRF_K + rank + 1), Double::sum);
-                chunkMap.putIfAbsent(chunk.getChunkId(), chunk);
+                if (topCandidates.size() < poolSize) {
+                    topCandidates.offer(candidate);
+                } else if (score > topCandidates.peek().getScore()) {
+                    topCandidates.poll();
+                    topCandidates.offer(candidate);
+                }
+            }
+            lastChunkId = batch.get(batch.size() - 1).getChunkId();
+            scanned += batch.size();
+            if (maxScan > 0 && scanned >= maxScan) {
+                log.warn("[RAG] vector scan reached maxScan={} chunks, results may be incomplete", maxScan);
+                break;
+            }
+            if (batch.size() < batchSize) {
+                break;
             }
         }
 
-        return scoreMap.entrySet().stream()
-                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
+        List<AiKnowledgeChunkHitVo> hits = topCandidates.stream()
+                .sorted(Comparator.comparing(AiKnowledgeChunkHitVo::getScore).reversed())
                 .limit(topK)
-                .map(entry -> {
-                    AiKnowledgeChunkHitVo hit = chunkMap.get(entry.getKey());
-                    hit.setScore(entry.getValue());
-                    return hit;
-                })
-                .toList();
+                .collect(Collectors.toList());
+        aiMetrics.recordRagStage("vector", System.currentTimeMillis() - start);
+        log.debug("[RAG] vector search scanned={} hits={}", scanned, hits.size());
+        return hits;
+    }
+
+    private void recordRagMetrics(long startMs, int hitCount) {
+        aiMetrics.recordRag(System.currentTimeMillis() - startMs, hitCount);
     }
 
     private List<AiKnowledgeChunkHitVo> deduplicate(List<AiKnowledgeChunkHitVo> hits, int topK) {

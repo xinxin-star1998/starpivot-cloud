@@ -19,8 +19,7 @@ public class AiProperties {
             """
             你是一个智能 AI 助手，能够进行自然、流畅的多轮对话。
             你可以帮助用户完成写作、翻译、编程、分析、头脑风暴、学习辅导等广泛任务。
-            请根据用户问题选择合适的方式回答：简洁问题简洁答，复杂问题条理清晰。
-            使用 Markdown 格式化代码、列表和重点内容；不确定时请诚实说明，不要编造。
+            请根据用户问题选择合适的方式回答；不确定时请诚实说明，不要编造。
             """;
 
     /** 欢迎语模板，支持 {botName} 占位符 */
@@ -44,8 +43,20 @@ public class AiProperties {
     /** 默认采样温度 */
     private Double defaultTemperature = 0.7;
 
+    /** 默认 Prompt 场景 ID */
+    private String defaultPromptScene = "default";
+
+    /** 场景化 System Prompt 模板；id=default 可被后台 ai_config.system_prompt 覆盖 */
+    private List<PromptTemplateOption> promptTemplates = new ArrayList<>();
+
+    /** 对话接口限流（Redis 滑动窗口，按用户） */
+    private RateLimitProperties rateLimit = new RateLimitProperties();
+
     /** RAG 基础设施开关（Nacos）；需与后台 ai_config.rag_enabled 同时为开才生效 */
     private RagProperties rag = new RagProperties();
+
+    /** 查询路由：自动选择场景、模型与是否 RAG */
+    private QueryRouterProperties queryRouter = new QueryRouterProperties();
 
     public String validatedSystemDbSchema() {
         if (!StringUtils.hasText(systemDbSchema)) {
@@ -100,11 +111,66 @@ public class AiProperties {
             return true;
         }
         List<AiModelVo> available = resolvedModels();
-        if (available.size() <= 1) {
+        if (available.isEmpty()) {
             return true;
         }
         String normalized = model.trim();
         return available.stream().anyMatch(item -> normalized.equals(item.getId()));
+    }
+
+    public List<AiPromptTemplateSnapshot> resolvedPromptTemplates(String dbSystemPromptOverride) {
+        List<PromptTemplateOption> source = promptTemplates != null ? promptTemplates : List.of();
+        if (source.isEmpty()) {
+            String prompt = StringUtils.hasText(dbSystemPromptOverride) ? dbSystemPromptOverride : systemPrompt;
+            return List.of(AiPromptTemplateSnapshot.builder()
+                    .id("default")
+                    .label("通用助手")
+                    .description("默认对话场景")
+                    .prompt(prompt)
+                    .build());
+        }
+        return source.stream()
+                .filter(option -> option != null && StringUtils.hasText(option.getId()))
+                .map(option -> {
+                    String id = option.getId().trim();
+                    String prompt = option.getPrompt();
+                    if ("default".equals(id) && StringUtils.hasText(dbSystemPromptOverride)) {
+                        prompt = dbSystemPromptOverride;
+                    } else if (!StringUtils.hasText(prompt)) {
+                        prompt = systemPrompt;
+                    }
+                    return AiPromptTemplateSnapshot.builder()
+                            .id(id)
+                            .label(StringUtils.hasText(option.getLabel()) ? option.getLabel().trim() : id)
+                            .description(option.getDescription())
+                            .prompt(prompt)
+                            .temperature(option.getTemperature())
+                            .model(StringUtils.hasText(option.getModel()) ? option.getModel().trim() : null)
+                            .build();
+                })
+                .toList();
+    }
+
+    public String resolvedDefaultPromptScene() {
+        return StringUtils.hasText(defaultPromptScene) ? defaultPromptScene.trim() : "default";
+    }
+
+    @Data
+    public static class PromptTemplateOption {
+
+        private String id;
+
+        private String label;
+
+        private String description;
+
+        private String prompt;
+
+        /** 该场景推荐温度，未设则使用全局 defaultTemperature */
+        private Double temperature;
+
+        /** 该场景推荐模型，未设则使用全局 defaultModel */
+        private String model;
     }
 
     @Data
@@ -113,6 +179,35 @@ public class AiProperties {
         private String id;
 
         private String label;
+    }
+
+    @Data
+    public static class RateLimitProperties {
+
+        private boolean enabled = true;
+
+        /** 每用户每分钟最大对话请求数（send + stream 合计） */
+        private int maxRequestsPerMinute = 30;
+    }
+
+    @Data
+    public static class QueryRouterProperties {
+
+        private boolean enabled = true;
+
+        /** 常规模型（轻量对话） */
+        private String chatModel = "deepseek-chat";
+
+        /** 推理模型（复杂分析/架构） */
+        private String reasonerModel = "deepseek-reasoner";
+
+        public String resolvedChatModel(String fallback) {
+            return StringUtils.hasText(chatModel) ? chatModel.trim() : fallback;
+        }
+
+        public String resolvedReasonerModel(String fallback) {
+            return StringUtils.hasText(reasonerModel) ? reasonerModel.trim() : fallback;
+        }
     }
 
     @Data
@@ -129,6 +224,12 @@ public class AiProperties {
         private int retrieveTopK = 20;
 
         private double minVectorScore = 0.3;
+
+        /** 向量扫描每批加载条数；0 表示使用默认 2000 */
+        private int vectorScanBatchSize = 2000;
+
+        /** 向量扫描最大 chunk 数；0 表示不限制（全量扫描） */
+        private int vectorScanMaxChunks = 0;
 
         private String embeddingCacheTtl = "7d";
 

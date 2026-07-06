@@ -3,12 +3,22 @@ import { useUserStore } from '@/store/modules/user'
 import { buildAbsoluteApiUrl, normalizeRequestUrl } from '@/utils/http/api-path'
 import { getApiBaseUrl } from '@/utils/http/index'
 
+export const AI_AUTO_ROUTE = 'auto'
+
 export interface ChatSendPayload {
   message: string
   conversationId?: string
   regenerate?: boolean
   model?: string
   temperature?: number
+  /** 对话场景，对应 health.promptTemplates[].id；传 auto 或省略表示自动路由 */
+  promptScene?: string
+}
+
+export interface AiPromptSceneOption {
+  id: string
+  label: string
+  description?: string
 }
 
 export interface ChatReply {
@@ -41,10 +51,22 @@ export interface AiHealthStatus {
   defaultModel?: string
   defaultTemperature?: number
   maxMemoryMessages?: number
+  promptTemplates?: AiPromptSceneOption[]
+  defaultPromptScene?: string
+  queryRouterEnabled?: boolean
 }
 
 export interface AiChatStreamHandlers {
-  onMeta?: (meta: { conversationId: string; sources?: RagSourceItem[] }) => void
+  onMeta?: (meta: {
+    conversationId: string
+    sources?: RagSourceItem[]
+    promptScene?: string
+    model?: string
+    routed?: boolean
+    intent?: string
+    ragDegraded?: boolean
+  }) => void
+  onStatus?: (status: { phase: string; message: string }) => void
   onDelta?: (chunk: string) => void
   onDone?: () => void
   onError?: (message: string) => void
@@ -109,12 +131,43 @@ function parseSseBlock(
 
   if (eventName === 'meta' && data) {
     try {
-      const meta = JSON.parse(data) as { conversationId?: string; sources?: RagSourceItem[] }
+      const meta = JSON.parse(data) as {
+        conversationId?: string
+        sources?: RagSourceItem[]
+        promptScene?: string
+        model?: string
+        routed?: boolean
+        intent?: string
+        ragDegraded?: boolean
+      }
       if (meta.conversationId) {
-        handlers.onMeta?.({ conversationId: meta.conversationId, sources: meta.sources })
+        handlers.onMeta?.({
+          conversationId: meta.conversationId,
+          sources: meta.sources,
+          promptScene: meta.promptScene,
+          model: meta.model,
+          routed: meta.routed,
+          intent: meta.intent,
+          ragDegraded: meta.ragDegraded
+        })
       }
     } catch {
       // ignore malformed meta
+    }
+    return 'continue'
+  }
+
+  if (eventName === 'status' && data) {
+    try {
+      const status = JSON.parse(data) as { phase?: string; message?: string }
+      if (status.message) {
+        handlers.onStatus?.({
+          phase: status.phase || 'preparing',
+          message: status.message
+        })
+      }
+    } catch {
+      // ignore malformed status
     }
     return 'continue'
   }
@@ -217,6 +270,16 @@ export async function fetchAiChatStream(
         if (typeof result === 'object' && 'error' in result) {
           throw new Error(result.error)
         }
+      }
+    }
+
+    if (buffer.trim()) {
+      const result = parseSseBlock(buffer, handlers)
+      if (result === 'done') {
+        return
+      }
+      if (typeof result === 'object' && 'error' in result) {
+        throw new Error(result.error)
       }
     }
 

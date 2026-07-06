@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-session-panel flex h-full flex-col border-r border-g-300/60 bg-g-100/30">
+  <div ref="panelRef" class="chat-session-panel flex h-full flex-col border-r border-g-300/60 bg-g-100/30">
     <div class="border-b border-g-300/60 px-3 py-2.5 text-xs font-medium text-g-600">对话历史</div>
     <div class="flex-1 overflow-y-auto px-2 py-2 [&::-webkit-scrollbar]:!w-1">
       <div
@@ -12,7 +12,19 @@
         @click="emit('select', session.conversationId)"
       >
         <div class="min-w-0 flex-1">
-          <div class="truncate text-sm text-g-900">{{ session.title || '新对话' }}</div>
+          <ElTooltip
+            :content="sessionTitle(session)"
+            placement="top"
+            :show-after="200"
+            :disabled="!titleOverflow[session.conversationId]"
+          >
+            <div
+              :ref="(el) => setTitleRef(session.conversationId, el as HTMLElement | null)"
+              class="truncate text-sm text-g-900"
+            >
+              {{ sessionTitle(session) }}
+            </div>
+          </ElTooltip>
           <div class="mt-0.5 text-[11px] text-g-500">{{ formatSessionTime(session.updatedAt) }}</div>
         </div>
         <ElButton
@@ -38,10 +50,11 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { ChatSession } from '@/api/ai/chat'
 
-defineProps<{
+const props = defineProps<{
   sessions: ChatSession[]
   activeId: string
 }>()
@@ -51,6 +64,60 @@ const emit = defineEmits<{
   delete: [conversationId: string]
   rename: [payload: { conversationId: string; title: string }]
 }>()
+
+const titleRefs = new Map<string, HTMLElement>()
+const titleOverflow = reactive<Record<string, boolean>>({})
+const panelRef = ref<HTMLElement | null>(null)
+
+function sessionTitle(session: ChatSession): string {
+  return session.title?.trim() || '新对话'
+}
+
+function setTitleRef(conversationId: string, el: HTMLElement | null): void {
+  if (el) {
+    titleRefs.set(conversationId, el)
+    updateTitleOverflow(conversationId)
+    return
+  }
+  titleRefs.delete(conversationId)
+  delete titleOverflow[conversationId]
+}
+
+function updateTitleOverflow(conversationId: string): void {
+  const el = titleRefs.get(conversationId)
+  if (!el) {
+    delete titleOverflow[conversationId]
+    return
+  }
+  titleOverflow[conversationId] = el.scrollWidth > el.clientWidth
+}
+
+function refreshAllTitleOverflow(): void {
+  titleRefs.forEach((_el, conversationId) => updateTitleOverflow(conversationId))
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  resizeObserver = new ResizeObserver(() => refreshAllTitleOverflow())
+  if (panelRef.value) {
+    resizeObserver.observe(panelRef.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+})
+
+watch(
+  () => props.sessions,
+  async () => {
+    await nextTick()
+    refreshAllTitleOverflow()
+  },
+  { deep: true }
+)
 
 async function handleRename(session: ChatSession): Promise<void> {
   try {

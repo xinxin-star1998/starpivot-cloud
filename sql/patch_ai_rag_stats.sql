@@ -98,8 +98,8 @@ PREPARE stmt FROM @ddl;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- 默认关闭 RAG（DeepSeek 等对话模型通常不提供 Embedding API，需在 Nacos 与后台同时开启）
-UPDATE `ai_config` SET `rag_enabled` = '1', `rag_top_k` = 5 WHERE `config_name` = 'default';
+-- 默认开启 RAG（需 Nacos starpivot.ai.rag.enabled=true；Embedding 用 DashScope）
+UPDATE `ai_config` SET `rag_enabled` = '0', `rag_top_k` = 5 WHERE `config_name` = 'default';
 
 -- ----------------------------
 -- 菜单（menu_id 342+）

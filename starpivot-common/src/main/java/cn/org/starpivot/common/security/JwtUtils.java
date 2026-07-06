@@ -1,6 +1,8 @@
 package cn.org.starpivot.common.security;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
+import io.jsonwebtoken.jackson.io.JacksonSerializer;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
@@ -20,7 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class JwtUtils {
 
+    private static final JacksonSerializer<Map<String, ?>> JSON_SERIALIZER = new JacksonSerializer<>();
+    private static final JacksonDeserializer<Map<String, ?>> JSON_DESERIALIZER = new JacksonDeserializer<>();
+
     private static final Map<String, SecretKey> KEY_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, JwtParser> PARSER_CACHE = new ConcurrentHashMap<>();
 
     private JwtUtils() {
     }
@@ -40,6 +46,7 @@ public final class JwtUtils {
         long expirationTime = System.currentTimeMillis() + properties.getExpire();
 
         var builder = Jwts.builder()
+                .json(JSON_SERIALIZER)
                 .subject(user.getUsername())
                 .claim(SecurityConstants.CLAIM_USER_ID, user.getUserId())
                 .claim(SecurityConstants.CLAIM_ROLES, user.getRoles())
@@ -63,9 +70,7 @@ public final class JwtUtils {
         validateTokenAndSecret(token, secret);
 
         try {
-            return Jwts.parser()
-                    .verifyWith(getSigningKey(secret))
-                    .build()
+            return getParser(secret)
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
@@ -159,9 +164,7 @@ public final class JwtUtils {
     public static boolean isValid(String token, String secret) {
         try {
             validateTokenAndSecret(token, secret);
-            Claims claims = Jwts.parser()
-                    .verifyWith(getSigningKey(secret))
-                    .build()
+            Claims claims = getParser(secret)
                     .parseSignedClaims(token)
                     .getPayload();
             return claims.getSubject() != null;
@@ -231,6 +234,16 @@ public final class JwtUtils {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    /**
+     * 获取（并缓存）JWT 解析器，显式绑定 Jackson 序列化器以避免 JJWT ServiceLoader 并发问题。
+     */
+    private static JwtParser getParser(String secret) {
+        return PARSER_CACHE.computeIfAbsent(secret, s -> Jwts.parser()
+                .json(JSON_DESERIALIZER)
+                .verifyWith(getSigningKey(s))
+                .build());
     }
 
     /**

@@ -11,4 +11,7 @@ public interface AiIndexService {
     void executeTask(Long taskId, Long docId);
 
     AiKnowledgeDocument requireReadyDocument(Long docId);
+
+    /** 重建索引前清理卡住的 PENDING/RUNNING 任务 */
+    void forceResetIndexState(Long docId);
 }

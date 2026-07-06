@@ -74,6 +74,8 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
                 .models(parseModels(config.getModelsJson()))
                 .ragEnabled(resolveRagEnabled(config.getRagEnabled()))
                 .ragTopK(config.getRagTopK() != null ? config.getRagTopK() : 5)
+                .defaultPromptScene(aiProperties.resolvedDefaultPromptScene())
+                .promptTemplates(aiProperties.resolvedPromptTemplates(config.getSystemPrompt()))
                 .build();
     }
 
@@ -89,6 +91,8 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
                 .models(aiProperties.resolvedModels())
                 .ragEnabled(aiProperties.getRag().isEnabled())
                 .ragTopK(5)
+                .defaultPromptScene(aiProperties.resolvedDefaultPromptScene())
+                .promptTemplates(aiProperties.resolvedPromptTemplates(null))
                 .build();
     }
 

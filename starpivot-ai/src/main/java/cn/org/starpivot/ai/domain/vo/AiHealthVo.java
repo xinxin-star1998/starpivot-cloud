@@ -37,4 +37,13 @@ public class AiHealthVo {
 
     /** 每个会话最大记忆条数 */
     private Integer maxMemoryMessages;
+
+    /** 可选 Prompt 场景列表 */
+    private List<AiPromptTemplateVo> promptTemplates;
+
+    /** 默认 Prompt 场景 ID */
+    private String defaultPromptScene;
+
+    /** 是否启用查询路由（自动场景/模型/RAG） */
+    private Boolean queryRouterEnabled;
 }

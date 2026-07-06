@@ -103,12 +103,15 @@
                         : 'message-left bg-g-300/50 leading-normal'
                     ]"
                   >
-                    <span v-if="message.loading" class="inline-flex items-center gap-1">
-                      <span class="animate-pulse">正在思考</span>
+                    <span
+                      v-if="message.loading && !message.content"
+                      class="inline-flex items-center gap-1 text-g-700"
+                    >
+                      <span class="animate-pulse">{{ message.statusText || '正在思考' }}</span>
                       <span class="animate-bounce">...</span>
                     </span>
                     <ChatMarkdown
-                      v-else-if="!message.isMe"
+                      v-else-if="!message.isMe && message.content"
                       :content="message.content"
                       :streaming="!!message.streaming"
                     />
@@ -161,22 +164,51 @@
           </div>
 
           <div class="border-t border-g-300/50 px-4 py-3">
-            <div v-if="modelOptions.length > 1" class="mb-2 flex items-center gap-2">
-              <span class="shrink-0 text-xs text-g-500">模型</span>
-              <ElSelect
-                v-model="selectedModel"
-                size="small"
-                class="!w-44"
-                :disabled="sending"
-              >
-                <ElOption
-                  v-for="model in modelOptions"
-                  :key="model.id"
-                  :label="model.label"
-                  :value="model.id"
-                />
-              </ElSelect>
+            <div
+              v-if="showModelSelector || showSceneSelector"
+              class="mb-2 flex flex-wrap items-center gap-2"
+            >
+              <template v-if="showSceneSelector">
+                <span class="shrink-0 text-xs text-g-500">场景</span>
+                <ElSelect
+                  v-model="selectedPromptScene"
+                  size="small"
+                  class="!w-36"
+                  :disabled="sending"
+                >
+                  <ElOption
+                    v-for="scene in displaySceneOptions"
+                    :key="scene.id"
+                    :label="scene.label"
+                    :value="scene.id"
+                  >
+                    <div class="flex flex-col leading-tight">
+                      <span>{{ scene.label }}</span>
+                      <span v-if="scene.description" class="text-[11px] text-g-500">{{
+                        scene.description
+                      }}</span>
+                    </div>
+                  </ElOption>
+                </ElSelect>
+              </template>
+              <template v-if="showModelSelector">
+                <span class="shrink-0 text-xs text-g-500">模型</span>
+                <ElSelect
+                  v-model="selectedModel"
+                  size="small"
+                  class="!w-44"
+                  :disabled="sending"
+                >
+                  <ElOption
+                    v-for="model in displayModelOptions"
+                    :key="model.id"
+                    :label="model.label"
+                    :value="model.id"
+                  />
+                </ElSelect>
+              </template>
             </div>
+            <p v-if="routeHint" class="mb-2 text-[11px] text-g-500">{{ routeHint }}</p>
             <ElInput
               v-model="messageText"
               type="textarea"
@@ -224,13 +256,15 @@ import {
   fetchAiChatSessions,
   fetchAiChatStream,
   isStreamAbortError,
+  AI_AUTO_ROUTE,
   type AiModelOption,
+  type AiPromptSceneOption,
   type ChatHistoryMessage,
   type ChatSession
 } from '@/api/ai/chat'
 import { useUserStore } from '@/store/modules/user'
 import { isAbortError, stripChatCopyContent } from '@/utils/ai/render-markdown'
-import { getConversationStorageKey, getModelStorageKey } from '@/utils/ai/session-storage'
+import { getConversationStorageKey, getModelStorageKey, getSceneStorageKey } from '@/utils/ai/session-storage'
 import { mittBus } from '@/utils/sys'
 import ArtAvatarDisplay from '@/components/core/media/art-avatar-display/index.vue'
 import ChatMarkdown from '@/components/core/layouts/art-chat-window/chat-markdown.vue'
@@ -248,6 +282,7 @@ interface ChatMessage {
   isMe: boolean
   loading?: boolean
   streaming?: boolean
+  statusText?: string
   stopped?: boolean
   userPrompt?: string
   isWelcome?: boolean
@@ -279,6 +314,26 @@ const botAvatarUrl = ref(defaultBotAvatar)
 const welcomeMessage = ref(DEFAULT_WELCOME_MESSAGE)
 const modelOptions = ref<AiModelOption[]>([])
 const selectedModel = ref('')
+const promptSceneOptions = ref<AiPromptSceneOption[]>([])
+const selectedPromptScene = ref('')
+const queryRouterEnabled = ref(false)
+const routeHint = ref('')
+
+const AUTO_MODEL_OPTION: AiModelOption = { id: AI_AUTO_ROUTE, label: '自动' }
+const AUTO_SCENE_OPTION: AiPromptSceneOption = {
+  id: AI_AUTO_ROUTE,
+  label: '自动',
+  description: '按问题智能选择场景'
+}
+
+const displayModelOptions = computed(() =>
+  queryRouterEnabled.value ? [AUTO_MODEL_OPTION, ...modelOptions.value] : modelOptions.value
+)
+const displaySceneOptions = computed(() =>
+  queryRouterEnabled.value ? [AUTO_SCENE_OPTION, ...promptSceneOptions.value] : promptSceneOptions.value
+)
+const showModelSelector = computed(() => queryRouterEnabled.value || modelOptions.value.length > 1)
+const showSceneSelector = computed(() => queryRouterEnabled.value || promptSceneOptions.value.length > 1)
 
 const userName = computed(() => {
   const user = userInfo.value?.user
@@ -354,7 +409,11 @@ const applyBotProfile = (health?: {
   welcomeMessage?: string
   models?: AiModelOption[]
   defaultModel?: string
+  promptTemplates?: AiPromptSceneOption[]
+  defaultPromptScene?: string
+  queryRouterEnabled?: boolean
 }): void => {
+  queryRouterEnabled.value = health?.queryRouterEnabled ?? false
   if (health?.botName && String(health.botName).trim()) {
     botDisplayName.value = health.botName.trim()
   }
@@ -371,13 +430,40 @@ const applyBotProfile = (health?: {
     const userId = userInfo.value?.user?.userId
     const storedModel = sessionStorage.getItem(getModelStorageKey(userId)) || ''
     const defaultModel = health.defaultModel || health.models[0]?.id || ''
-    selectedModel.value =
-      storedModel && health.models.some((item) => item.id === storedModel)
-        ? storedModel
-        : defaultModel
+    const allowedModels = new Set([AI_AUTO_ROUTE, ...health.models.map((item) => item.id)])
+    if (queryRouterEnabled.value) {
+      selectedModel.value =
+        storedModel && allowedModels.has(storedModel) ? storedModel : AI_AUTO_ROUTE
+    } else {
+      selectedModel.value =
+        storedModel && health.models.some((item) => item.id === storedModel)
+          ? storedModel
+          : defaultModel
+    }
   } else {
     modelOptions.value = []
-    selectedModel.value = health?.defaultModel || ''
+    selectedModel.value = queryRouterEnabled.value ? AI_AUTO_ROUTE : health?.defaultModel || ''
+  }
+  if (health?.promptTemplates?.length) {
+    promptSceneOptions.value = health.promptTemplates
+    const userId = userInfo.value?.user?.userId
+    const storedScene = sessionStorage.getItem(getSceneStorageKey(userId)) || ''
+    const defaultScene = health.defaultPromptScene || health.promptTemplates[0]?.id || ''
+    const allowedScenes = new Set([AI_AUTO_ROUTE, ...health.promptTemplates.map((item) => item.id)])
+    if (queryRouterEnabled.value) {
+      selectedPromptScene.value =
+        storedScene && allowedScenes.has(storedScene) ? storedScene : AI_AUTO_ROUTE
+    } else {
+      selectedPromptScene.value =
+        storedScene && health.promptTemplates.some((item) => item.id === storedScene)
+          ? storedScene
+          : defaultScene
+    }
+  } else {
+    promptSceneOptions.value = []
+    selectedPromptScene.value = queryRouterEnabled.value
+      ? AI_AUTO_ROUTE
+      : health?.defaultPromptScene || ''
   }
 }
 
@@ -385,6 +471,13 @@ watch(selectedModel, (model) => {
   if (model) {
     const userId = userInfo.value?.user?.userId
     sessionStorage.setItem(getModelStorageKey(userId), model)
+  }
+})
+
+watch(selectedPromptScene, (scene) => {
+  if (scene) {
+    const userId = userInfo.value?.user?.userId
+    sessionStorage.setItem(getSceneStorageKey(userId), scene)
   }
 })
 
@@ -517,6 +610,19 @@ const copyMessage = async (content: string): Promise<void> => {
   }
 }
 
+const isLikelyNetworkError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) {
+    return false
+  }
+  const message = error.message.toLowerCase()
+  return (
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('network error') ||
+    message.includes('无法读取 ai 流式响应')
+  )
+}
+
 const runAssistantStream = async (
   userText: string,
   botMessage: ChatMessage,
@@ -525,6 +631,7 @@ const runAssistantStream = async (
   botMessage.sender = botDisplayName.value
   botMessage.loading = true
   botMessage.streaming = false
+  botMessage.statusText = '正在连接…'
   botMessage.stopped = false
   botMessage.content = ''
   botMessage.sources = undefined
@@ -534,6 +641,7 @@ const runAssistantStream = async (
   sending.value = true
   streamAbortController.value?.abort()
   streamAbortController.value = new AbortController()
+  routeHint.value = ''
   scrollToBottom()
 
   try {
@@ -542,7 +650,8 @@ const runAssistantStream = async (
         message: userText,
         conversationId: conversationId.value || undefined,
         regenerate: options?.regenerate,
-        model: selectedModel.value || undefined
+        model: selectedModel.value || undefined,
+        promptScene: selectedPromptScene.value || undefined
       },
       {
         onMeta: (meta) => {
@@ -552,10 +661,31 @@ const runAssistantStream = async (
           if (meta.sources?.length) {
             botMessage.sources = meta.sources
           }
+          if (meta.ragDegraded) {
+            routeHint.value = '知识库检索暂不可用，将基于通用能力回答'
+          }
+          if (meta.routed) {
+            const sceneLabel =
+              promptSceneOptions.value.find((item) => item.id === meta.promptScene)?.label ||
+              meta.promptScene ||
+              '自动'
+            const modelLabel =
+              modelOptions.value.find((item) => item.id === meta.model)?.label ||
+              meta.model ||
+              ''
+            routeHint.value = modelLabel
+              ? `智能路由：${sceneLabel} · ${modelLabel}`
+              : `智能路由：${sceneLabel}`
+          }
+        },
+        onStatus: (status) => {
+          botMessage.statusText = status.message
+          scrollToBottom()
         },
         onDelta: (chunk) => {
           botMessage.loading = false
           botMessage.streaming = true
+          botMessage.statusText = undefined
           botMessage.content += chunk
           scrollToBottom()
         },
@@ -599,7 +729,9 @@ const runAssistantStream = async (
       botMessage.content = 'AI 服务暂时不可用，请稍后再试。'
     }
     botMessage.time = formatCurrentTime()
-    isOnline.value = false
+    if (isLikelyNetworkError(error)) {
+      isOnline.value = false
+    }
     ElMessage.error(error instanceof Error ? error.message : '发送失败')
   } finally {
     streamAbortController.value = null
@@ -612,6 +744,15 @@ const runAssistantStream = async (
 const sendMessage = async (): Promise<void> => {
   const text = messageText.value.trim()
   if (!text || sending.value) return
+
+  const failedBot = [...messages.value]
+    .reverse()
+    .find((item) => !item.isMe && item.userPrompt === text && !stripChatCopyContent(item.content))
+  if (failedBot) {
+    messageText.value = ''
+    await runAssistantStream(text, failedBot, { regenerate: true })
+    return
+  }
 
   messages.value.push({
     id: messageId.value++,

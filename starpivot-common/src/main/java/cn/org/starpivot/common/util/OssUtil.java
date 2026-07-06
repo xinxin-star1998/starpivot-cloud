@@ -117,10 +117,46 @@ public class OssUtil {
             return ".png";
         }
         String ext = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-        if (".jpeg".equals(ext) || ".jpg".equals(ext) || ".png".equals(ext) || ".gif".equals(ext) || ".webp".equals(ext)) {
+        if (".jpeg".equals(ext) || ".jpg".equals(ext)) {
+            return ".jpg";
+        }
+        if (".png".equals(ext) || ".gif".equals(ext) || ".webp".equals(ext)) {
             return ext;
         }
         return ".png";
+    }
+
+    /**
+     * 解析头像对象路径：库中记录的后缀与 OSS 实际文件不一致时（如 .jpeg vs .jpg），按 userId 查找真实对象。
+     */
+    private String resolveAvatarObjectName(String objectName) {
+        if (!StringUtils.hasText(objectName) || !objectName.startsWith("avatar/")) {
+            return objectName;
+        }
+        if (ossClient.doesObjectExist(bucketName(), objectName)) {
+            return objectName;
+        }
+        String fileName = objectName.substring("avatar/".length());
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex <= 0) {
+            return objectName;
+        }
+        String userId = fileName.substring(0, dotIndex);
+        if (!USER_ID_PATTERN.matcher(userId).matches()) {
+            return objectName;
+        }
+        String prefix = "avatar/" + userId;
+        ListObjectsV2Request listRequest = new ListObjectsV2Request()
+                .withBucketName(bucketName())
+                .withPrefix(prefix);
+        ListObjectsV2Result listResult = ossClient.listObjectsV2(listRequest);
+        for (OSSObjectSummary summary : listResult.getObjectSummaries()) {
+            String key = summary.getKey();
+            if (key.startsWith(prefix + ".")) {
+                return key;
+            }
+        }
+        return objectName;
     }
 
     /**
@@ -167,10 +203,10 @@ public class OssUtil {
     }
 
     /**
-     * 上传富文本编辑器图片并返回可在浏览器中直接访问的 URL（对象路径：editor/yyyy/MM/dd/{uuid}.后缀）。
-     * <p>私有桶场景返回预签名 URL（与 {@link #getPresignedUrl(String)} 一致，最长约 7 天，以阿里云限制为准），避免永久直链 403。</p>
+     * 上传富文本编辑器图片，返回 OSS 对象路径（如 editor/yyyy/MM/dd/{uuid}.jpg）。
+     * <p>HTML 中应存对象路径而非预签名 URL，展示时再通过预签名接口换取临时链接。</p>
      */
-    public String uploadEditorImageWithUrl(MultipartFile file) throws Exception {
+    public String uploadEditorImage(MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("上传的图片不能为空");
         }
@@ -190,7 +226,14 @@ public class OssUtil {
         );
         putObjectRequest.setMetadata(metadata);
         ossClient.putObject(putObjectRequest);
-        return getPresignedUrl(objectName);
+        return objectName;
+    }
+
+    /**
+     * 上传富文本编辑器图片并返回对象路径（兼容旧接口名，不再返回预签名 URL）。
+     */
+    public String uploadEditorImageWithUrl(MultipartFile file) throws Exception {
+        return uploadEditorImage(file);
     }
 
     /**
@@ -291,8 +334,9 @@ public class OssUtil {
         if (!StringUtils.hasText(accessKeySecret())) {
             throw new IllegalStateException("OSS accessKeySecret 未配置，请设置环境变量 OSS_ACCESS_KEY_SECRET");
         }
+        String resolvedObjectName = resolveAvatarObjectName(objectName);
         Date expiration = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L);
-        URL url = ossClient.generatePresignedUrl(bucketName(), objectName, expiration);
+        URL url = ossClient.generatePresignedUrl(bucketName(), resolvedObjectName, expiration);
         return url.toString();
     }
 
@@ -306,8 +350,8 @@ public class OssUtil {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("上传文件不能为空");
         }
-        if (!StringUtils.hasText(objectName)) {
-            throw new IllegalArgumentException("对象路径不能为空");
+        if (!StringUtils.hasText(objectName) || objectName.contains("..") || objectName.startsWith("/")) {
+            throw new IllegalArgumentException("无效的对象路径");
         }
         ObjectMetadata metadata = new ObjectMetadata();
         String contentType = file.getContentType();

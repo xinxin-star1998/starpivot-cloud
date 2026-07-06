@@ -2,7 +2,6 @@ package cn.org.starpivot.common.filter;
 
 import cn.org.starpivot.common.config.MicroserviceSecurityProperties;
 import cn.org.starpivot.common.security.*;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -149,8 +148,8 @@ public class MicroserviceAuthenticationFilter extends OncePerRequestFilter {
         try {
             LoginUser user = JwtUtils.toLoginUser(JwtUtils.parseToken(token, jwtProperties.getSecret()));
             setAuthentication(user);
-        } catch (JwtException | JwtUtils.JwtTokenException ignored) {
-            // 无效/过期 Token 视为未登录，继续走 permitAll 等匿名可访问规则
+        } catch (RuntimeException ignored) {
+            // 无效/过期 Token 或 JWT 运行时异常视为未登录，继续走 permitAll 等匿名可访问规则
             SecurityContextHolder.clearContext();
         }
     }

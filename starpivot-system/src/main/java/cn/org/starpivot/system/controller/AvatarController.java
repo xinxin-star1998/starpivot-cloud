@@ -8,6 +8,7 @@ import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.storage.FileStorageService;
+import cn.org.starpivot.common.storage.StorageObjectPathUtils;
 import cn.org.starpivot.system.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -184,7 +185,8 @@ public class AvatarController {
             if (!hasPermissionToViewUser(userId)) {
                 throw new BizException(ErrorCode.PERMISSION_DENIED, "无权查看该用户的头像");
             }
-            String presignedUrl = fileStorageService.getPresignedUrl(filePath);
+            String objectName = StorageObjectPathUtils.normalizeToObjectName(filePath);
+            String presignedUrl = fileStorageService.getPresignedUrl(objectName);
             Map<String, String> data = new HashMap<>();
             data.put("presignedUrl", presignedUrl);
             return Result.success("获取成功", data);

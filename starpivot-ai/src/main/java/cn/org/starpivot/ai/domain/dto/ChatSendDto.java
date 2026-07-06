@@ -27,4 +27,8 @@ public class ChatSendDto {
     @DecimalMin(value = "0.0", message = "temperature 不能小于 0")
     @DecimalMax(value = "2.0", message = "temperature 不能大于 2")
     private Double temperature;
+
+    /** 可选，对话场景（对应 prompt-templates 的 id） */
+    @Size(max = 32, message = "场景标识不能超过32字")
+    private String promptScene;
 }

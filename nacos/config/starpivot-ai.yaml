@@ -2,7 +2,8 @@
 # Nacos Data ID: starpivot-ai.yaml  |  Group: DEFAULT_GROUP
 #
 # 推荐：对话用 DeepSeek，RAG 向量用阿里云 DashScope（text-embedding-v3）
-# 两者可共用 spring.ai.openai.api-key，也可分别配置 embedding.api-key
+# RAG 需双开关：本文件 starpivot.ai.rag.enabled=true + 库表 ai_config.rag_enabled=0
+# 环境变量：AI_EMBEDDING_API_KEY（向量）、AI_RERANKER_API_KEY（不填则继承 embedding/chat key）
 spring:
   ai:
     openai:
@@ -14,9 +15,9 @@ spring:
           model: ${AI_MODEL:deepseek-chat}
           temperature: 0.7
           max-tokens: 4096
-      # Embedding 单独 endpoint（覆盖上面的 base-url；api-key 不填则继承 spring.ai.openai.api-key）
+      # Embedding 单独 endpoint（Spring AI 会自动追加 /v1/embeddings，base-url 不要带 /v1）
       embedding:
-        base-url: ${AI_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        base-url: ${AI_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
         api-key: ${AI_EMBEDDING_API_KEY:}
         options:
           model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
@@ -45,31 +46,68 @@ starpivot:
     bot-avatar: ${AI_BOT_AVATAR:}
     default-model: ${AI_MODEL:deepseek-chat}
     default-temperature: 0.7
+    default-prompt-scene: default
     welcome-message: ${AI_WELCOME_MESSAGE:你好！我是 **{botName}**，可以帮你写作、翻译、编程、分析等各类问题，有什么我可以帮你的吗？}
     system-prompt: |
       你是一个智能 AI 助手，能够进行自然、流畅的多轮对话。
       你可以帮助用户完成写作、翻译、编程、分析、头脑风暴、学习辅导等广泛任务。
-      请根据用户问题选择合适的方式回答：简洁问题简洁答，复杂问题条理清晰。
-      使用 Markdown 格式化代码、列表和重点内容；不确定时请诚实说明，不要编造。
+      请根据用户问题选择合适的方式回答；不确定时请诚实说明，不要编造。
+    prompt-templates:
+      - id: default
+        label: 通用助手
+        description: 日常问答、写作、翻译与通用任务
+        prompt: |
+          你是 {botName}，StarPivot 平台的通用 AI 助手，语气自然、表达清晰。
+      - id: support
+        label: 客服问答
+        description: 产品使用、操作指引与常见问题
+        temperature: 0.3
+        prompt: |
+          你是 {botName}，StarPivot 平台的客服助手，语气礼貌、专业、耐心。
+          优先依据参考资料回答产品问题；不要编造系统中不存在的功能或政策。
+      - id: developer
+        label: 开发辅助
+        description: 编程、调试、架构与代码审查
+        temperature: 0.2
+        model: deepseek-reasoner
+        prompt: |
+          你是 {botName}，StarPivot 平台的开发助手，熟悉 Java 17、Spring Boot 3、Spring Cloud、Vue 3、MySQL、Redis、Nacos。
+          涉及安全、性能、并发时主动提醒风险；不要臆造类名、配置项或 API 路径。
+      - id: analyst
+        label: 数据分析
+        description: 报表解读、指标分析与业务洞察
+        temperature: 0.4
+        prompt: |
+          你是 {botName}，StarPivot 平台的数据分析助手，善于解读指标与发现业务洞察。
+          缺少数据时不虚构数字，说明需要哪些字段或口径定义。
     models:
       - id: deepseek-chat
         label: DeepSeek Chat
       - id: deepseek-reasoner
         label: DeepSeek Reasoner
     rag:
-      enabled: false
+      enabled: true
       vector-top-k: 20
       fulltext-top-k: 20
-      retrieve-top-k: 20
+      retrieve-top-k: 10
       min-vector-score: 0.3
+      vector-scan-batch-size: 2000
+      vector-scan-max-chunks: 0
       embedding-cache-ttl: 7d
-      hyde-enabled: false
+      hyde-enabled: true
       reranker:
-        enabled: false
+        enabled: true
         endpoint: ${AI_RERANKER_ENDPOINT:https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank}
         api-key: ${AI_RERANKER_API_KEY:}
         model: ${AI_RERANKER_MODEL:gte-rerank}
-        timeout-ms: 800
+        timeout-ms: 1500
+    rate-limit:
+      enabled: true
+      max-requests-per-minute: 30
+    query-router:
+      enabled: true
+      chat-model: deepseek-chat
+      reasoner-model: deepseek-reasoner
 
 logging:
   level:

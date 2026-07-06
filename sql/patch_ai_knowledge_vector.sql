@@ -13,7 +13,7 @@ SET @ddl := IF(@col_exists = 0,
      ADD COLUMN `file_type` varchar(20) DEFAULT NULL COMMENT ''文件类型 PDF/DOCX/MD/TXT'' AFTER `original_file_name`,
      ADD COLUMN `file_size` bigint DEFAULT NULL COMMENT ''文件大小字节'' AFTER `file_type`,
      ADD COLUMN `object_name` varchar(512) DEFAULT NULL COMMENT ''OSS对象路径'' AFTER `file_size`,
-     ADD COLUMN `index_status` varchar(20) NOT NULL DEFAULT ''DONE'' COMMENT ''索引状态 PENDING/PROCESSING/DONE/FAILED'' AFTER `chunk_count`,
+     ADD COLUMN `index_status` varchar(20) NOT NULL DEFAULT ''PENDING'' COMMENT ''索引状态 PENDING/PROCESSING/DONE/FAILED'' AFTER `chunk_count`,
      ADD COLUMN `error_msg` varchar(500) DEFAULT NULL COMMENT ''索引错误信息'' AFTER `index_status`,
      ADD COLUMN `doc_version` int NOT NULL DEFAULT 1 COMMENT ''文档版本号'' AFTER `error_msg`,
      ADD COLUMN `indexed_at` datetime DEFAULT NULL COMMENT ''最近索引完成时间'' AFTER `doc_version`,
@@ -53,3 +53,12 @@ CREATE TABLE IF NOT EXISTS `ai_index_task` (
   PRIMARY KEY (`task_id`),
   KEY `idx_ai_index_task_doc` (`doc_id`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI 知识库索引任务';
+
+-- 存量文档无向量时标记为待索引，避免显示 DONE 却无法向量检索
+UPDATE `ai_knowledge_document` d
+SET d.`index_status` = 'PENDING'
+WHERE d.`index_status` = 'DONE'
+  AND NOT EXISTS (
+    SELECT 1 FROM `ai_knowledge_chunk` c
+    WHERE c.`doc_id` = d.`doc_id` AND c.`embedding_json` IS NOT NULL
+  );

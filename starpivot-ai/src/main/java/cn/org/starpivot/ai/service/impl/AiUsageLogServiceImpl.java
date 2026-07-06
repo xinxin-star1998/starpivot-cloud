@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 public class AiUsageLogServiceImpl implements AiUsageLogService {
 
     private final AiUsageLogMapper aiUsageLogMapper;
+    private final AiUsageLogAsyncWriter aiUsageLogAsyncWriter;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void recordSuccess(ChatResponse response, UsageContext context) {
         AiUsageLog entity = baseLog(context, "0");
         Usage usage = response != null && response.getMetadata() != null ? response.getMetadata().getUsage() : null;
@@ -41,16 +41,15 @@ public class AiUsageLogServiceImpl implements AiUsageLogService {
             entity.setCompletionTokens(estimateTokens(context.completionLength()));
             entity.setTotalTokens(entity.getPromptTokens() + entity.getCompletionTokens());
         }
-        aiUsageLogMapper.insert(entity);
+        aiUsageLogAsyncWriter.write(entity);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void recordFailure(UsageContext context, String errorMessage) {
         AiUsageLog entity = baseLog(context, "1");
         entity.setErrorMessage(trimError(errorMessage));
         entity.setPromptTokens(estimateTokens(context.userMessageLength()));
-        aiUsageLogMapper.insert(entity);
+        aiUsageLogAsyncWriter.write(entity);
     }
 
     @Override

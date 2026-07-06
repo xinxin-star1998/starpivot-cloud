@@ -9,7 +9,7 @@
     />
     <Editor
       :style="{ height: height, overflowY: 'hidden' }"
-      v-model="modelValue"
+      v-model="editorHtml"
       :mode="mode"
       :defaultConfig="editorConfig"
       @onCreated="onCreateEditor"
@@ -24,6 +24,10 @@ import {useUserStore} from '@/store/modules/user'
 import {getApiBaseUrl} from '@/utils/http'
 import {buildAbsoluteApiUrl} from '@/utils/http/api-path'
 import EmojiText from '@/utils/ui/emojo'
+import {
+  normalizeEditorHtmlForStorage,
+  resolveEditorHtmlForDisplay
+} from '@/utils/storage/editor-oss-image'
 import {IDomEditor, IEditorConfig, IToolbarConfig} from '@wangeditor/editor'
 
 defineOptions({ name: 'ArtWangEditor' })
@@ -58,6 +62,38 @@ defineOptions({ name: 'ArtWangEditor' })
   })
 
   const modelValue = defineModel<string>({ required: true })
+
+  const editorHtml = ref('')
+  let syncingFromParent = false
+  let syncingToParent = false
+
+  watch(
+    () => modelValue.value,
+    async (html) => {
+      if (syncingToParent) {
+        return
+      }
+      syncingFromParent = true
+      try {
+        editorHtml.value = await resolveEditorHtmlForDisplay(html || '')
+      } finally {
+        syncingFromParent = false
+      }
+    },
+    { immediate: true }
+  )
+
+  watch(editorHtml, (html) => {
+    if (syncingFromParent) {
+      return
+    }
+    syncingToParent = true
+    try {
+      modelValue.value = normalizeEditorHtmlForStorage(html || '')
+    } finally {
+      syncingToParent = false
+    }
+  })
 
   // 编辑器实例
   const editorRef = shallowRef<IDomEditor>()
@@ -124,6 +160,15 @@ defineOptions({ name: 'ArtWangEditor' })
           allowedFileTypes: mergedUploadConfig.value.allowedFileTypes,
           server: uploadServer.value,
           headers: authHeader.value,
+          customInsert(res: Record<string, unknown>, insertFn: (url: string, alt: string, href: string) => void) {
+            const payload = (res?.data ?? res) as { url?: string; displayUrl?: string }
+            const displayUrl = payload?.displayUrl || payload?.url || ''
+            if (!displayUrl) {
+              ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
+              return
+            }
+            insertFn(displayUrl, '', '')
+          },
           onSuccess() {
             ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
           },

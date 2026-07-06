@@ -58,9 +58,11 @@ public class CommonUploadController {
             return errorBody("文件不能为空");
         }
         try {
-            String url = fileStorageService.uploadEditorImageWithUrl(file);
+            String objectName = fileStorageService.uploadEditorImageWithUrl(file);
+            String displayUrl = fileStorageService.getPresignedUrl(objectName);
             Map<String, Object> data = new LinkedHashMap<>();
-            data.put("url", url);
+            data.put("url", objectName);
+            data.put("displayUrl", displayUrl);
             data.put("alt", "");
             data.put("href", "");
             Map<String, Object> body = new LinkedHashMap<>();

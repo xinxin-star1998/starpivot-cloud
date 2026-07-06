@@ -103,8 +103,8 @@ public interface FileStorageService {
     String getPermanentUrl(String objectName);
 
     /**
-     * 上传富文本编辑器图片并返回可写入 HTML 的访问 URL（对象路径：editor/...）。
-     * 私有存储桶场景一般为预签名 URL，便于浏览器直接加载；永久直链在私有桶下会 403。
+     * 上传富文本编辑器图片并返回 OSS 对象路径（editor/...），供 HTML 持久化存储。
+     * 浏览器展示请配合 {@link #getPresignedUrl(String)} 或上传接口返回的 displayUrl。
      *
      * @param file 图片文件
      * @return 图片访问 URL

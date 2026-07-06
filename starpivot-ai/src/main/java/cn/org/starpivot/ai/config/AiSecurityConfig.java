@@ -2,6 +2,7 @@ package cn.org.starpivot.ai.config;
 
 import cn.org.starpivot.common.filter.MicroserviceAuthenticationFilter;
 import cn.org.starpivot.common.security.MicroserviceSecuritySupport;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,8 @@ public class AiSecurityConfig {
                 microserviceAuthenticationFilter,
                 unauthorizedEntryPoint,
                 auth -> {
+                    // SSE 流式响应会触发 ASYNC 二次分发，需放行否则 SecurityContext 丢失导致 Access Denied
+                    auth.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll();
                     auth.requestMatchers("/internal/**").permitAll();
                     MicroserviceSecuritySupport.permitInfrastructureEndpoints(auth);
                     auth.anyRequest().authenticated();

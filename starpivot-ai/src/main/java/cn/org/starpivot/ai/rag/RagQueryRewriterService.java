@@ -30,7 +30,7 @@ public class RagQueryRewriterService {
         if (!StringUtils.hasText(question)) {
             return question;
         }
-        String cacheKey = HYDE_CACHE_PREFIX + question.hashCode();
+        String cacheKey = HYDE_CACHE_PREFIX + HashUtils.md5(question);
         String cached = redisTemplate.opsForValue().get(cacheKey);
         if (StringUtils.hasText(cached)) {
             return cached;

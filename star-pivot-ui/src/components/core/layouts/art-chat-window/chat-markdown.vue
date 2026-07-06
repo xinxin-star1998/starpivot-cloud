@@ -123,10 +123,17 @@ const html = computed(() => renderChatMarkdown(props.content, props.streaming))
   }
 
   :deep(blockquote) {
-    margin: 0.5em 0;
-    padding: 0.35em 0 0.35em 0.75em;
+    margin: 0.55em 0;
+    padding: 0.45em 0.75em;
     border-left: 3px solid var(--el-color-primary);
-    color: rgb(0 0 0 / 65%);
+    border-radius: 0 6px 6px 0;
+    background: rgb(0 0 0 / 3%);
+    color: rgb(0 0 0 / 72%);
+    font-size: 0.95em;
+  }
+
+  :deep(blockquote p) {
+    margin: 0.25em 0;
   }
 
   :deep(a) {

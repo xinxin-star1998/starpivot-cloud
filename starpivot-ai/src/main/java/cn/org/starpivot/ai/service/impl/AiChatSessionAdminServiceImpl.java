@@ -1,11 +1,11 @@
 package cn.org.starpivot.ai.service.impl;
 
 import cn.org.starpivot.ai.domain.dto.AiChatSessionQueryDto;
-import cn.org.starpivot.ai.domain.entity.AiChatMessage;
 import cn.org.starpivot.ai.domain.entity.AiChatSession;
 import cn.org.starpivot.ai.domain.vo.AiChatSessionAdminVo;
 import cn.org.starpivot.ai.domain.vo.ChatHistoryMessageVo;
 import cn.org.starpivot.ai.mapper.AiChatSessionMapper;
+import cn.org.starpivot.ai.memory.ChatHistoryConverter;
 import cn.org.starpivot.ai.memory.MysqlChatMemoryRepository;
 import cn.org.starpivot.ai.service.AiChatSessionAdminService;
 import cn.org.starpivot.common.entity.PageResponse;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +51,7 @@ public class AiChatSessionAdminServiceImpl implements AiChatSessionAdminService 
             throw new BizException("会话 ID 不能为空");
         }
         return chatMemoryRepository.listRawMessages(conversationId.trim()).stream()
-                .map(this::toHistoryVo)
+                .map(ChatHistoryConverter::toVo)
                 .collect(Collectors.toList());
     }
 
@@ -77,16 +76,5 @@ public class AiChatSessionAdminServiceImpl implements AiChatSessionAdminService 
         vo.setCreateTime(session.getCreateTime());
         vo.setUpdateTime(session.getUpdateTime());
         return vo;
-    }
-
-    private ChatHistoryMessageVo toHistoryVo(AiChatMessage message) {
-        Long createTime = message.getCreateTime() != null
-                ? message.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                : null;
-        return ChatHistoryMessageVo.builder()
-                .role(message.getRole())
-                .content(message.getContent())
-                .createTime(createTime)
-                .build();
     }
 }

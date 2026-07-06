@@ -15,5 +15,8 @@ public interface AiKnowledgeChunkMapper extends BaseMapper<AiKnowledgeChunk> {
 
     List<AiKnowledgeChunkHitVo> searchLike(@Param("keyword") String keyword, @Param("topK") int topK);
 
-    List<AiKnowledgeChunkHitVo> listEmbeddableChunks(@Param("limit") int limit);
+    List<AiKnowledgeChunkHitVo> listEmbeddableChunkBatch(
+            @Param("lastChunkId") Long lastChunkId, @Param("limit") int limit);
+
+    int insertBatch(@Param("list") List<AiKnowledgeChunk> list);
 }

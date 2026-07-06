@@ -27,6 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -104,7 +106,6 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
         if (dto.getDocId() != null) {
             aiKnowledgeDocumentMapper.updateById(entity);
         } else {
-            entity.setIndexStatus(AiIndexServiceImpl.INDEX_PENDING);
             aiKnowledgeDocumentMapper.insert(entity);
         }
         aiIndexService.submitTextIndex(entity.getDocId());
@@ -158,7 +159,6 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
         entity.setFileType(fileType);
         entity.setFileSize(file.getSize());
         entity.setStatus(STATUS_NORMAL);
-        entity.setIndexStatus(AiIndexServiceImpl.INDEX_PENDING);
         entity.setDocVersion(1);
         entity.setCreateBy(operator);
         entity.setCreateTime(now);
@@ -202,15 +202,39 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
     @Transactional(rollbackFor = Exception.class)
     public void remove(Long docId) {
         AiKnowledgeDocument doc = requireDoc(docId);
+        String objectName = doc.getObjectName();
         aiKnowledgeChunkMapper.delete(new LambdaQueryWrapper<AiKnowledgeChunk>()
                 .eq(AiKnowledgeChunk::getDocId, doc.getDocId()));
         aiKnowledgeDocumentMapper.deleteById(docId);
+        if (StringUtils.hasText(objectName)) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    deleteStoredObject(objectName);
+                }
+            });
+        }
+    }
+
+    private void deleteStoredObject(String objectName) {
+        if (!StringUtils.hasText(objectName)) {
+            return;
+        }
+        FileStorageService storage = fileStorageServiceProvider.getIfAvailable();
+        if (storage != null) {
+            try {
+                storage.deleteObject(objectName);
+            } catch (Exception ex) {
+                log.warn("删除 OSS 对象失败 objectName={}: {}", objectName, ex.getMessage());
+            }
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void reindex(Long docId) {
         AiKnowledgeDocument doc = requireDoc(docId);
+        aiIndexService.forceResetIndexState(docId);
         if (SOURCE_FILE.equals(doc.getSourceType()) && StringUtils.hasText(doc.getObjectName())) {
             aiIndexService.submitFileIndex(docId);
         } else {

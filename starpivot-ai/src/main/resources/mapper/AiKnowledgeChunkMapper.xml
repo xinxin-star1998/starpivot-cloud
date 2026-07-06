@@ -11,7 +11,9 @@
                c.content    AS content,
                MATCH(c.content) AGAINST(#{query} IN NATURAL LANGUAGE MODE) AS score
         FROM ai_knowledge_chunk c
-                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id AND d.del_flag = '0' AND d.status = '0'
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id
+                     AND c.doc_version = d.doc_version
+                     AND d.del_flag = '0' AND d.status = '0' AND d.index_status = 'DONE'
                  INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
         WHERE MATCH(c.content) AGAINST(#{query} IN NATURAL LANGUAGE MODE)
         ORDER BY score DESC
@@ -26,14 +28,16 @@
                c.content  AS content,
                1          AS score
         FROM ai_knowledge_chunk c
-                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id AND d.del_flag = '0' AND d.status = '0'
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id
+                     AND c.doc_version = d.doc_version
+                     AND d.del_flag = '0' AND d.status = '0' AND d.index_status = 'DONE'
                  INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
         WHERE c.content LIKE CONCAT('%', #{keyword}, '%')
         ORDER BY c.chunk_id DESC
         LIMIT #{topK}
     </select>
 
-    <select id="listEmbeddableChunks" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
+    <select id="listEmbeddableChunkBatch" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
         SELECT c.chunk_id        AS chunkId,
                c.doc_id          AS docId,
                c.kb_id           AS kbId,
@@ -43,10 +47,25 @@
                c.embedding_json  AS embeddingJson,
                0                 AS score
         FROM ai_knowledge_chunk c
-                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id AND d.del_flag = '0' AND d.status = '0'
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id
+                     AND c.doc_version = d.doc_version
+                     AND d.del_flag = '0' AND d.status = '0' AND d.index_status = 'DONE'
                  INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
         WHERE c.embedding_json IS NOT NULL
+        <if test="lastChunkId != null">
+            AND c.chunk_id &lt; #{lastChunkId}
+        </if>
         ORDER BY c.chunk_id DESC
         LIMIT #{limit}
     </select>
+
+    <insert id="insertBatch">
+        INSERT INTO ai_knowledge_chunk
+            (doc_id, kb_id, chunk_index, content, page_num, section_title, doc_version, embedding_json, create_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.docId}, #{item.kbId}, #{item.chunkIndex}, #{item.content},
+             #{item.pageNum}, #{item.sectionTitle}, #{item.docVersion}, #{item.embeddingJson}, #{item.createTime})
+        </foreach>
+    </insert>
 </mapper>

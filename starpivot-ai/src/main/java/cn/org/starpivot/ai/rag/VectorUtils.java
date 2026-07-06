@@ -18,7 +18,11 @@ public final class VectorUtils {
             List<Double> values = objectMapper.readValue(json, new TypeReference<>() {});
             float[] vector = new float[values.size()];
             for (int i = 0; i < values.size(); i++) {
-                vector[i] = values.get(i).floatValue();
+                Double value = values.get(i);
+                if (value == null) {
+                    return new float[0];
+                }
+                vector[i] = value.floatValue();
             }
             return vector;
         } catch (Exception ex) {
