@@ -31,6 +31,9 @@ public interface ProductInternalClient {
     @PostMapping("/internal/product/sku/order-snapshot")
     Result<Map<Long, SkuOrderSnapshotDto>> loadOrderSnapshots(@RequestBody List<Long> skuIds);
 
+    @PostMapping("/internal/product/sku/sale-attrs")
+    Result<Map<Long, String>> loadSkuAttrTexts(@RequestBody List<Long> skuIds);
+
     @GetMapping("/internal/product/spu/{spuId}")
     Result<SpuDto> getSpu(@PathVariable("spuId") Long spuId);
 

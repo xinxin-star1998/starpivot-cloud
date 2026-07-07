@@ -15,7 +15,7 @@
     <view class="main-body">
       <swiper v-if="banners.length" class="banner" circular autoplay indicator-dots indicator-color="rgba(255,255,255,0.5)" indicator-active-color="#fff">
         <swiper-item v-for="item in banners" :key="item.id">
-          <image class="banner-img" :src="imageSrc(item.pic)" mode="aspectFill" @click="onBannerTap(item)" />
+          <image lazy-load class="banner-img" :src="imageSrc(item.pic)" mode="aspectFill" @click="onBannerTap(item)" />
         </swiper-item>
       </swiper>
 
@@ -77,7 +77,7 @@
               class="seckill-item"
               @click="goSeckillProduct(item)"
             >
-              <image v-if="item.coverImg" class="seckill-img" :src="imageSrc(item.coverImg)" mode="aspectFill" />
+              <image lazy-load v-if="item.coverImg" class="seckill-img" :src="imageSrc(item.coverImg)" mode="aspectFill" />
               <view v-else class="seckill-img seckill-img-empty">抢</view>
               <text class="seckill-price"><text class="yen">¥</text>{{ item.promoPrice ?? item.price }}</text>
               <text class="seckill-name">{{ item.spuName }}</text>
@@ -89,7 +89,7 @@
                 class="seckill-item"
                 @click="onBlockTap(block)"
               >
-                <image v-if="block.coverImg" class="seckill-img" :src="imageSrc(block.coverImg)" mode="aspectFill" />
+                <image lazy-load v-if="block.coverImg" class="seckill-img" :src="imageSrc(block.coverImg)" mode="aspectFill" />
                 <view v-else class="seckill-img seckill-img-empty">抢</view>
                 <text class="seckill-name">{{ block.title }}</text>
               </view>
@@ -107,7 +107,7 @@
         <view v-else-if="!products.length" class="hint">暂无推荐商品</view>
         <view v-else class="product-grid">
           <view v-for="item in products" :key="item.id" class="product-card" @click="goDetail(item.id)">
-            <image class="product-pic" :src="imageSrc(cover(item))" mode="aspectFill" />
+            <image lazy-load class="product-pic" :src="imageSrc(cover(item))" mode="aspectFill" />
             <view class="product-info">
               <view class="product-name-wrap">
                 <text class="self-tag">自营</text>
@@ -274,7 +274,7 @@ onLoad(() => {
 
 onShow(() => {
   startCountdown()
-  loadData(false)
+  if (hasLoadedOnce) loadData(false)
 })
 
 onPullDownRefresh(async () => {

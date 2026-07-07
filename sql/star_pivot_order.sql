@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 04/07/2026 19:29:02
+ Date: 07/07/2026 19:13:38
 */
 
 SET NAMES utf8mb4;
@@ -89,7 +89,7 @@ CREATE TABLE `oms_order`  (
   UNIQUE INDEX `uk_order_sn`(`order_sn`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE,
   INDEX `idx_status_create`(`status`, `create_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of oms_order
@@ -101,6 +101,8 @@ INSERT INTO `oms_order` VALUES (4, 1, 'SP20260625125530808180', NULL, '2026-06-2
 INSERT INTO `oms_order` VALUES (5, 1, 'SP20260625165025371495', NULL, '2026-06-25 16:50:25', 'xinxin', 19998.0000, 19998.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1, 0, 3, '顺丰速递', 'SF2135464651654684946', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '张三', '15888888888', NULL, '北京市', '北京市', '西城区', '皇城国际', NULL, 1, 0, NULL, '2026-06-25 16:50:27', '2026-07-02 21:12:05', '2026-07-02 21:22:33', NULL, '2026-07-02 21:22:33');
 INSERT INTO `oms_order` VALUES (6, 1, 'SP20260703224706552122', NULL, '2026-07-03 22:47:07', 'xinxin', 9999.0000, 10009.0000, 10.0000, 0.0000, 0.0000, 0.0000, 0.0000, 2, 0, 3, '顺丰速递', 'SF543546813213', NULL, 0, 0, NULL, NULL, NULL, NULL, NULL, '张三', '15888888888', NULL, '北京市', '北京市', '西城区', '皇城国际', NULL, 1, 0, 0, '2026-07-03 22:47:29', '2026-07-03 22:48:03', '2026-07-03 22:48:16', NULL, '2026-07-03 22:48:16');
 INSERT INTO `oms_order` VALUES (7, 1, 'SP20260704135653714766', NULL, '2026-07-04 13:56:53', 'xinxin', 6999.0000, 7009.0000, 10.0000, 0.0000, 0.0000, 0.0000, 0.0000, 2, 0, 3, '顺丰速运', 'SF46546813213', NULL, 100, 100, NULL, NULL, NULL, NULL, NULL, '张三', '15888888888', NULL, '北京市', '北京市', '西城区', '皇城国际', NULL, 1, 0, 0, '2026-07-04 13:56:59', '2026-07-04 13:58:04', '2026-07-04 13:59:11', NULL, '2026-07-04 13:59:11');
+INSERT INTO `oms_order` VALUES (8, 1, 'SP20260705183141479976', NULL, '2026-07-05 18:31:42', 'xinxin', 6999.0000, 6999.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 2, 0, 3, '顺丰速运', 'SF5468411641535', NULL, 100, 100, NULL, NULL, NULL, NULL, NULL, '张三', '15888888888', NULL, '北京市', '北京市', '西城区', '皇城国际', NULL, 1, 0, 0, '2026-07-05 18:31:46', '2026-07-05 18:32:23', '2026-07-05 18:33:29', NULL, '2026-07-05 18:33:29');
+INSERT INTO `oms_order` VALUES (9, 1, 'SP20260705184207923311', NULL, '2026-07-05 18:42:07', 'xinxin', 6999.0000, 6999.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 2, 0, 3, '圆通速递', 'YT0052140042346', NULL, 100, 100, NULL, NULL, NULL, NULL, NULL, '张三', '15888888888', NULL, '北京市', '北京市', '西城区', '皇城国际', NULL, 1, 0, 0, '2026-07-05 18:42:10', '2026-07-05 18:42:27', '2026-07-05 18:42:50', NULL, '2026-07-05 18:42:50');
 
 -- ----------------------------
 -- Table structure for oms_order_item
@@ -131,7 +133,7 @@ CREATE TABLE `oms_order_item`  (
   INDEX `idx_order_id`(`order_id`) USING BTREE,
   INDEX `idx_order_sn`(`order_sn`) USING BTREE,
   INDEX `idx_sku_id`(`sku_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单项信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单项信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of oms_order_item
@@ -144,6 +146,8 @@ INSERT INTO `oms_order_item` VALUES (5, 5, 'SP20260625165025371495', 13, ' Apple
 INSERT INTO `oms_order_item` VALUES (6, 5, 'SP20260625165025371495', 13, ' Apple iPhone 11 (A2223) ', 'file/goods/7/2026/06/24/f974367a-2602-4eff-9839-df8a75a31cc8.jpg', 'Apple', 225, 84, ' Apple iPhone 11 (A2223)  红色 6GB 128GB 标准版', 'file/goods/7/2026/06/24/f974367a-2602-4eff-9839-df8a75a31cc8.jpg', 9999.0000, 1, '机身颜色:红色;运行内存(RAM):6GB;机身存储(ROM):128GB;机型版本:标准版', 0.0000, 0.0000, 0.0000, 9999.0000, NULL, NULL);
 INSERT INTO `oms_order_item` VALUES (7, 6, 'SP20260703224706552122', 13, ' Apple iPhone 11 (A2223) ', 'file/goods/7/2026/06/24/f974367a-2602-4eff-9839-df8a75a31cc8.jpg', 'Apple', 225, 99, ' Apple iPhone 11 (A2223)  红色 6GB 128GB 标准版', 'file/goods/7/2026/06/24/f974367a-2602-4eff-9839-df8a75a31cc8.jpg', 9999.0000, 1, '机身颜色:红色;运行内存(RAM):6GB;机身存储(ROM):128GB;机型版本:标准版', 0.0000, 0.0000, 0.0000, 9999.0000, NULL, NULL);
 INSERT INTO `oms_order_item` VALUES (8, 7, 'SP20260704135653714766', 14, '小米promax', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', '小米', 225, 102, '小米promax 黑色 12GB 512GB Ultra版', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', 6999.0000, 1, '机身颜色:黑色;运行内存(RAM):12GB;机身存储(ROM):512GB;机型版本:Ultra版', 0.0000, 0.0000, 0.0000, 6999.0000, NULL, NULL);
+INSERT INTO `oms_order_item` VALUES (9, 8, 'SP20260705183141479976', 14, '小米promax', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', '小米', 225, 102, '小米promax 黑色 12GB 512GB Ultra版', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', 6999.0000, 1, '机身颜色:黑色;运行内存(RAM):12GB;机身存储(ROM):512GB;机型版本:Ultra版', 0.0000, 0.0000, 0.0000, 6999.0000, NULL, NULL);
+INSERT INTO `oms_order_item` VALUES (10, 9, 'SP20260705184207923311', 14, '小米promax', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', '小米', 225, 102, '小米promax 黑色 12GB 512GB Ultra版', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', 6999.0000, 1, '机身颜色:黑色;运行内存(RAM):12GB;机身存储(ROM):512GB;机型版本:Ultra版', 0.0000, 0.0000, 0.0000, 6999.0000, NULL, NULL);
 
 -- ----------------------------
 -- Table structure for oms_order_operate_history
@@ -158,7 +162,7 @@ CREATE TABLE `oms_order_operate_history`  (
   `note` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_order_id`(`order_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单操作历史记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 30 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单操作历史记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of oms_order_operate_history
@@ -185,6 +189,14 @@ INSERT INTO `oms_order_operate_history` VALUES (19, 7, 'xinxin', '2026-07-04 13:
 INSERT INTO `oms_order_operate_history` VALUES (20, 7, 'xinxin', '2026-07-04 13:57:00', 1, '支付成功');
 INSERT INTO `oms_order_operate_history` VALUES (21, 7, 'admin', '2026-07-04 13:58:04', 2, '订单发货');
 INSERT INTO `oms_order_operate_history` VALUES (22, 7, 'xinxin', '2026-07-04 13:59:11', 3, '确认收货');
+INSERT INTO `oms_order_operate_history` VALUES (23, 8, 'xinxin', '2026-07-05 18:31:42', 0, '提交订单');
+INSERT INTO `oms_order_operate_history` VALUES (24, 8, 'xinxin', '2026-07-05 18:31:47', 1, '支付成功');
+INSERT INTO `oms_order_operate_history` VALUES (25, 8, 'admin', '2026-07-05 18:32:23', 2, '订单发货');
+INSERT INTO `oms_order_operate_history` VALUES (26, 8, 'xinxin', '2026-07-05 18:33:29', 3, '确认收货');
+INSERT INTO `oms_order_operate_history` VALUES (27, 9, 'xinxin', '2026-07-05 18:42:07', 0, '提交订单');
+INSERT INTO `oms_order_operate_history` VALUES (28, 9, 'xinxin', '2026-07-05 18:42:10', 1, '支付成功');
+INSERT INTO `oms_order_operate_history` VALUES (29, 9, 'admin', '2026-07-05 18:42:27', 2, '订单发货');
+INSERT INTO `oms_order_operate_history` VALUES (30, 9, 'xinxin', '2026-07-05 18:42:50', 3, '确认收货');
 
 -- ----------------------------
 -- Table structure for oms_order_return_apply
@@ -224,7 +236,7 @@ CREATE TABLE `oms_order_return_apply`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_order_id`(`order_id`) USING BTREE,
   INDEX `idx_status`(`status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单退货申请' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '订单退货申请' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of oms_order_return_apply
@@ -242,7 +254,7 @@ CREATE TABLE `oms_order_return_reason`  (
   `status` tinyint(0) NULL DEFAULT 1 COMMENT '0禁用 1启用',
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '退货原因' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '退货原因' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of oms_order_return_reason
@@ -293,7 +305,7 @@ CREATE TABLE `oms_payment_info`  (
   UNIQUE INDEX `uk_payment_order_sn`(`order_sn`) USING BTREE,
   UNIQUE INDEX `uk_alipay_trade_no`(`alipay_trade_no`) USING BTREE,
   INDEX `idx_order_id`(`order_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '支付信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '支付信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of oms_payment_info
@@ -305,6 +317,8 @@ INSERT INTO `oms_payment_info` VALUES (4, 'SP20260625125530808180', 4, 'MOCK1782
 INSERT INTO `oms_payment_info` VALUES (5, 'SP20260625165025371495', 5, 'MOCK1782377426717', 19998.0000, '商城订单-SP20260625165025371495', 'TRADE_SUCCESS', '2026-06-25 16:50:27', '2026-06-25 16:50:27', NULL, NULL);
 INSERT INTO `oms_payment_info` VALUES (6, 'SP20260703224706552122', 6, 'WXMOCK1783090048748', 10009.0000, '商城订单-SP20260703224706552122', 'TRADE_SUCCESS', '2026-07-03 22:47:29', '2026-07-03 22:47:29', '{\"mock\":true,\"channel\":\"wechat\"}', '2026-07-03 22:47:29');
 INSERT INTO `oms_payment_info` VALUES (7, 'SP20260704135653714766', 7, 'WXMOCK1783144619207', 7009.0000, '商城订单-SP20260704135653714766', 'TRADE_SUCCESS', '2026-07-04 13:56:59', '2026-07-04 13:56:59', '{\"mock\":true,\"channel\":\"wechat\"}', '2026-07-04 13:56:59');
+INSERT INTO `oms_payment_info` VALUES (8, 'SP20260705183141479976', 8, 'WXMOCK1783247505851', 6999.0000, '商城订单-SP20260705183141479976', 'TRADE_SUCCESS', '2026-07-05 18:31:46', '2026-07-05 18:31:46', '{\"mock\":true,\"channel\":\"wechat\"}', '2026-07-05 18:31:46');
+INSERT INTO `oms_payment_info` VALUES (9, 'SP20260705184207923311', 9, 'WXMOCK1783248129532', 6999.0000, '商城订单-SP20260705184207923311', 'TRADE_SUCCESS', '2026-07-05 18:42:10', '2026-07-05 18:42:10', '{\"mock\":true,\"channel\":\"wechat\"}', '2026-07-05 18:42:10');
 
 -- ----------------------------
 -- Table structure for oms_refund_info

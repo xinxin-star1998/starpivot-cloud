@@ -5,6 +5,23 @@ const displayUrlCache = new Map<string, string>()
 /** 非响应式版本号，供 imageSrc 读取；页面在 prefetch 后自增本地 tick 触发重渲染 */
 let cacheVersion = 0
 
+/** 微信小程序 image 组件加载外部 http 资源易超时，OSS 域名统一走 https */
+function normalizeDisplayUrl(url: string): string {
+  if (
+    url.startsWith('http://') &&
+    (url.includes('.oss-') || url.includes('.aliyuncs.com'))
+  ) {
+    return url.replace(/^http:\/\//i, 'https://')
+  }
+  return url
+}
+
+function rememberDisplayUrl(key: string, url: string) {
+  const normalized = normalizeDisplayUrl(url)
+  displayUrlCache.set(key, normalized)
+  return normalized
+}
+
 export function getImageCacheVersion() {
   return cacheVersion
 }
@@ -12,7 +29,7 @@ export function getImageCacheVersion() {
 /** 同步获取已解析的展示 URL（仅使用预签名缓存，不做本地磁盘兜底） */
 export function getCoverDisplayUrl(coverImg?: string | null): string {
   if (!coverImg) return ''
-  if (isHttpUrl(coverImg)) return coverImg
+  if (isHttpUrl(coverImg)) return normalizeDisplayUrl(coverImg)
 
   const cachedRaw = displayUrlCache.get(coverImg)
   if (cachedRaw) return cachedRaw
@@ -35,8 +52,9 @@ export async function resolveGoodsImageDisplayUrls(
     const objectName = normalizeToObjectName(raw)
     if (!objectName) continue
     if (isHttpUrl(objectName)) {
-      result.set(objectName, objectName)
-      if (raw !== objectName) result.set(raw, objectName)
+      const url = normalizeDisplayUrl(objectName)
+      result.set(objectName, url)
+      if (raw !== objectName) result.set(raw, url)
       continue
     }
     if (!isStorageObjectName(objectName)) continue
@@ -56,8 +74,8 @@ export async function resolveGoodsImageDisplayUrls(
       for (const objectName of needFetch) {
         const url = remote[objectName]
         if (isHttpUrl(url)) {
-          displayUrlCache.set(objectName, url)
-          result.set(objectName, url)
+          const normalized = rememberDisplayUrl(objectName, url)
+          result.set(objectName, normalized)
         }
       }
     } catch (error) {

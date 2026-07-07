@@ -27,21 +27,12 @@ services:
     container_name: starpivot-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: star_pivot
       TZ: Asia/Shanghai
     ports:
       - "3307:3306"
-    # 命名卷替代本地E盘目录绑定
-    # 首次导入核心库 + 审批库；商城五域 SQL 请手动导入，见 docs/docker-deploy.md 与 sql/import_mall_databases.ps1
+    # 不挂载 docker-entrypoint-initdb.d；建库与导入 SQL 见 README.md「快速开始 → 1. 启动基础设施」
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./sql/00_create_mall_database.sql:/docker-entrypoint-initdb.d/00_create_mall_database.sql:ro
-      - ./sql/star_pivot.sql:/docker-entrypoint-initdb.d/01_star_pivot.sql:ro
-      - ./sql/sys_menu.sql:/docker-entrypoint-initdb.d/02_sys_menu.sql:ro
-      - ./sql/star_pivot_approval.sql:/docker-entrypoint-initdb.d/03_star_pivot_approval.sql:ro
-      - ./sql/star_pivot_tms.sql:/docker-entrypoint-initdb.d/04_star_pivot_tms.sql:ro
-      - ./sql/patch_tms_menu.sql:/docker-entrypoint-initdb.d/05_patch_tms_menu.sql:ro
-      - ./sql/patch_tms_phase3.sql:/docker-entrypoint-initdb.d/06_patch_tms_phase3.sql:ro
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
@@ -52,7 +43,7 @@ services:
       interval: 15s
       timeout: 10s
       retries: 20
-      start_period: 300s
+      start_period: 60s
     networks:
       starpivot-net:
     restart: unless-stopped

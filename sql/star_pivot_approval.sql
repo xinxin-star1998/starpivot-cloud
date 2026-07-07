@@ -11,12 +11,11 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 04/07/2026 20:00:00
+ Date: 07/07/2026 19:13:19
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-USE `star_pivot_approval`;
 
 -- ----------------------------
 -- Table structure for ap_instance
@@ -41,7 +40,7 @@ CREATE TABLE `ap_instance`  (
   UNIQUE INDEX `uk_biz_running`(`biz_key`, `running_flag`) USING BTREE,
   INDEX `idx_starter`(`starter_id`) USING BTREE,
   INDEX `idx_biz`(`biz_module`, `biz_type`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批实例' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批实例' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_instance
@@ -73,7 +72,7 @@ CREATE TABLE `ap_notification`  (
   `create_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`notify_id`) USING BTREE,
   INDEX `idx_user_read_time`(`user_id`, `read_flag`, `create_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批站内通知' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批站内通知' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_notification
@@ -105,7 +104,7 @@ CREATE TABLE `ap_record`  (
   `create_time` datetime(0) NOT NULL,
   PRIMARY KEY (`record_id`) USING BTREE,
   INDEX `idx_instance`(`instance_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_record
@@ -158,7 +157,7 @@ CREATE TABLE `ap_task`  (
   INDEX `idx_assignee_status`(`assignee_id`, `status`) USING BTREE,
   INDEX `idx_instance`(`instance_id`) USING BTREE,
   INDEX `idx_status_due`(`status`, `due_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批待办' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批待办' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_task

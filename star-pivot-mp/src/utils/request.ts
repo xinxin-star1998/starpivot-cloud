@@ -34,6 +34,7 @@ export function request<T>(options: RequestOptions): Promise<T> {
       method,
       data: isGet ? undefined : data,
       header,
+      timeout: 15000,
       success: (res) => {
         const body = res.data as ApiResult<T>
         if (res.statusCode === 401) {

@@ -337,7 +337,15 @@ public class OssUtil {
         String resolvedObjectName = resolveAvatarObjectName(objectName);
         Date expiration = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L);
         URL url = ossClient.generatePresignedUrl(bucketName(), resolvedObjectName, expiration);
-        return url.toString();
+        return ensureHttpsUrl(url.toString());
+    }
+
+    /** 预签名 URL 统一使用 HTTPS，避免私有桶链接在浏览器/小程序中被 http 策略拦截 */
+    private static String ensureHttpsUrl(String url) {
+        if (url != null && url.startsWith("http://")) {
+            return "https://" + url.substring("http://".length());
+        }
+        return url;
     }
 
     /**

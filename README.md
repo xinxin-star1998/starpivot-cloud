@@ -79,7 +79,7 @@ starpivot-cloud/
 ├── star-pivot-ui/                    # Vue 3 管理前端 + H5 Portal
 ├── star-pivot-mp/                    # 微信小程序（uni-app）
 ├── nacos/config/                     # Nacos 配置模板
-├── sql/                              # 数据库初始化脚本
+├── sql/                              # 数据库 DDL/DML 脚本（需手动建库并导入）
 └── docs/                             # 设计文档与部署指南
 ```
 
@@ -158,29 +158,33 @@ docker compose up -d
 | Elasticsearch | [http://localhost:9200](http://localhost:9200)          | 无鉴权（开发模式）   |
 
 
-MySQL 容器**首次启动**会自动执行：
+MySQL 容器**仅提供数据库实例**，不会自动导入任何表结构或初始数据。请按下列顺序**手动建库并导入** `sql/` 脚本（连接：`127.0.0.1:3307`，用户 `root` / 密码 `root`）。
 
-- `sql/00_create_mall_database.sql` — 创建商城五域库（product / ware / order / member / promotion）
-- `sql/star_pivot.sql` — 核心库表与初始数据（含 RBAC、审批、代码生成、消息中心等）
-- `sql/sys_menu.sql` — 补充菜单
+**1. 创建数据库**
 
-**消息中心**（若库为旧版本、无 `sys_user_message` 或菜单 319–322，需额外执行）：
-
-```powershell
-mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot < sql/patch_sys_user_message.sql
-# 可选：历史审批通知迁移
-mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot < sql/patch_migrate_ap_notification_to_sys_user_message.sql
+```sql
+CREATE DATABASE IF NOT EXISTS star_pivot           DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_approval  DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_tms       DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_product   DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_ware      DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_order     DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_member    DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS star_pivot_promotion DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-执行后重启 `starpivot-system`、`starpivot-approval`、`starpivot-mall-order`、网关，并**重新登录**以刷新菜单与 SSE 连接。详见 [docs/doc/message-center.md](docs/doc/message-center.md)。
-
-**商城业务数据**（按微服务分库，未随容器自动导入）需手动执行：
+**2. 导入 SQL（建议顺序）**
 
 ```powershell
-# 推荐：一键导入五域库
-.\sql\import_mall_databases.ps1
+# 系统核心库（RBAC、字典、消息中心、代码生成等）
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot            < sql/star_pivot.sql
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot            < sql/sys_menu.sql
 
-# 或逐库导入
+# 审批 / TMS 独立业务库
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_approval < sql/star_pivot_approval.sql
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_tms      < sql/star_pivot_tms.sql
+
+# 商城五域库（按需导入）
 mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_product  < sql/star_pivot_product.sql
 mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_ware     < sql/star_pivot_ware.sql
 mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_order    < sql/star_pivot_order.sql
@@ -188,15 +192,29 @@ mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_member   < sql/star_pivot_memb
 mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_promotion < sql/star_pivot_promotion.sql
 ```
 
-| SQL 文件 | 数据库 | 微服务 |
-|----------|--------|--------|
+| SQL 文件 | 目标库 | 对应微服务 |
+|----------|--------|------------|
+| `star_pivot.sql` | `star_pivot` | auth / system / file / generator / monitor |
+| `sys_menu.sql` | `star_pivot` | 菜单与按钮权限（在核心库之后执行） |
+| `star_pivot_approval.sql` | `star_pivot_approval` | starpivot-approval |
+| `star_pivot_tms.sql` | `star_pivot_tms` | starpivot-tms |
 | `star_pivot_product.sql` | `star_pivot_product` | starpivot-mall-product |
 | `star_pivot_ware.sql` | `star_pivot_ware` | starpivot-mall-ware |
 | `star_pivot_order.sql` | `star_pivot_order` | starpivot-mall-order |
 | `star_pivot_member.sql` | `star_pivot_member` | starpivot-mall-member |
 | `star_pivot_promotion.sql` | `star_pivot_promotion` | starpivot-mall-promotion |
 
-> 数据库名：`star_pivot`（系统库）+ 上述五域库。Nacos 中 `DB_URL` 默认指向 `star_pivot`；各商城服务在对应 yaml 中已配置各自业务库。
+> 最小登录联调只需导入 `star_pivot.sql` + `sys_menu.sql`；商城、审批、TMS 等模块按上表按需导入。Nacos 中 `DB_URL` 默认指向 `star_pivot`；各业务服务在对应 yaml 中配置各自库名。导入完成后重启相关微服务并**重新登录**以刷新菜单。消息中心说明见 [docs/doc/message-center.md](docs/doc/message-center.md)。
+
+**可选：演示数据（品牌 / 商品 / 库存 / 轮播）**
+
+```powershell
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_product  < sql/seed_product_brand_demo.sql
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_ware      < sql/seed_product_brand_demo_ware.sql
+mysql -h127.0.0.1 -P3307 -uroot -proot star_pivot_promotion < sql/seed_promotion_demo.sql
+```
+
+含 14 个新品牌、15 款 2025–2026 风格商品（手机 / 笔记本 / 耳机 / 家电 / 跑鞋等），均已上架且审批通过；可重复执行。
 
 
 

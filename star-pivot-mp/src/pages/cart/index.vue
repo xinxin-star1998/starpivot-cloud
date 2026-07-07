@@ -87,6 +87,9 @@ const allChecked = computed(() => {
 
 async function loadCart() {
   if (!isLogin()) {
+    items.value = []
+    checkedCount.value = 0
+    checkedAmount.value = 0
     syncCartBadgeFromItems([])
     return
   }

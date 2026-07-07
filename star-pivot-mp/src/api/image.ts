@@ -6,7 +6,7 @@ import type {PortalImageUploadResult} from '@/api/types'
 /** 批量获取商品/营销图展示 URL（C 端公开接口） */
 export function fetchImagePresignedUrls(objectNames: string[]) {
   return request<Record<string, string>>({
-    url: '/portal/home/presigned-urls',
+    url: '/portal/image/presigned-urls',
     method: 'POST',
     data: { objectNames },
     auth: false

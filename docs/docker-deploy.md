@@ -28,19 +28,22 @@ docker-compose.yml        # 基础设施：Nacos / MySQL / Redis / RabbitMQ / Zi
 # 1. 基础设施
 docker compose up -d
 
-# 2. 导入 Nacos 配置（首次或配置变更后）
+# 2. 手动建库并导入 SQL（见 README.md「快速开始 → 1. 启动基础设施」）
+#    最小联调：star_pivot.sql + sys_menu.sql
+
+# 3. 导入 Nacos 配置（首次或配置变更后）
 $env:JWT_SECRET = "dev-local-jwt-secret-must-be-at-least-32-chars"
 $env:INTERNAL_SERVICE_TOKEN = "dev-internal-token"
 .\nacos\import-config.ps1
 
-# 3. 编译 & 启动微服务（各开终端）
+# 4. 编译 & 启动微服务（各开终端）
 mvn clean install -DskipTests
 mvn spring-boot:run -pl starpivot-system
 mvn spring-boot:run -pl starpivot-auth
 mvn spring-boot:run -pl starpivot-gateway
 # ... 按需启动其他模块
 
-# 4. 前端
+# 5. 前端
 cd star-pivot-ui
 pnpm install
 pnpm dev
@@ -57,12 +60,12 @@ pnpm dev
 | 地址 | 说明 |
 |------|------|
 | http://localhost:8848/nacos | Nacos 控制台（nacos/nacos） |
-| localhost:3307 | MySQL（容器内 3306，库名 `star_pivot`） |
+| localhost:3307 | MySQL（容器内 3306，需手动建库，见 [README.md](../README.md)） |
 | localhost:6379 | Redis（密码 `root`） |
 | http://localhost:15672 | RabbitMQ 管理台（admin/admin） |
 | http://localhost:9411 | Zipkin |
 
-默认账号：**admin / 123456**（若已导入 `sql/star_pivot.sql`）
+默认账号：**admin / admin123**（导入 `sql/star_pivot.sql` 后；若已修改请使用实际密码）
 
 ---
 
@@ -87,13 +90,13 @@ docker compose up -d rabbitmq
 ## 故障排查
 
 1. **微服务连不上数据库**  
-   确认 `docker compose ps` 中 MySQL、Redis、Nacos 均为 healthy；首次启动 MySQL 初始化可能需要 1～2 分钟。
+   确认 `docker compose ps` 中 MySQL、Redis、Nacos 均为 healthy；并确认已按 [README.md](../README.md) 手动建库并导入 SQL。
 
 2. **Nacos 无配置**  
    手动执行 `.\nacos\import-config.ps1`。
 
-3. **已有 MySQL 数据卷但缺少商城域库**  
-   执行 `sql/00_create_mall_database.sql` 创建五域库后，运行 `.\sql\import_mall_databases.ps1` 导入各 `sql/star_pivot_*.sql`。
+3. **缺少业务库或表**  
+   按 [README.md](../README.md) 对照表补建数据库并导入对应 `sql/*.sql` 脚本。
 
 4. **auth 出现「回退 Feign」**  
    确认 RabbitMQ 已启动：`docker compose up -d rabbitmq`。

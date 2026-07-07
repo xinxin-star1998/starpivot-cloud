@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 04/07/2026 19:31:43
+ Date: 07/07/2026 19:31:13
 */
 
 SET NAMES utf8mb4;
@@ -43,30 +43,30 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 313 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 348 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
 -- ----------------------------
-INSERT INTO `sys_menu` VALUES (1, '系统管理', 0, 1, '/system', '', NULL, 'System', 1, 1, 'M', '0', '0', '', 'ep:setting', 'system', '2025-12-31 16:34:16', 'admin', '2026-06-29 18:23:27', '系统管理模块111');
-INSERT INTO `sys_menu` VALUES (2, '系统工具', 0, 2, '/tools', '', NULL, 'SystemTools', 1, 1, 'M', '0', '0', '', 'clarity:tools-line', 'admin', '2026-01-20 13:08:43', 'admin', '2026-04-19 19:09:23', '系统工具');
-INSERT INTO `sys_menu` VALUES (3, '系统监控', 0, 3, '/monitor', '', NULL, 'Monitor', 1, 1, 'M', '0', '0', '', 'material-symbols:monitor-outline', 'admin', '2026-01-25 18:00:43', 'admin', '2026-05-18 15:42:45', '系统监控模块');
-INSERT INTO `sys_menu` VALUES (4, '文件中心', 0, 4, '/file', '', NULL, 'FileCenter', 1, 1, 'M', '0', '0', '', 'ep:folder-opened', 'admin', '2026-06-22 19:45:35', '', NULL, '文件中心模块');
-INSERT INTO `sys_menu` VALUES (5, '商城系统', 0, 5, '/mall', '', NULL, 'MallSystem', 1, 1, 'M', '0', '0', '', 'ep:goods', 'admin', '2026-04-23 20:23:16', 'admin', '2026-04-23 20:26:06', '商城系统');
+INSERT INTO `sys_menu` VALUES (1, '系统管理', 0, 1, '/system', '', NULL, 'System', 1, 1, 'M', '0', '0', '', 'ep:setting', 'system', '2025-12-31 16:34:16', 'admin', '2026-07-06 10:39:37', '系统管理模块111');
+INSERT INTO `sys_menu` VALUES (2, '系统工具', 0, 2, '/tools', '', NULL, 'SystemTools', 1, 1, 'M', '0', '0', '', 'ri:tools-line', 'admin', '2026-01-20 13:08:43', 'admin', '2026-04-19 19:09:23', '系统工具');
+INSERT INTO `sys_menu` VALUES (3, '系统监控', 0, 3, '/monitor', '', NULL, 'Monitor', 1, 1, 'M', '0', '0', '', 'ri:computer-line', 'admin', '2026-01-25 18:00:43', 'admin', '2026-05-18 15:42:45', '系统监控模块');
+INSERT INTO `sys_menu` VALUES (4, '文件中心', 0, 4, '/file', '', NULL, 'FileCenter', 1, 1, 'M', '0', '0', '', 'ep:folder-opened', 'admin', '2026-06-22 19:45:35', 'admin', '2026-07-04 20:16:43', '文件中心模块');
+INSERT INTO `sys_menu` VALUES (5, '商城系统', 0, 5, '/mall', '', NULL, 'MallSystem', 1, 1, 'M', '0', '0', '', 'ep:goods', 'admin', '2026-04-23 20:23:16', 'admin', '2026-07-05 11:00:25', '商城系统');
 INSERT INTO `sys_menu` VALUES (6, '审批中心', 0, 6, '/approval', '', NULL, 'ApprovalCenter', 1, 1, 'M', '0', '0', '', 'mdi:clipboard-check-outline', 'admin', '2026-06-26 10:49:49', '', NULL, 'SAS 审批中台');
 INSERT INTO `sys_menu` VALUES (7, '星枢项目', 0, 99, 'https://gitee.com/xin1998/StarPivot', '', NULL, '', 0, 1, 'M', '0', '0', '', 'ri:gitee-fill', 'admin', '2026-04-21 12:48:19', 'admin', '2026-05-18 22:44:22', '星枢项目');
 INSERT INTO `sys_menu` VALUES (8, 'art-design-pro', 0, 100, 'https://gitee.com/lingchen163/art-design-pro', '', NULL, '', 0, 1, 'M', '0', '0', '', 'ri:guide-fill', 'admin', '2026-04-19 19:07:54', 'admin', '2026-04-23 20:26:22', '');
 INSERT INTO `sys_menu` VALUES (9, '菜单管理', 1, 1, 'menu', '/system/menu', NULL, 'SystemMenu', 1, 1, 'C', '0', '0', 'system:menu:list', 'ep:menu', 'system', '2025-12-31 16:34:16', '', '2026-01-02 21:12:33', '菜单管理模块');
-INSERT INTO `sys_menu` VALUES (10, '角色管理', 1, 2, 'role', '/system/role', NULL, 'SystemRole', 1, 1, 'C', '0', '0', 'system:role:list', 'oui:app-users-roles', 'system', '2025-12-31 16:34:16', 'admin', '2026-06-08 16:46:55', '角色管理模块');
+INSERT INTO `sys_menu` VALUES (10, '角色管理', 1, 2, 'role', '/system/role', NULL, 'SystemRole', 1, 1, 'C', '0', '0', 'system:role:list', 'ri:shield-user-line', 'system', '2025-12-31 16:34:16', 'admin', '2026-06-08 16:46:55', '角色管理模块');
 INSERT INTO `sys_menu` VALUES (11, '用户管理', 1, 3, 'user', '/system/user', NULL, 'SystemUser', 1, 1, 'C', '0', '0', 'system:user:list', 'mdi:user', 'system', '2025-12-31 16:34:16', '', '2026-01-02 21:31:51', '用户管理模块');
 INSERT INTO `sys_menu` VALUES (12, '部门管理', 1, 4, 'dept', '/system/dept', NULL, 'SystemDept', 1, 1, 'C', '0', '0', 'system:dept:list', 'ri:organization-chart', '', '2026-01-02 21:04:34', '', '2026-01-02 21:36:43', '部门管理模块');
-INSERT INTO `sys_menu` VALUES (13, '岗位管理', 1, 5, 'post', '/system/post/index', NULL, 'PostManage', 1, 1, 'C', '0', '0', 'system:post:list', 'picon:post', 'xinxin', '2026-01-04 19:23:51', 'xinxin', '2026-01-04 19:25:02', '岗位管理模块');
-INSERT INTO `sys_menu` VALUES (14, '字典管理', 1, 6, 'dict', '/system/dict/index', NULL, 'DictManage', 1, 1, 'C', '0', '0', 'system:type:list', 'arcticons:zdict', 'admin', '2026-01-05 12:28:54', 'admin', '2026-01-19 21:37:20', '字典管理模块。有：字典数据   字典类型');
+INSERT INTO `sys_menu` VALUES (13, '岗位管理', 1, 5, 'post', '/system/post/index', NULL, 'PostManage', 1, 1, 'C', '0', '0', 'system:post:list', 'ri:briefcase-line', 'xinxin', '2026-01-04 19:23:51', 'xinxin', '2026-01-04 19:25:02', '岗位管理模块');
+INSERT INTO `sys_menu` VALUES (14, '字典管理', 1, 6, 'dict', '/system/dict/index', NULL, 'DictManage', 1, 1, 'C', '0', '0', 'system:type:list', 'ep:notebook', 'admin', '2026-01-05 12:28:54', 'admin', '2026-01-19 21:37:20', '字典管理模块。有：字典数据   字典类型');
 INSERT INTO `sys_menu` VALUES (15, '日志管理', 1, 7, 'log', '', NULL, 'LogManager', 1, 1, 'M', '0', '0', '', 'mdi:math-log', 'admin', '2026-01-23 13:37:05', 'admin', '2026-05-15 09:09:47', '');
-INSERT INTO `sys_menu` VALUES (16, '通知公告', 1, 8, 'notice', '/system/notice/index', NULL, 'NoticeManage', 1, 0, 'C', '0', '0', 'system:notice:list', 'fe:notice-active', 'admin', '2026-02-05 17:38:35', 'admin', '2026-03-31 22:03:49', '通知公告菜单');
-INSERT INTO `sys_menu` VALUES (17, '参数配置', 1, 9, 'config', '/system/config/index', NULL, 'ConfigManage', 1, 1, 'C', '0', '0', 'system:config:list', 'mynaui:config', 'admin', '2026-03-31 22:03:28', 'admin', '2026-03-31 22:05:20', '参数配置菜单');
-INSERT INTO `sys_menu` VALUES (18, '操作日志', 15, 1, 'oper', '/system/log/oper/index', NULL, 'OperLog', 1, 1, 'C', '0', '0', 'system:log:list', 'icon-park-solid:log', 'admin', '2026-01-23 13:40:41', '', NULL, '操作日志');
-INSERT INTO `sys_menu` VALUES (19, '登录日志', 15, 2, 'login', '/system/log/login/index', NULL, 'LoginInfoLog', 1, 1, 'C', '0', '0', 'system:login:list', 'icon-park-solid:log', 'admin', '2026-01-23 13:51:37', '', NULL, '登录日志');
+INSERT INTO `sys_menu` VALUES (16, '通知公告', 1, 8, 'notice', '/system/notice/index', NULL, 'NoticeManage', 1, 0, 'C', '0', '0', 'system:notice:list', 'ri:notification-3-line', 'admin', '2026-02-05 17:38:35', 'admin', '2026-03-31 22:03:49', '通知公告菜单');
+INSERT INTO `sys_menu` VALUES (17, '参数配置', 1, 9, 'config', '/system/config/index', NULL, 'ConfigManage', 1, 1, 'C', '0', '0', 'system:config:list', 'ep:setting', 'admin', '2026-03-31 22:03:28', 'admin', '2026-03-31 22:05:20', '参数配置菜单');
+INSERT INTO `sys_menu` VALUES (18, '操作日志', 15, 1, 'oper', '/system/log/oper/index', NULL, 'OperLog', 1, 1, 'C', '0', '0', 'system:log:list', 'ri:file-list-3-line', 'admin', '2026-01-23 13:40:41', '', NULL, '操作日志');
+INSERT INTO `sys_menu` VALUES (19, '登录日志', 15, 2, 'login', '/system/log/login/index', NULL, 'LoginInfoLog', 1, 1, 'C', '0', '0', 'system:login:list', 'ri:login-box-line', 'admin', '2026-01-23 13:51:37', '', NULL, '登录日志');
 INSERT INTO `sys_menu` VALUES (20, '代码生成', 2, 1, 'generator', '/tools/generator/index', NULL, 'GenerateTools', 1, 1, 'C', '0', '0', 'tools:generator:list', 'mdi:generator-mobile', 'admin', '2026-01-20 13:15:59', 'admin', '2026-01-20 13:25:42', '代码生成');
 INSERT INTO `sys_menu` VALUES (21, '外部库代码生成', 2, 2, 'external', '/tools/generator-external/index', NULL, '', 1, 1, 'C', '0', '0', '', 'ep:document-add', 'admin', '2026-06-02 18:13:11', 'admin', '2026-06-02 18:30:43', '');
 INSERT INTO `sys_menu` VALUES (22, '服务器监控', 3, 1, 'server', '/monitor/server/index', NULL, 'ServerMonitor', 1, 0, 'C', '0', '0', 'monitor:server:query', 'ri:server-line', 'admin', '2026-01-25 18:00:43', 'admin', '2026-01-25 18:33:45', '服务器信息监控');
@@ -218,7 +218,7 @@ INSERT INTO `sys_menu` VALUES (167, '仓库维护', 30, 1, 'warehouse', '/mall/w
 INSERT INTO `sys_menu` VALUES (168, '地区管理', 30, 2, 'address', '/mall/wms/address/index', NULL, 'AddressManager', 1, 1, 'C', '0', '0', '', 'ep:position', 'admin', '2026-05-19 15:53:01', 'admin', '2026-05-22 17:39:15', '地区管理');
 INSERT INTO `sys_menu` VALUES (169, '商品库存', 30, 3, 'sku', '/mall/wms/sku/index', NULL, '', 1, 0, 'C', '0', '0', 'mall:sku:list', 'mdi:alpha-s-box-outline', 'admin', '2026-05-22 17:38:35', 'admin', '2026-05-22 17:41:05', '商品库存菜单');
 INSERT INTO `sys_menu` VALUES (170, '库存工作单', 30, 4, 'task', '/mall/wms/task/index', NULL, 'TaskManager', 1, 1, 'C', '0', '0', 'mall:task:list', 'ri:task-fill', 'admin', '2026-06-23 16:47:13', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (171, '采购单维护', 30, 5, 'PurchaseOrder', '', NULL, '', 1, 1, 'M', '0', '0', '', '#', 'admin', '2026-06-23 16:48:04', 'admin', '2026-06-23 16:50:35', '');
+INSERT INTO `sys_menu` VALUES (171, '采购单维护', 30, 5, 'PurchaseOrder', '', NULL, '', 1, 1, 'M', '0', '0', '', 'mdi:clipboard-list-outline', 'admin', '2026-06-23 16:48:04', 'admin', '2026-06-23 16:50:35', '');
 INSERT INTO `sys_menu` VALUES (172, '仓库信息查询', 167, 1, '', '', NULL, '', 1, 1, 'F', '0', '0', 'mall:ware:query', '#', 'admin', '2026-05-19 17:10:59', 'admin', '2026-05-19 17:13:03', '');
 INSERT INTO `sys_menu` VALUES (173, '仓库信息新增', 167, 2, '', '', NULL, '', 1, 1, 'F', '0', '0', 'mall:ware:add', '#', 'admin', '2026-05-19 17:11:00', 'admin', '2026-05-19 17:13:10', '');
 INSERT INTO `sys_menu` VALUES (174, '仓库信息修改', 167, 3, '', '', NULL, '', 1, 1, 'F', '0', '0', 'mall:ware:edit', '#', 'admin', '2026-05-19 17:11:00', 'admin', '2026-05-19 17:13:16', '');
@@ -228,7 +228,6 @@ INSERT INTO `sys_menu` VALUES (177, 'address查询', 168, 1, '', '', NULL, '', 1
 INSERT INTO `sys_menu` VALUES (178, 'address新增', 168, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:address:add', '#', 'admin', '2026-05-19 17:30:36', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (179, 'address修改', 168, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:address:edit', '#', 'admin', '2026-05-19 17:30:36', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (180, 'address删除', 168, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:address:delete', '#', 'admin', '2026-05-19 17:30:36', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (181, 'address导出', 168, 5, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:address:export', '#', 'admin', '2026-05-19 17:30:36', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (182, '商品库存查询', 169, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:sku:query', '#', 'admin', '2026-05-22 17:38:35', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (183, '商品库存新增', 169, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:sku:add', '#', 'admin', '2026-05-22 17:38:35', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (184, '商品库存修改', 169, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:sku:edit', '#', 'admin', '2026-05-22 17:38:35', '', NULL, '');
@@ -236,18 +235,18 @@ INSERT INTO `sys_menu` VALUES (185, '商品库存删除', 169, 4, '', '', NULL, 
 INSERT INTO `sys_menu` VALUES (186, '商品库存导出', 169, 5, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:sku:export', '#', 'admin', '2026-05-22 17:38:35', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (187, '工作单处理', 170, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:task:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (188, '工作单列表', 170, 2, '', '', NULL, '', 1, 1, 'F', '0', '0', 'mall:task:list', '#', 'admin', '2026-06-24 13:16:20', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (189, '采购需求', 171, 1, 'purchaseitem', '/mall/wms/purchaseitem/index', NULL, '', 1, 1, 'C', '0', '0', 'mall:purchase:item', '#', 'admin', '2026-06-23 16:49:05', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (190, '采购单', 171, 2, 'purchaseorder', '/mall/wms/purchaseorder/index', NULL, '', 1, 1, 'C', '0', '0', 'mall:purchase:list', '#', 'admin', '2026-06-23 16:52:05', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (189, '采购需求', 171, 1, 'purchaseitem', '/mall/wms/purchaseitem/index', NULL, '', 1, 1, 'C', '0', '0', 'mall:purchase:item', 'ri:file-list-3-line', 'admin', '2026-06-23 16:49:05', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (190, '采购单', 171, 2, 'purchaseorder', '/mall/wms/purchaseorder/index', NULL, '', 1, 1, 'C', '0', '0', 'mall:purchase:list', 'ep:shopping-cart-full', 'admin', '2026-06-23 16:52:05', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (191, '采购单查询', 190, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:purchase:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (192, '采购单处理', 190, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:purchase:edit', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (193, '优惠券管理', 31, 1, 'coupon', '/mall/sms/coupon/coupon/index', NULL, 'CouponManager', 1, 1, 'C', '0', '0', 'mall:coupon:list', 'mdi:candy', 'admin', '2026-06-23 16:56:59', 'admin', '2026-06-24 15:00:55', '');
 INSERT INTO `sys_menu` VALUES (194, '发放记录', 31, 2, 'history', '/mall/sms/coupon/history/index', NULL, 'HistoryManager', 1, 1, 'C', '0', '0', 'mall:coupon:history', 'ri:coupon-2-line', 'admin', '2026-06-23 16:57:58', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (195, '专题活动', 31, 3, 'subject', '/mall/sms/coupon/subject/index', NULL, 'SubjectManager', 1, 1, 'C', '0', '0', 'mall:subject:list', 'ep:aim', 'admin', '2026-06-23 16:59:42', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (196, '秒杀活动', 31, 4, 'seckill', '/mall/sms/coupon/seckill/index', NULL, 'SeckillManager', 1, 1, 'C', '0', '0', 'mall:seckill:list', '#', 'admin', '2026-06-23 17:00:55', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (197, '积分维护', 31, 5, 'bounds', '/mall/sms/coupon/bounds/index', NULL, 'BoundsManager', 1, 1, 'C', '0', '0', 'mall:bounds:list', '#', 'admin', '2026-06-23 17:02:00', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (198, '满减折扣', 31, 6, 'full', '/mall/sms/coupon/full/index', NULL, 'FullManager', 1, 1, 'C', '0', '0', 'mall:reduction:list', '#', 'admin', '2026-06-23 17:02:43', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (199, '会员价格', 31, 7, 'memberprice', '/mall/sms/coupon/memberprice/index', NULL, 'Memberprice', 1, 1, 'C', '0', '0', 'mall:memberprice:list', '#', 'admin', '2026-06-23 17:03:36', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (200, '每日秒杀', 31, 8, 'seckillsession', '/mall/sms/coupon/seckillsession/index', NULL, 'Seckillsession', 1, 1, 'C', '0', '0', 'mall:seckill:session', '#', 'admin', '2026-06-23 17:05:50', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (196, '秒杀活动', 31, 4, 'seckill', '/mall/sms/coupon/seckill/index', NULL, 'SeckillManager', 1, 1, 'C', '0', '0', 'mall:seckill:list', 'ri:flashlight-line', 'admin', '2026-06-23 17:00:55', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (197, '积分维护', 31, 5, 'bounds', '/mall/sms/coupon/bounds/index', NULL, 'BoundsManager', 1, 1, 'C', '0', '0', 'mall:bounds:list', 'ri:copper-coin-line', 'admin', '2026-06-23 17:02:00', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (198, '满减折扣', 31, 6, 'full', '/mall/sms/coupon/full/index', NULL, 'FullManager', 1, 1, 'C', '0', '0', 'mall:reduction:list', 'ep:discount', 'admin', '2026-06-23 17:02:43', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (199, '会员价格', 31, 7, 'memberprice', '/mall/sms/coupon/memberprice/index', NULL, 'Memberprice', 1, 1, 'C', '0', '0', 'mall:memberprice:list', 'ri:vip-crown-line', 'admin', '2026-06-23 17:03:36', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (200, '每日秒杀', 31, 8, 'seckillsession', '/mall/sms/coupon/seckillsession/index', NULL, 'Seckillsession', 1, 1, 'C', '0', '0', 'mall:seckill:session', 'ri:timer-flash-line', 'admin', '2026-06-23 17:05:50', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (201, '优惠券新增', 193, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:coupon:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (202, '优惠券修改', 193, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:coupon:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (203, '优惠券删除', 193, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:coupon:delete', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
@@ -274,11 +273,11 @@ INSERT INTO `sys_menu` VALUES (223, '会员价删除', 199, 4, '', '', NULL, '',
 INSERT INTO `sys_menu` VALUES (224, '场次新增', 200, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:seckill:session:add', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (225, '场次修改', 200, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:seckill:session:edit', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (226, '场次删除', 200, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:seckill:session:delete', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (227, '订单查询', 32, 1, 'order', '/mall/oms/order/order/index', NULL, 'OrderQuery', 1, 1, 'C', '0', '0', 'mall:order:list', '#', 'admin', '2026-06-23 17:08:34', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (228, '退货单处理', 32, 2, 'return', '/mall/oms/order/return/index', NULL, 'OrderReturn', 1, 1, 'C', '0', '0', 'mall:return:list', '#', 'admin', '2026-06-23 17:09:12', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (229, '等级规则', 32, 3, 'level', '/mall/oms/order/level/index', NULL, 'LevelSettings', 1, 1, 'C', '0', '0', 'mall:order:setting', '#', 'admin', '2026-06-23 17:10:11', 'admin', '2026-06-24 15:36:48', '');
-INSERT INTO `sys_menu` VALUES (230, '支付流水查询', 32, 4, 'payment', '/mall/oms/order/payment/index', NULL, 'PaymentLog', 1, 1, 'C', '0', '0', 'mall:payment:list', '#', 'admin', '2026-06-23 17:11:01', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (231, '退款流水查询', 32, 5, 'refund', '/mall/oms/order/refund/index', NULL, 'RefundLog', 1, 1, 'C', '0', '0', 'mall:refund:list', '#', 'admin', '2026-06-23 17:11:42', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (227, '订单查询', 32, 1, 'order', '/mall/oms/order/order/index', NULL, 'OrderQuery', 1, 1, 'C', '0', '0', 'mall:order:list', 'ep:shopping-cart', 'admin', '2026-06-23 17:08:34', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (228, '退货单处理', 32, 2, 'return', '/mall/oms/order/return/index', NULL, 'OrderReturn', 1, 1, 'C', '0', '0', 'mall:return:list', 'ep:refresh-left', 'admin', '2026-06-23 17:09:12', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (229, '等级规则', 32, 3, 'level', '/mall/oms/order/level/index', NULL, 'LevelSettings', 1, 1, 'C', '0', '0', 'mall:order:setting', 'ri:medal-line', 'admin', '2026-06-23 17:10:11', 'admin', '2026-06-24 15:36:48', '');
+INSERT INTO `sys_menu` VALUES (230, '支付流水查询', 32, 4, 'payment', '/mall/oms/order/payment/index', NULL, 'PaymentLog', 1, 1, 'C', '0', '0', 'mall:payment:list', 'ep:wallet', 'admin', '2026-06-23 17:11:01', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (231, '退款流水查询', 32, 5, 'refund', '/mall/oms/order/refund/index', NULL, 'RefundLog', 1, 1, 'C', '0', '0', 'mall:refund:list', 'ri:refund-2-line', 'admin', '2026-06-23 17:11:42', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (232, '订单查询', 227, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:order:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (233, '订单发货', 227, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:order:deliver', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (234, '关闭订单', 227, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:order:close', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
@@ -286,19 +285,18 @@ INSERT INTO `sys_menu` VALUES (235, '退货审核', 228, 1, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (236, '退货查询', 228, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:return:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (237, '支付流水查询', 230, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:payment:query', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (238, '退款流水查询', 231, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:refund:query', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (318, '退款操作', 231, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:refund:edit', '#', 'admin', '2026-07-05 13:30:00', '', NULL, '同步/重试退款及告警确认');
-INSERT INTO `sys_menu` VALUES (239, '会员列表', 33, 1, 'member', '/mall/ums/member/member/index', NULL, 'MemberList', 1, 1, 'C', '0', '0', 'mall:member:list', '#', 'admin', '2026-06-23 17:13:52', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (240, '会员等级', 33, 2, 'level', '/mall/ums/member/level/index', NULL, 'MemberLevel', 1, 1, 'C', '0', '0', 'mall:member:level', '#', 'admin', '2026-06-23 17:14:34', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (241, '积分变化', 33, 3, 'growth', '/mall/ums/member/growth/index', NULL, 'GrowthRecord', 1, 1, 'C', '0', '0', 'mall:member:growth', '#', 'admin', '2026-06-23 17:15:27', 'admin', '2026-06-24 13:11:09', '');
-INSERT INTO `sys_menu` VALUES (242, '统计信息', 33, 4, 'statistics', '/mall/ums/member/statistics/index', NULL, 'MemberStatistics', 1, 1, 'C', '0', '0', 'mall:member:statistics', '#', 'admin', '2026-06-23 17:16:07', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (239, '会员列表', 33, 1, 'member', '/mall/ums/member/member/index', NULL, 'MemberList', 1, 1, 'C', '0', '0', 'mall:member:list', 'ri:group-line', 'admin', '2026-06-23 17:13:52', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (240, '会员等级', 33, 2, 'level', '/mall/ums/member/level/index', NULL, 'MemberLevel', 1, 1, 'C', '0', '0', 'mall:member:level', 'ri:vip-line', 'admin', '2026-06-23 17:14:34', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (241, '积分变化', 33, 3, 'growth', '/mall/ums/member/growth/index', NULL, 'GrowthRecord', 1, 1, 'C', '0', '0', 'mall:member:growth', 'ri:exchange-line', 'admin', '2026-06-23 17:15:27', 'admin', '2026-06-24 13:11:09', '');
+INSERT INTO `sys_menu` VALUES (242, '统计信息', 33, 4, 'statistics', '/mall/ums/member/statistics/index', NULL, 'MemberStatistics', 1, 1, 'C', '0', '0', 'mall:member:statistics', 'ri:bar-chart-box-line', 'admin', '2026-06-23 17:16:07', 'admin', '2026-06-24 13:11:09', '');
 INSERT INTO `sys_menu` VALUES (243, '会员查询', 239, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:query', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (244, '会员修改', 239, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (245, '等级新增', 240, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:add', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (246, '等级修改', 240, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:edit', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (247, '等级删除', 240, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:member:level:delete', '#', 'admin', '2026-06-24 15:36:49', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (248, '首页推荐', 34, 1, 'home', '/mall/cms/content/home/index', NULL, 'HomeRecommend', 1, 1, 'C', '0', '0', 'mall:adv:list', '#', 'admin', '2026-06-23 17:18:06', 'admin', '2026-06-24 15:36:48', '');
-INSERT INTO `sys_menu` VALUES (249, '分类热门', 34, 2, 'category', '/mall/cms/content/category/index', NULL, 'CategoryHot', 1, 1, 'C', '0', '0', 'mall:categoryHot:list', '#', 'admin', '2026-06-23 17:18:49', 'admin', '2026-07-01 18:06:19', '首页分类热门配置');
-INSERT INTO `sys_menu` VALUES (250, '评论管理', 34, 3, 'comments', '/mall/cms/content/comments/index', NULL, 'CommentManage', 1, 1, 'C', '0', '0', 'mall:comment:list', '#', 'admin', '2026-06-23 17:19:35', 'admin', '2026-06-24 15:36:48', '');
+INSERT INTO `sys_menu` VALUES (248, '首页推荐', 34, 1, 'home', '/mall/cms/content/home/index', NULL, 'HomeRecommend', 1, 1, 'C', '0', '0', 'mall:adv:list', 'ri:home-smile-line', 'admin', '2026-06-23 17:18:06', 'admin', '2026-06-24 15:36:48', '');
+INSERT INTO `sys_menu` VALUES (249, '分类热门', 34, 2, 'category', '/mall/cms/content/category/index', NULL, 'CategoryHot', 1, 1, 'C', '0', '0', 'mall:categoryHot:list', 'ri:fire-line', 'admin', '2026-06-23 17:18:49', 'admin', '2026-07-01 18:06:19', '首页分类热门配置');
+INSERT INTO `sys_menu` VALUES (250, '评论管理', 34, 3, 'comments', '/mall/cms/content/comments/index', NULL, 'CommentManage', 1, 1, 'C', '0', '0', 'mall:comment:list', 'ri:chat-3-line', 'admin', '2026-06-23 17:19:35', 'admin', '2026-06-24 15:36:48', '');
 INSERT INTO `sys_menu` VALUES (251, '轮播新增', 248, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:add', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (252, '轮播修改', 248, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:edit', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (253, '轮播删除', 248, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:adv:delete', '#', 'admin', '2026-06-24 13:11:09', '', NULL, '');
@@ -313,21 +311,47 @@ INSERT INTO `sys_menu` VALUES (261, '审批操作', 37, 2, '', '', NULL, '', 1, 
 INSERT INTO `sys_menu` VALUES (262, '提交审批', 37, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:submit', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (263, '发起查询', 38, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:query', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (264, '撤回审批', 38, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:instance:withdraw', '#', 'admin', '2026-06-26 10:49:49', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (313, '通知查询', 37, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:query', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知查询');
-INSERT INTO `sys_menu` VALUES (314, '通知已读', 37, 5, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:edit', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知标记已读');
-INSERT INTO `sys_menu` VALUES (315, '通知查询', 38, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:query', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知查询');
-INSERT INTO `sys_menu` VALUES (316, '通知已读', 38, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:edit', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知标记已读');
 INSERT INTO `sys_menu` VALUES (270, '审批统计', 6, 5, 'statistics', '/approval/statistics/index', NULL, 'ApprovalStatistics', 1, 1, 'C', '0', '0', 'approval:statistics:query', 'mdi:chart-bar', 'admin', '2026-06-30 18:04:12', '', NULL, '审批数据看板');
-INSERT INTO `sys_menu` VALUES (271, '登录日志', 33, 5, 'login-log', '/mall/ums/member/login-log/index', NULL, 'MemberLoginLog', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, 'C端会员登录审计');
-INSERT INTO `sys_menu` VALUES (272, '会员收藏', 33, 6, 'collect', '/mall/ums/member/collect/index', NULL, 'MemberCollect', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-01 16:14:36', '', NULL, '商品/专题收藏查询');
-INSERT INTO `sys_menu` VALUES (317, '收货地址', 33, 7, 'receive-address', '/mall/ums/member/receive-address/index', NULL, 'MemberReceiveAddress', 1, 1, 'C', '0', '0', 'mall:member:query', '#', 'admin', '2026-07-05 10:00:00', '', NULL, 'C端会员收货地址查询');
-INSERT INTO `sys_menu` VALUES (319, '消息中心', 1, 9, 'message', '/system/message/index', NULL, 'MessageCenter', 1, 0, 'C', '0', '0', 'system:message:list', 'ri:mail-line', 'admin', '2026-07-05 14:00:00', '', NULL, '全平台站内消息收件箱');
-INSERT INTO `sys_menu` VALUES (320, '消息查询', 319, 1, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:query', '#', 'admin', '2026-07-05 14:00:00', '', NULL, '站内消息查询');
-INSERT INTO `sys_menu` VALUES (321, '消息已读', 319, 2, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:edit', '#', 'admin', '2026-07-05 14:00:00', '', NULL, '站内消息标记已读');
-INSERT INTO `sys_menu` VALUES (322, '消息群发', 319, 3, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:send', '#', 'admin', '2026-07-05 14:30:00', '', NULL, '管理员群发站内消息');
+INSERT INTO `sys_menu` VALUES (271, '登录日志', 33, 5, 'login-log', '/mall/ums/member/login-log/index', NULL, 'MemberLoginLog', 1, 1, 'C', '0', '0', 'mall:member:query', 'ri:login-box-line', 'admin', '2026-07-01 16:14:36', '', NULL, 'C端会员登录审计');
+INSERT INTO `sys_menu` VALUES (272, '会员收藏', 33, 6, 'collect', '/mall/ums/member/collect/index', NULL, 'MemberCollect', 1, 1, 'C', '0', '0', 'mall:member:query', 'ri:heart-line', 'admin', '2026-07-01 16:14:36', '', NULL, '商品/专题收藏查询');
 INSERT INTO `sys_menu` VALUES (306, '商品查询', 143, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:product:query', '#', 'admin', '2026-07-01 17:22:16', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (310, '分类热门新增', 249, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:add', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (311, '分类热门修改', 249, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:edit', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (312, '分类热门删除', 249, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:categoryHot:delete', '#', 'admin', '2026-07-01 17:57:19', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (313, '通知查询', 37, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:query', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知查询');
+INSERT INTO `sys_menu` VALUES (314, '通知已读', 37, 5, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:edit', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知标记已读');
+INSERT INTO `sys_menu` VALUES (315, '通知查询', 38, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:query', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知查询');
+INSERT INTO `sys_menu` VALUES (316, '通知已读', 38, 4, '', '', NULL, '', 1, 0, 'F', '0', '0', 'approval:notification:edit', '#', 'admin', '2026-07-04 20:00:00', '', NULL, '审批站内通知标记已读');
+INSERT INTO `sys_menu` VALUES (317, '收货地址', 33, 7, 'receive-address', '/mall/ums/member/receive-address/index', NULL, 'MemberReceiveAddress', 1, 1, 'C', '0', '0', 'mall:member:query', 'ri:map-pin-line', 'admin', '2026-07-05 11:00:04', '', NULL, 'C端会员收货地址查询');
+INSERT INTO `sys_menu` VALUES (318, '退款操作', 231, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'mall:refund:edit', '#', 'admin', '2026-07-05 13:30:00', '', NULL, '同步/重试退款及告警确认');
+INSERT INTO `sys_menu` VALUES (319, '消息中心', 1, 9, 'message', '/system/message/index', NULL, 'MessageCenter', 1, 0, 'C', '0', '0', 'system:message:list', 'ri:mail-line', 'admin', '2026-07-05 14:15:38', '', NULL, '全平台站内消息收件箱');
+INSERT INTO `sys_menu` VALUES (320, '消息查询', 319, 1, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:query', '#', 'admin', '2026-07-05 14:15:38', '', NULL, '站内消息查询');
+INSERT INTO `sys_menu` VALUES (321, '消息已读', 319, 2, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:edit', '#', 'admin', '2026-07-05 14:15:38', '', NULL, '站内消息标记已读');
+INSERT INTO `sys_menu` VALUES (322, '消息群发', 319, 3, '#', '', NULL, '', 1, 0, 'F', '0', '0', 'system:message:send', '#', 'admin', '2026-07-05 14:31:54', '', NULL, '管理员群发站内消息');
+INSERT INTO `sys_menu` VALUES (323, '物流管理', 0, 7, '/tms', '', NULL, 'TmsCenter', 1, 1, 'M', '0', '0', '', 'mdi:truck-delivery-outline', 'admin', '2026-07-05 18:07:55', '', NULL, 'TMS 运输物流管理');
+INSERT INTO `sys_menu` VALUES (324, '承运商配置', 323, 1, 'carrier', '/tms/carrier/index', NULL, 'TmsCarrier', 1, 1, 'C', '0', '0', 'tms:carrier:query', 'ep:van', 'admin', '2026-07-05 18:07:55', '', NULL, '承运商主数据');
+INSERT INTO `sys_menu` VALUES (325, '运单管理', 323, 2, 'shipment', '/tms/shipment/index', NULL, 'TmsShipment', 1, 1, 'C', '0', '0', 'tms:shipment:query', 'mdi:package-variant-closed', 'admin', '2026-07-05 18:07:55', '', NULL, '运单与轨迹');
+INSERT INTO `sys_menu` VALUES (326, '承运商查询', 324, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:carrier:query', '#', 'admin', '2026-07-05 18:07:56', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (327, '承运商编辑', 324, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:carrier:edit', '#', 'admin', '2026-07-05 18:07:56', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (328, '运单查询', 325, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:shipment:query', '#', 'admin', '2026-07-05 18:07:56', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (329, '运单发货', 325, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:shipment:ship', '#', 'admin', '2026-07-05 18:07:56', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (330, '轨迹刷新', 325, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:shipment:track', '#', 'admin', '2026-07-05 18:07:56', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (331, '运费规则', 323, 3, 'freight', '/tms/freight/index', NULL, 'TmsFreight', 1, 1, 'C', '0', '0', 'tms:freight:query', 'mdi:scale-balance', 'admin', '2026-07-05 18:18:54', '', NULL, 'TMS运费规则');
+INSERT INTO `sys_menu` VALUES (332, '运费查询', 331, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:freight:query', '#', 'admin', '2026-07-05 18:18:54', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (333, '运费编辑', 331, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:freight:edit', '#', 'admin', '2026-07-05 18:18:54', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (334, 'AI 中心', 0, 8, '/ai', '', NULL, 'AiCenter', 1, 1, 'M', '0', '0', '', 'ri:robot-2-line', 'admin', '2026-07-06 10:24:17', '', NULL, 'AI 智能对话管理');
+INSERT INTO `sys_menu` VALUES (335, '基础配置', 334, 1, 'config', '/ai/config/index', NULL, 'AiConfig', 1, 1, 'C', '0', '0', 'ai:config:query', 'ep:setting', 'admin', '2026-07-06 10:24:17', '', NULL, 'AI 助手基础配置');
+INSERT INTO `sys_menu` VALUES (336, '配置查询', 335, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:config:query', '#', 'admin', '2026-07-06 10:24:17', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (337, '配置编辑', 335, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:config:edit', '#', 'admin', '2026-07-06 10:24:17', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (338, '配置删除', 335, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:config:delete', '#', 'admin', '2026-07-06 10:24:17', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (339, '会话管理', 334, 2, 'session', '/ai/session/index', NULL, 'AiSession', 1, 1, 'C', '0', '0', 'ai:session:query', 'ri:chat-history-line', 'admin', '2026-07-06 10:30:18', '', NULL, 'AI 对话会话管理');
+INSERT INTO `sys_menu` VALUES (340, '会话查询', 339, 1, '', '', NULL, '', 1, 1, 'F', '0', '0', 'ai:session:query', '#', 'admin', '2026-07-06 10:30:18', 'admin', '2026-07-06 10:37:14', '');
+INSERT INTO `sys_menu` VALUES (341, '会话删除', 339, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:session:delete', '#', 'admin', '2026-07-06 10:30:18', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (342, '知识库', 334, 3, 'knowledge', '/ai/knowledge/index', NULL, 'AiKnowledge', 1, 1, 'C', '0', '0', 'ai:knowledge:query', 'ri:book-open-line', 'admin', '2026-07-06 10:39:22', '', NULL, 'AI 知识库管理');
+INSERT INTO `sys_menu` VALUES (343, '知识库查询', 342, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:knowledge:query', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (344, '知识库编辑', 342, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:knowledge:edit', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (345, '知识库删除', 342, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:knowledge:delete', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (346, '用量统计', 334, 4, 'statistics', '/ai/statistics/index', NULL, 'AiStatistics', 1, 1, 'C', '0', '0', 'ai:statistics:query', 'ri:bar-chart-box-line', 'admin', '2026-07-06 10:39:22', '', NULL, 'AI 调用用量统计');
+INSERT INTO `sys_menu` VALUES (347, '统计查询', 346, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:statistics:query', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
 
 SET FOREIGN_KEY_CHECKS = 1;

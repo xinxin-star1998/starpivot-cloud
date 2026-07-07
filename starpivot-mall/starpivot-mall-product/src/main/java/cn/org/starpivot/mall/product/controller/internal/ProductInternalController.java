@@ -49,6 +49,11 @@ public class ProductInternalController {
         return Result.success(productInternalService.loadOrderSnapshots(skuIds));
     }
 
+    @PostMapping("/sku/sale-attrs")
+    public Result<Map<Long, String>> loadSkuAttrTexts(@RequestBody List<Long> skuIds) {
+        return Result.success(productInternalService.loadSkuAttrTexts(skuIds));
+    }
+
     @GetMapping("/spu/{spuId}")
     public Result<SpuDto> getSpu(@PathVariable("spuId") Long spuId) {
         SpuDto spu = productInternalService.getSpu(spuId);

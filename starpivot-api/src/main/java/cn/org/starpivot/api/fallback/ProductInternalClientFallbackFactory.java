@@ -36,6 +36,11 @@ public class ProductInternalClientFallbackFactory implements FallbackFactory<Pro
             }
 
             @Override
+            public Result<Map<Long, String>> loadSkuAttrTexts(List<Long> skuIds) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
             public Result<SpuDto> getSpu(Long spuId) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }

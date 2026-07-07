@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 04/07/2026 19:28:54
+ Date: 07/07/2026 19:13:29
 */
 
 SET NAMES utf8mb4;
@@ -30,12 +30,14 @@ CREATE TABLE `ums_growth_change_history`  (
   `source_type` tinyint(0) NULL DEFAULT NULL COMMENT '0购物 1管理员修改',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '成长值变化历史' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '成长值变化历史' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_growth_change_history
 -- ----------------------------
 INSERT INTO `ums_growth_change_history` VALUES (1, 1, '2026-07-04 13:57:00', 100, '购物赠送成长值，订单号：SP20260704135653714766', 1);
+INSERT INTO `ums_growth_change_history` VALUES (2, 1, '2026-07-05 18:31:46', 100, '购物赠送成长值，订单号：SP20260705183141479976', 1);
+INSERT INTO `ums_growth_change_history` VALUES (3, 1, '2026-07-05 18:42:10', 100, '购物赠送成长值，订单号：SP20260705184207923311', 1);
 
 -- ----------------------------
 -- Table structure for ums_integration_change_history
@@ -50,12 +52,14 @@ CREATE TABLE `ums_integration_change_history`  (
   `source_type` tinyint(0) NULL DEFAULT NULL COMMENT '0购物 1管理员 2活动',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '积分变化历史' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '积分变化历史' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_integration_change_history
 -- ----------------------------
 INSERT INTO `ums_integration_change_history` VALUES (1, 1, '2026-07-04 13:57:00', 100, '购物赠送积分，订单号：SP20260704135653714766', 3);
+INSERT INTO `ums_integration_change_history` VALUES (2, 1, '2026-07-05 18:31:46', 100, '购物赠送积分，订单号：SP20260705183141479976', 3);
+INSERT INTO `ums_integration_change_history` VALUES (3, 1, '2026-07-05 18:42:10', 100, '购物赠送积分，订单号：SP20260705184207923311', 3);
 
 -- ----------------------------
 -- Table structure for ums_member
@@ -92,7 +96,7 @@ CREATE TABLE `ums_member`  (
 -- ----------------------------
 -- Records of ums_member
 -- ----------------------------
-INSERT INTO `ums_member` VALUES (1, 1, 'xinxin', '$2a$10$hZddjzuDOBB1oQF8oqwvvuobQMdYphAF0.sYqdwZ3jRdncfv8kj0C', 'xinxin', 'xinxin', NULL, 'file/goods/7/2026/07/03/e408ad7f-4268-4b74-984b-d2b983eb20cc.webp', 1, NULL, NULL, NULL, '', 0, 100, 100, 1, '2026-06-24 12:46:01', NULL, NULL, NULL);
+INSERT INTO `ums_member` VALUES (1, 1, 'xinxin', '$2a$10$hZddjzuDOBB1oQF8oqwvvuobQMdYphAF0.sYqdwZ3jRdncfv8kj0C', 'xinxin', 'xinxin', NULL, 'file/goods/7/2026/07/03/e408ad7f-4268-4b74-984b-d2b983eb20cc.webp', 1, NULL, NULL, NULL, '', 0, 300, 300, 1, '2026-06-24 12:46:01', NULL, NULL, NULL);
 INSERT INTO `ums_member` VALUES (2, NULL, 'm_1124_03aa1f', '$2a$10$ogTiZ/YJ9KAxpN8k9o18Vu4WWdvcZU3Sa74iH7saumuFZlu3STCJS', '用户1124', '18834581124', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, 0, 0, 1, '2026-06-30 19:27:14', NULL, NULL, NULL);
 INSERT INTO `ums_member` VALUES (3, NULL, 'wx_88d098a7e3', '$2a$10$4GCjIwd4hPn9RuRi35fQ.erO9YGh9OmGyiVHaIMmVDSZeQHhx2GrG', '微信测试用户', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, 2, 0, 0, 1, '2026-06-30 19:59:26', 'mock_union_001', NULL, NULL);
 INSERT INTO `ums_member` VALUES (4, NULL, 'wx_67d31d2385', '$2a$10$VH83q12714f8Kgw6RTmAEOoc9oY2/6NZkuvrTYY2y6U247Oz3AfwW', '小程序测试用户', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, 2, 0, 0, 1, '2026-07-02 11:35:02', 'mock_mini_union_001', NULL, NULL);
@@ -125,7 +129,7 @@ CREATE TABLE `ums_member_auth`  (
 -- ----------------------------
 INSERT INTO `ums_member_auth` VALUES (1, 2, 2, '18834581124', NULL, NULL, '2026-06-30 19:27:14', '2026-07-02 17:55:19', 1, '2026-06-30 19:27:14', '2026-07-02 17:55:19');
 INSERT INTO `ums_member_auth` VALUES (2, 3, 3, 'mock_union_001', NULL, '{\"avatar\": \"\", \"openid\": \"mock_open_001\", \"unionid\": \"mock_union_001\", \"nickname\": \"微信测试用户\"}', '2026-06-30 19:59:26', '2026-07-02 21:13:32', 1, '2026-06-30 19:59:26', '2026-07-02 21:13:32');
-INSERT INTO `ums_member_auth` VALUES (3, 4, 3, 'mock_mini_union_001', NULL, '{\"avatar\": \"\", \"openid\": \"mock_mini_open_001\", \"unionid\": \"mock_mini_union_001\", \"nickname\": \"小程序测试用户\"}', '2026-07-02 11:35:02', '2026-07-02 19:25:44', 1, '2026-07-02 11:35:02', '2026-07-02 19:25:44');
+INSERT INTO `ums_member_auth` VALUES (3, 4, 3, 'mock_mini_union_001', NULL, '{\"avatar\": \"\", \"openid\": \"mock_mini_open_001\", \"unionid\": \"mock_mini_union_001\", \"nickname\": \"小程序测试用户\"}', '2026-07-02 11:35:02', '2026-07-07 18:04:13', 1, '2026-07-02 11:35:02', '2026-07-07 18:04:13');
 INSERT INTO `ums_member_auth` VALUES (4, 5, 2, '18518712878', NULL, NULL, '2026-07-02 17:59:24', NULL, 1, '2026-07-02 17:59:24', '2026-07-02 17:59:24');
 
 -- ----------------------------
@@ -141,7 +145,7 @@ CREATE TABLE `ums_member_collect_spu`  (
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '收藏时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_member_spu`(`member_id`, `spu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员收藏商品' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员收藏商品' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_collect_spu
@@ -163,7 +167,7 @@ CREATE TABLE `ums_member_collect_subject`  (
   `subject_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '活动链接',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员收藏专题' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员收藏专题' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_collect_subject
@@ -185,7 +189,7 @@ CREATE TABLE `ums_member_level`  (
   `privilege_birthday` tinyint(0) NULL DEFAULT 0 COMMENT '生日特权',
   `note` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员等级' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员等级' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_level
@@ -208,7 +212,7 @@ CREATE TABLE `ums_member_login_log`  (
   `login_type` tinyint(0) NULL DEFAULT NULL COMMENT '1-web 2-app',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员登录记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员登录记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_login_log
@@ -235,6 +239,16 @@ INSERT INTO `ums_member_login_log` VALUES (19, 1, '2026-07-02 21:21:41', '0:0:0:
 INSERT INTO `ums_member_login_log` VALUES (20, 1, '2026-07-03 20:26:41', '0:0:0:0:0:0:0:1', NULL, 1);
 INSERT INTO `ums_member_login_log` VALUES (21, 1, '2026-07-03 22:45:40', '0:0:0:0:0:0:0:1', NULL, 1);
 INSERT INTO `ums_member_login_log` VALUES (22, 1, '2026-07-04 13:56:46', '0:0:0:0:0:0:0:1', NULL, 1);
+INSERT INTO `ums_member_login_log` VALUES (23, 1, '2026-07-05 11:58:31', '0:0:0:0:0:0:0:1', NULL, 1);
+INSERT INTO `ums_member_login_log` VALUES (24, 1, '2026-07-05 18:31:09', '0:0:0:0:0:0:0:1', NULL, 1);
+INSERT INTO `ums_member_login_log` VALUES (25, 1, '2026-07-06 17:42:04', '0:0:0:0:0:0:0:1', NULL, 1);
+INSERT INTO `ums_member_login_log` VALUES (26, 4, '2026-07-07 17:53:23', '0:0:0:0:0:0:0:1', NULL, 3);
+INSERT INTO `ums_member_login_log` VALUES (27, 4, '2026-07-07 17:56:27', '0:0:0:0:0:0:0:1', NULL, 3);
+INSERT INTO `ums_member_login_log` VALUES (28, 4, '2026-07-07 18:02:00', '0:0:0:0:0:0:0:1', NULL, 3);
+INSERT INTO `ums_member_login_log` VALUES (29, 4, '2026-07-07 18:02:08', '0:0:0:0:0:0:0:1', NULL, 3);
+INSERT INTO `ums_member_login_log` VALUES (30, 4, '2026-07-07 18:02:25', '0:0:0:0:0:0:0:1', NULL, 3);
+INSERT INTO `ums_member_login_log` VALUES (31, 4, '2026-07-07 18:02:33', '0:0:0:0:0:0:0:1', NULL, 3);
+INSERT INTO `ums_member_login_log` VALUES (32, 4, '2026-07-07 18:04:13', '0:0:0:0:0:0:0:1', NULL, 3);
 
 -- ----------------------------
 -- Table structure for ums_member_receive_address
@@ -254,7 +268,7 @@ CREATE TABLE `ums_member_receive_address`  (
   `default_status` tinyint(0) NULL DEFAULT 0 COMMENT '是否默认',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员收货地址' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员收货地址' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_receive_address
@@ -275,7 +289,7 @@ CREATE TABLE `ums_member_sms_log`  (
   `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_mobile_time`(`mobile`, `create_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'C端短信发送流水' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'C端短信发送流水' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_sms_log
@@ -309,7 +323,7 @@ CREATE TABLE `ums_member_statistics_info`  (
   `invite_friend_count` int(0) NULL DEFAULT 0 COMMENT '邀请好友数',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_member_id`(`member_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员统计信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员统计信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_member_statistics_info

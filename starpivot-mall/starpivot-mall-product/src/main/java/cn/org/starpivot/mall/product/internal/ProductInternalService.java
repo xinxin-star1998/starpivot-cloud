@@ -47,6 +47,14 @@ public class ProductInternalService {
         return pmsSkuInfoMapper.selectBatchIds(skuIds).stream().map(this::toSkuDto).toList();
     }
 
+    /** 批量加载 SKU 销售规格文案（展示用，不校验上下架） */
+    public Map<Long, String> loadSkuAttrTexts(List<Long> skuIds) {
+        if (CollectionUtils.isEmpty(skuIds)) {
+            return Map.of();
+        }
+        return loadSkuAttrMap(skuIds);
+    }
+
     public List<SkuDto> listSkusBySpuIds(List<Long> spuIds) {
         if (CollectionUtils.isEmpty(spuIds)) {
             return List.of();

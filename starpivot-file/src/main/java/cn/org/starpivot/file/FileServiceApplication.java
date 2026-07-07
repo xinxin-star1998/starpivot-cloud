@@ -8,6 +8,7 @@ import cn.org.starpivot.file.config.FileCenterPurgeProperties;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -15,7 +16,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * 文件服务启动类。
  */
-@SpringBootApplication(scanBasePackages = "cn.org.starpivot")
+@SpringBootApplication(
+        scanBasePackages = "cn.org.starpivot",
+        exclude = UserDetailsServiceAutoConfiguration.class)
 @EnableDiscoveryClient
 @EnableScheduling
 @EnableConfigurationProperties({JwtProperties.class, OssProperties.class, FileCenterProperties.class, FileCenterPurgeProperties.class, FileCategoryAccessProperties.class})

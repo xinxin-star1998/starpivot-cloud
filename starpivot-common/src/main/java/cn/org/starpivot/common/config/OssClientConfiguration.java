@@ -1,7 +1,9 @@
 package cn.org.starpivot.common.config;
 
+import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.common.comm.Protocol;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -21,10 +23,13 @@ public class OssClientConfiguration {
 
     @Bean(destroyMethod = "shutdown")
     public OSS ossClient(OssProperties properties) {
+        ClientBuilderConfiguration config = new ClientBuilderConfiguration();
+        config.setProtocol(Protocol.HTTPS);
         return new OSSClientBuilder().build(
                 requireText(properties.getEndpoint(), "oss.endpoint / OSS_ENDPOINT"),
                 requireText(properties.getAccessKeyId(), "oss.access-key-id / OSS_ACCESS_KEY_ID"),
-                requireText(properties.getAccessKeySecret(), "oss.access-key-secret / OSS_ACCESS_KEY_SECRET"));
+                requireText(properties.getAccessKeySecret(), "oss.access-key-secret / OSS_ACCESS_KEY_SECRET"),
+                config);
     }
 
     private static String requireText(String value, String name) {

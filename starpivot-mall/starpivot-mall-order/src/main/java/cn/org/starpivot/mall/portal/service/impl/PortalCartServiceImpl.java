@@ -29,7 +29,6 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +61,18 @@ public class PortalCartServiceImpl implements PortalCartService {
                 .distinct()
                 .toList();
         Map<Long, SkuDto> skuMap = productFeignSupport.requireSkuMap(skuIds);
+        purgeStaleCartEntries(memberId, cartMap, skuMap);
+        if (cartMap.isEmpty()) {
+            vo.setItems(List.of());
+            vo.setCheckedCount(0);
+            vo.setCheckedAmount(BigDecimal.ZERO);
+            return vo;
+        }
+        skuIds = cartMap.values().stream()
+                .map(PortalCartEntry::getSkuId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
         List<Long> spuIds = skuMap.values().stream()
                 .map(SkuDto::getSpuId)
                 .filter(Objects::nonNull)
@@ -195,8 +206,18 @@ public class PortalCartServiceImpl implements PortalCartService {
         if (CollectionUtils.isEmpty(skuIds)) {
             return Map.of();
         }
-        return productFeignSupport.requireOrderSnapshots(skuIds).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getAttrs() == null ? "" : e.getValue().getAttrs()));
+        return productFeignSupport.loadSkuAttrTexts(skuIds);
+    }
+
+    private void purgeStaleCartEntries(
+            Long memberId, Map<String, PortalCartEntry> cartMap, Map<Long, SkuDto> skuMap) {
+        boolean changed = cartMap.entrySet().removeIf(entry -> {
+            PortalCartEntry cartEntry = entry.getValue();
+            return cartEntry.getSkuId() == null || !skuMap.containsKey(cartEntry.getSkuId());
+        });
+        if (changed) {
+            saveCartMap(memberId, cartMap);
+        }
     }
 
     private Map<Long, Integer> loadStockMap(List<Long> skuIds) {
