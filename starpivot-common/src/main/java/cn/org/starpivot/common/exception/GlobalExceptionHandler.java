@@ -94,6 +94,11 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Result.error(resolved, message));
         }
+        // 仅真正的系统错误用 HTTP 500；业务失败保持 200 + body.code，避免前端对业务错误误重试
+        if (resolved == ErrorCode.SYSTEM_ERROR) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Result.error(resolved, message));
+        }
         return ResponseEntity.ok(Result.error(resolved, message));
     }
 }

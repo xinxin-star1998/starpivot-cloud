@@ -1,10 +1,9 @@
-package cn.org.starpivot.mall.oms.service.impl;
+package cn.org.starpivot.approval.mq;
 
 import cn.org.starpivot.api.event.MqExchangeNames;
-import cn.org.starpivot.mall.oms.entity.MqMessage;
-import cn.org.starpivot.mall.oms.mapper.MqMessageMapper;
-import cn.org.starpivot.mall.oms.service.OmsLocalMessageOutboxService;
-import cn.org.starpivot.mall.oms.support.MqMessageStatus;
+import cn.org.starpivot.api.event.MqRoutingKeys;
+import cn.org.starpivot.approval.domain.entity.MqMessage;
+import cn.org.starpivot.approval.mapper.MqMessageMapper;
 import cn.org.starpivot.mq.core.MessageEnvelope;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "starpivot.mq", name = "enabled", havingValue = "true")
-public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxService {
+public class ApprovalLocalMessageOutboxServiceImpl implements ApprovalLocalMessageOutboxService {
 
     private static final int BATCH_SIZE = 50;
     private static final int SENDING_TIMEOUT_MINUTES = 5;
@@ -64,7 +63,6 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
 
     @Override
     public int flushPending() {
-        // 恢复实例崩溃后遗留的 SENDING 孤儿消息
         mqMessageMapper.resetStaleSending(SENDING_TIMEOUT_MINUTES);
 
         List<MqMessage> pending = mqMessageMapper.selectList(
@@ -74,10 +72,9 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
                         .last("LIMIT " + BATCH_SIZE));
         int processed = 0;
         for (MqMessage message : pending) {
-            // 先原子认领：多实例环境下只有成功将状态改为 SENDING 的实例才投递
             int claimed = mqMessageMapper.claimMessage(message.getMessageId());
             if (claimed == 0) {
-                continue; // 已被其他实例认领，跳过
+                continue;
             }
             if (deliverClaimedMessage(message.getMessageId())) {
                 processed++;
@@ -91,7 +88,6 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
         if (!StringUtils.hasText(messageId)) {
             return;
         }
-        // 与 flushPending 一致：先原子认领再投递，避免与定时刷盘双发
         int claimed = mqMessageMapper.claimMessage(messageId);
         if (claimed == 0) {
             return;
@@ -101,7 +97,6 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
 
     /**
      * 投递已被当前实例认领的消息（状态已为 SENDING）。
-     * 调用方须先通过 {@link MqMessageMapper#claimMessage} 取得独占权。
      */
     private boolean deliverClaimedMessage(String messageId) {
         MqMessage message = mqMessageMapper.selectById(messageId);
@@ -113,7 +108,7 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
             publish(message);
             newStatus = MqMessageStatus.SENT;
         } catch (Exception ex) {
-            log.warn("本地消息投递失败 messageId={}: {}", messageId, ex.getMessage());
+            log.warn("审批本地消息投递失败 messageId={}: {}", messageId, ex.getMessage());
             newStatus = MqMessageStatus.SEND_ERROR;
         }
         MqMessage patch = new MqMessage();
@@ -128,9 +123,11 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
         Object payload = StringUtils.hasText(message.getContent())
                 ? objectMapper.readValue(message.getContent(), Object.class)
                 : null;
+        // eventType 保持与历史 MqPublisher 一致，便于排查；路由仍用 outbox.routingKey
+        String eventType = MqRoutingKeys.APPROVAL_INSTANCE_FINISHED;
         MessageEnvelope<Object> envelope = MessageEnvelope.builder()
                 .messageId(message.getMessageId())
-                .eventType(message.getRoutingKey())
+                .eventType(eventType)
                 .occurredAt(message.getCreateTime() != null ? message.getCreateTime() : LocalDateTime.now())
                 .producer(resolveProducer())
                 .payload(payload)
@@ -144,6 +141,6 @@ public class OmsLocalMessageOutboxServiceImpl implements OmsLocalMessageOutboxSe
     }
 
     private String resolveProducer() {
-        return environment.getProperty("spring.application.name", "starpivot-mall-order");
+        return environment.getProperty("spring.application.name", "starpivot-approval");
     }
 }

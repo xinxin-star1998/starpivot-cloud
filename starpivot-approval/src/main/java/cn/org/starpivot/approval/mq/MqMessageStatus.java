@@ -1,4 +1,4 @@
-package cn.org.starpivot.mall.oms.support;
+package cn.org.starpivot.approval.mq;
 
 /**
  * mq_message 消息状态。

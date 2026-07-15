@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * 认证业务服务类。
@@ -281,22 +280,22 @@ public class AuthService {
                         .status(userDto.getStatus())
                         .createTime("")
                         .build())
-                .roles(buildRoles(userDto.getRoles()))
+                .roles(buildRoles(userDto.getRoleList()))
                 .permissions(permissions)
                 .build();
     }
 
-    private List<UserInfoResponse.RoleVo> buildRoles(List<String> roleKeys) {
-        if (roleKeys == null || roleKeys.isEmpty()) {
+    private List<UserInfoResponse.RoleVo> buildRoles(List<SysRoleInfoDto> roleList) {
+        if (roleList == null || roleList.isEmpty()) {
             return Collections.emptyList();
         }
-        return IntStream.range(0, roleKeys.size())
-                .mapToObj(i -> UserInfoResponse.RoleVo.builder()
-                        .roleId((long) (i + 1))
-                        .roleName(roleKeys.get(i))
-                        .roleKey(roleKeys.get(i))
-                        .roleSort(i + 1)
-                        .status(AppConstants.Status.NORMAL)
+        return roleList.stream()
+                .map(r -> UserInfoResponse.RoleVo.builder()
+                        .roleId(r.getRoleId())
+                        .roleName(r.getRoleName())
+                        .roleKey(r.getRoleKey())
+                        .roleSort(r.getRoleSort())
+                        .status(r.getStatus())
                         .createTime("")
                         .build())
                 .toList();

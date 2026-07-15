@@ -138,7 +138,8 @@ public class PortalCouponServiceImpl implements PortalCouponService {
             throw new BizException("优惠券ID不能为空");
         }
         var member = memberFeignSupport.requireMember(memberId);
-        SmsCoupon coupon = smsCouponMapper.selectById(couponId);
+        // 行锁串行化同一券领取：先锁再计 perLimit/库存，避免并发超领
+        SmsCoupon coupon = smsCouponMapper.selectByIdForUpdate(couponId);
         if (coupon == null || !Integer.valueOf(COUPON_PUBLISHED).equals(coupon.getPublish())) {
             throw new BizException("优惠券不存在或未发布");
         }
@@ -154,6 +155,12 @@ public class PortalCouponServiceImpl implements PortalCouponService {
             throw new BizException("已达到该优惠券领取上限");
         }
 
+        // 原子更新领取计数并校验库存（双重保险，防 publish_count 边界竞态）
+        int affectedRows = smsCouponMapper.incrementReceiveCount(couponId);
+        if (affectedRows == 0) {
+            throw new BizException("优惠券已被领完");
+        }
+
         SmsCouponHistory history = new SmsCouponHistory();
         history.setCouponId(couponId);
         history.setMemberId(memberId);
@@ -163,8 +170,6 @@ public class PortalCouponServiceImpl implements PortalCouponService {
         history.setUseType(HISTORY_UNUSED);
         smsCouponHistoryMapper.insert(history);
 
-        coupon.setReceiveCount(coupon.getReceiveCount() == null ? 1 : coupon.getReceiveCount() + 1);
-        smsCouponMapper.updateById(coupon);
         return history.getId();
     }
 
@@ -294,11 +299,8 @@ public class PortalCouponServiceImpl implements PortalCouponService {
         history.setUseType(HISTORY_USED);
         history.setUseTime(LocalDateTime.now());
         smsCouponHistoryMapper.updateById(history);
-        SmsCoupon coupon = smsCouponMapper.selectById(history.getCouponId());
-        if (coupon != null) {
-            coupon.setUseCount(coupon.getUseCount() == null ? 1 : coupon.getUseCount() + 1);
-            smsCouponMapper.updateById(coupon);
-        }
+        // 原子递增使用计数，避免并发竞态
+        smsCouponMapper.incrementUseCount(history.getCouponId());
     }
 
     @Override

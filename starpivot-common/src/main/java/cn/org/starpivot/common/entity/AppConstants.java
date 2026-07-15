@@ -42,8 +42,6 @@ public class AppConstants {
 
     public static final Long DEFAULT_REGISTER_ROLE_ID = 5L;
 
-    public static final String DEFAULT_PASSWORD = "123456";
-
     public static class DataScope {
         public static final String ALL = "1";
         public static final String CUSTOM = "2";

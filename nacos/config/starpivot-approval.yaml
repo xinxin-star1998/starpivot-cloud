@@ -27,6 +27,9 @@ starpivot:
     system-db-schema: ${SYSTEM_DB_SCHEMA:star_pivot}
     timeout-scan-ms: 60000
     timeout-batch-size: 50
+    local-message:
+      enabled: true
+      flush-ms: 60000
 
 logging:
   level:

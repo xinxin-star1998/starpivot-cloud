@@ -26,7 +26,7 @@ spring:
         url-pattern: /druid/*
         reset-enable: false
         login-username: ${DRUID_USERNAME:admin}
-        login-password: ${DRUID_PASSWORD:}
+        login-password: ${DRUID_PASSWORD:CHANGE_ME_NOW}
       web-stat-filter:
         enabled: true
         url-pattern: /*
@@ -60,3 +60,8 @@ management:
 logging:
   level:
     cn.org.starpivot.system: DEBUG
+
+starpivot:
+  account:
+    # 生产请仅用环境变量，勿依赖仓库内默认值
+    default-password: ${STAR_PIVOT_DEFAULT_PASSWORD:}

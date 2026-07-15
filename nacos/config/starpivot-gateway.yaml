@@ -38,7 +38,10 @@ starpivot:
       - /api/${starpivot.api.version}/portal/pay/alipay/notify
       - /api/${starpivot.api.version}/portal/pay/wx/notify
       - /api/${starpivot.api.version}/portal/pay/wx/refund/notify
-      - /**/actuator/**
+      # 仅放行健康检查端点，避免暴露 metrics/prometheus 等敏感指标
+      - /**/actuator/health
+      - /**/actuator/health/**
+      # API 文档（生产环境建议关闭或加认证）
       - /**/doc.html
       - /**/v3/api-docs/**
       - /**/webjars/**

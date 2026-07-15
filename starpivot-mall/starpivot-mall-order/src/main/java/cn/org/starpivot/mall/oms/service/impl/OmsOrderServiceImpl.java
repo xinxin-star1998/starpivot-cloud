@@ -4,6 +4,7 @@ import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
+import cn.org.starpivot.mall.oms.OmsConstants;
 import cn.org.starpivot.mall.oms.domain.bo.OmsDeliverBo;
 import cn.org.starpivot.mall.oms.domain.bo.OmsOrderCloseBo;
 import cn.org.starpivot.mall.oms.domain.bo.OmsOrderReqBo;
@@ -48,10 +49,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> implements OmsOrderService {
-
-    private static final int STATUS_WAIT_DELIVER = 1;
-    private static final int STATUS_DELIVERED = 2;
-    private static final int STATUS_CLOSED = 4;
 
     private final OmsOrderItemMapper omsOrderItemMapper;
     private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
@@ -98,40 +95,41 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     @Transactional(rollbackFor = Exception.class)
     public void deliver(OmsDeliverBo bo) {
         OmsOrder order = requireOrder(bo.getOrderId());
-        if (!Integer.valueOf(STATUS_WAIT_DELIVER).equals(order.getStatus())) {
+        if (!Integer.valueOf(PortalConstants.ORDER_STATUS_WAIT_DELIVER).equals(order.getStatus())) {
             throw new BizException("仅待发货订单可执行发货操作");
         }
-        order.setStatus(STATUS_DELIVERED);
+        order.setStatus(PortalConstants.ORDER_STATUS_DELIVERED);
         order.setDeliveryCompany(bo.getDeliveryCompany());
         order.setDeliverySn(bo.getDeliverySn());
         order.setDeliveryTime(LocalDateTime.now());
         order.setModifyTime(LocalDateTime.now());
         baseMapper.updateById(order);
-        saveOperateHistory(order.getId(), STATUS_DELIVERED, "订单发货");
+        saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_DELIVERED, "订单发货");
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void close(OmsOrderCloseBo bo) {
         OmsOrder order = requireOrder(bo.getOrderId());
-        if (Integer.valueOf(STATUS_CLOSED).equals(order.getStatus())) {
+        if (Integer.valueOf(PortalConstants.ORDER_STATUS_CLOSED).equals(order.getStatus())) {
             throw new BizException("订单已关闭");
         }
-        if (Integer.valueOf(3).equals(order.getStatus()) || Integer.valueOf(5).equals(order.getStatus())) {
+        if (Integer.valueOf(PortalConstants.ORDER_STATUS_COMPLETED).equals(order.getStatus())
+                || Integer.valueOf(OmsConstants.ORDER_STATUS_INVALID).equals(order.getStatus())) {
             throw new BizException("当前订单状态不可关闭");
         }
         Integer previousStatus = order.getStatus();
-        order.setStatus(STATUS_CLOSED);
+        order.setStatus(PortalConstants.ORDER_STATUS_CLOSED);
         order.setModifyTime(LocalDateTime.now());
         baseMapper.updateById(order);
         if (Integer.valueOf(PortalConstants.ORDER_STATUS_UNPAID).equals(previousStatus)) {
             portalStockLockService.releaseForOrder(order.getOrderSn());
-        } else if (Integer.valueOf(STATUS_WAIT_DELIVER).equals(previousStatus)) {
+        } else if (Integer.valueOf(PortalConstants.ORDER_STATUS_WAIT_DELIVER).equals(previousStatus)) {
             omsOrderStockService.restoreStockForOrder(order.getId());
-            saveOperateHistory(order.getId(), STATUS_CLOSED, "关闭订单（已回滚库存与销量）");
+            saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_CLOSED, "关闭订单（已回滚库存与销量）");
             return;
         }
-        saveOperateHistory(order.getId(), STATUS_CLOSED, "关闭订单");
+        saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_CLOSED, "关闭订单");
     }
 
     private OmsOrder requireOrder(Long orderId) {

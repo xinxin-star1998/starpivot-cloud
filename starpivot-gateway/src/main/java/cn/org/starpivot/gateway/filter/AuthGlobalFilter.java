@@ -118,14 +118,21 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
     /**
      * 通过 {@link ReactiveStringRedisTemplate} 异步检查 Token 是否在 Redis 黑名单中。
+     * <p>
+     * 采用 Fail-Closed 策略：Redis 不可用时拒绝放行请求，
+     * 避免已登出/已强制下线的用户凭借未过期的 JWT 继续访问受保护接口。
+     * </p>
      */
     private Mono<Boolean> isBlacklisted(String token) {
         try {
             String key = SecurityConstants.TOKEN_BLACKLIST_PREFIX + JwtUtils.sanitizeTokenForBlacklist(token);
-            return redisTemplate.hasKey(key);
+            return redisTemplate.hasKey(key)
+                    .onErrorResume(e -> {
+                        log.error("Redis error checking token blacklist, denying request (fail-closed)", e);
+                        return Mono.just(true);
+                    });
         } catch (Exception e) {
-            log.error("Error checking token blacklist status", e);
-            // Redis 不可用时拒绝放行，避免已登出 Token 仍可通过网关
+            log.error("Error checking token blacklist status, denying request (fail-closed)", e);
             return Mono.just(true);
         }
     }

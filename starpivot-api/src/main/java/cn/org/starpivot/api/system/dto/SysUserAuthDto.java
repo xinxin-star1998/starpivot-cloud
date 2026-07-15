@@ -41,6 +41,8 @@ public class SysUserAuthDto implements Serializable {
     private String status;
     /** 角色标识列表 */
     private List<String> roles;
+    /** 角色详情列表 */
+    private List<SysRoleInfoDto> roleList;
     /** 头像地址 */
     private String avatar;
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityUtils {
 
-    private static PasswordEncoder passwordEncoder;
+    private static volatile PasswordEncoder passwordEncoder;
 
     public SecurityUtils(PasswordEncoder passwordEncoder) {
         SecurityUtils.passwordEncoder = passwordEncoder;
@@ -24,7 +24,11 @@ public class SecurityUtils {
      * @return 加密后的密码
      */
     public static String encryptPassword(String password) {
-        return passwordEncoder.encode(password);
+        PasswordEncoder encoder = passwordEncoder;
+        if (encoder == null) {
+            throw new IllegalStateException("SecurityUtils 尚未初始化，请确保在 Spring 容器启动完成后调用");
+        }
+        return encoder.encode(password);
     }
 
     /**
@@ -33,7 +37,11 @@ public class SecurityUtils {
      * @param encodedPassword 加密后的密码
      * @return 是否匹配
      */
-    public boolean matchesPassword(String rawPassword, String encodedPassword) {
-        return passwordEncoder.matches(rawPassword, encodedPassword);
+    public static boolean matchesPassword(String rawPassword, String encodedPassword) {
+        PasswordEncoder encoder = passwordEncoder;
+        if (encoder == null) {
+            throw new IllegalStateException("SecurityUtils 尚未初始化，请确保在 Spring 容器启动完成后调用");
+        }
+        return encoder.matches(rawPassword, encodedPassword);
     }
 }

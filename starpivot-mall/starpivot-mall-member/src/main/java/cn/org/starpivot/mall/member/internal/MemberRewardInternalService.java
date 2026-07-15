@@ -68,18 +68,17 @@ public class MemberRewardInternalService {
         int integration = totals.integration();
         int growth = totals.growth();
         if (integration > 0) {
-            int current = member.getIntegration() == null ? 0 : member.getIntegration();
-            member.setIntegration(current + integration);
+            // 原子更新积分，避免并发竞态
+            umsMemberMapper.addIntegration(member.getId(), integration);
             writeIntegrationHistory(
                     member.getId(), integration, "购物赠送积分，订单号：" + context.getOrderSn(), SOURCE_PAY_INTEGRATION);
         }
         if (growth > 0) {
-            int currentGrowth = member.getGrowth() == null ? 0 : member.getGrowth();
-            member.setGrowth(currentGrowth + growth);
+            // 原子更新成长值，避免并发竞态
+            umsMemberMapper.addGrowth(member.getId(), growth);
             writeGrowthHistory(member.getId(), growth, "购物赠送成长值，订单号：" + context.getOrderSn(), SOURCE_PAY_GROWTH);
-            upgradeLevelIfNeeded(member);
+            syncMemberLevel(member.getId());
         }
-        umsMemberMapper.updateById(member);
         patchOrderReward(context.getOrderId(), integration, growth);
     }
 
@@ -125,8 +124,8 @@ public class MemberRewardInternalService {
         int newGrowth = earnedGrowth;
 
         if (clawIntegration > 0) {
-            int current = member.getIntegration() == null ? 0 : member.getIntegration();
-            member.setIntegration(Math.max(current - clawIntegration, 0));
+            // 原子减少积分，不低于 0
+            umsMemberMapper.deductIntegrationClampZero(member.getId(), clawIntegration);
             writeIntegrationHistory(
                     member.getId(),
                     -clawIntegration,
@@ -135,17 +134,16 @@ public class MemberRewardInternalService {
             newIntegration = Math.max(earnedIntegration - clawIntegration, 0);
         }
         if (clawGrowth > 0) {
-            int currentGrowth = member.getGrowth() == null ? 0 : member.getGrowth();
-            member.setGrowth(Math.max(currentGrowth - clawGrowth, 0));
+            // 原子减少成长值，不低于 0
+            umsMemberMapper.deductGrowthClampZero(member.getId(), clawGrowth);
             writeGrowthHistory(
                     member.getId(),
                     -clawGrowth,
                     "退货回滚成长值，订单号：" + request.getOrderSn(),
                     SOURCE_RETURN_CLAWBACK_GROWTH);
             newGrowth = Math.max(earnedGrowth - clawGrowth, 0);
-            upgradeLevelIfNeeded(member);
+            syncMemberLevel(member.getId());
         }
-        umsMemberMapper.updateById(member);
         patchOrderReward(request.getOrderId(), newIntegration, newGrowth);
     }
 
@@ -224,19 +222,36 @@ public class MemberRewardInternalService {
         if (orderSn == null) {
             return false;
         }
+        // 使用精确后缀匹配替代 LIKE '%orderSn%'，避免 orderSn 子串误判
+        // note 格式为 "购物赠送积分，订单号：SP12345"，以 "订单号：" + orderSn 结尾
+        String noteSuffix = "订单号：" + orderSn;
         long integrationCount = integrationChangeHistoryMapper.selectCount(
                 Wrappers.<UmsIntegrationChangeHistory>lambdaQuery()
                         .eq(UmsIntegrationChangeHistory::getSourceType, SOURCE_PAY_INTEGRATION)
-                        .like(UmsIntegrationChangeHistory::getNote, orderSn));
+                        .apply("note LIKE CONCAT('%', {0})", noteSuffix));
         long growthCount = growthChangeHistoryMapper.selectCount(
                 Wrappers.<UmsGrowthChangeHistory>lambdaQuery()
                         .eq(UmsGrowthChangeHistory::getSourceType, SOURCE_PAY_GROWTH)
-                        .like(UmsGrowthChangeHistory::getNote, orderSn));
+                        .apply("note LIKE CONCAT('%', {0})", noteSuffix));
         return integrationCount > 0 || growthCount > 0;
     }
 
-    private void upgradeLevelIfNeeded(UmsMember member) {
-        int growth = member.getGrowth() == null ? 0 : member.getGrowth();
+    /**
+     * 按最新成长值同步等级，仅更新 level_id，避免覆盖并发积分/成长值写入。
+     */
+    private void syncMemberLevel(Long memberId) {
+        UmsMember member = umsMemberMapper.selectById(memberId);
+        if (member == null) {
+            return;
+        }
+        Long matchedLevelId = resolveLevelId(member.getGrowth());
+        if (matchedLevelId != null && !Objects.equals(matchedLevelId, member.getLevelId())) {
+            umsMemberMapper.updateLevelId(memberId, matchedLevelId);
+        }
+    }
+
+    private Long resolveLevelId(Integer growthValue) {
+        int growth = growthValue == null ? 0 : growthValue;
         List<UmsMemberLevel> levels = umsMemberLevelMapper.selectList(
                 Wrappers.<UmsMemberLevel>lambdaQuery()
                         .orderByDesc(UmsMemberLevel::getGrowthPoint)
@@ -246,12 +261,10 @@ public class MemberRewardInternalService {
                 continue;
             }
             if (growth >= level.getGrowthPoint()) {
-                if (!Objects.equals(level.getId(), member.getLevelId())) {
-                    member.setLevelId(level.getId());
-                }
-                break;
+                return level.getId();
             }
         }
+        return null;
     }
 
     private void writeIntegrationHistory(Long memberId, int changeCount, String note, int sourceType) {

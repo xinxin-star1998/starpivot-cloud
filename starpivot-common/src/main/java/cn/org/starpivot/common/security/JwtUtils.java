@@ -32,6 +32,14 @@ public final class JwtUtils {
     }
 
     /**
+     * 清空密钥和解析器缓存，用于配置热更新场景。
+     */
+    public static void clearCache() {
+        KEY_CACHE.clear();
+        PARSER_CACHE.clear();
+    }
+
+    /**
      * 创建 JWT 令牌
      *
      * @param user       用户信息

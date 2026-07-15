@@ -78,6 +78,8 @@ let unauthorizedTimer: ReturnType<typeof setTimeout> | null = null
 /** 刷新令牌状态管理 */
 let isRefreshing = false // 是否正在刷新令牌
 let refreshSubscribers: Array<(token: string) => void> = [] // 等待刷新完成的请求队列
+let refreshRetryCount = 0 // 刷新令牌重试计数
+const MAX_REFRESH_RETRIES = 1 // 最大刷新重试次数
 
 /** 请求去重：存储正在进行的请求，避免重复请求 */
 const pendingRequests = new Map<string, Promise<any>>()
@@ -97,6 +99,18 @@ function subscribeTokenRefresh(cb: (token: string) => void) {
 function onRefreshed(token: string) {
   refreshSubscribers.forEach((cb) => cb(token))
   refreshSubscribers = []
+}
+
+/** 刷新失败时清空等待队列，避免挂起请求与下次刷新误通知 */
+function clearRefreshSubscribers() {
+  refreshSubscribers = []
+}
+
+/** 重置刷新令牌状态（登出 / 重新登录后应调用，避免计数残留导致跳过刷新） */
+export function resetTokenRefreshState() {
+  isRefreshing = false
+  refreshRetryCount = 0
+  clearRefreshSubscribers()
 }
 
 /**
@@ -336,24 +350,23 @@ axiosInstance.interceptors.response.use(
 async function handleTokenRefresh(
   originalRequest: InternalAxiosRequestConfig & { _retry?: boolean }
 ): Promise<void> {
+  if (refreshRetryCount >= MAX_REFRESH_RETRIES) {
+    return Promise.reject(new Error('刷新令牌重试次数已达上限'))
+  }
+
   // 如果正在刷新，将当前请求加入等待队列
   if (isRefreshing) {
     return new Promise((resolve, reject) => {
       subscribeTokenRefresh((token: string) => {
-        // 更新请求头中的令牌
         originalRequest.headers.set('Authorization', `Bearer ${token}`)
         resolve()
       })
-      // 如果刷新失败，reject
       setTimeout(() => {
-        if (!isRefreshing) {
-          reject(new Error('刷新令牌超时'))
-        }
-      }, 10000) // 10秒超时
+        reject(new Error('刷新令牌超时'))
+      }, 10000)
     })
   }
 
-  // 标记正在刷新
   isRefreshing = true
   originalRequest._retry = true
 
@@ -361,20 +374,20 @@ async function handleTokenRefresh(
     const newToken = await tryRefreshToken()
 
     if (newToken) {
-      // 刷新成功，更新请求头
       originalRequest.headers.set('Authorization', `Bearer ${newToken}`)
-      // 通知所有等待的请求
       onRefreshed(newToken)
       isRefreshing = false
+      refreshRetryCount = 0
       return Promise.resolve()
-    } else {
-      // 刷新失败
-      isRefreshing = false
-      return Promise.reject(new Error('刷新令牌失败'))
     }
-  } catch (error) {
-    // 刷新过程出错
     isRefreshing = false
+    refreshRetryCount++
+    clearRefreshSubscribers()
+    return Promise.reject(new Error('刷新令牌失败'))
+  } catch (error) {
+    isRefreshing = false
+    refreshRetryCount++
+    clearRefreshSubscribers()
     return Promise.reject(error)
   }
 }
@@ -410,6 +423,7 @@ function resetUnauthorizedError() {
 
 /** 退出登录函数 */
 function logOut() {
+  resetTokenRefreshState()
   setTimeout(() => {
     useUserStore().logOut()
   }, LOGOUT_DELAY)

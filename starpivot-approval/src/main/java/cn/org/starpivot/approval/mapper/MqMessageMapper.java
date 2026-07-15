@@ -1,7 +1,7 @@
-package cn.org.starpivot.mall.oms.mapper;
+package cn.org.starpivot.approval.mapper;
 
-import cn.org.starpivot.mall.oms.entity.MqMessage;
-import cn.org.starpivot.mall.oms.support.MqMessageStatus;
+import cn.org.starpivot.approval.domain.entity.MqMessage;
+import cn.org.starpivot.approval.mq.MqMessageStatus;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,13 +11,9 @@ import org.apache.ibatis.annotations.Update;
 public interface MqMessageMapper extends BaseMapper<MqMessage> {
 
     /**
-     * 原子认领消息：将 NEW 或 SEND_ERROR 状态的消息置为 SENDING。
-     * <p>
-     * 多实例环境下通过此乐观锁避免同一消息被多个实例并发投递。
-     * </p>
+     * 原子认领消息：将 NEW 或 SEND_ERROR 置为 SENDING。
      *
-     * @param messageId 消息 ID
-     * @return 受影响行数（1 表示认领成功，0 表示已被其他实例认领）
+     * @return 1 表示认领成功，0 表示已被其他实例认领
      */
     @Update("UPDATE mq_message SET message_status = " + MqMessageStatus.SENDING
             + ", update_time = NOW()"
@@ -26,14 +22,7 @@ public interface MqMessageMapper extends BaseMapper<MqMessage> {
     int claimMessage(@Param("messageId") String messageId);
 
     /**
-     * 将超时停留在 SENDING 状态的消息重置为 SEND_ERROR。
-     * <p>
-     * 防止实例崩溃后 SENDING 状态的消息永久不被重新投递。
-     * 默认超时时间建议设置为 5 分钟。
-     * </p>
-     *
-     * @param timeoutMinutes 超时分钟数
-     * @return 受影响行数
+     * 将超时停留在 SENDING 的消息重置为 SEND_ERROR，避免崩溃后永久卡住。
      */
     @Update("UPDATE mq_message SET message_status = " + MqMessageStatus.SEND_ERROR
             + ", update_time = NOW()"

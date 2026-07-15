@@ -13,6 +13,7 @@ import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.security.SecurityUtils;
 import cn.org.starpivot.common.util.AssertUtils;
 import cn.org.starpivot.system.assembler.UserVOAssembler;
+import cn.org.starpivot.system.config.SysAccountProperties;
 import cn.org.starpivot.system.domain.bo.UserReqBo;
 import cn.org.starpivot.system.domain.bo.UserVO;
 import cn.org.starpivot.system.domain.dto.AssignUserReqBo;
@@ -72,6 +73,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private final UserVOAssembler userVOAssembler;
     private final TransactionTemplate transactionTemplate;
     private final SecurityUtils securityUtils;
+    private final SysAccountProperties sysAccountProperties;
     private final SysUserAuthSupport sysUserAuthSupport;
     private final SysUserRelationSupport sysUserRelationSupport;
     private final SysUserExcelSupport sysUserExcelSupport;
@@ -200,7 +202,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUser.setDelFlag(AppConstants.DelFlag.NORMAL);
         sysUser.setPassword(StringUtils.hasText(userDTO.getPassword())
                 ? securityUtils.encryptPassword(userDTO.getPassword())
-                : securityUtils.encryptPassword("Star123456"));
+                : securityUtils.encryptPassword(sysAccountProperties.requireDefaultPassword()));
         sysUser.setCreateBy(SecurityContextUtils.getUsername());
         sysUser.setCreateTime(LocalDateTime.now());
 
@@ -660,7 +662,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         user.setUserType("00");
         user.setStatus(AppConstants.Status.NORMAL);
         user.setDelFlag(AppConstants.DelFlag.NORMAL);
-        user.setPassword(SecurityUtils.encryptPassword(request.getPassword()));
+        user.setPassword(securityUtils.encryptPassword(request.getPassword()));
         user.setCreateBy(username);
         user.setCreateTime(LocalDateTime.now());
         if (!this.save(user)) {
@@ -689,7 +691,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (!AppConstants.Status.NORMAL.equals(user.getStatus())) {
             return false;
         }
-        user.setPassword(SecurityUtils.encryptPassword(password));
+        user.setPassword(securityUtils.encryptPassword(password));
         user.setPwdUpdateDate(LocalDateTime.now());
         user.setUpdateBy(username.trim());
         user.setUpdateTime(LocalDateTime.now());

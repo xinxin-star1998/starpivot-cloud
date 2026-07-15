@@ -35,8 +35,10 @@ public class DistributedScheduledLockAspect {
             if (!Boolean.TRUE.equals(acquired)) {
                 if (distributedScheduled.skipIfLocked()) {
                     log.debug("Skip scheduled task, lock held: key={}", distributedScheduled.key());
-                    return null;
+                } else {
+                    log.warn("Failed to acquire distributed lock, abort task: key={}", distributedScheduled.key());
                 }
+                return null;
             }
         } catch (Exception ex) {
             log.warn("Distributed lock unavailable, skip scheduled task: key={}", distributedScheduled.key(), ex);
