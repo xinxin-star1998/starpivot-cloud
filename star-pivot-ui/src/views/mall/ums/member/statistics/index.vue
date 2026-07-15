@@ -38,6 +38,7 @@ import StatisticsSearch from './modules/statistics-search.vue'
 import StatisticsDetailDrawer from './modules/statistics-detail-drawer.vue'
 import {ElButton, ElMessage, ElMessageBox} from 'element-plus'
 import {useAuth} from '@/hooks/core/useAuth'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'MemberStatistics' })
 
@@ -54,8 +55,7 @@ defineOptions({ name: 'MemberStatistics' })
   const refreshingMemberId = ref<number>()
 
   function formatAmount(value?: number) {
-    if (value == null) return '0.00'
-    return Number(value).toFixed(2)
+    return formatMoney(value, '0.00')
   }
 
   function normalizeSearchParams(params: Record<string, unknown>) {

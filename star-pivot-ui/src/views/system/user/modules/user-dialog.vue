@@ -295,7 +295,12 @@ import {ADMIN_PASSWORD_PATTERN, ADMIN_PASSWORD_RULE_MESSAGE} from '@/utils/sys/p
   const rules: FormRules = {
     userName: [
       { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+      { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' },
+      {
+        pattern: /^[a-zA-Z0-9_]+$/,
+        message: '用户账号只能包含字母、数字和下划线',
+        trigger: 'blur'
+      }
     ],
     password: [
       {

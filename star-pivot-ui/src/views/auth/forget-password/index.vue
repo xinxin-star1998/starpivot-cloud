@@ -127,6 +127,11 @@ import {useCaptcha} from '@/hooks'
 import {useSettingStore} from '@/store/modules/setting'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import CaptchaImage from '@/components/core/views/login/CaptchaImage.vue'
+import {
+  ADMIN_PASSWORD_PATTERN,
+  ADMIN_PASSWORD_RULE_MESSAGE,
+  clearSavedLoginPassword
+} from '@/utils/sys/password-prompt-guard'
 
 defineOptions({ name: 'ForgetPassword' })
 
@@ -154,7 +159,11 @@ defineOptions({ name: 'ForgetPassword' })
     username: [{ required: true, message: () => t('forgetPassword.placeholder'), trigger: 'blur' }],
     password: [
       { required: true, message: () => t('forgetPassword.passwordPlaceholder'), trigger: 'blur' },
-      { min: 6, message: () => t('register.rule.passwordLength'), trigger: 'blur' }
+      {
+        pattern: ADMIN_PASSWORD_PATTERN,
+        message: ADMIN_PASSWORD_RULE_MESSAGE,
+        trigger: 'blur'
+      }
     ],
     confirmPassword: [
       {
@@ -193,6 +202,7 @@ defineOptions({ name: 'ForgetPassword' })
           captchaToken: captchaToken.value,
           captcha: formData.captcha
         })
+        clearSavedLoginPassword(formData.username)
         ElMessage.success('密码重置成功，请使用新密码登录')
         router.push({ name: 'Login' })
       } catch (error: any) {

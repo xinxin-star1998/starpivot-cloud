@@ -414,7 +414,11 @@ import {useSettingStore} from '@/store/modules/setting'
 import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/oss-object-path'
 import dayjs from 'dayjs'
 import {logger} from '@/utils/sys/logger'
-import {ADMIN_PASSWORD_PATTERN, ADMIN_PASSWORD_RULE_MESSAGE} from '@/utils/sys/password-prompt-guard'
+import {
+  ADMIN_PASSWORD_PATTERN,
+  ADMIN_PASSWORD_RULE_MESSAGE,
+  clearSavedLoginPassword
+} from '@/utils/sys/password-prompt-guard'
 
 defineOptions({ name: 'UserCenter' })
 
@@ -580,13 +584,12 @@ defineOptions({ name: 'UserCenter' })
   ) => {
     try {
       await ElMessageBox.confirm(
-        `确定要强制下线该会话吗？<br/>设备：${getDeviceText(session)}<br/>IP：${session.ipaddr || '未知'}`,
+        `确定要强制下线该会话吗？\n设备：${getDeviceText(session)}\nIP：${session.ipaddr || '未知'}`,
         '警告',
         {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          type: 'warning',
-          dangerouslyUseHTMLString: true
+          type: 'warning'
         }
       )
 
@@ -779,6 +782,7 @@ defineOptions({ name: 'UserCenter' })
           oldPassword: passwordForm.oldPassword,
           newPassword: passwordForm.newPassword
         })
+        clearSavedLoginPassword(form.userName || userInfo.value?.user?.username || '')
         ElMessage.success('密码修改成功，请重新登录')
         fetchLogout()
           .catch(() => void 0)

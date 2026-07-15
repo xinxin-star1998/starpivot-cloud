@@ -54,6 +54,7 @@ import {
   type MemberStatisticsVo
 } from '@/api/mall/member-statistics'
 import {useAuth} from '@/hooks/core/useAuth'
+import {formatMoney} from '@/utils/mall/money'
 import {ElMessage} from 'element-plus'
 
 interface Props {
@@ -92,8 +93,7 @@ interface Props {
   )
 
   function formatAmount(value?: number) {
-    if (value == null) return '0.00'
-    return Number(value).toFixed(2)
+    return formatMoney(value, '0.00')
   }
 
   async function loadDetail(memberId: number) {
