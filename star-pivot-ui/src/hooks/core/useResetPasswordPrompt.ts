@@ -1,7 +1,8 @@
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {isUserCancel} from '@/utils/sys/confirm-action'
 import {
-    ADMIN_RESET_PASSWORD_PATTERN,
+    ADMIN_PASSWORD_PATTERN,
+    ADMIN_PASSWORD_RULE_MESSAGE,
     clearSavedLoginPassword,
     createPasswordPromptAutofillGuard
 } from '@/utils/sys/password-prompt-guard'
@@ -22,8 +23,8 @@ export async function promptResetPassword(options: ResetPasswordPromptOptions): 
       {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        inputPattern: ADMIN_RESET_PASSWORD_PATTERN,
-        inputErrorMessage: '密码长度 6-20 位，必须包含字母和数字',
+        inputPattern: ADMIN_PASSWORD_PATTERN,
+        inputErrorMessage: ADMIN_PASSWORD_RULE_MESSAGE,
         inputPlaceholder: '请输入新密码',
         inputType: 'password'
       }

@@ -244,45 +244,57 @@
             </ElTabPane>
 
             <ElTabPane label="修改密码" name="password">
-              <ElForm
-                ref="passwordFormRef"
-                :model="passwordForm"
-                :rules="passwordRules"
-                class="pt-4"
-                label-width="90px"
-                label-position="left"
-              >
-                <ElFormItem label="旧密码" prop="oldPassword">
-                  <ElInput
-                    v-model="passwordForm.oldPassword"
-                    type="password"
-                    show-password
-                    autocomplete="current-password"
-                    placeholder="请输入旧密码"
-                  />
-                </ElFormItem>
-                <ElFormItem label="新密码" prop="newPassword">
-                  <ElInput
-                    v-model="passwordForm.newPassword"
-                    type="password"
-                    show-password
-                    autocomplete="new-password"
-                    placeholder="请输入新密码"
-                  />
-                </ElFormItem>
-                <ElFormItem label="确认密码" prop="confirmPassword">
-                  <ElInput
-                    v-model="passwordForm.confirmPassword"
-                    type="password"
-                    show-password
-                    autocomplete="new-password"
-                    placeholder="请确认新密码"
-                  />
-                </ElFormItem>
-                <ElFormItem>
-                  <ElButton type="primary" @click="submitPassword">保存</ElButton>
-                </ElFormItem>
-              </ElForm>
+              <div class="password-panel pt-4">
+                <ElForm
+                  ref="passwordFormRef"
+                  :model="passwordForm"
+                  :rules="passwordRules"
+                  class="password-panel__form"
+                  label-position="top"
+                >
+                  <ElFormItem label="当前密码" prop="oldPassword">
+                    <ElInput
+                      v-model="passwordForm.oldPassword"
+                      type="password"
+                      show-password
+                      autocomplete="current-password"
+                      placeholder="请输入当前密码"
+                    />
+                  </ElFormItem>
+                  <div class="password-panel__row">
+                    <ElFormItem label="新密码" prop="newPassword" class="password-panel__half">
+                      <ElInput
+                        v-model="passwordForm.newPassword"
+                        type="password"
+                        show-password
+                        autocomplete="new-password"
+                        placeholder="请输入新密码"
+                      />
+                    </ElFormItem>
+                    <ElFormItem label="确认新密码" prop="confirmPassword" class="password-panel__half">
+                      <ElInput
+                        v-model="passwordForm.confirmPassword"
+                        type="password"
+                        show-password
+                        autocomplete="new-password"
+                        placeholder="请再次输入新密码"
+                      />
+                    </ElFormItem>
+                  </div>
+                  <ElFormItem>
+                    <ElButton type="primary" @click="submitPassword">保存</ElButton>
+                  </ElFormItem>
+                </ElForm>
+
+                <aside class="password-tips" aria-label="密码安全建议">
+                  <div class="password-tips__title">安全建议</div>
+                  <ul class="password-tips__list">
+                    <li>新密码须为 6–20 位，且同时包含字母和数字（仅允许字母与数字）；与用户管理新增、重置密码规则一致。</li>
+                    <li>避免使用生日、手机号、工号等容易被猜测的信息。</li>
+                    <li>修改成功后请使用新密码重新登录系统。</li>
+                  </ul>
+                </aside>
+              </div>
             </ElTabPane>
             <ElTabPane label="会话管理" name="session">
               <div class="session-management pt-4">
@@ -402,6 +414,7 @@ import {useSettingStore} from '@/store/modules/setting'
 import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/oss-object-path'
 import dayjs from 'dayjs'
 import {logger} from '@/utils/sys/logger'
+import {ADMIN_PASSWORD_PATTERN, ADMIN_PASSWORD_RULE_MESSAGE} from '@/utils/sys/password-prompt-guard'
 
 defineOptions({ name: 'UserCenter' })
 
@@ -461,13 +474,12 @@ defineOptions({ name: 'UserCenter' })
   })
 
   const passwordRules: FormRules<typeof passwordForm> = {
-    oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+    oldPassword: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
     newPassword: [
       { required: true, message: '请输入新密码', trigger: 'blur' },
-      { min: 6, max: 20, message: '密码长度应为 6-20 位', trigger: 'blur' },
       {
-        pattern: /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$/,
-        message: '密码必须包含字母和数字，且仅允许字母和数字',
+        pattern: ADMIN_PASSWORD_PATTERN,
+        message: ADMIN_PASSWORD_RULE_MESSAGE,
         trigger: 'blur'
       },
       {
@@ -477,7 +489,7 @@ defineOptions({ name: 'UserCenter' })
             return
           }
           if (value === passwordForm.oldPassword) {
-            callback(new Error('新密码不能与旧密码相同'))
+            callback(new Error('新密码不能与当前密码相同'))
             return
           }
           callback()
@@ -486,11 +498,11 @@ defineOptions({ name: 'UserCenter' })
       }
     ],
     confirmPassword: [
-      { required: true, message: '请确认新密码', trigger: 'blur' },
+      { required: true, message: '请再次输入新密码', trigger: 'blur' },
       {
         validator: (_rule, value, callback) => {
           if (!value) {
-            callback(new Error('请确认新密码'))
+            callback(new Error('请再次输入新密码'))
             return
           }
           if (value !== passwordForm.newPassword) {
@@ -914,6 +926,74 @@ defineOptions({ name: 'UserCenter' })
 
   .hover\:scale-105:hover {
     transform: scale(1.05);
+  }
+
+  .password-panel {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+
+    @media (max-width: 900px) {
+      flex-direction: column;
+    }
+  }
+
+  .password-panel__form {
+    flex: 1;
+    min-width: 0;
+    max-width: 560px;
+  }
+
+  .password-panel__row {
+    display: flex;
+    gap: 16px;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+
+  .password-panel__half {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .password-tips {
+    flex-shrink: 0;
+    width: 300px;
+    margin-top: 4px;
+    padding: 16px 18px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    background: var(--el-fill-color-light);
+
+    @media (max-width: 900px) {
+      width: 100%;
+    }
+  }
+
+  .password-tips__title {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .password-tips__list {
+    padding-left: 18px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--el-text-color-regular);
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    li::marker {
+      color: var(--el-color-primary-light-3);
+    }
   }
 
   .session-management {

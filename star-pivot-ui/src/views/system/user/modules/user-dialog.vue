@@ -10,21 +10,52 @@
       :model="formData"
       :rules="rules"
       label-width="80px"
+      autocomplete="off"
       aria-label="用户信息表单"
     >
+      <!-- 诱饵字段：阻止浏览器把「添加用户」当成登录表单回填记住的账号密码 -->
+      <input
+        v-if="dialogType === 'add'"
+        type="text"
+        name="username"
+        autocomplete="username"
+        tabindex="-1"
+        aria-hidden="true"
+        class="autofill-decoy"
+      />
+      <input
+        v-if="dialogType === 'add'"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        tabindex="-1"
+        aria-hidden="true"
+        class="autofill-decoy"
+      />
       <ElRow :gutter="20">
         <ElCol :xs="24" :sm="12">
           <ElFormItem label="用户名" prop="userName">
-            <ElInput v-model="formData.userName" placeholder="请输入用户名" />
+            <ElInput
+              v-model="formData.userName"
+              name="user-account"
+              autocomplete="off"
+              :readonly="userNameReadonly"
+              placeholder="请输入用户名"
+              @focus="userNameReadonly = false"
+            />
           </ElFormItem>
         </ElCol>
         <ElCol v-if="dialogType === 'add'" :xs="24" :sm="12">
-          <ElFormItem label="用户密码" prop="password">
+              <ElFormItem label="用户密码" prop="password">
             <ElInput
               v-model="formData.password"
               type="password"
+              name="user-new-password"
+              autocomplete="new-password"
+              :readonly="passwordReadonly"
               show-password
-              placeholder="请输入用户密码"
+              placeholder="可选，留空使用默认密码"
+              @focus="passwordReadonly = false"
             />
           </ElFormItem>
         </ElCol>
@@ -195,6 +226,7 @@ import {fetchGetPostSelect} from '@/api/post/post'
 import {fetchGetDeptTree, type SysDept} from '@/api/dept/dept'
 import {fetchAddUser, fetchGetUserById, fetchUpdateUser} from '@/api/user/user'
 import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
+import {ADMIN_PASSWORD_PATTERN, ADMIN_PASSWORD_RULE_MESSAGE} from '@/utils/sys/password-prompt-guard'
 
 // 角色列表项类型（扩展 RoleListItem，添加 roleCode 字段）
   type RoleOption = Api.SystemManage.RoleListItem & { roleCode: string }
@@ -238,6 +270,9 @@ import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue
   const formRef = ref<FormInstance>()
   // 头像上传组件实例
   const avatarUploadRef = ref<any>()
+  /** 新增用户时先只读，阻止浏览器回填记住的账号密码 */
+  const userNameReadonly = ref(false)
+  const passwordReadonly = ref(false)
 
   // 表单数据
   const formData = reactive({
@@ -261,6 +296,28 @@ import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue
     userName: [
       { required: true, message: '请输入用户名', trigger: 'blur' },
       { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+    ],
+    password: [
+      {
+        validator: (_rule, value, callback) => {
+          if (dialogType.value !== 'add') {
+            callback()
+            return
+          }
+          const pwd = typeof value === 'string' ? value.trim() : ''
+          // 可空：空则后端使用默认密码；填写则须符合统一规则
+          if (!pwd) {
+            callback()
+            return
+          }
+          if (!ADMIN_PASSWORD_PATTERN.test(pwd)) {
+            callback(new Error(ADMIN_PASSWORD_RULE_MESSAGE))
+            return
+          }
+          callback()
+        },
+        trigger: 'blur'
+      }
     ],
     phonenumber: [
       { required: true, message: '请输入手机号', trigger: 'blur' },
@@ -372,6 +429,9 @@ import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue
         ])
         // 再初始化表单数据（编辑模式会获取用户详情）
         await initFormData()
+        // 新增态默认只读，避免浏览器自动填充；用户聚焦后再可编辑
+        userNameReadonly.value = dialogType.value === 'add'
+        passwordReadonly.value = dialogType.value === 'add'
         nextTick(() => {
           formRef.value?.clearValidate()
         })
@@ -520,6 +580,19 @@ import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue
       background-color: var(--art-gray-50);
       border-top: 1px solid var(--art-card-border);
     }
+  }
+
+  .autofill-decoy {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 
   :deep(.el-form-item__label) {

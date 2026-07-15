@@ -1,5 +1,10 @@
-/** 管理员重置密码：6-20 位，必须包含字母和数字 */
-export const ADMIN_RESET_PASSWORD_PATTERN = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$/
+/** 管理端密码统一规则：6-20 位，必须包含字母和数字（新增用户 / 重置 / 个人改密） */
+export const ADMIN_PASSWORD_PATTERN = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$/
+
+/** @deprecated 请使用 {@link ADMIN_PASSWORD_PATTERN} */
+export const ADMIN_RESET_PASSWORD_PATTERN = ADMIN_PASSWORD_PATTERN
+
+export const ADMIN_PASSWORD_RULE_MESSAGE = '密码长度 6-20 位，必须包含字母和数字'
 
 /**
  * 阻止浏览器在 MessageBox 密码框中自动填充已保存密码。

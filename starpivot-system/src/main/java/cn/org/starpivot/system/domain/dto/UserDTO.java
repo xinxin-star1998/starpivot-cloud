@@ -72,9 +72,11 @@ public class UserDTO {
     private String sex;
 
     /**
-     * 密码（新增时填写）
+     * 密码（新增时可空，空则使用系统默认密码；填写时须 6-20 位且同时包含字母和数字）
      */
-    @Size(min = 5, max = 20, message = "密码长度必须在5到20个字符之间")
+    @Pattern(
+            regexp = "^$|^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{6,20}$",
+            message = "密码长度须为6到20位，且同时包含字母和数字")
     private String password;
 
     /**
