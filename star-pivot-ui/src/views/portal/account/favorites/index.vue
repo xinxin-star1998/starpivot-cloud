@@ -50,6 +50,7 @@ import type {PortalCollectItem} from '@/api/portal/types'
 import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
 import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {formatMoney} from '@/utils/mall/money'
 import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
 import {ElMessage} from 'element-plus'
 
@@ -74,7 +75,7 @@ defineOptions({ name: 'PortalFavorites' })
       '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#f0f0f0" width="200" height="200"/></svg>'
     )
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const formatPrice = (p?: number) => formatMoney(p)
 
   async function loadList(reset = true) {
     if (!requireLogin()) return

@@ -31,9 +31,8 @@ public class PermissionCacheService {
         }
         List<String> permissions = loader.get();
         List<String> safeList = permissions != null ? permissions : List.of();
-        if (!safeList.isEmpty()) {
-            redisTemplate.opsForValue().set(key, safeList, TTL);
-        }
+        // 空权限也缓存，避免无菜单用户反复打库（类似缓存穿透）
+        redisTemplate.opsForValue().set(key, safeList, TTL);
         return safeList;
     }
 }

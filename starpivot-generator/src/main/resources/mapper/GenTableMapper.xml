@@ -136,7 +136,7 @@
         sysdate()
         )
     </insert>
-    <!-- 动态执行 DDL（如表创建），使用 ${sql} 直接替换；部分 IDE 校验器不识别 ${} 会报错，可忽略或关闭对应 SQL 校验 -->
+    <!-- 动态执行 DDL：入参必须由 Service 层 AST 解析并规范化为单条 CREATE TABLE，禁止直接传入任意用户 SQL -->
     <update id="createTable" parameterType="String">
         <trim suffixOverrides="">
             ${sql}

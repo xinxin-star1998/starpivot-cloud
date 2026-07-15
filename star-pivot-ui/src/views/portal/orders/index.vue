@@ -187,6 +187,7 @@ import {
 import {fetchPortalAlipayEnabled, fetchPortalAlipayPay} from '@/api/portal/pay'
 import {fetchPortalReviewableSpuIds} from '@/api/portal/comment'
 import type {PortalOrder, PortalOrderItem} from '@/api/portal/types'
+import {formatMoney} from '@/utils/mall/money'
 import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
 import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
@@ -255,7 +256,7 @@ defineOptions({ name: 'PortalOrders' })
     return orders.value.length < total.value
   })
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '0.00')
+  const formatPrice = (p?: number) => formatMoney(p, '0.00')
 
   function tabBadge(key: string) {
     if (key === 'all' || key === '4') return 0

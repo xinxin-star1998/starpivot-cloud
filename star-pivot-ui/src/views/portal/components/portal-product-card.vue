@@ -63,6 +63,7 @@
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
 import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+import { formatMoney } from '@/utils/mall/money'
 
 defineOptions({ name: 'PortalProductCard' })
 
@@ -108,7 +109,7 @@ defineOptions({ name: 'PortalProductCard' })
   )
 
   function formatPrice(p?: number) {
-    return p != null ? Number(p).toFixed(2) : '--'
+    return formatMoney(p)
   }
 </script>
 

@@ -39,7 +39,7 @@ export function handleLoginStatus(to: RouteLocationNormalized, next: NavigationG
   }
 
   // 未登录且访问需要权限的页面，跳转到登录页并携带 redirect 参数
-  userStore.logOut()
+  // 仅跳转，不调用 logOut()，避免未登录访问时误清持久化/其它 store
   next({
     name: 'Login',
     query: { redirect: to.fullPath }

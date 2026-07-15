@@ -108,6 +108,7 @@ import {fetchPortalCollectAdd} from '@/api/portal/collect'
 import type {PortalCart, PortalCartItem} from '@/api/portal/types'
 import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {formatMoney} from '@/utils/mall/money'
 import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import PortalPageHeader from '../components/portal-page-header.vue'
@@ -143,7 +144,7 @@ defineOptions({ name: 'PortalCart' })
     return checked > 0 && checked < validItems.value.length
   })
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '0.00')
+  const formatPrice = (p?: number) => formatMoney(p, '0.00')
 
   async function loadCart() {
     cart.value = await fetchPortalCart()

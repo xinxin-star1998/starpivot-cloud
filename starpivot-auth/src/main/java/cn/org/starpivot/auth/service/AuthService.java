@@ -334,7 +334,8 @@ public class AuthService {
             dto.setStatus(status);
             dto.setMsg(msg);
             loginLogRecordService.record(dto);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            log.warn("登录日志写入失败, username={}, status={}", username, status, ex);
         }
     }
 

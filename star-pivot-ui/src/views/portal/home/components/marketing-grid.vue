@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
 import type {PortalHomeBlock, PortalHomeProduct, PortalSeckillSession} from '@/api/portal/types'
+import {formatMoney} from '@/utils/mall/money'
 import PortalSeckillCountdown from '@/views/portal/components/portal-seckill-countdown.vue'
 
 defineOptions({ name: 'PortalHomeMarketingGrid' })
@@ -119,7 +120,7 @@ defineOptions({ name: 'PortalHomeMarketingGrid' })
   }
 
   function formatPrice(price?: number) {
-    return price != null ? Number(price).toFixed(2) : '--'
+    return formatMoney(price)
   }
 
   function sessionStateLabel(state?: string) {

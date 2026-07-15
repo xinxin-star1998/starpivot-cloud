@@ -1,4 +1,5 @@
 import type {CouponVo} from '@/api/mall/coupon'
+import {formatMoney} from '@/utils/mall/money'
 
 export type CouponRunStatus = 'not_started' | 'claiming' | 'running' | 'expired' | 'depleted'
 
@@ -33,9 +34,8 @@ function parseTime(value?: string | null): number | null {
 }
 
 export function formatCouponMoney(value?: number | string | null): string {
-  if (value == null || value === '') return '-'
-  const num = Number(value)
-  return Number.isFinite(num) ? `¥${num.toFixed(2)}` : '-'
+  const text = formatMoney(value, '')
+  return text ? `¥${text}` : '-'
 }
 
 export function formatCouponDateRange(start?: string, end?: string): string {

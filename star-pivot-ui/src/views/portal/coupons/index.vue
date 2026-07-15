@@ -81,6 +81,7 @@ import {fetchPortalCouponClaimable, fetchPortalCouponMine, fetchPortalCouponRece
 import type {PortalClaimableCoupon, PortalMyCoupon} from '@/api/portal/types'
 import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import {formatMoney} from '@/utils/mall/money'
 import PortalPageHeader from '../components/portal-page-header.vue'
 
 defineOptions({ name: 'PortalCoupons' })
@@ -93,7 +94,7 @@ defineOptions({ name: 'PortalCoupons' })
   const myList = ref<PortalMyCoupon[]>([])
   const receivingId = ref<number>()
 
-  const formatAmount = (v?: number) => (v != null ? Number(v).toFixed(0) : '0')
+  const formatAmount = (v?: number) => formatMoney(v, '0', 0)
   const formatDate = (v?: string) => (v ? v.slice(0, 10) : '-')
 
   const statusLabel = (status?: number) => {

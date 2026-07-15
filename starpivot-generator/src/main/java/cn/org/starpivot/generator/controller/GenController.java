@@ -5,6 +5,7 @@ import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.DeleteRequest;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.enums.BusinessType;
+import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.common.sql.SqlUtil;
 import cn.org.starpivot.generator.domain.bo.GenTableVO;
@@ -159,6 +160,8 @@ public class GenController {
             String operName = SecurityContextUtils.getUsername();
             genTableService.importGenTable(tableList, operName);
             return Result.success();
+        } catch (BizException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Result.error("创建表结构异常");
