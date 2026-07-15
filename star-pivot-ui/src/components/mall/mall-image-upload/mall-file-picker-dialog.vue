@@ -19,18 +19,20 @@
           <ul class="mall-file-picker__folders">
             <li
               :class="{ 'is-active': selectedFolderId == null }"
-              class="mall-file-picker__folder"
+              class="mall-file-picker__folder mall-file-picker__folder--root"
               @click="selectFolder(undefined)"
             >
               <ArtSvgIcon icon="ri:folder-open-line" />
-              <span class="mall-file-picker__folder-name">全部</span>
-              <span v-if="allCount != null" class="mall-file-picker__folder-count">{{ allCount }}</span>
+              <span class="mall-file-picker__folder-name">全部文件</span>
+              <span v-if="allCount != null" class="mall-file-picker__folder-count">{{
+                allCount
+              }}</span>
             </li>
             <li
               v-for="folder in folders"
               :key="folder.folderId"
               :class="{ 'is-active': selectedFolderId === folder.folderId }"
-              class="mall-file-picker__folder"
+              class="mall-file-picker__folder mall-file-picker__folder--child"
               @click="selectFolder(folder.folderId)"
             >
               <ArtSvgIcon icon="ri:folder-3-line" />
@@ -390,6 +392,10 @@ defineOptions({ name: 'MallFilePickerDialog' })
     &.is-active {
       color: var(--el-color-primary);
       background: var(--el-color-primary-light-9);
+    }
+
+    &--child {
+      margin-left: 16px;
     }
   }
 

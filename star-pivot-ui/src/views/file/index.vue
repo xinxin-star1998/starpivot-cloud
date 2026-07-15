@@ -4,11 +4,14 @@
       <ElCard v-if="activeTab === 'all'" shadow="never" class="file-sidebar">
         <FileFolderTree
           :categories="categoryTree"
+          :all-selected="allFilesSelected"
           :active-folder-id="selectedFolderId"
+          @select-all="handleSelectAll"
           @select-folder="handleSelectFolder"
           @add-folder="openFolderDialog('add', undefined, $event)"
           @edit-folder="handleEditFolder"
           @delete-folder="handleDeleteFolder"
+          @refresh="loadFolderTree"
         />
       </ElCard>
 
@@ -110,14 +113,7 @@
           </div>
 
           <div class="file-table-card__body">
-            <ElEmpty
-              v-if="activeTab === 'all' && !selectedFolderId && !loading"
-              :image-size="100"
-              description="请在左侧选择文件夹"
-            />
-
             <ArtTable
-              v-else
               :columns="columns"
               :data="data"
               :loading="loading"
@@ -204,6 +200,8 @@ defineOptions({ name: 'FileManage' })
   /** 与 activeTab 同步，供 listApi 读取，避免 Tab 切换瞬间 API 选错 */
   const listMode = ref<'all' | 'recycle'>('all')
   const categoryTree = ref<FileCategoryNode[]>([])
+  /** true 表示左侧选中「全部文件」，不按 folderId 过滤 */
+  const allFilesSelected = ref(true)
   const selectedFolderId = ref<number>()
   const selectedCategory = ref('')
   const selectedFolderName = ref('')
@@ -233,7 +231,7 @@ defineOptions({ name: 'FileManage' })
   const isRecycle = computed(() => activeTab.value === 'recycle')
 
   const locationText = computed(() => {
-    if (!selectedFolderId.value) return ''
+    if (allFilesSelected.value || !selectedFolderId.value) return '全部文件'
     const catLabel = getCategoryLabel(selectedCategory.value)
     return `${catLabel} / ${selectedFolderName.value || '默认'}`
   })
@@ -441,25 +439,25 @@ defineOptions({ name: 'FileManage' })
     categoryTree.value = tree || []
   }
 
-  function applyDefaultFolderIfNeeded() {
-    if (selectedFolderId.value || categoryTree.value.length === 0) return
-    const first = categoryTree.value[0]
-    const defaultFolder = first.children?.[0]
-    if (!defaultFolder?.folderId) return
-    selectedFolderId.value = defaultFolder.folderId
-    selectedCategory.value = first.category
-    selectedFolderName.value = defaultFolder.folderName || '默认'
-  }
-
   async function initPage() {
     await loadFolderTree()
-    applyDefaultFolderIfNeeded()
-    if (selectedFolderId.value || isRecycle.value) {
-      await handleSearch()
-    }
+    allFilesSelected.value = true
+    selectedFolderId.value = undefined
+    selectedCategory.value = ''
+    selectedFolderName.value = ''
+    await handleSearch()
+  }
+
+  function handleSelectAll() {
+    allFilesSelected.value = true
+    selectedFolderId.value = undefined
+    selectedCategory.value = ''
+    selectedFolderName.value = ''
+    handleSearch()
   }
 
   function handleSelectFolder(payload: { folderId: number; category: string; folderName: string }) {
+    allFilesSelected.value = false
     selectedFolderId.value = payload.folderId
     selectedCategory.value = payload.category
     selectedFolderName.value = payload.folderName
@@ -494,8 +492,15 @@ defineOptions({ name: 'FileManage' })
       params.category = searchForm.value.category
       params.deleteBy = searchForm.value.deleteBy
     } else {
-      params.folderId = selectedFolderId.value
-      params.category = selectedCategory.value
+      // 「全部文件」不传 folderId/category，由后端按可访问分类汇总
+      if (allFilesSelected.value) {
+        const paramsRecord = searchParams as Record<string, unknown>
+        delete paramsRecord.folderId
+        delete paramsRecord.category
+      } else {
+        params.folderId = selectedFolderId.value
+        params.category = selectedCategory.value
+      }
       params.mediaType = mediaTypeFilter.value || undefined
       params.createBy = searchForm.value.createBy
     }
@@ -624,8 +629,7 @@ defineOptions({ name: 'FileManage' })
       await deleteFolder(folderId)
       ElMessage.success('文件夹已删除')
       if (selectedFolderId.value === folderId) {
-        selectedFolderId.value = undefined
-        selectedFolderName.value = ''
+        handleSelectAll()
       }
       await loadFolderTree()
     } catch (error) {
@@ -717,7 +721,7 @@ defineOptions({ name: 'FileManage' })
 
   onActivated(() => {
     if (!pageInitialized.value) return
-    if (selectedFolderId.value && activeTab.value === 'all') {
+    if (activeTab.value === 'all') {
       handleSearch()
     }
   })
