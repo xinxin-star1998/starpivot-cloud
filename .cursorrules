@@ -1,0 +1,394 @@
+# StarPivot Cloud — Cursor 编码规范
+## 语言强制约束
+所有对话、代码解释、审查报告、注释文案统一使用简体中文。
+不主动使用大段英文输出，禁止无理由切换英文。
+接口提示、异常文案、OpenAPI描述、前端页面文案全部中文。
+> 本规范基于当前仓库既有写法提炼，遵循「最小改动原则」：贴合现有风格，不引入外部风格体系；修改某模块时优先沿用该模块既有命名与分层，禁止为统一而大规模重构。
+
+---
+
+## 0. 总则
+
+1. **最小改动**：只改任务相关代码；不做无关清理、不做跨模块风格「统一化」。
+2. **就近一致**：同一目录/模块内已有命名冲突时（如 VO vs Vo、DTO vs Dto），以**当前模块主流写法**为准。
+3. **中文用户文案**：接口校验提示、业务异常消息、OpenAPI summary 使用中文。
+4. **密钥与配置**：敏感项仅用环境变量占位（`${ENV}`），禁止把真实密钥写进 Nacos YAML / 前端配置。
+5. **包管理**：前端使用 **pnpm**（`>=8.8.0`），后端使用 Maven 多模块。
+
+---
+
+## 1. 后端规范（Java / Spring Cloud）
+
+### 1.1 模块与包结构
+
+| 模块 | 根包名 |
+|------|--------|
+| `starpivot-common` | `cn.org.starpivot.common` |
+| `starpivot-api` | `cn.org.starpivot.api`（Feign 契约唯一存放处） |
+| `starpivot-auth` / `system` / `gateway` / `approval` / `generator` | `cn.org.starpivot.<module>` |
+| 商城子模块 | `cn.org.starpivot.mall.<pms\|ums\|oms\|sms\|wms\|portal>` |
+
+商城域缩写约定：
+- **PMS** 商品、**UMS** 会员、**OMS** 订单、**SMS** 营销、**WMS** 仓储、**Portal** C 端（可与所属服务同模块共存）
+
+典型分层（按模块放置，勿跨层乱放）：
+
+```
+controller/                 # 对外 HTTP
+controller/internal/        # 仅 Feign/内部调用
+service/ + service/impl/    # 业务接口与实现（可含 support/、engine/）
+mapper/                     # MyBatis-Plus Mapper
+domain/entity|dto|vo|bo/    # 领域对象（system/generator 中 VO 常放 domain.bo，沿用即可）
+assembler/ config/ constants/ enums/ mq/ excel/
+resources/mapper/[domain]/ # Mapper XML
+```
+
+`server.servlet.context-path` 为 `/api/${starpivot.api.version}`（默认 `v1`）。Controller 的 `@RequestMapping` **只写相对路径**（如 `/mall/order`、`/sys/dict/type`、`/portal/coupon`），禁止在 Controller 中硬编码 `/api/v1`。
+
+### 1.2 命名规范
+
+| 类型 | 约定 | 示例 |
+|------|------|------|
+| Controller | `*Controller` | `OmsOrderController` |
+| Service | `*Service` / `*ServiceImpl` | `SysMenuServiceImpl extends ServiceImpl` |
+| Mapper | `*Mapper` | `OmsOrderMapper` |
+| Entity | 域前缀 + 名词 | `SysUser`、`OmsOrder`、`ApTemplateStep` |
+| 入参/写 DTO | `*DTO`/`*Dto`（模块内统一） | `SysDictTypeDTO`、`ApTaskActionDto` |
+| 查询 | system：`*QueryDTO`；mall：`*ReqBo extends PageReqBo` | `OmsOrderReqBo` |
+| 出参 | `*VO`/`*Vo`（模块内统一） | `OmsOrderVo`、`SysDictTypeVO` |
+| 动作 BO | `*Bo` | `OmsDeliverBo` |
+| 批量删除体 | `DeleteRequest`（common） | `ids` |
+| 枚举 | `*Enum`，含 `code` + `label` | `WmsTaskLockStatusEnum` |
+| 常量类 | `*Constants` 或嵌套静态类 | `AppConstants`、`PortalConstants`、`CacheConstants` |
+| Feign | `*Client` / `*InternalClient` + `*FallbackFactory` | `OrderInternalClient` |
+| MQ | `*MqListener`；发件箱 `*LocalMessageOutbox*` | |
+| 权限串 | `module:resource:action` | `mall:order:query`、`system:type:add` |
+
+方法命名习惯：
+- CRUD：`pageList` / `list` / `getById` / `add` / `edit` / `remove`，或 `selectXxx` / `insertXxx` / `updateXxx` / `deleteXxxByIds`
+- 领域动作：动词直述（`deliver`、`close`、`approve`）
+- 字段：Java camelCase；库表 snake_case（由 MyBatis-Plus 映射）
+- 常量：`UPPER_SNAKE`（如 `AppConstants.Status.NORMAL`）
+
+### 1.3 接口格式
+
+统一返回：`cn.org.starpivot.common.domain.Result<T>`（字段 `code` / `message` / `data`），成功码 `ErrorCode.SUCCESS == 200`。使用 `Result.success(...)` / `Result.error(...)`，**禁止**引入 AjaxResult、R 等新包装。
+
+分页：
+- 入参：`PageReqBo`（`pageNum`/`pageSize`，默认 1/10，带 `@Min`/`@Max`）
+- 出参：`PageResponse<T>`（`total`、`rows`、`pageNum`、`pageSize`、`pageCount`）
+- 实现：MyBatis-Plus `Page`/`IPage` 手动填入 `PageResponse`，勿另造分页包装
+
+HTTP 习惯：
+
+| 场景 | 方法 | 路径习惯 |
+|------|------|----------|
+| 分页列表 | `POST` | `/*PageList`（如 `/orderPageList`）+ `@RequestBody` |
+| 详情 | `GET` | `/{id}` |
+| 新增 | `POST` | 根路径或具名路径 |
+| 修改 | `PUT` | 根路径或 `/deliver` 等动作路径 |
+| 删除 | `DELETE` | 常 `/removeXxx` + `@RequestBody DeleteRequest` |
+
+路径受众：
+- 管理端：`/sys/**`、`/mall/**`、`/approval/**`、`/tool/gen/**`
+- C 端：`/portal/**`
+- 认证：`/auth/**`
+- 服务间：**仅** `/internal/**`（网关必须拦截外网访问）
+
+Controller 写法要点：
+- `@RestController` + `@RequiredArgsConstructor` + 构造注入，保持瘦 Controller
+- 类上常加 `@Validated`；体参 `@Valid @RequestBody`
+- `@PreAuthorize("hasAuthority('...')")`；Portal 可用 `PortalConstants.MEMBER_ROLE`
+- OpenAPI：`@Tag` / `@Operation` / `@Parameter`
+- 写操作可加 `@Log(title = "...", businessType = BusinessType.XXX)`
+
+### 1.4 入参校验与异常处理
+
+校验：Jakarta Validation，`message` 用中文（如「页码不能小于1」）。校验失败由全局处理返回 HTTP 400 + `Result.badRequest`。
+
+业务异常：**只抛** `BizException`（可配 `ErrorCode` + 中文消息），或用 `AssertUtils.notNull/...(obj, ErrorCode, "消息")`。
+
+```java
+throw new BizException(ErrorCode.MENU_NAME_EXISTS, "菜单名称已存在");
+```
+
+**禁止**继续使用已废弃的 `BusinessException` / `ServiceException`。
+
+错误码：在 `ErrorCode`（及模块分段编号）中扩展，勿随意散落魔法数字。
+
+`GlobalExceptionHandler` 约定（必须遵守）：
+
+| 情况 | HTTP | Body |
+|------|------|------|
+| `BizException` → UNAUTHORIZED | 401 | `Result.error` |
+| FORBIDDEN / PERMISSION_DENIED | 403 | 同上 |
+| NOT_FOUND | 404 | 同上 |
+| SYSTEM_ERROR | 500 | 同上 |
+| **其他业务码** | **200** | `Result.error(code, msg)` |
+| 参数校验 / IllegalArgument | 400 | `Result.badRequest` |
+| AccessDenied | 403 | … |
+| 未处理 Exception | 500 | 「系统繁忙，请稍后重试」（勿把堆栈回给前端） |
+
+关键原则：**普通业务失败用 HTTP 200 + body.code，避免前端对业务错误误当系统失败重试**。
+
+### 1.5 数据库与事务
+
+- ORM：MyBatis-Plus；实体 `@TableName`、`@TableId(type = IdType.AUTO)`；Lombok `@Data`
+- 系统类实体常 `extends BaseEntity`（`createTime`/`updateTime`/`createBy`/`updateBy`/`remark`）+ `@TableLogic delFlag`（`"0"` 存在 / `"2"` 删除，RuoYi 风格）
+- 商城订单等实体可能**不**继承 `BaseEntity`，用业务字段（如 `deleteStatus`）——改前先看实体，勿想当然加 `@TableLogic`
+- 查询优先 `LambdaQueryWrapper` / `Wrappers.lambdaQuery()`；复杂分页用自定义 `selectPageList` + XML
+- Mapper XML：`src/main/resources/mapper/`（商城可分子目录 `oms/`、`pms/` 等）
+- 事务写在 **ServiceImpl 方法**上：
+  - 读：`@Transactional(readOnly = true)`
+  - 写：`@Transactional(rollbackFor = Exception.class)`
+- 字典状态等多用字符串 `"0"`/`"1"`，勿随意改成 boolean
+
+### 1.6 枚举、常量、字典
+
+| 位置 | 用途 |
+|------|------|
+| `common.entity.AppConstants` | 通用状态、角色、数据范围等 |
+| `common.constants.*` | Cache / Gen / Job 等 |
+| `common.enums.BusinessType` 等 | `@Log` 操作类型 |
+| `common.exception.ErrorCode` | 业务错误码 |
+| 模块 `*Constants` / `enums/` | 本域常量与枚举 |
+| DB `sys_dict_type` / `sys_dict_data` | 系统字典（前端 `useDict`） |
+
+新增枚举优先放本模块 `enums/`，带 `code`+`label`；跨模块共享再上提到 common。
+
+### 1.7 日志与注释
+
+- 日志：`@Slf4j`；业务校验用 `log.warn`；未预期用 `log.error("...", ex)`；避免无意义 `info` 刷屏
+- 登录失败对外文案脱敏（不暴露「用户不存在/密码错误」细分）
+- 注释：类/关键方法 JavaDoc（中文业务说明）；OpenAPI 注解；非显而易见逻辑才写行内注释
+- 禁止大段注释掉的废代码入库
+
+### 1.8 安全、Feign、MQ
+
+安全：
+- 网关校验 JWT、白名单、限流；剥离伪造用户头；**拦截 `/internal/`**
+- 下游 `@PreAuthorize` + `SecurityContextUtils` 取当前用户
+- 内部调用：`/internal/**` + `InternalServiceAuthFilter` + Feign `InternalFeignRequestInterceptor` 带内部 token
+- 默认不信任网关用户头（`trust-gateway-headers: false`）
+
+Feign（契约只放 `starpivot-api`）：
+- `@FeignClient(path = "/api/${starpivot.api.version:v1}", fallbackFactory = ...)`
+- 路径含 `/internal/...`；返回 `Result<T>`；服务端放 `controller/internal`
+
+MQ / 发件箱（关键事务消息）：
+- 开关：`starpivot.mq.enabled`
+- 业务事务内 `enqueue` → `@DistributedScheduled` 刷出发件箱 → Listener 继承 `AbstractMqListener`（手工 ACK + 幂等）
+- 交换器/路由键/队列名用 `starpivot-api` 中统一定义，禁止魔法字符串散落
+- 关键业务事件**禁止**绕过发件箱直接 publish 后当作已可靠投递
+
+### 1.9 后端禁止写法与坑点
+
+1. 业务失败随便返回 HTTP 500（破坏前端重试语义）
+2. 新建 `BusinessException` / `ServiceException` / 新的统一返回体
+3. Controller 硬编码 `/api/v1`；把 `/internal/**` 暴露到网关公网
+4. 无 FallbackFactory 的 Feign；在业务服务内复制一份 Feign 接口
+5. 关键链路只发 MQ 不落本地发件箱
+6. Nacos 明文密钥；生产打开网关 Swagger 白名单
+7. 不看实体就套 `@TableLogic` / `BaseEntity`
+8. 在 Controller 写复杂业务或开大事务
+
+---
+
+## 2. 前端规范（star-pivot-ui）
+
+### 2.1 技术栈与工程约束
+
+- Vue 3 + `<script setup lang="ts">` + Pinia（setup 写法）+ Element Plus + Vite + Tailwind 4
+- 包管理：**pnpm**；Node `>=20.19.0`
+- 代码风格：Prettier — 单引号、无分号、`trailingComma: none`、`printWidth: 100`、`vueIndentScriptAndStyle: true`
+- **禁止** Options API / `export default defineComponent` 写新页面
+
+路径别名：`@`、`@views`、`@utils`、`@stores`、`@styles` 等（见 `vite.config.ts`）。
+
+### 2.2 目录约定
+
+```
+src/
+  api/{mall|portal|user|role|dict|approval|…}/   # 按域拆分 API
+  components/core/          # art-* 管理端通用组件
+  components/mall/          # mall-* 商城后台共用组件
+  hooks/core/               # useTable、useDict、useAuth…
+  hooks/portal/             # C 端 hooks
+  store/modules/            # Pinia
+  types/api/api.d.ts        # 全局 Api 命名空间（系统/认证/分页）
+  utils/http/               # 唯一请求封装
+  utils/mall/               # 金额、优惠券、类目等
+  utils/portal/             # C 端工具
+  views/mall/{pms|oms|ums|wms|sms|cms}/…
+  views/portal/…            # C 端（静态路由）
+  views/system|approval|…/
+  router/guards|routes/
+```
+
+管理端 CRUD 页面结构：
+
+```
+views/mall/oms/order/order/
+  index.vue
+  modules/order-search.vue
+  modules/order-detail-drawer.vue
+  modules/deliver-dialog.vue
+```
+
+Portal：页面在 `views/portal/{feature}/index.vue`；共用组件 `views/portal/components/portal-*.vue`（不必强行挪到 `src/components`）。
+
+### 2.3 命名规范
+
+| 类型 | 约定 | 示例 |
+|------|------|------|
+| 页面 | 功能目录 + `index.vue` | `views/mall/pms/brand/index.vue` |
+| 子模块 SFC | kebab-case | `order-search.vue`、`coupon-dialog.vue` |
+| Portal 共用 | `portal-` + kebab | `portal-product-card.vue` |
+| 核心组件 | `art-*` | `art-table` |
+| 商城组件 | `mall-*` | `mall-image-upload` |
+| `defineOptions({ name })` | PascalCase | `OmsOrderQuery`、`PortalCart` |
+| Hooks | `use` + PascalCase | `useTable`、`usePortalAuth` |
+| Store | `useXxxStore`，id 为 `xxxStore` | `useUserStore` / `userStore` |
+| API 文件 | kebab | `api/mall/order.ts` |
+| API 函数 | **`fetch` 前缀** | `fetchOmsOrderList`、`fetchPortalCart` |
+| 工具文件 | kebab | `utils/mall/money.ts` |
+| 常量 Map | `*_MAP` / `*_OPTIONS` / `SCREAMING_SNAKE` | `OMS_ORDER_STATUS_MAP` |
+
+复杂向导步骤偶发 PascalCase 文件名（如 `SpuSkuTable.vue`）——新增时与同目录已有文件保持一致。
+
+### 2.4 组件写法
+
+```vue
+<script setup lang="ts">
+  defineOptions({ name: 'FeatureName' })
+  const props = withDefaults(defineProps<{ … }>(), { … })
+  const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
+</script>
+<style scoped lang="scss">
+</style>
+```
+
+- 弹窗常见 `v-model:visible`；类型 `DialogType = 'add' | 'edit'`
+- 管理端列表优先 `useTable` + `ArtTable` / `ArtTableHeader` / `ArtSearchBar` + `art-full-height` / `art-table-card`
+- 权限：`v-auth="'mall:coupon:add'"` 或 `useAuth().hasAuth(...)`（`h()` 渲染列时用后者）
+- 样式：页面 **scoped SCSS**；Portal 用 `--portal-*` CSS 变量；管理端用 `--art-*` / Element Plus
+- Vue / VueRouter / Pinia / VueUse 已 auto-import 的 API 不必重复手动 import（与现有文件保持一致即可）
+
+### 2.5 请求封装与 API
+
+- 唯一入口：`import request from '@/utils/http'`
+- 调用形态：`request.get|post|put|delete<T>({ url, data/params, showSuccessMessage?, … })`
+- 后端信封 `{ code, message, data }` → 封装层返回 **`data`**；成功码 `200`
+- URL 以 `/api/...` 开头（版本前缀由代理/`config` 处理）；与后端相对路径对齐：`/api/mall/...`、`/api/portal/...`、`/api/sys/...`
+- **双 Token**：路径含 `/portal/` 用 `usePortalMemberStore().token`；否则用 `useUserStore().accessToken`；`Authorization: Bearer …`
+- Admin 401：刷新队列 + 登出；Portal 401：**直接 portal 登出，无 refresh**
+- GET 可重试；**POST/PUT/DELETE 不重试**（防重复写）——禁止再包一层「写请求重试」
+- 系统类类型放全局 `Api.*`；商城/Portal 的 `Vo`/`Params`/`Payload` **与 API 文件同文件导出**，或放 `api/portal/types.ts`，不要全塞进 `api.d.ts`
+
+分页类型：
+- 请求后端：`pageNum` / `pageSize`（`Api.Common.CommonSearchParams`）
+- 响应优先：`Api.Common.PageResponse<T>`（`rows` + `total`）
+- `PaginatedResponse` 已 **@deprecated**，新接口勿再使用
+
+字段踩坑（必须遵守）：
+- 登录用户名：`username`；系统用户 CRUD：`userName`
+- 认证手机：`phoneNumber`；SysUser：`phonenumber`（全小写）
+
+### 2.6 Store / Router / 字典
+
+- Admin：`useUserStore`（token、用户信息、刷新）；Portal：`usePortalMemberStore`——**严禁混用**
+- Persist key 走 `StorageConfig.generateStorageKey(...)`
+- Portal 路由在 `staticRoutes`（`/portal`，name 如 `PortalHome`）；管理端菜单走动态路由
+- 页面鉴权：Portal 用 `usePortalAuth().requireLogin()` → `/portal/login?redirect=…`；管理端走 `authGuard` / 动态路由守卫
+- 系统字典：`useDict()`（`loadDict` / `getDictLabel` / `getDictOptions`）；商城业务状态优先本地 `*_MAP` / `*_OPTIONS`
+
+### 2.7 金额与商城工具
+
+- 金额统一走 `@/utils/mall/money`：`toCents` / `formatMoney` / `formatMoneyProduct`
+- **禁止**用 `Number(x).toFixed(2)` 做金额展示
+- 优惠券状态展示走 `@/utils/mall/coupon`（Map + tagType + 阶段 helper）
+- 图片、类目树、审核状态等复用 `utils/mall/*`，勿复制粘贴
+
+### 2.8 注释
+
+- 共享模块可用中文文件头说明（`## 主要功能` / `@module`）
+- 页面可用顶部 HTML 注释：`<!-- 订单查询 -->`
+- 非显而易见逻辑写 `/** … */`；业务文案中文 OK
+
+### 2.9 前端禁止写法与坑点
+
+1. Options API；直接 `axios` 绕过 `@/utils/http`
+2. 管理端 Token 调 Portal API（或反过来）
+3. 金额展示手写 `toFixed`；把 mall VO 全部堆进全局 `Api` 命名空间
+4. Portal 页面挂到管理端布局 / 动态菜单
+5. 给 POST/PUT 加自动重试；忽略 `showErrorMessage` 导致重复弹错
+6. 引入新 UI 体系替代 Element Plus / 现有 art-* / portal 变量（除非任务明确要求）
+7. 使用 `var`、双引号、行尾分号（与 Prettier 冲突）
+
+---
+
+## 3. 前后端协同规范
+
+### 3.1 URL 与版本
+
+- 后端 context-path：`/api/v1`；Controller 相对路径 + 前端请求 `/api/{相对路径去掉开头的重复?}` → 实际为 `/api` + 网关路由到服务后再拼 version（以现有 `vite` 代理与线上 `public/config.js` 为准）
+- 约定路径分段：管理 `/mall|sys|approval|…`；C 端 `/portal`；内部 `/internal`（前端**永不调用**）
+
+### 3.2 响应与错误码契约
+
+```json
+{ "code": 200, "message": "操作成功", "data": {} }
+```
+
+- 前端以 `code === 200` 为成功，取 `data`
+- 业务失败常见 **HTTP 200 + code ≠ 200**：前端展示 `message`，**不要**当网络错误自动重试
+- HTTP 401/403/404/500：走 http 封装既有分支（Admin 刷新 / Portal 登出 / 提示）
+
+### 3.3 分页契约
+
+- 请求：`pageNum`、`pageSize`（不是 `current`/`size` 直传后端）
+- 响应：`rows` + `total`（兼有 `pageNum`/`pageSize`/`pageCount`）
+- 前端表格内部可用 `current`/`size`，在 API 层转换
+
+### 3.4 鉴权协同
+
+| 端 | Token 存储 | 权限 |
+|----|------------|------|
+| 管理端 | `userStore.accessToken` + refresh | `hasAuthority` ↔ `v-auth` / 菜单 |
+| Portal | `portalMemberStore.token`（无 refresh） | 会员角色 / 登录门禁 |
+| 服务间 | Internal token + `/internal` | 网关禁止外网 |
+
+权限字符串前后端保持同一套 `module:resource:action`。
+
+### 3.5 类型与字段命名
+
+- Jackson 默认 camelCase；前端类型字段与后端 VO **同名同形**
+- 已知历史不一致（`username` vs `userName`，`phoneNumber` vs `phonenumber`）以 `api.d.ts` 注释为准，**禁止「纠正」其中一侧导致联调失败**
+- 新增字段：前后端同步改；商城类型改 API 模块内 interface，系统类型改 `Api.*`
+
+### 3.6 字典与枚举协同
+
+- 可配置类：走系统字典表 + 前端 `useDict`
+- 稳定业务状态：后端枚举 `code`/`label` + 前端平行 `*_MAP`（展示 tag 用）
+- 勿一端用数字一端用字符串而不转换
+
+### 3.7 变更协作检查清单
+
+新增/修改接口时同步确认：
+1. 路径受众（admin / portal / internal）正确
+2. 返回 `Result` / 分页 `PageResponse.rows`
+3. 鉴权注解与前端 `v-auth` 或 Portal 登录门禁一致
+4. 错误用 `BizException`，业务失败勿滥用 500
+5. 前端 `fetch*` + 类型 +（如需）Map/工具函数
+6. 涉及金额用分/既有 money 工具；涉及跨服务用 Feign `/internal` 或发件箱 MQ
+
+---
+
+## 4. AI / Cursor 实施约束（强制）
+
+1. 生成代码必须可编译并贴合目标模块现有 import、注解、分层。
+2. 不主动做大范围重命名、目录搬家、换返回体、换鉴权方案。
+3. 不提交密钥；不改 git config；用户未要求不 commit / 不 push。
+4. 不写 exploit、不提供攻击性 PoC；安全修复仅限本地代码防御向改动。
+5. 文档类文件（README 等）除非用户明确要求，否则不新增。
+6. 有疑问时优先打开同模块邻近文件照抄模式，而不是套用外部「最佳实践」模板。

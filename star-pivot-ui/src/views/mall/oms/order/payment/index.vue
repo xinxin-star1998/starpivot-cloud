@@ -24,6 +24,7 @@ import {fetchPaymentList, type PaymentVo} from '@/api/mall/payment'
 import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
 import ArtTable from '@/components/core/tables/art-table/index.vue'
 import PaymentSearch from './modules/payment-search.vue'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'OmsPaymentLog' })
 
@@ -59,7 +60,7 @@ defineOptions({ name: 'OmsPaymentLog' })
           label: '金额',
           width: 100,
           formatter: (row: PaymentVo) =>
-            row.totalAmount != null ? `¥${Number(row.totalAmount).toFixed(2)}` : '-'
+            row.totalAmount != null ? `¥${formatMoney(row.totalAmount)}` : '-'
         },
         { prop: 'subject', label: '标题', minWidth: 140, showOverflowTooltip: true },
         { prop: 'paymentStatus', label: '支付状态', width: 100 },

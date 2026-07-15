@@ -52,6 +52,7 @@ import SkuDialog from './modules/sku-dialog.vue'
 import {useAuth} from '@/hooks/core/useAuth'
 import {handleMutationError} from '@/utils/http/mutation'
 import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {formatMoney} from '@/utils/mall/money'
 
 const props = withDefaults(
     defineProps<{
@@ -95,10 +96,8 @@ const props = withDefaults(
   const brandNameMap = ref<Record<number, string>>({})
 
   const formatPrice = (row: MallSkuVo) => {
-    const p = row.price
-    if (p === null || p === undefined || p === '') return '-'
-    const n = Number(p)
-    return Number.isFinite(n) ? `¥${n.toFixed(2)}` : String(p)
+    const formatted = formatMoney(row.price, '')
+    return formatted ? `¥${formatted}` : '-'
   }
 
   const openCreateDialog = () => {

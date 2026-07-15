@@ -2,7 +2,7 @@ import {fetchGetAttrList, type MallAttr} from '@/api/mall/attr'
 import {fetchGetGroupList, type Group} from '@/api/mall/group'
 import {defaultResponseAdapter, extractTableData} from '@/utils/table/tableUtils'
 
-/** 兼容后端 PageResponse.rows 与前端 PaginatedResponse.records */
+/** 从分页结果取列表行（后端标准字段 rows） */
 export function pageRows<T>(page: unknown): T[] {
   return extractTableData(defaultResponseAdapter<T>(page))
 }

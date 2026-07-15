@@ -32,13 +32,13 @@
             <text class="item-name">{{ item.spuName }}</text>
             <text v-if="item.skuName" class="item-sku">{{ item.skuName }}</text>
             <view class="item-foot">
-              <text class="item-price">¥{{ item.realAmount ?? item.skuPrice }}</text>
+              <text class="item-price">¥{{ formatMoney(item.realAmount ?? item.skuPrice, '0.00') }}</text>
               <text class="item-qty">x{{ item.skuQuantity }}</text>
             </view>
           </view>
         </view>
         <view class="order-foot">
-          <text class="total">共{{ itemCount(order) }}件 实付 <text class="amount">¥{{ order.payAmount }}</text></text>
+          <text class="total">共{{ itemCount(order) }}件 实付 <text class="amount">¥{{ formatMoney(order.payAmount, '0.00') }}</text></text>
           <view class="actions" @click.stop>
             <button v-if="order.status === 0" size="mini" class="btn-outline" @click="cancel(order.id)">取消</button>
             <button v-if="order.status === 0" size="mini" class="btn-primary" @click="payOrder(order.id)">去支付</button>
@@ -61,6 +61,7 @@ import type {PortalOrder, PortalOrderItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {isLogin} from '@/stores/member'
 import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
+import {formatMoney} from '@/utils/money'
 
 const orders = ref<PortalOrder[]>([])
 const loading = ref(false)

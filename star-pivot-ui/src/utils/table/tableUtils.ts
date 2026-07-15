@@ -23,9 +23,10 @@
  * ## 支持的响应格式
  *
  * 1. 直接数组: [item1, item2, ...]
- * 2. 标准对象: { records: [], total: 100 }
- * 3. 嵌套data: { data: { list: [], total: 100 } }
- * 4. 多种字段名: list/data/records/items/result/rows
+ * 2. 标准对象（StarPivot）: { rows: [], total: 100 }
+ * 3. 兼容对象: { records: [], total: 100 }
+ * 4. 嵌套 data: { data: { list: [], total: 100 } }
+ * 5. 多种字段名: rows/records/list/items/result/data
  *
  * ## 核心功能
  *

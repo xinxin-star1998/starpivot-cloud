@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface CommentVo {
   id?: number
@@ -48,7 +48,7 @@ export interface CommentShowStatusPayload {
 }
 
 export function fetchCommentList(params: CommentListParams) {
-  return request.post<Api.Common.PaginatedResponse<CommentVo>>({
+  return request.post<Api.Common.PageResponse<CommentVo>>({
     url: '/api/mall/comment/commentPageList',
     data: params
   })

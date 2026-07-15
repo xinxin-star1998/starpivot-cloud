@@ -42,6 +42,7 @@ import OrderDetailDrawer from './modules/order-detail-drawer.vue'
 import DeliverDialog from './modules/deliver-dialog.vue'
 import {ElButton, ElSpace, ElTag} from 'element-plus'
 import {useAuth} from '@/hooks/core/useAuth'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'OmsOrderQuery' })
 
@@ -86,7 +87,7 @@ defineOptions({ name: 'OmsOrderQuery' })
           prop: 'payAmount',
           label: '应付金额',
           width: 110,
-          formatter: (row) => (row.payAmount != null ? `¥${Number(row.payAmount).toFixed(2)}` : '-')
+          formatter: (row) => (row.payAmount != null ? `¥${formatMoney(row.payAmount)}` : '-')
         },
         {
           prop: 'status',

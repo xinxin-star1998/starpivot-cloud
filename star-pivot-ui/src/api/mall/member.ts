@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface MemberVo {
   id?: number
@@ -35,7 +35,7 @@ export interface MemberSavePayload {
 }
 
 export function fetchMemberList(params: MemberListParams) {
-  return request.post<Api.Common.PaginatedResponse<MemberVo>>({
+  return request.post<Api.Common.PageResponse<MemberVo>>({
     url: '/api/mall/member/memberPageList',
     data: params
   })

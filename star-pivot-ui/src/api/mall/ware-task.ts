@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface WareOrderTaskDetailVo {
   id?: number
@@ -35,7 +35,7 @@ export interface WareOrderTaskListParams extends Api.Common.CommonSearchParams {
 }
 
 export function fetchWareTaskList(params: WareOrderTaskListParams) {
-  return request.post<Api.Common.PaginatedResponse<WareOrderTaskVo>>({
+  return request.post<Api.Common.PageResponse<WareOrderTaskVo>>({
     url: '/api/mall/ware-task/wareTaskPageList',
     data: params
   })

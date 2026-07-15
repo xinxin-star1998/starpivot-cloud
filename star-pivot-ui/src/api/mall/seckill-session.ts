@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface SeckillSessionVo {
   id?: number
@@ -23,7 +23,7 @@ export interface SeckillSessionSavePayload {
 }
 
 export function fetchSeckillSessionList(params: SeckillSessionListParams) {
-  return request.post<Api.Common.PaginatedResponse<SeckillSessionVo>>({
+  return request.post<Api.Common.PageResponse<SeckillSessionVo>>({
     url: '/api/mall/seckill-session/seckillSessionPageList',
     data: params
   })

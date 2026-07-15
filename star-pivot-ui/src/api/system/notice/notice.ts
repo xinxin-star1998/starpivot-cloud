@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 /**
  * 通知公告实体类型
@@ -29,7 +29,7 @@ export interface NoticeSearchParams {
  * 获取通知公告列表（分页）
  */
 export function fetchGetNoticeList(params: NoticeSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<Notice>>({
+  return request.post<Api.Common.PageResponse<Notice>>({
     url: '/api/notice/noticePageList',
     data: params
   })

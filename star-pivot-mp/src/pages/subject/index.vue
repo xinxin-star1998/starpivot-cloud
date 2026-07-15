@@ -26,7 +26,7 @@
               <text class="self-tag">自营</text>
               <text class="name">{{ item.spuName }}</text>
             </view>
-            <text class="price"><text class="yen">¥</text>{{ item.price }}</text>
+            <text class="price"><text class="yen">¥</text>{{ formatMoney(item.price, '0.00') }}</text>
           </view>
         </view>
         <view v-if="hasMore" class="load-more">
@@ -48,6 +48,7 @@ import {fetchSubjectDetail} from '@/api/subject'
 import type {PortalProductListItem, PortalSubjectDetail} from '@/api/types'
 import {buildSharePayload, subjectSharePath} from '@/utils/share'
 import {isLogin} from '@/stores/member'
+import {formatMoney} from '@/utils/money'
 
 const loading = ref(true)
 const loadingMore = ref(false)

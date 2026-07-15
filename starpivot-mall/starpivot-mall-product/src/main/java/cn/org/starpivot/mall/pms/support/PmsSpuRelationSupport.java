@@ -1,6 +1,6 @@
 package cn.org.starpivot.mall.pms.support;
 
-import cn.org.starpivot.api.mall.ware.MallWareInternalClient;
+import cn.org.starpivot.api.mall.ware.WareInternalClient;
 import cn.org.starpivot.api.mall.ware.dto.WareSkuAddStockRequest;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.exception.BizException;
@@ -38,7 +38,7 @@ public class PmsSpuRelationSupport {
     private final PmsSkuSaleAttrValueMapper pmsSkuSaleAttrValueMapper;
     private final PmsSpuCommentMapper pmsSpuCommentMapper;
     private final PmsCommentReplayMapper pmsCommentReplayMapper;
-    private final MallWareInternalClient mallWareInternalClient;
+    private final WareInternalClient wareInternalClient;
     private final MallFileRefSupport mallFileRefSupport;
 
     /** 在 pms_spu_info 已落库后写入 desc / images / attrs / skus 等关联表 */
@@ -185,7 +185,7 @@ public class PmsSpuRelationSupport {
             request.setSkuId(sku.getSkuId());
             request.setWareId(bo.getDefaultWareId());
             request.setQuantity(skuBo.getInitialStock());
-            Result<Void> result = mallWareInternalClient.addStock(request);
+            Result<Void> result = wareInternalClient.addStock(request);
             if (result == null || !result.isSuccess()) {
                 throw new BizException(result != null ? result.getMessage() : "初始化库存失败");
             }

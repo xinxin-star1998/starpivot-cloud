@@ -79,7 +79,7 @@
             >
               <image lazy-load v-if="item.coverImg" class="seckill-img" :src="imageSrc(item.coverImg)" mode="aspectFill" />
               <view v-else class="seckill-img seckill-img-empty">抢</view>
-              <text class="seckill-price"><text class="yen">¥</text>{{ item.promoPrice ?? item.price }}</text>
+              <text class="seckill-price"><text class="yen">¥</text>{{ formatMoney(item.promoPrice ?? item.price, '0.00') }}</text>
               <text class="seckill-name">{{ item.spuName }}</text>
             </view>
             <template v-if="!seckillProducts.length">
@@ -114,7 +114,7 @@
                 <text class="product-name">{{ item.spuName }}</text>
               </view>
               <view class="product-price-row">
-                <text class="product-price"><text class="yen">¥</text>{{ item.price }}</text>
+                <text class="product-price"><text class="yen">¥</text>{{ formatMoney(item.price, '0.00') }}</text>
               </view>
             </view>
           </view>
@@ -133,6 +133,7 @@ import {fetchSeckillPage} from '@/api/seckill'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import type {PortalBanner, PortalCategory, PortalHomeBlock, PortalHomeProduct, PortalProductListItem} from '@/api/types'
 import {isLogin} from '@/stores/member'
+import {formatMoney} from '@/utils/money'
 
 const HOME_CACHE_TTL_MS = 5 * 60 * 1000
 

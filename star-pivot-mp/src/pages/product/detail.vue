@@ -22,7 +22,7 @@
           <text class="name">{{ detail.spuName }}</text>
         </view>
         <view class="price-row">
-          <text class="price"><text class="yen">¥</text>{{ selectedSku?.price ?? detail.price }}</text>
+          <text class="price"><text class="yen">¥</text>{{ formatMoney(selectedSku?.price ?? detail.price, '0.00') }}</text>
           <text v-if="commentSummary?.total" class="rating">★ {{ commentSummary.avgStar }} · {{ commentSummary.total }}评</text>
         </view>
         <text class="desc">{{ detail.spuDescription }}</text>
@@ -47,7 +47,7 @@
             >
               <image class="related-img" :src="imageSrc(productCover(item))" mode="aspectFill" />
               <text class="related-name">{{ item.spuName }}</text>
-              <text class="related-price">¥{{ item.price }}</text>
+              <text class="related-price">¥{{ formatMoney(item.price, '0.00') }}</text>
             </view>
           </view>
         </scroll-view>
@@ -104,7 +104,7 @@
           <view class="popup-head">
             <image v-if="images.length" class="popup-thumb" :src="imageSrc(images[0])" mode="aspectFill" />
             <view class="popup-meta">
-              <text class="popup-price">¥{{ selectedSku?.price ?? detail.price }}</text>
+              <text class="popup-price">¥{{ formatMoney(selectedSku?.price ?? detail.price, '0.00') }}</text>
               <text class="popup-selected">已选：{{ selectedSkuLabel }}</text>
             </view>
             <text class="popup-close" @click="closeSkuPopup">✕</text>
@@ -158,6 +158,7 @@ import {buildSharePayload, productSharePath} from '@/utils/share'
 import {addBrowseRecord} from '@/utils/browse-history'
 import {refreshCartBadge} from '@/utils/tabbar-cart'
 import {useGoodsImages} from '@/composables/use-goods-images'
+import {formatMoney} from '@/utils/money'
 
 
 const detail = ref<PortalProductDetail | null>(null)

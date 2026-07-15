@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface HomeSubjectSpuVo {
   id?: number
@@ -39,7 +39,7 @@ export interface HomeSubjectSavePayload {
 }
 
 export function fetchHomeSubjectList(params: HomeSubjectListParams) {
-  return request.post<Api.Common.PaginatedResponse<HomeSubjectVo>>({
+  return request.post<Api.Common.PageResponse<HomeSubjectVo>>({
     url: '/api/mall/subject/subjectPageList',
     data: params
   })

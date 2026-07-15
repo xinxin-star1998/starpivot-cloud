@@ -1,6 +1,7 @@
-package cn.org.starpivot.mall.mall.controller.internal;
+package cn.org.starpivot.mall.order.internal;
 
 import cn.org.starpivot.api.mall.order.dto.*;
+import cn.org.starpivot.api.mall.promotion.PromotionInternalClient;
 import cn.org.starpivot.api.mall.promotion.dto.CouponTrialItemDto;
 import cn.org.starpivot.api.tms.dto.InternalOrderDeliverRequest;
 import cn.org.starpivot.common.domain.Result;
@@ -11,7 +12,6 @@ import cn.org.starpivot.mall.oms.mapper.OmsOrderItemMapper;
 import cn.org.starpivot.mall.oms.mapper.OmsOrderMapper;
 import cn.org.starpivot.mall.oms.service.OmsOrderService;
 import cn.org.starpivot.mall.oms.service.impl.OmsOrderLifecycleService;
-import cn.org.starpivot.mall.order.internal.OrderMemberInternalService;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderSubmitBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalCartItemVo;
@@ -20,62 +20,100 @@ import cn.org.starpivot.mall.portal.domain.vo.PortalOrderSubmitVo;
 import cn.org.starpivot.mall.portal.service.PortalCartService;
 import cn.org.starpivot.mall.portal.service.PortalOrderService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-@Hidden
-@RestController
+/**
+ * 订单域内部接口业务（Feign /internal 目标）。
+ */
+@Service
 @RequiredArgsConstructor
-public class MallOrderInternalExtensionsController {
+public class OrderInternalService {
 
     private final OmsOrderMapper omsOrderMapper;
     private final OmsOrderItemMapper omsOrderItemMapper;
+    private final PromotionInternalClient promotionInternalClient;
     private final PortalCartService portalCartService;
     private final PortalOrderService portalOrderService;
-    private final OrderMemberInternalService orderMemberInternalService;
     private final OmsOrderService omsOrderService;
     private final OmsOrderLifecycleService omsOrderLifecycleService;
 
-    @GetMapping("/internal/mall/order/{orderId}/summary")
-    public Result<OrderInternalDto> getOrderSummary(@PathVariable("orderId") Long orderId) {
+    @Transactional(readOnly = true)
+    public OrderRewardContextDto getOrderRewardContext(Long orderId) {
         OmsOrder order = omsOrderMapper.selectById(orderId);
         if (order == null) {
-            return Result.notFound("订单不存在");
+            return null;
+        }
+        List<OmsOrderItem> items = omsOrderItemMapper.selectList(
+                Wrappers.<OmsOrderItem>lambdaQuery().eq(OmsOrderItem::getOrderId, orderId));
+
+        OrderRewardContextDto dto = new OrderRewardContextDto();
+        dto.setOrderId(order.getId());
+        dto.setOrderSn(order.getOrderSn());
+        dto.setMemberId(order.getMemberId());
+        dto.setIntegration(order.getIntegration());
+        dto.setGrowth(order.getGrowth());
+        dto.setItems(items.stream().map(this::toItemLine).collect(Collectors.toList()));
+        dto.setSpuBounds(loadBoundsMap(items));
+        return dto;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean patchOrderReward(Long orderId, Integer integration, Integer growth) {
+        OmsOrder existing = omsOrderMapper.selectById(orderId);
+        if (existing == null) {
+            return false;
+        }
+        OmsOrder patch = new OmsOrder();
+        patch.setId(orderId);
+        patch.setIntegration(integration);
+        patch.setGrowth(growth);
+        omsOrderMapper.updateById(patch);
+        return true;
+    }
+
+    @Transactional(readOnly = true)
+    public OrderInternalDto getOrderSummary(Long orderId) {
+        OmsOrder order = omsOrderMapper.selectById(orderId);
+        if (order == null) {
+            return null;
         }
         OrderInternalDto dto = new OrderInternalDto();
         BeanUtils.copyProperties(order, dto);
         dto.setId(order.getId());
-        return Result.success(dto);
+        return dto;
     }
 
-    @GetMapping("/internal/mall/order/{orderId}/items")
-    public Result<List<OrderItemInternalDto>> listOrderItems(@PathVariable("orderId") Long orderId) {
+    @Transactional(readOnly = true)
+    public List<OrderItemInternalDto> listOrderItems(Long orderId) {
         List<OmsOrderItem> items = omsOrderItemMapper.selectList(
                 Wrappers.<OmsOrderItem>lambdaQuery().eq(OmsOrderItem::getOrderId, orderId));
-        return Result.success(items.stream().map(this::toItemDto).collect(Collectors.toList()));
+        return items.stream().map(this::toItemDto).collect(Collectors.toList());
     }
 
-    @GetMapping("/internal/mall/cart/{memberId}/checked-items")
-    public Result<List<CouponTrialItemDto>> listCheckedCartItems(@PathVariable("memberId") Long memberId) {
+    @Transactional(readOnly = true)
+    public List<CouponTrialItemDto> listCheckedCartItems(Long memberId) {
         PortalCartVo cart = portalCartService.listCart(memberId);
         if (cart.getItems() == null) {
-            return Result.success(List.of());
+            return List.of();
         }
-        List<CouponTrialItemDto> items = cart.getItems().stream()
+        return cart.getItems().stream()
                 .filter(i -> Boolean.TRUE.equals(i.getChecked()) && Boolean.TRUE.equals(i.getValid()))
                 .map(this::toTrialItem)
                 .collect(Collectors.toList());
-        return Result.success(items);
     }
 
-    @PostMapping("/internal/mall/order/submit")
-    public Result<OrderSubmitResultDto> submitOrder(@RequestBody OrderSubmitRequestDto request) {
+    @Transactional(rollbackFor = Exception.class)
+    public OrderSubmitResultDto submitOrder(OrderSubmitRequestDto request) {
         PortalOrderSubmitBo bo = new PortalOrderSubmitBo();
         bo.setAddressId(request.getAddressId());
         bo.setUseCart(request.getUseCart());
@@ -98,40 +136,48 @@ public class MallOrderInternalExtensionsController {
         result.setOrderId(vo.getOrderId());
         result.setOrderSn(vo.getOrderSn());
         result.setStatus(vo.getStatus());
-        return Result.success(result);
+        return result;
     }
 
-    @GetMapping("/internal/mall/order/member/{memberId}/count")
-    public Result<Integer> countByMember(@PathVariable("memberId") Long memberId) {
-        return Result.success(orderMemberInternalService.countByMember(memberId));
-    }
-
-    @GetMapping("/internal/mall/order/member/{memberId}/purchased-spu/{spuId}")
-    public Result<Boolean> hasPurchasedSpu(
-            @PathVariable("memberId") Long memberId,
-            @PathVariable("spuId") Long spuId) {
-        return Result.success(orderMemberInternalService.hasPurchasedSpu(memberId, spuId));
-    }
-
-    @GetMapping("/internal/mall/order/member/{memberId}/reviewable-purchase-items")
-    public Result<List<PendingReviewItemDto>> listReviewablePurchaseItems(@PathVariable("memberId") Long memberId) {
-        return Result.success(orderMemberInternalService.listReviewablePurchaseItems(memberId));
-    }
-
-    @PutMapping("/internal/mall/order/deliver")
-    public Result<Void> syncDeliver(@Valid @RequestBody InternalOrderDeliverRequest request) {
+    @Transactional(rollbackFor = Exception.class)
+    public void syncDeliver(InternalOrderDeliverRequest request) {
         OmsDeliverBo bo = new OmsDeliverBo();
         bo.setOrderId(request.getOrderId());
         bo.setDeliveryCompany(request.getDeliveryCompany());
         bo.setDeliverySn(request.getDeliverySn());
         omsOrderService.deliver(bo);
-        return Result.success();
     }
 
-    @PutMapping("/internal/mall/order/{orderId}/confirm-receive")
-    public Result<Void> syncConfirmReceive(@PathVariable("orderId") Long orderId) {
+    @Transactional(rollbackFor = Exception.class)
+    public void syncConfirmReceive(Long orderId) {
         omsOrderLifecycleService.confirmReceive(orderId, "tms-auto");
-        return Result.success();
+    }
+
+    private OrderRewardContextDto.OrderItemLine toItemLine(OmsOrderItem item) {
+        OrderRewardContextDto.OrderItemLine line = new OrderRewardContextDto.OrderItemLine();
+        line.setSpuId(item.getSpuId());
+        line.setSkuId(item.getSkuId());
+        line.setSkuQuantity(item.getSkuQuantity());
+        return line;
+    }
+
+    private Map<Long, OrderRewardContextDto.SpuBoundsLine> loadBoundsMap(List<OmsOrderItem> items) {
+        if (CollectionUtils.isEmpty(items)) {
+            return Map.of();
+        }
+        Set<Long> spuIds = items.stream()
+                .map(OmsOrderItem::getSpuId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (spuIds.isEmpty()) {
+            return Map.of();
+        }
+        Result<Map<Long, OrderRewardContextDto.SpuBoundsLine>> result =
+                promotionInternalClient.batchSpuBounds(spuIds);
+        if (result == null || !result.isSuccess() || result.getData() == null) {
+            return Map.of();
+        }
+        return result.getData();
     }
 
     private OrderItemInternalDto toItemDto(OmsOrderItem item) {

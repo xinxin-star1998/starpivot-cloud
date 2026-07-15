@@ -41,6 +41,7 @@ import ReturnSearch from './modules/return-search.vue'
 import ReturnDetailDrawer from './modules/return-detail-drawer.vue'
 import {ElButton, ElSpace, ElTag} from 'element-plus'
 import {useAuth} from '@/hooks/core/useAuth'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'OmsOrderReturn' })
 
@@ -85,7 +86,7 @@ defineOptions({ name: 'OmsOrderReturn' })
           label: '退款金额',
           width: 100,
           formatter: (row) =>
-            row.returnAmount != null ? `¥${Number(row.returnAmount).toFixed(2)}` : '-'
+            row.returnAmount != null ? `¥${formatMoney(row.returnAmount)}` : '-'
         },
         {
           prop: 'auditStatus',

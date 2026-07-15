@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import type {
     PortalOrder,
     PortalOrderPriceTrial,
@@ -31,7 +31,7 @@ export function fetchPortalOrderSubmit(data: PortalOrderSubmitPayload) {
 }
 
 export function fetchPortalOrderList(params: PortalOrderQueryParams) {
-  return request.post<Api.Common.PaginatedResponse<PortalOrder>>({
+  return request.post<Api.Common.PageResponse<PortalOrder>>({
     url: '/api/portal/order/portalOrderPageList',
     data: params
   })

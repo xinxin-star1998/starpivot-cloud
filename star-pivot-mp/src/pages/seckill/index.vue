@@ -40,8 +40,8 @@
           </view>
           <text v-if="item.seckillStockRemain != null" class="stock">仅剩 {{ item.seckillStockRemain }} 件</text>
           <view class="price-row">
-            <text class="promo"><text class="yen">¥</text>{{ item.promoPrice ?? item.price }}</text>
-            <text v-if="item.promoPrice && item.price" class="origin">¥{{ item.price }}</text>
+            <text class="promo"><text class="yen">¥</text>{{ formatMoney(item.promoPrice ?? item.price, '0.00') }}</text>
+            <text v-if="item.promoPrice && item.price" class="origin">¥{{ formatMoney(item.price, '0.00') }}</text>
           </view>
           <button
             v-if="sessionState === 'ongoing'"
@@ -61,7 +61,7 @@
       <view class="dialog" @click.stop>
         <text class="dialog-title">确认秒杀</text>
         <text class="dialog-name">{{ buyTarget?.spuName }}</text>
-        <text class="dialog-price">秒杀价 ¥{{ buyTarget?.promoPrice ?? buyTarget?.price }}</text>
+        <text class="dialog-price">秒杀价 ¥{{ formatMoney(buyTarget?.promoPrice ?? buyTarget?.price, '0.00') }}</text>
         <view class="field">
           <text>数量</text>
           <view class="qty-ctrl">
@@ -89,6 +89,7 @@ import {fetchSeckillPage, submitSeckillOrder} from '@/api/seckill'
 import type {PortalAddress, PortalHomeProduct, PortalSeckillPage} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {isLogin} from '@/stores/member'
+import {formatMoney} from '@/utils/money'
 
 const loading = ref(false)
 const countdown = ref({ h: '00', m: '00', s: '00' })

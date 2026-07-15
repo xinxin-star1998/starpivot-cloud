@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface OmsOrderItemVo {
   id?: number
@@ -80,7 +80,7 @@ export interface OmsOrderClosePayload {
 }
 
 export function fetchOmsOrderList(params: OmsOrderListParams) {
-  return request.post<Api.Common.PaginatedResponse<OmsOrderVo>>({
+  return request.post<Api.Common.PageResponse<OmsOrderVo>>({
     url: '/api/mall/order/orderPageList',
     data: params
   })

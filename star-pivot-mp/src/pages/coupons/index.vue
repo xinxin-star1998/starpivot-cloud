@@ -9,8 +9,8 @@
     <view v-else-if="tab === 'claim'" class="list">
       <view v-for="c in claimable" :key="c.couponId" class="coupon-ticket">
         <view class="ticket-left">
-          <text class="amount"><text class="yen">¥</text>{{ c.amount }}</text>
-          <text class="rule">满{{ c.minPoint || 0 }}元可用</text>
+          <text class="amount"><text class="yen">¥</text>{{ formatMoney(c.amount, '0.00') }}</text>
+          <text class="rule">满{{ formatMoney(c.minPoint || 0, '0', 0) }}元可用</text>
         </view>
         <view class="ticket-right">
           <text class="name">{{ c.couponName }}</text>
@@ -32,8 +32,8 @@
     <view v-else class="list">
       <view v-for="c in mine" :key="c.historyId" class="coupon-ticket" :class="{ disabled: c.status !== 0 }">
         <view class="ticket-left">
-          <text class="amount"><text class="yen">¥</text>{{ c.amount }}</text>
-          <text class="rule">满{{ c.minPoint || 0 }}元可用</text>
+          <text class="amount"><text class="yen">¥</text>{{ formatMoney(c.amount, '0.00') }}</text>
+          <text class="rule">满{{ formatMoney(c.minPoint || 0, '0', 0) }}元可用</text>
         </view>
         <view class="ticket-right">
           <text class="name">{{ c.couponName }}</text>
@@ -52,6 +52,7 @@ import {ref} from 'vue'
 import {fetchClaimableCoupons, fetchMyCoupons, receiveCoupon} from '@/api/coupon'
 import type {PortalClaimableCoupon, PortalMyCoupon} from '@/api/types'
 import {isLogin} from '@/stores/member'
+import {formatMoney} from '@/utils/money'
 
 const tab = ref<'claim' | 'mine'>('claim')
 const loading = ref(false)

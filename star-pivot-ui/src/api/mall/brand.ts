@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 /** 品牌 VO（pms_brand） */
 export interface MallBrandVo {
@@ -28,7 +28,7 @@ export interface MallBrandSavePayload {
 }
 
 export function fetchMallBrandList(params: MallBrandListParams) {
-  return request.post<Api.Common.PaginatedResponse<MallBrandVo>>({
+  return request.post<Api.Common.PageResponse<MallBrandVo>>({
     url: '/api/mall/brand/brandPageList',
     data: params
   })

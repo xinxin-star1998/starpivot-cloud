@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import type {
     PortalComment,
     PortalCommentQueryParams,
@@ -8,7 +8,7 @@ import type {
 } from './types'
 
 export function fetchPortalCommentPageList(params: PortalCommentQueryParams) {
-  return request.post<Api.Common.PaginatedResponse<PortalComment>>({
+  return request.post<Api.Common.PageResponse<PortalComment>>({
     url: '/api/portal/comment/commentPageList',
     data: params
   })
@@ -29,7 +29,7 @@ export function fetchPortalCanComment(spuId: number) {
 }
 
 export function fetchPortalMyCommentPageList(params: Api.Common.CommonSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<PortalComment>>({
+  return request.post<Api.Common.PageResponse<PortalComment>>({
     url: '/api/portal/comment/mineCommentPageList',
     data: params
   })

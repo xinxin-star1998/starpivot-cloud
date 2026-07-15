@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 /**
  * 系统用户实体类型
@@ -47,7 +47,7 @@ export interface UserSearchParams {
  * 获取系统用户列表（分页）
  */
 export function fetchGetUserList(params: UserSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<User>>({
+  return request.post<Api.Common.PageResponse<User>>({
     url: '/api/demo/user/userPageList',
     data: params
   })

@@ -34,7 +34,7 @@
           <text class="name">{{ item.skuTitle }}</text>
           <text v-if="item.skuAttr" class="sku">{{ item.skuAttr }}</text>
           <view class="row">
-            <text class="price"><text class="yen">¥</text>{{ item.price }}</text>
+            <text class="price"><text class="yen">¥</text>{{ formatMoney(item.price, '0.00') }}</text>
             <view class="qty-ctrl">
               <text class="qty-btn" :class="{ disabled: (item.quantity || 1) <= 1 }" @click="changeQty(item, -1)">−</text>
               <text class="qty">{{ item.quantity }}</text>
@@ -56,7 +56,7 @@
         <text class="select-label">全选</text>
       </view>
       <view class="summary">
-        <text class="summary-amount"><text class="yen">¥</text>{{ checkedAmount.toFixed(2) }}</text>
+        <text class="summary-amount"><text class="yen">¥</text>{{ formatMoney(checkedAmount, '0.00') }}</text>
         <text class="summary-count">已选 {{ checkedCount }} 件</text>
       </view>
       <button class="checkout-btn" :class="{ disabled: checkedCount === 0 }" :disabled="checkedCount === 0" @click="goCheckout">
@@ -74,6 +74,7 @@ import type {PortalCartItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {isLogin} from '@/stores/member'
 import {syncCartBadgeFromItems} from '@/utils/tabbar-cart'
+import {formatMoney} from '@/utils/money'
 
 const items = ref<PortalCartItem[]>([])
 const checkedCount = ref(0)

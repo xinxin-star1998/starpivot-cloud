@@ -293,10 +293,7 @@ const props = defineProps<{
         pageNum: 1,
         pageSize: 200
       })
-      const list =
-        (page as { records?: Group[]; rows?: Group[] })?.records ??
-        (page as { rows?: Group[] })?.rows ??
-        []
+      const list = page?.rows ?? []
       groupOptions.value = list.filter((g) => g.attrGroupId != null)
     } catch {
       groupOptions.value = []

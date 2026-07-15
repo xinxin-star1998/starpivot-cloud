@@ -54,6 +54,14 @@ public class ProductFeignSupport {
         return unwrap(productInternalClient.loadOrderSnapshots(skuIds), "SKU快照加载失败");
     }
 
+    public Map<Long, String> loadSkuAttrTexts(List<Long> skuIds) {
+        if (CollectionUtils.isEmpty(skuIds)) {
+            return Map.of();
+        }
+        Map<Long, String> data = unwrap(productInternalClient.loadSkuAttrTexts(skuIds), "SKU规格加载失败");
+        return data == null ? Map.of() : data;
+    }
+
     public SpuDto requireSpu(Long spuId) {
         return unwrap(productInternalClient.getSpu(spuId), "SPU不存在");
     }

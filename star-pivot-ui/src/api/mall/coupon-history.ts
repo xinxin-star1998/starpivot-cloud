@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface CouponHistoryVo {
   id?: number
@@ -19,7 +19,7 @@ export interface CouponHistoryListParams extends Api.Common.CommonSearchParams {
 }
 
 export function fetchCouponHistoryList(params: CouponHistoryListParams) {
-  return request.post<Api.Common.PaginatedResponse<CouponHistoryVo>>({
+  return request.post<Api.Common.PageResponse<CouponHistoryVo>>({
     url: '/api/mall/coupon-history/couponHistoryPageList',
     data: params
   })

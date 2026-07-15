@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface IntegrationChangeHistoryVo {
   id?: number
@@ -23,14 +23,14 @@ export interface MemberGrowthListParams extends Api.Common.CommonSearchParams {
 }
 
 export function fetchIntegrationHistoryList(params: MemberGrowthListParams) {
-  return request.post<Api.Common.PaginatedResponse<IntegrationChangeHistoryVo>>({
+  return request.post<Api.Common.PageResponse<IntegrationChangeHistoryVo>>({
     url: '/api/mall/member-growth/integrationPageList',
     data: params
   })
 }
 
 export function fetchGrowthHistoryList(params: MemberGrowthListParams) {
-  return request.post<Api.Common.PaginatedResponse<GrowthChangeHistoryVo>>({
+  return request.post<Api.Common.PageResponse<GrowthChangeHistoryVo>>({
     url: '/api/mall/member-growth/growthPageList',
     data: params
   })

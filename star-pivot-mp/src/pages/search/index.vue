@@ -41,7 +41,7 @@
             <text v-if="item.brandName" class="brand">{{ item.brandName }}</text>
             <view class="bottom">
               <text v-if="item.avgStar" class="rating">★ {{ item.avgStar }}</text>
-              <text class="price"><text class="yen">¥</text>{{ item.price }}</text>
+              <text class="price"><text class="yen">¥</text>{{ formatMoney(item.price, '0.00') }}</text>
             </view>
           </view>
         </view>
@@ -59,6 +59,7 @@ import {computed, ref} from 'vue'
 import {productCover, searchProducts} from '@/api/product'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import type {PortalProductListItem} from '@/api/types'
+import {formatMoney} from '@/utils/money'
 
 const keyword = ref('')
 const catalogId = ref<number>()

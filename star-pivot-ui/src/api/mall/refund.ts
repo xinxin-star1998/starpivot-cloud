@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface RefundVo {
   id?: number
@@ -16,7 +16,7 @@ export interface RefundListParams extends Api.Common.CommonSearchParams {
 }
 
 export function fetchRefundList(params: RefundListParams) {
-  return request.post<Api.Common.PaginatedResponse<RefundVo>>({
+  return request.post<Api.Common.PageResponse<RefundVo>>({
     url: '/api/mall/refund/refundPageList',
     data: params
   })

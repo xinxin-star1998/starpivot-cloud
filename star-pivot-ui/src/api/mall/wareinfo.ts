@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 /** 仓库 VO（wms_ware_info） */
 export interface WmsWareInfoVo {
@@ -22,7 +22,7 @@ export interface WmsWareInfoSavePayload {
 }
 
 export function fetchWmsWareInfoList(params: WmsWareInfoListParams) {
-  return request.post<Api.Common.PaginatedResponse<WmsWareInfoVo>>({
+  return request.post<Api.Common.PageResponse<WmsWareInfoVo>>({
     url: '/api/mall/wareinfo/wareInfoPageList',
     data: params
   })
