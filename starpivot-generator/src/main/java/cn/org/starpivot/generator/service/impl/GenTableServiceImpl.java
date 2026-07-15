@@ -1,6 +1,8 @@
 package cn.org.starpivot.generator.service.impl;
 
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.sql.SqlUtil;
 import cn.org.starpivot.generator.domain.bo.GenTableVO;
 import cn.org.starpivot.generator.domain.dto.GenTableQueryDTO;
 import cn.org.starpivot.generator.domain.entity.GenTable;
@@ -11,6 +13,10 @@ import cn.org.starpivot.generator.service.GenTableService;
 import cn.org.starpivot.generator.service.support.GenTableCodegenSupport;
 import cn.org.starpivot.generator.service.support.GenTableImportSupport;
 import cn.org.starpivot.generator.service.support.GenTableMetadataSupport;
+import com.alibaba.druid.DbType;
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlCreateTableStatement;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -93,7 +100,25 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
 
     @Override
     public boolean createTable(String sql) {
-        return genTableMapper.createTable(sql) == 0;
+        if (!StringUtils.hasText(sql)) {
+            throw new BizException("SQL不能为空");
+        }
+        List<SQLStatement> statements;
+        try {
+            statements = SQLUtils.parseStatements(sql, DbType.mysql);
+        } catch (Exception ex) {
+            throw new BizException("SQL解析失败，仅支持合法的 MySQL CREATE TABLE");
+        }
+        if (statements == null || statements.size() != 1) {
+            throw new BizException("仅允许单条 CREATE TABLE 语句");
+        }
+        SQLStatement statement = statements.get(0);
+        if (!(statement instanceof MySqlCreateTableStatement createTableStatement)) {
+            throw new BizException("仅允许 CREATE TABLE 语句");
+        }
+        String normalized = createTableStatement.toString();
+        SqlUtil.filterKeyword(normalized);
+        return genTableMapper.createTable(normalized) == 0;
     }
 
     @Override

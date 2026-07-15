@@ -225,6 +225,7 @@ import {uploadPortalCommentImage} from '@/api/portal/image'
 import type {PortalComment, PortalCommentSummary, PortalProductDetail, PortalProductListItem} from '@/api/portal/types'
 import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {formatMoney} from '@/utils/mall/money'
 import {resolveCommentResourceUrls} from '@/utils/portal/comment-resources'
 import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
 import {notifyPortalReviewChanged} from '@/utils/portal/review-event'
@@ -303,7 +304,7 @@ defineOptions({ name: 'PortalProductDetail' })
   const sharePromoText = computed(() => {
     const name = product.value?.spuName || 'StarPivot 商品'
     const price = currentPrice.value
-    const priceText = price != null ? `¥${Number(price).toFixed(2)}` : ''
+    const priceText = price != null ? `¥${formatMoney(price)}` : ''
     const url = typeof window !== 'undefined' ? window.location.href : ''
     return priceText ? `${name} ${priceText}\n${url}` : `${name}\n${url}`
   })
@@ -313,7 +314,7 @@ defineOptions({ name: 'PortalProductDetail' })
     return Math.min(stock, 99)
   })
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const formatPrice = (p?: number) => formatMoney(p)
 
   const summaryAvgStar = computed(() => {
     const avg = commentSummary.value?.avgStar

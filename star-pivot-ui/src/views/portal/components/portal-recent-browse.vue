@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import {getPortalBrowseHistory, type PortalBrowseRecord} from '@/utils/portal/browse-history'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'PortalRecentBrowse' })
 
@@ -51,7 +52,7 @@ defineOptions({ name: 'PortalRecentBrowse' })
       '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect fill="#f0f0f0" width="160" height="160"/></svg>'
     )
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const formatPrice = (p?: number) => formatMoney(p)
 
   async function loadItems() {
     items.value = getPortalBrowseHistory().slice(0, props.limit)

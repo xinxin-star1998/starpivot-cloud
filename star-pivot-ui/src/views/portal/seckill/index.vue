@@ -96,6 +96,7 @@ import { fetchPortalSeckillOrder, fetchPortalSeckillPage } from '@/api/portal/se
 import type { PortalAddress, PortalHomeProduct, PortalSeckillPage } from '@/api/portal/types'
 import { usePortalMemberStore } from '@/store/modules/portal-member'
 import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+import { formatMoney } from '@/utils/mall/money'
 import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
 import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
 import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
@@ -136,7 +137,7 @@ defineOptions({ name: 'PortalSeckill' })
     return Math.min(...limits)
   })
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const formatPrice = (p?: number) => formatMoney(p)
 
   function sessionStateLabel(state?: string) {
     if (state === 'ongoing') return '抢购中'

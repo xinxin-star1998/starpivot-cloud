@@ -66,6 +66,7 @@ import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/porta
 import {useAuth} from '@/hooks/core/useAuth'
 import {ElMessageBox} from 'element-plus'
 import {formatDateTime} from '@/utils/common/datetime'
+import {formatMoney} from '@/utils/mall/money'
 
 interface Props {
     visible: boolean
@@ -110,8 +111,7 @@ interface Props {
   )
 
   function formatAmount(val?: number) {
-    if (val == null) return '0.00'
-    return Number(val).toFixed(2)
+    return formatMoney(val, '0.00')
   }
 
   function formatAddress(order: OmsOrderVo) {

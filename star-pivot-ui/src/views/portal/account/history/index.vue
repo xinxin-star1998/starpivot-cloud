@@ -38,6 +38,7 @@ import {
   removePortalBrowseRecord
 } from '@/utils/portal/browse-history'
 import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+import {formatMoney} from '@/utils/mall/money'
 import {ElMessageBox} from 'element-plus'
 
 defineOptions({ name: 'PortalBrowseHistory' })
@@ -52,7 +53,7 @@ defineOptions({ name: 'PortalBrowseHistory' })
       '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#f0f0f0" width="200" height="200"/></svg>'
     )
 
-  const formatPrice = (p?: number) => (p != null ? Number(p).toFixed(2) : '--')
+  const formatPrice = (p?: number) => formatMoney(p)
 
   function formatTime(ts: number) {
     const date = new Date(ts)

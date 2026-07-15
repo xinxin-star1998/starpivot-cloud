@@ -1,6 +1,7 @@
 package cn.org.starpivot.approval.schedule;
 
 import cn.org.starpivot.approval.mq.ApprovalLocalMessageOutboxService;
+import cn.org.starpivot.common.annotation.DistributedScheduled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -24,6 +25,7 @@ public class ApprovalLocalMessageOutboxScheduler {
 
     private final ApprovalLocalMessageOutboxService localMessageOutboxService;
 
+    @DistributedScheduled(key = "approval:local-message-outbox", lockTtlSeconds = 55)
     @Scheduled(fixedDelayString = "${starpivot.approval.local-message.flush-ms:60000}")
     public void flushPendingMessages() {
         int count = localMessageOutboxService.flushPending();

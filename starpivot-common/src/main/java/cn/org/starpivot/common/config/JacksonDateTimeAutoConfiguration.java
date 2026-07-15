@@ -1,5 +1,6 @@
 package cn.org.starpivot.common.config;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -46,6 +47,8 @@ public class JacksonDateTimeAutoConfiguration {
         return builder -> {
             builder.modules(createJavaTimeModule());
             builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            // BigDecimal 以普通小数输出，避免科学计数法（金额字段展示/解析更稳定）
+            builder.featuresToEnable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
         };
     }
 }

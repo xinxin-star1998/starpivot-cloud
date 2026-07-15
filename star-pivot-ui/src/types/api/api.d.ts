@@ -24,9 +24,16 @@
  * ## 使用方式
  *
  * ```typescript
- * const params: Api.Auth.LoginParams = { userName: 'admin', password: '123456' }
+ * const params: Api.Auth.LoginParams = { username: 'admin', password: '123456', rememberPassword: true, captchaToken: '', captcha: '' }
  * const response: Api.Auth.UserInfo = await fetchUserInfo()
  * ```
+ *
+ * ## 字段约定（与后端 Jackson 一致）
+ *
+ * - 登录/认证用户名：`username`（Api.Auth）
+ * - 系统用户 CRUD：`userName`（Api.SystemManage，RuoYi 风格）
+ * - 认证用户信息手机号：`phoneNumber`（Auth UserInfoResponse）
+ * - 系统用户实体手机号：`phonenumber`（SysUser，全小写）
  *
  * @module types/api/api
  * @author Art Design Pro Team

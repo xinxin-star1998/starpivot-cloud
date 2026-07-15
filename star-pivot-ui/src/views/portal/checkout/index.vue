@@ -62,7 +62,7 @@
         <span class="checkout-item__name">{{ item.skuTitle }}</span>
         <span class="checkout-item__qty">x{{ item.quantity }}</span>
         <span class="checkout-item__price"
-          >¥{{ formatPrice(item.lineAmount ?? (item.price || 0) * (item.quantity || 0)) }}</span
+          >¥{{ formatLineAmount(item) }}</span
         >
       </div>
       <div class="checkout-total">
@@ -221,6 +221,7 @@ import {
 } from '@/api/portal/pay'
 import type {PortalAddress, PortalCartItem, PortalCheckoutCoupon, PortalOrderPriceTrial} from '@/api/portal/types'
 import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
+import {formatMoney, formatMoneyProduct} from '@/utils/mall/money'
 import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
 import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
@@ -320,7 +321,13 @@ defineOptions({ name: 'PortalCheckout' })
     return `${base} · ${coupon.unusableReason || '不可用'}`
   }
 
-  const formatPrice = (p: number) => p.toFixed(2)
+  const formatPrice = (p?: number) => formatMoney(p, '0.00')
+  const formatLineAmount = (item: PortalCartItem) => {
+    if (item.lineAmount != null) {
+      return formatMoney(item.lineAmount, '0.00')
+    }
+    return formatMoneyProduct(item.price, item.quantity || 0)
+  }
 
   async function refreshPriceTrial() {
     if (!checkoutItems.value.length) {

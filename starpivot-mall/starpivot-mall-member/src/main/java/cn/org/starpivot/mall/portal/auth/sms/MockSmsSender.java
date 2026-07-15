@@ -37,7 +37,8 @@ public class MockSmsSender implements SmsSender {
     @Override
     public void sendVerificationCode(String mobile, String code, String scene) {
         if (authProperties.getSms().isMockEnabled()) {
-            log.info("[MockSMS] scene={} mobile={} code={}", scene, mobile, code);
+            // 禁止将手机号/验证码明文写入日志
+            log.info("[MockSMS] scene={} mobile={} code=******", scene, maskMobile(mobile));
             return;
         }
         if (!useAliyun()) {
@@ -87,16 +88,24 @@ public class MockSmsSender implements SmsSender {
             if (body == null || !"OK".equalsIgnoreCase(body.getCode())) {
                 throw new BizException(body != null && StringUtils.hasText(body.getMessage()) ? body.getMessage() : "SMS send failed");
             }
-            log.info("[AliyunSMS] sent mobile={}", mobile);
+            log.info("[AliyunSMS] sent mobile={}", maskMobile(mobile));
         } catch (BizException ex) {
             throw ex;
         } catch (TeaException ex) {
-            log.warn("[AliyunSMS] send failed mobile={} message={}", mobile, ex.getMessage());
+            log.warn("[AliyunSMS] send failed mobile={} message={}", maskMobile(mobile), ex.getMessage());
             throw new BizException(StringUtils.hasText(ex.getMessage()) ? ex.getMessage() : "SMS send failed");
         } catch (Exception ex) {
-            log.error("[AliyunSMS] send error mobile={}", mobile, ex);
+            log.error("[AliyunSMS] send error mobile={}", maskMobile(mobile), ex);
             throw new BizException("SMS send failed, please retry later");
         }
+    }
+
+    /** 日志脱敏：138****8000 */
+    static String maskMobile(String mobile) {
+        if (!StringUtils.hasText(mobile) || mobile.length() < 7) {
+            return "***";
+        }
+        return mobile.substring(0, 3) + "****" + mobile.substring(mobile.length() - 4);
     }
 
     private Client createAliyunClient() throws Exception {

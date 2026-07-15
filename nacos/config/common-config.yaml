@@ -40,11 +40,13 @@ starpivot:
     version: ${API_VERSION:v1}
   mq:
     enabled: ${MQ_ENABLED:false}
+  # 生产必须通过环境变量覆盖以下密钥；勿将真实密钥写入本文件或镜像
   jwt:
     secret: ${JWT_SECRET:dev-local-jwt-secret-must-be-at-least-32-chars}
     expire: ${JWT_EXPIRE:7200000}
     refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
   internal:
+    # 默认仅便于本地联调；生产请设置强随机 INTERNAL_SERVICE_TOKEN，并保持 require-token=true
     token: ${INTERNAL_SERVICE_TOKEN:dev-internal-token}
     require-token: ${INTERNAL_SERVICE_TOKEN_REQUIRED:true}
   security:

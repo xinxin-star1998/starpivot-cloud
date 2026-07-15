@@ -1,5 +1,6 @@
 package cn.org.starpivot.mall.oms.schedule;
 
+import cn.org.starpivot.common.annotation.DistributedScheduled;
 import cn.org.starpivot.mall.oms.service.OmsLocalMessageOutboxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class OmsLocalMessageOutboxScheduler {
 
     private final OmsLocalMessageOutboxService localMessageOutboxService;
 
+    @DistributedScheduled(key = "mall:local-message-outbox", lockTtlSeconds = 55)
     @Scheduled(fixedDelayString = "${starpivot.mall.local-message.flush-ms:60000}")
     public void flushPendingMessages() {
         int count = localMessageOutboxService.flushPending();

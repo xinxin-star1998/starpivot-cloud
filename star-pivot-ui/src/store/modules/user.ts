@@ -293,6 +293,8 @@ export const useUserStore = defineStore(
     persist: {
       key: 'user',
       storage: localStorage,
+      // 锁屏密码不落盘；Token 仍持久化以保留刷新后免登（XSS 面需配合 CSP/依赖审计）
+      omit: ['lockPassword']
     }
   }
 )
