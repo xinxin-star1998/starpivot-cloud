@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useTable - 企业级表格数据管理方案
  *
  * 功能完整的表格数据管理解决方案，专为后台管理系统设计。
@@ -32,15 +32,17 @@ import {
 } from '@utils/table/tableUtils'
 import {tableConfig} from '@utils/table/tableConfig'
 
-// 类型推导工具类型
+// 类型推导工具类型（用 any[] 避开参数逆变导致 Promise 载荷推断为 never）
 type InferApiParams<T> = T extends (params: infer P) => Promise<unknown> ? P : never
-type InferApiResponse<T> = T extends (params: unknown) => Promise<infer R> ? R : never
+type InferApiResponse<T> = T extends (...args: any[]) => Promise<infer R> ? R : never
 type InferRecordType<T> =
-  T extends Api.Common.PaginatedResponse<infer U>
+  T extends Api.Common.PageResponse<infer U>
     ? U
-    : T extends { records: (infer U)[] }
+    : T extends { rows: (infer U)[] }
       ? U
-      : never
+      : T extends { records: (infer U)[] }
+        ? U
+        : never
 
 // 优化的配置接口 - 支持自动类型推导
 export interface UseTableConfig<

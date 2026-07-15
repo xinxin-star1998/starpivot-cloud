@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface HomeAdvVo {
   id?: number
@@ -36,7 +36,7 @@ export interface HomeAdvSavePayload {
 }
 
 export function fetchHomeAdvList(params: HomeAdvListParams) {
-  return request.post<Api.Common.PaginatedResponse<HomeAdvVo>>({
+  return request.post<Api.Common.PageResponse<HomeAdvVo>>({
     url: '/api/mall/home-adv/homeAdvPageList',
     data: params
   })

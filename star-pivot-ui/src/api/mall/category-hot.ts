@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface HomeCategoryHotVo {
   id?: number
@@ -30,7 +30,7 @@ export interface HomeCategoryHotSavePayload {
 }
 
 export function fetchCategoryHotList(params: HomeCategoryHotListParams) {
-  return request.post<Api.Common.PaginatedResponse<HomeCategoryHotVo>>({
+  return request.post<Api.Common.PageResponse<HomeCategoryHotVo>>({
     url: '/api/mall/category-hot/categoryHotPageList',
     data: params
   })

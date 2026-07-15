@@ -107,6 +107,7 @@ import {fetchOrderPriceTrial, fetchOrderSubmit, fetchOrderSubmitToken} from '@/a
 import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
 import type {PortalAddress, PortalCartItem, PortalCheckoutCoupon, PortalOrderPriceTrial} from '@/api/types'
 import {isLogin} from '@/stores/member'
+import {formatMoney, toCents} from '@/utils/money'
 
 const loading = ref(true)
 const submitting = ref(false)
@@ -130,18 +131,21 @@ const buyQuantity = ref(1)
 
 const displayLines = computed(() => {
   if (priceTrial.value?.lines?.length) return priceTrial.value.lines
-  return checkoutItems.value.map((item) => ({
-    skuId: item.skuId,
-    skuTitle: item.skuTitle || `SKU ${item.skuId}`,
-    quantity: item.quantity || 1,
-    lineAmount: (item.price || 0) * (item.quantity || 1)
-  }))
+  return checkoutItems.value.map((item) => {
+    const priceCents = toCents(item.price) ?? 0
+    return {
+      skuId: item.skuId,
+      skuTitle: item.skuTitle || `SKU ${item.skuId}`,
+      quantity: item.quantity || 1,
+      lineAmount: (priceCents * Math.trunc(item.quantity || 1)) / 100
+    }
+  })
 })
 
 const couponLabels = computed(() => {
   const list = ['不使用优惠券']
   checkoutCoupons.value.forEach((c) => {
-    const label = `${c.couponName} -¥${c.amount}（满${c.minPoint || 0}）`
+    const label = `${c.couponName} -¥${formatMoney(c.amount, '0.00')}（满${formatMoney(c.minPoint || 0, '0', 0)}）`
     list.push(c.usable ? label : `${label} · 不可用`)
   })
   return list
@@ -150,7 +154,7 @@ const couponLabels = computed(() => {
 const selectedCouponLabel = computed(() => {
   if (!selectedCouponHistoryId.value) return '不使用优惠券'
   const c = checkoutCoupons.value.find((x) => x.historyId === selectedCouponHistoryId.value)
-  return c ? `${c.couponName} -¥${c.amount}` : '不使用优惠券'
+  return c ? `${c.couponName} -¥${formatMoney(c.amount, '0.00')}` : '不使用优惠券'
 })
 
 const canSubmit = computed(
@@ -158,7 +162,7 @@ const canSubmit = computed(
 )
 
 function formatPrice(v: number) {
-  return Number(v || 0).toFixed(2)
+  return formatMoney(v, '0.00')
 }
 
 function trialPayload() {

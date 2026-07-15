@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import {canSubmitMallAudit} from '@/utils/mall/audit-status'
 
 /** SPU VO（pms_spu_info + 关联数据） */
@@ -84,7 +84,7 @@ export interface MallProductSavePayload {
 }
 
 export function fetchMallProductList(params: MallProductListParams) {
-  return request.post<Api.Common.PaginatedResponse<MallProductVo>>({
+  return request.post<Api.Common.PageResponse<MallProductVo>>({
     url: '/api/mall/product/productPageList',
     data: params
   })

@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import {fetchExcelExport} from '@/api/common/excel'
 
 /**
@@ -29,7 +29,7 @@ export interface ConfigSearchParams {
  * 获取参数配置列表（分页）
  */
 export function fetchGetConfigList(params: ConfigSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<Config>>({
+  return request.post<Api.Common.PageResponse<Config>>({
     url: '/api/config/configPageList',
     data: params
   })

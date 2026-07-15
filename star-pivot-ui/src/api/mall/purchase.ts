@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 /** 采购单 */
 export interface PurchaseVo {
@@ -66,14 +66,14 @@ export interface PurchaseDonePayload {
 }
 
 export function fetchPurchaseList(params: PurchaseListParams) {
-  return request.post<Api.Common.PaginatedResponse<PurchaseVo>>({
+  return request.post<Api.Common.PageResponse<PurchaseVo>>({
     url: '/api/mall/purchase/purchasePageList',
     data: params
   })
 }
 
 export function fetchPurchaseUnreceiveList(params: PurchaseListParams) {
-  return request.post<Api.Common.PaginatedResponse<PurchaseVo>>({
+  return request.post<Api.Common.PageResponse<PurchaseVo>>({
     url: '/api/mall/purchase/unreceivePurchasePageList',
     data: params
   })
@@ -117,7 +117,7 @@ export function fetchPurchaseSubmitApproval(id: number) {
 }
 
 export function fetchPurchaseDetailList(params: PurchaseDetailListParams) {
-  return request.post<Api.Common.PaginatedResponse<PurchaseDetailVo>>({
+  return request.post<Api.Common.PageResponse<PurchaseDetailVo>>({
     url: '/api/mall/purchase/purchaseDetailPageList',
     data: params
   })

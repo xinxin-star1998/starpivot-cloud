@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface ApNotificationVo {
   notifyId?: number
@@ -18,7 +18,7 @@ export interface ApNotificationQuery {
 }
 
 export function fetchApprovalNotificationList(params: ApNotificationQuery) {
-  return request.post<Api.Common.PaginatedResponse<ApNotificationVo>>({
+  return request.post<Api.Common.PageResponse<ApNotificationVo>>({
     url: '/api/approval/notification/notificationPageList',
     data: params
   })

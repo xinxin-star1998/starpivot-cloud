@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface SpuBoundsVo {
   id?: number
@@ -22,7 +22,7 @@ export interface SpuBoundsSavePayload {
 }
 
 export function fetchSpuBoundsList(params: SpuBoundsListParams) {
-  return request.post<Api.Common.PaginatedResponse<SpuBoundsVo>>({
+  return request.post<Api.Common.PageResponse<SpuBoundsVo>>({
     url: '/api/mall/spu-bounds/spuBoundsPageList',
     data: params
   })

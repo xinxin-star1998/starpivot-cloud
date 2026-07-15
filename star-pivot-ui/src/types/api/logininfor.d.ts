@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 登录日志相关类型定义
  *
  * @module types/api/logininfor
@@ -49,4 +49,4 @@ export interface LogininforSearchParams extends Api.Common.CommonSearchParams {
 /**
  * 登录日志列表响应
  */
-export type LogininforList = Api.Common.PaginatedResponse<LogininforListItem>
+export type LogininforList = Api.Common.PageResponse<LogininforListItem>

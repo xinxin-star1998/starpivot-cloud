@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface SkuFullReductionVo {
   id?: number
@@ -22,7 +22,7 @@ export interface SkuFullReductionSavePayload {
 }
 
 export function fetchSkuFullReductionList(params: SkuFullReductionListParams) {
-  return request.post<Api.Common.PaginatedResponse<SkuFullReductionVo>>({
+  return request.post<Api.Common.PageResponse<SkuFullReductionVo>>({
     url: '/api/mall/sku-full-reduction/skuFullReductionPageList',
     data: params
   })
@@ -82,7 +82,7 @@ export interface SkuLadderSavePayload {
 }
 
 export function fetchSkuLadderList(params: SkuLadderListParams) {
-  return request.post<Api.Common.PaginatedResponse<SkuLadderVo>>({
+  return request.post<Api.Common.PageResponse<SkuLadderVo>>({
     url: '/api/mall/sku-ladder/skuLadderPageList',
     data: params
   })

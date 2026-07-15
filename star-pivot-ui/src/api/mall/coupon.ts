@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import {canSubmitMallAudit} from '@/utils/mall/audit-status'
 
 export interface CouponSpuVo {
@@ -72,7 +72,7 @@ export interface CouponSavePayload {
 }
 
 export function fetchCouponList(params: CouponListParams) {
-  return request.post<Api.Common.PaginatedResponse<CouponVo>>({
+  return request.post<Api.Common.PageResponse<CouponVo>>({
     url: '/api/mall/coupon/couponPageList',
     data: params
   })

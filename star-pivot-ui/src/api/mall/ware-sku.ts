@@ -1,4 +1,4 @@
-import request from '@utils/http'
+﻿import request from '@utils/http'
 
 /**
  * 商品库存实体类型
@@ -38,7 +38,7 @@ export interface SkuSearchParams {
  * 获取商品库存列表（分页）
  */
 export function fetchGetSkuList(params: SkuSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<WareSku>>({
+  return request.post<Api.Common.PageResponse<WareSku>>({
     url: '/api/mall/ware-sku/wareSkuPageList',
     data: params
   })

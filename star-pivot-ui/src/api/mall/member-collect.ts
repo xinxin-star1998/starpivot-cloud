@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface MemberCollectSpuVo {
   id?: number
@@ -27,14 +27,14 @@ export interface MemberCollectListParams extends Api.Common.CommonSearchParams {
 }
 
 export function fetchMemberCollectSpuList(params: MemberCollectListParams) {
-  return request.post<Api.Common.PaginatedResponse<MemberCollectSpuVo>>({
+  return request.post<Api.Common.PageResponse<MemberCollectSpuVo>>({
     url: '/api/mall/member-collect/spuPageList',
     data: params
   })
 }
 
 export function fetchMemberCollectSubjectList(params: MemberCollectListParams) {
-  return request.post<Api.Common.PaginatedResponse<MemberCollectSubjectVo>>({
+  return request.post<Api.Common.PageResponse<MemberCollectSubjectVo>>({
     url: '/api/mall/member-collect/subjectPageList',
     data: params
   })

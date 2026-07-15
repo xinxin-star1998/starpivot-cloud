@@ -90,11 +90,6 @@ public class InternalFeignAutoConfiguration {
     }
 
     @Bean
-    public MallWareInternalClientFallbackFactory mallWareInternalClientFallbackFactory() {
-        return new MallWareInternalClientFallbackFactory();
-    }
-
-    @Bean
     public WareInternalClientFallbackFactory wareInternalClientFallbackFactory() {
         return new WareInternalClientFallbackFactory();
     }

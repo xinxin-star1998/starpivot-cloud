@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import {fetchExcelExport, fetchExcelImport, fetchExcelTemplate} from '@/api/common/excel'
 
 /**
@@ -30,7 +30,7 @@ export interface GroupSearchParams {
  * 获取属性分组列表（分页）
  */
 export function fetchGetGroupList(params: GroupSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<Group>>({
+  return request.post<Api.Common.PageResponse<Group>>({
     url: '/api/mall/group/attrGroupPageList',
     data: params
   })

@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import {fetchExcelExport, fetchExcelImport, fetchExcelTemplate} from '@/api/common/excel'
 
 /** 商品属性 */
@@ -33,7 +33,7 @@ export interface MallAttrSearchParams {
 }
 
 export function fetchGetAttrList(params: MallAttrSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<MallAttr>>({
+  return request.post<Api.Common.PageResponse<MallAttr>>({
     url: '/api/mall/attr/attrPageList',
     data: params
   })

@@ -43,6 +43,7 @@
 <script setup lang="ts">
 import {h, onMounted} from 'vue'
 import {useTable} from '@/hooks/core/useTable'
+import {formatMoney} from '@/utils/mall/money'
 import {
   fetchRefundAlertSummary,
   fetchRefundList,
@@ -114,7 +115,7 @@ defineOptions({ name: 'OmsRefundLog' })
           label: '退款金额',
           width: 100,
           formatter: (row: RefundVo) =>
-            row.refund != null ? `¥${Number(row.refund).toFixed(2)}` : '-'
+            row.refund != null ? `¥${formatMoney(row.refund)}` : '-'
         },
         {
           prop: 'refundStatus',

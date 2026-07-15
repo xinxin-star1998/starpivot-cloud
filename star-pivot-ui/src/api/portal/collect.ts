@@ -1,8 +1,8 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 import type {PortalCollectItem} from './types'
 
 export function fetchPortalCollectPageList(params: Api.Common.CommonSearchParams) {
-  return request.post<Api.Common.PaginatedResponse<PortalCollectItem>>({
+  return request.post<Api.Common.PageResponse<PortalCollectItem>>({
     url: '/api/portal/collect/collectPageList',
     data: params
   })

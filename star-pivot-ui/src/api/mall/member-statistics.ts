@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface MemberStatisticsVo {
   id?: number
@@ -28,7 +28,7 @@ export interface MemberStatisticsListParams extends Api.Common.CommonSearchParam
 }
 
 export function fetchMemberStatisticsList(params: MemberStatisticsListParams) {
-  return request.post<Api.Common.PaginatedResponse<MemberStatisticsVo>>({
+  return request.post<Api.Common.PageResponse<MemberStatisticsVo>>({
     url: '/api/mall/member-statistics/memberStatisticsPageList',
     data: params
   })

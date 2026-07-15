@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 操作日志相关类型定义
  *
  * @module types/api/operlog
@@ -67,4 +67,4 @@ export interface OperLogSearchParams extends Api.Common.CommonSearchParams {
 /**
  * 操作日志列表响应
  */
-export type OperLogList = Api.Common.PaginatedResponse<OperLogListItem>
+export type OperLogList = Api.Common.PageResponse<OperLogListItem>

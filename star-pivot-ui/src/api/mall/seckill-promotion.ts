@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface SeckillSkuRelationVo {
   id?: number
@@ -46,7 +46,7 @@ export interface SeckillPromotionSavePayload {
 }
 
 export function fetchSeckillPromotionList(params: SeckillPromotionListParams) {
-  return request.post<Api.Common.PaginatedResponse<SeckillPromotionVo>>({
+  return request.post<Api.Common.PageResponse<SeckillPromotionVo>>({
     url: '/api/mall/seckill-promotion/seckillPromotionPageList',
     data: params
   })

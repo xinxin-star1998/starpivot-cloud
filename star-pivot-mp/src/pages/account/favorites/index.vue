@@ -13,7 +13,7 @@
             <text class="self-tag">自营</text>
             <text class="name">{{ item.spuName }}</text>
           </view>
-          <text class="price"><text class="yen">¥</text>{{ item.price }}</text>
+          <text class="price"><text class="yen">¥</text>{{ formatMoney(item.price, '0.00') }}</text>
         </view>
         <button class="remove-btn" size="mini" @click.stop="remove(item.spuId!)">取消收藏</button>
       </view>
@@ -28,6 +28,7 @@ import {fetchCollectList, removeCollect} from '@/api/collect'
 import type {PortalCollectItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {isLogin} from '@/stores/member'
+import {formatMoney} from '@/utils/money'
 
 const loading = ref(false)
 const items = ref<PortalCollectItem[]>([])

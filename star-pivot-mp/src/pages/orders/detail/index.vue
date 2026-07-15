@@ -94,6 +94,7 @@ import type {PortalOrder, PortalOrderItem, PortalShipmentTracking} from '@/api/t
 import {isLogin} from '@/stores/member'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
+import {formatMoney} from '@/utils/money'
 
 const loading = ref(true)
 const order = ref<PortalOrder | null>(null)
@@ -123,7 +124,7 @@ function statusText(status?: number) {
 }
 
 function formatPrice(v?: number) {
-  return Number(v || 0).toFixed(2)
+  return formatMoney(v, '0.00')
 }
 
 function itemPic(item: PortalOrderItem) {

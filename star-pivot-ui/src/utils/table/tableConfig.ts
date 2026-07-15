@@ -19,7 +19,7 @@
  *
  * ## 配置说明
  *
- * - recordFields: 列表数据字段名（按优先级顺序查找）
+ * - recordFields: 列表数据字段名（按优先级顺序查找，StarPivot 标准为 rows）
  * - totalFields: 总条数字段名
  * - currentFields: 当前页码字段名
  * - sizeFields: 每页大小字段名
@@ -28,15 +28,15 @@
  * ## 扩展方式
  *
  * 如果后端使用其他字段名，可以在对应数组中添加新的字段名
- * 例如：recordFields: ['list', 'data', 'records', 'items', 'yourCustomField']
+ * 例如：recordFields: ['rows', 'records', 'list', 'yourCustomField']
  *
  * @module utils/table/tableConfig
  * @author Art Design Pro Team
  */
 export const tableConfig = {
   // 响应数据字段映射配置，系统会从接口返回数据中按顺序查找这些字段
-  // 列表数据
-  recordFields: ['list', 'data', 'records', 'items', 'result', 'rows'],
+  // 列表数据（优先后端 PageResponse.rows）
+  recordFields: ['rows', 'records', 'list', 'items', 'result', 'data'],
   // 总条数
   totalFields: ['total', 'count'],
   // 当前页码

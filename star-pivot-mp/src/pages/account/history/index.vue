@@ -34,12 +34,13 @@ import {ref} from 'vue'
 import type {PortalBrowseRecord} from '@/api/types'
 import {clearBrowseHistory, formatBrowseTime, getBrowseHistory, removeBrowseRecord} from '@/utils/browse-history'
 import {useGoodsImages} from '@/composables/use-goods-images'
+import {formatMoney} from '@/utils/money'
 
 const items = ref<PortalBrowseRecord[]>([])
 const { imageSrc, prefetchImages } = useGoodsImages()
 
 function formatPrice(p?: number) {
-  return p != null ? Number(p).toFixed(2) : '--'
+  return formatMoney(p, '--')
 }
 
 function coverUrl(item: PortalBrowseRecord) {

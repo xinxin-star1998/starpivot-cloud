@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API 接口类型定义模块
  *
  * 提供所有后端接口的类型定义
@@ -67,17 +67,9 @@ declare namespace Api {
       pageCount?: number
     }
     /**
-     * 分页响应（兼容 records / rows，优先 rows）
-     * @deprecated 新接口请使用 PageResponse
+     * @deprecated 请使用 PageResponse（rows + total）
      */
-    interface PaginatedResponse<T = any> {
-      records?: T[]
-      rows?: T[]
-      pageNum?: number
-      pageSize?: number
-      pageCount?: number
-      total: number
-    }
+    type PaginatedResponse<T = any> = PageResponse<T>
     /** 启用状态 */
     type EnableStatus = '1' | '2'
   }
@@ -200,7 +192,7 @@ declare namespace Api {
   /** 系统管理类型 */
   namespace SystemManage {
     /** 用户列表 */
-    type UserList = Api.Common.PaginatedResponse<UserListItem>
+    type UserList = Api.Common.PageResponse<UserListItem>
 
     /** 用户列表项 */
     interface UserListItem {
@@ -267,7 +259,7 @@ declare namespace Api {
       Api.Common.CommonSearchParams
 
     /** 角色列表 */
-    type RoleList = Api.Common.PaginatedResponse<RoleListItem>
+    type RoleList = Api.Common.PageResponse<RoleListItem>
 
     /** 角色列表项 */
     interface RoleListItem {
@@ -303,7 +295,7 @@ declare namespace Api {
 
   namespace Post {
     /** 岗位列表 */
-    type PostList = Api.Common.PaginatedResponse<PostListItem>
+    type PostList = Api.Common.PageResponse<PostListItem>
 
     interface PostListItem {
       postId: number
@@ -372,7 +364,7 @@ declare namespace Api {
       Api.Common.CommonSearchParams
 
     /** 操作日志列表 */
-    type OperLogList = Api.Common.PaginatedResponse<OperLogListItem>
+    type OperLogList = Api.Common.PageResponse<OperLogListItem>
 
     /** 操作日志列表项 */
     interface OperLogListItem {

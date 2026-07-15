@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface MallSkuVo {
   skuId?: number
@@ -48,7 +48,7 @@ export interface MallSkuSavePayload {
 
 /** SKU 分页列表 */
 export function fetchMallSkuList(params: MallSkuListParams) {
-  return request.post<Api.Common.PaginatedResponse<MallSkuVo>>({
+  return request.post<Api.Common.PageResponse<MallSkuVo>>({
     url: '/api/mall/sku/skuPageList',
     data: params
   })

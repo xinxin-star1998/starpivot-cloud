@@ -1,4 +1,4 @@
-package cn.org.starpivot.mall.mall.controller.internal;
+package cn.org.starpivot.mall.order.controller.internal;
 
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.mall.portal.service.PortalAvailableStockService;

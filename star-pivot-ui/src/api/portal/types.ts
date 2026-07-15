@@ -1,4 +1,4 @@
-/** C 端会员 */
+﻿/** C 端会员 */
 export interface PortalMember {
   id?: number
   username?: string
@@ -194,7 +194,7 @@ export interface PortalSubjectDetail {
   subTitle?: string
   coverImg?: string
   url?: string
-  products?: Api.Common.PaginatedResponse<PortalProductListItem>
+  products?: Api.Common.PageResponse<PortalProductListItem>
 }
 
 /** 商品详情（继承 SPU 结构） */

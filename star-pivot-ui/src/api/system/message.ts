@@ -1,4 +1,4 @@
-import request from '@/utils/http'
+﻿import request from '@/utils/http'
 
 export interface UserMessageVo {
   messageId?: number
@@ -22,7 +22,7 @@ export interface UserMessageQuery {
 }
 
 export function fetchUserMessageList(params: UserMessageQuery) {
-  return request.post<Api.Common.PaginatedResponse<UserMessageVo>>({
+  return request.post<Api.Common.PageResponse<UserMessageVo>>({
     url: '/api/message/messagePageList',
     data: params
   })

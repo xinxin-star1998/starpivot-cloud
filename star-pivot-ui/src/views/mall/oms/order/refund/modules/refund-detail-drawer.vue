@@ -54,6 +54,7 @@ import {
 } from '@/api/mall/refund'
 import {useAuth} from '@/hooks/core/useAuth'
 import {ElMessage} from 'element-plus'
+import {formatMoney} from '@/utils/mall/money'
 
 interface Props {
   visible: boolean
@@ -120,7 +121,7 @@ function statusTagType(status?: number) {
 }
 
 function formatAmount(value?: number) {
-  return value != null ? Number(value).toFixed(2) : '-'
+  return formatMoney(value, '-')
 }
 
 function formatJson(raw?: string) {
