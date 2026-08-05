@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
@@ -47,9 +48,9 @@ public class ChatPromptAssembler {
                 .options(optionsBuilder.build())
                 .system(buildSystemPrompt(runtime, plan.promptScene(), ragResult))
                 .user(dto.getMessage())
-                .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
-                        .conversationId(conversationId)
-                        .build());
+                .advisors(spec -> spec
+                        .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                        .param(ChatMemory.CONVERSATION_ID, conversationId));
     }
 
     public String resolveModel(String requestedModel, AiRuntimeSnapshot runtime, String promptScene) {
