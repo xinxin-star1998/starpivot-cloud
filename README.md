@@ -44,11 +44,12 @@
 | 组件                   | 版本         |
 | -------------------- | ---------- |
 | Java                 | 17         |
-| Spring Boot          | 3.3.13     |
-| Spring Cloud         | 2023.0.1   |
-| Spring Cloud Alibaba | 2023.0.1.0 |
-| Nacos                | 2.3.x      |
-| MyBatis-Plus         | 3.5.12     |
+| Spring Boot          | 3.5.16     |
+| Spring Cloud         | 2025.0.2   |
+| Spring Cloud Alibaba | 2025.0.0.0 |
+| Nacos                | 2.5.x（搭配 SCA 2025.0.0.0，若遇 gRPC 兼容问题可升至 3.0.x） |
+| MyBatis-Plus         | 3.5.16     |
+| Spring AI            | 1.1.8      |
 | Vue                  | 3.5.x（管理端 + 小程序统一） |
 | Element Plus         | 2.11.x     |
 | Vite                 | 8.x（管理端）；5.2.8（小程序，uni-app 约束） |
@@ -76,6 +77,7 @@ starpivot-cloud/
 ├── starpivot-mall/                   # 商城父模块（5 个领域微服务）
 ├── starpivot-approval/               # 审批中台
 ├── starpivot-tms/                    # 运输/物流 TMS
+├── starpivot-ai/                     # AI 智能对话与 RAG 知识库
 ├── star-pivot-ui/                    # Vue 3 管理前端 + H5 Portal
 ├── star-pivot-mp/                    # 微信小程序（uni-app）
 ├── nacos/config/                     # Nacos 配置模板
@@ -102,6 +104,7 @@ starpivot-cloud/
 | starpivot-mall-promotion | 9212 | 商城营销       |
 | starpivot-approval  | 9213 | 审批流程       |
 | starpivot-tms       | 9214 | 运输/物流 TMS  |
+| starpivot-ai        | 9215 | AI 智能对话     |
 | starpivot-file      | 9202 | 文件服务         |
 | star-pivot-ui       | 3000 | 前端开发服务器      |
 

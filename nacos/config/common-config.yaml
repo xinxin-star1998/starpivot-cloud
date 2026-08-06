@@ -63,7 +63,7 @@ management:
     health:
       show-details: when_authorized
     prometheus:
-      enabled: true
+      access: unrestricted
   metrics:
     tags:
       application: ${spring.application.name}
@@ -82,5 +82,7 @@ logging:
   level:
     root: ${LOG_LEVEL_ROOT:INFO}
     cn.org.starpivot: ${LOG_LEVEL_STARPIVOT:INFO}
+    # 抑制 nacos-client 配置轮询的高频 INFO 日志，避免 [data-received] 刷屏
+    com.alibaba.nacos.client.config: WARN
   pattern:
     console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){magenta} %clr([%X{traceId}]){blue} %clr(%-5level){highlight} %clr(%logger{50}){cyan} %clr(-){faint} %msg%n"

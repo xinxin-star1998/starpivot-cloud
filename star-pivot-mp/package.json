@@ -2,7 +2,8 @@
   "name": "star-pivot-mp",
   "version": "1.0.0",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=20.19.0",
+    "pnpm": ">=8.8.0"
   },
   "scripts": {
     "dev:custom": "uni -p",

@@ -3,6 +3,7 @@
 
 # Log file
 *.log
+logs/
 
 # BlueJ files
 *.ctxt
@@ -31,6 +32,11 @@ pom.xml.versionsBackup
 pom.xml.next
 release.properties
 
+# Node / Frontend
+node_modules/
+dist/
+package-lock.json
+
 # IDE
 .idea/
 *.iml
@@ -45,4 +51,12 @@ release.properties
 .DS_Store
 Thumbs.db
 
+# Local env
 .env.local
+
+# Temp scripts
+star-pivot-mp/tmp-*.js
+star-pivot-mp/write-*.js
+
+# Build output
+build-output.txt
