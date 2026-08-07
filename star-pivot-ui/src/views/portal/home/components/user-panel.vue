@@ -72,6 +72,7 @@ import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import {fetchPortalCouponClaimable, fetchPortalCouponMine} from '@/api/portal/coupon'
 import {fetchPortalPendingReviewCount} from '@/api/portal/comment'
 import {usePortalMemberStore} from '@/store/modules/portal-member'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'PortalHomeUserPanel' })
 
@@ -100,8 +101,7 @@ defineOptions({ name: 'PortalHomeUserPanel' })
   function formatCouponAmount(amount?: number) {
     if (amount == null) return '券'
     if (amount <= 0) return '包邮'
-    const value = Number(amount)
-    return Number.isInteger(value) ? `¥${value}` : `¥${value.toFixed(0)}`
+    return `¥${formatMoney(amount, '0', 0)}`
   }
 
   async function loadCouponHints() {

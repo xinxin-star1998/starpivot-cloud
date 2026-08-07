@@ -88,7 +88,7 @@ public class UmsMemberLevelController {
     @Operation(summary = "新增会员等级")
     @PostMapping
     @PreAuthorize("hasAuthority('mall:member:level:add')")
-    public Result<?> add(@Valid @RequestBody MemberLevelSaveBo bo) {
+    public Result<Void> add(@Valid @RequestBody MemberLevelSaveBo bo) {
         umsMemberLevelService.add(bo);
         return Result.success("新增成功");
     }
@@ -103,7 +103,7 @@ public class UmsMemberLevelController {
     @Operation(summary = "修改会员等级")
     @PutMapping
     @PreAuthorize("hasAuthority('mall:member:level:edit')")
-    public Result<?> update(@Valid @RequestBody MemberLevelSaveBo bo) {
+    public Result<Void> update(@Valid @RequestBody MemberLevelSaveBo bo) {
         umsMemberLevelService.update(bo);
         return Result.success("修改成功");
     }
@@ -118,7 +118,7 @@ public class UmsMemberLevelController {
     @Operation(summary = "删除会员等级")
     @DeleteMapping("/removeMemberLevel")
     @PreAuthorize("hasAuthority('mall:member:level:delete')")
-    public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
+    public Result<Void> remove(@RequestBody DeleteRequest deleteRequest) {
         List<Long> ids = validateIds(deleteRequest.getIds());
         umsMemberLevelService.removeByIds(ids);
         return Result.success("删除成功");

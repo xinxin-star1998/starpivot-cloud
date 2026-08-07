@@ -74,7 +74,7 @@ public class PortalAddressController {
     @Operation(summary = "新增/修改地址")
     @PostMapping
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> save(@Valid @RequestBody PortalAddressSaveBo bo) {
+    public Result<Void> save(@Valid @RequestBody PortalAddressSaveBo bo) {
         portalAddressService.save(PortalMemberContext.requireMemberId(), bo);
         return Result.success(bo.getId() == null ? "新增成功" : "修改成功");
     }
@@ -88,7 +88,7 @@ public class PortalAddressController {
     @Operation(summary = "修改地址")
     @PutMapping
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> update(@Valid @RequestBody PortalAddressSaveBo bo) {
+    public Result<Void> update(@Valid @RequestBody PortalAddressSaveBo bo) {
         portalAddressService.save(PortalMemberContext.requireMemberId(), bo);
         return Result.success("修改成功");
     }
@@ -102,7 +102,7 @@ public class PortalAddressController {
     @Operation(summary = "删除地址")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> remove(@PathVariable("id") Long id) {
+    public Result<Void> remove(@PathVariable("id") Long id) {
         portalAddressService.remove(PortalMemberContext.requireMemberId(), id);
         return Result.success("删除成功");
     }

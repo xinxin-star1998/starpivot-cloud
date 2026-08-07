@@ -87,7 +87,7 @@ public class GenController {
     @Log(title = "导入代码生成表", businessType = BusinessType.IMPORT)
     @PreAuthorize("hasAuthority('tool:gen:import')")
     @PostMapping("/importTable")
-    public Result<?> importTableSave(@RequestBody Map<String, String> body)
+    public Result<Void> importTableSave(@RequestBody Map<String, String> body)
     {
         String tables = body.get("tables");
         if (tables == null || tables.isBlank()) {
@@ -130,7 +130,7 @@ public class GenController {
     @Log(title = "创建代码生成表", businessType = BusinessType.INSERT)
     @PreAuthorize("@ss.hasRole('admin') or hasAuthority('tool:gen:add')")
     @PostMapping("/createTable")
-    public Result<?> createTableSave(@RequestBody Map<String, String> body) {
+    public Result<Void> createTableSave(@RequestBody Map<String, String> body) {
         try {
             String sql = body.get("tableSql");
             if (sql == null || sql.isBlank()) {
@@ -173,7 +173,7 @@ public class GenController {
     @Log(title = "修改代码生成配置", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('tool:gen:edit')")
     @PostMapping("/editSave")
-    public Result<?> editSave(@Validated @RequestBody GenTable genTable)
+    public Result<Void> editSave(@Validated @RequestBody GenTable genTable)
     {
         genTableService.validateEdit(genTable);
         genTableService.updateGenTable(genTable);
@@ -187,7 +187,7 @@ public class GenController {
     @Log(title = "删除代码生成配置", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('tool:gen:delete')")
     @DeleteMapping("/removeGenTable")
-    public Result<?> remove(@RequestBody DeleteRequest deleteRequest)
+    public Result<Void> remove(@RequestBody DeleteRequest deleteRequest)
     {
         List<Long> tableIds = deleteRequest.getIds();
         if (tableIds == null || tableIds.isEmpty()) {
@@ -224,7 +224,7 @@ public class GenController {
     @Log(title = "同步代码生成表结构", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('tool:gen:sync')")
     @GetMapping("/syncDb/{tableName}")
-    public Result<?> syncDb(@PathVariable("tableName") String tableName)
+    public Result<Void> syncDb(@PathVariable("tableName") String tableName)
     {
         genTableService.synchDb(tableName);
         return Result.success();

@@ -274,11 +274,11 @@ public class AuthService {
                         .username(userDto.getUsername())
                         .nickName(userDto.getNickName() != null ? userDto.getNickName() : userDto.getUsername())
                         .avatar(userDto.getAvatar() != null ? userDto.getAvatar() : "")
-                        .email("")
-                        .phoneNumber("")
-                        .sex(0)
+                        .email(userDto.getEmail() != null ? userDto.getEmail() : "")
+                        .phoneNumber(userDto.getPhonenumber() != null ? userDto.getPhonenumber() : "")
+                        .sex(parseSex(userDto.getSex()))
                         .status(userDto.getStatus())
-                        .createTime("")
+                        .createTime(userDto.getCreateTime() != null ? userDto.getCreateTime() : "")
                         .build())
                 .roles(buildRoles(userDto.getRoleList()))
                 .permissions(permissions)
@@ -299,6 +299,17 @@ public class AuthService {
                         .createTime("")
                         .build())
                 .toList();
+    }
+
+    private static int parseSex(String sex) {
+        if (sex == null || sex.isBlank()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(sex.trim());
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 
     private SysUserAuthDto loadUserForLogin(String username) {

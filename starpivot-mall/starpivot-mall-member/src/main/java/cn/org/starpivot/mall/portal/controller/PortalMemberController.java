@@ -50,7 +50,7 @@ public class PortalMemberController {
      */
     @Operation(summary = "会员注册")
     @PostMapping("/register")
-    public Result<?> register(@Valid @RequestBody PortalMemberRegisterBo bo) {
+    public Result<Void> register(@Valid @RequestBody PortalMemberRegisterBo bo) {
         portalMemberService.register(bo);
         return Result.success("注册成功");
     }

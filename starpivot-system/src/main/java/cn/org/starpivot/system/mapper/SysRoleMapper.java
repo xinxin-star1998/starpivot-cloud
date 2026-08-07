@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.mapper;
 
+import cn.org.starpivot.common.annotation.DataPermission;
 import cn.org.starpivot.system.domain.entity.SysRole;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,6 +20,10 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
     List<SysRole> selectRolesByUserId(@Param("userId") Long userId);
     /** 查询用户角色列表（含详细信息）。 */
     List<SysRole> selectRoleListByUserId(@Param("userId") Long userId);
-    /** 分页查询角色列表。 */
+    /**
+     * 分页查询角色列表。
+     * <p>标注 {@link DataPermission} 以启用数据范围过滤。</p>
+     */
+    @DataPermission(deptAlias = "r.role_id", userAlias = "r.create_by")
     IPage<SysRole> selectPageList(Page<SysRole> page, @Param("param") Object roleQueryDTO);
 }

@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.mapper;
 
+import cn.org.starpivot.common.annotation.DataPermission;
 import cn.org.starpivot.system.domain.entity.SysMenu;
 import cn.org.starpivot.system.domain.entity.SysRole;
 import cn.org.starpivot.system.domain.entity.SysUser;
@@ -25,7 +26,11 @@ import java.util.Map;
 @Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {
 
-    /** 按数据权限过滤的分页查询用户列表。 */
+    /**
+     * 按数据权限过滤的分页查询用户列表。
+     * <p>标注 {@link DataPermission} 以启用数据范围过滤。</p>
+     */
+    @DataPermission(deptAlias = "d.dept_id", userAlias = "u.user_id")
     IPage<SysUser> selectPageList(Page<SysUser> page, @Param("param") Map<String, Object> param);
 
     /** 按月份统计用户新增数量。 */

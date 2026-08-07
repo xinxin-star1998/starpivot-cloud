@@ -38,7 +38,7 @@ public class PortalCollectController {
     @Operation(summary = "添加收藏")
     @PostMapping
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> add(@Valid @RequestBody PortalCollectAddBo bo) {
+    public Result<Void> add(@Valid @RequestBody PortalCollectAddBo bo) {
         portalCollectService.add(PortalMemberContext.requireMemberId(), bo);
         return Result.success("收藏成功");
     }
@@ -46,7 +46,7 @@ public class PortalCollectController {
     @Operation(summary = "取消收藏")
     @DeleteMapping("/{spuId}")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> remove(@PathVariable("spuId") Long spuId) {
+    public Result<Void> remove(@PathVariable("spuId") Long spuId) {
         portalCollectService.remove(PortalMemberContext.requireMemberId(), spuId);
         return Result.success("已取消收藏");
     }
@@ -62,7 +62,7 @@ public class PortalCollectController {
     @Operation(summary = "收藏专题")
     @PostMapping("/subject")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> addSubject(@Valid @RequestBody PortalCollectSubjectAddBo bo) {
+    public Result<Void> addSubject(@Valid @RequestBody PortalCollectSubjectAddBo bo) {
         portalCollectService.addSubject(PortalMemberContext.requireMemberId(), bo);
         return Result.success("收藏成功");
     }
@@ -70,7 +70,7 @@ public class PortalCollectController {
     @Operation(summary = "取消收藏专题")
     @DeleteMapping("/subject/{subjectId}")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> removeSubject(@PathVariable("subjectId") Long subjectId) {
+    public Result<Void> removeSubject(@PathVariable("subjectId") Long subjectId) {
         portalCollectService.removeSubject(PortalMemberContext.requireMemberId(), subjectId);
         return Result.success("已取消收藏");
     }

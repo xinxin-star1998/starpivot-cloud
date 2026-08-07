@@ -52,7 +52,17 @@ public class Result<T> implements Serializable {
     }
 
     /**
-     * 成功带消息
+     * 成功（仅消息，无数据）。
+     * <p>
+     * 与 {@link #success(Object)} 通过参数类型区分：
+     * 编译器根据目标返回类型推断 {@code T}，消息写入 {@code message} 字段，{@code data} 为 {@code null}。
+     */
+    public static <T> Result<T> success(String message) {
+        return new Result<>(ErrorCode.SUCCESS, message, null);
+    }
+
+    /**
+     * 成功带消息和数据
      */
     public static <T> Result<T> success(String message, T data) {
         return new Result<>(ErrorCode.SUCCESS, message, data);

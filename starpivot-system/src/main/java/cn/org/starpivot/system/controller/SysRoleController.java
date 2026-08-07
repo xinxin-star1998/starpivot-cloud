@@ -91,7 +91,7 @@ public class SysRoleController {
     @Log(title = "新增角色", businessType = BusinessType.INSERT)
     @PreAuthorize("hasAuthority('system:role:add')")
     @PostMapping("/addRole")
-    public Result<?> add(@Valid @RequestBody RoleDTO roleDTO) {
+    public Result<Void> add(@Valid @RequestBody RoleDTO roleDTO) {
         boolean success = sysRoleService.insertRole(roleDTO);
         return success ? Result.success("新增角色成功") : Result.error("新增角色失败");
     }
@@ -105,7 +105,7 @@ public class SysRoleController {
     @Log(title = "修改角色", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('system:role:edit')")
     @PutMapping("/updateRole")
-    public Result<?> edit(@Valid @RequestBody RoleDTO roleDTO) {
+    public Result<Void> edit(@Valid @RequestBody RoleDTO roleDTO) {
         boolean success = sysRoleService.updateRole(roleDTO);
         return success ? Result.success("修改角色成功") : Result.error("修改角色失败");
     }
@@ -119,7 +119,7 @@ public class SysRoleController {
     @Log(title = "删除角色", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('system:role:delete')")
     @DeleteMapping("/removeRole")
-    public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
+    public Result<Void> remove(@RequestBody DeleteRequest deleteRequest) {
         boolean success = sysRoleService.deleteRoleByIds(validateIds(deleteRequest.getIds()));
         return success ? Result.success("删除角色成功") : Result.error("删除角色失败");
     }
@@ -133,7 +133,7 @@ public class SysRoleController {
     @Log(title = "修改角色状态", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('system:role:edit')")
     @PutMapping("/changeStatus")
-    public Result<?> changeStatus(@RequestBody RoleDTO roleDTO) {
+    public Result<Void> changeStatus(@RequestBody RoleDTO roleDTO) {
         boolean success = sysRoleService.changeRoleStatus(roleDTO.getRoleId(), roleDTO.getStatus());
         return success ? Result.success("修改状态成功") : Result.error("修改状态失败");
     }
@@ -147,7 +147,7 @@ public class SysRoleController {
     @Log(title = "分配角色数据权限", businessType = BusinessType.GRANT)
     @PreAuthorize("hasAuthority('system:role:assignDataScope')")
     @PostMapping("/assignPermission")
-    public Result<?> assignPermission(@RequestBody RolePermissionAssignDTO rolePermissionAssignDTO) {
+    public Result<Void> assignPermission(@RequestBody RolePermissionAssignDTO rolePermissionAssignDTO) {
         boolean success = sysRoleService.assignPermission(rolePermissionAssignDTO);
         return success ? Result.success("分配权限成功") : Result.error("分配权限失败");
     }
@@ -209,7 +209,7 @@ public class SysRoleController {
     @Log(title = "分配角色用户", businessType = BusinessType.GRANT)
     @PreAuthorize("hasAuthority('system:role:assignUser')")
     @PostMapping("/assignUser")
-    public Result<?> assignUser(@RequestBody UserRoleDTO userRoleDTO) {
+    public Result<Void> assignUser(@RequestBody UserRoleDTO userRoleDTO) {
         boolean success = sysRoleService.assignUser(userRoleDTO);
         return success ? Result.success("分配用户成功") : Result.error("分配用户失败");
     }
@@ -223,7 +223,7 @@ public class SysRoleController {
     @Log(title = "取消角色用户授权", businessType = BusinessType.GRANT)
     @PreAuthorize("hasAuthority('system:role:cancelUser')")
     @DeleteMapping("/cancelUser")
-    public Result<?> cancelUser(@RequestBody UserRole userRole) {
+    public Result<Void> cancelUser(@RequestBody UserRole userRole) {
         boolean success = sysRoleService.cancelUser(userRole);
         return success ? Result.success("取消授权成功") : Result.error("取消授权失败");
     }

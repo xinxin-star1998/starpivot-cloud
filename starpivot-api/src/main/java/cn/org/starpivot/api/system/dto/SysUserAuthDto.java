@@ -45,4 +45,12 @@ public class SysUserAuthDto implements Serializable {
     private List<SysRoleInfoDto> roleList;
     /** 头像地址 */
     private String avatar;
+    /** 用户邮箱 */
+    private String email;
+    /** 手机号码 */
+    private String phonenumber;
+    /** 用户性别（0男 1女 2未知） */
+    private String sex;
+    /** 创建时间 */
+    private String createTime;
 }

@@ -75,7 +75,7 @@ public class UmsMemberStatisticsController {
     @Operation(summary = "刷新会员统计（从业务表聚合写入快照）")
     @PutMapping("/refresh/{memberId}")
     @PreAuthorize("hasAuthority('mall:member:statistics')")
-    public Result<?> refresh(@PathVariable("memberId") Long memberId) {
+    public Result<Void> refresh(@PathVariable("memberId") Long memberId) {
         umsMemberStatisticsService.refresh(memberId);
         return Result.success("刷新成功");
     }

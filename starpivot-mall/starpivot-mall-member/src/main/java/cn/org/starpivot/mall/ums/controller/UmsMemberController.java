@@ -77,7 +77,7 @@ public class UmsMemberController {
     @Operation(summary = "修改会员")
     @PutMapping
     @PreAuthorize("hasAuthority('mall:member:edit')")
-    public Result<?> update(@Valid @RequestBody MemberSaveBo bo) {
+    public Result<Void> update(@Valid @RequestBody MemberSaveBo bo) {
         umsMemberService.update(bo);
         return Result.success("修改成功");
     }

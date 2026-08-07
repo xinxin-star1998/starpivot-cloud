@@ -71,7 +71,7 @@ public class OmsOrderReturnController {
     @Operation(summary = "提交退货申请审批")
     @PostMapping("/{id}/submit-approval")
     @PreAuthorize("hasAuthority('mall:return:audit')")
-    public Result<?> submitApproval(@PathVariable("id") Long id) {
+    public Result<Void> submitApproval(@PathVariable("id") Long id) {
         omsOrderReturnApprovalService.submitApproval(id);
         return Result.success("已提交审批");
     }
@@ -80,7 +80,7 @@ public class OmsOrderReturnController {
     @Operation(summary = "完成退货（入库+退款记录）")
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasAuthority('mall:return:audit')")
-    public Result<?> complete(@PathVariable("id") Long id) {
+    public Result<Void> complete(@PathVariable("id") Long id) {
         omsOrderReturnApplyService.completeReturn(id);
         return Result.success("退货已完成");
     }

@@ -48,7 +48,7 @@ public class PortalMemberAuthController {
     @Operation(summary = "绑定手机号")
     @PostMapping("/bind/mobile")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> bindMobile(@Valid @RequestBody PortalBindMobileBo bo) {
+    public Result<Void> bindMobile(@Valid @RequestBody PortalBindMobileBo bo) {
         Long memberId = PortalMemberContext.requireMemberId();
         smsService.verifyAndConsume(PortalAuthConstants.SMS_SCENE_BIND, bo.getMobile(), bo.getCode());
         memberAuthService.bindMobile(memberId, bo.getMobile());
@@ -58,7 +58,7 @@ public class PortalMemberAuthController {
     @Operation(summary = "设置登录密码")
     @PostMapping("/set-password")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> setPassword(@Valid @RequestBody PortalSetPasswordBo bo) {
+    public Result<Void> setPassword(@Valid @RequestBody PortalSetPasswordBo bo) {
         Long memberId = PortalMemberContext.requireMemberId();
         String mobile = memberAuthService.resolveSmsMobile(memberId);
         smsService.verifyAndConsume(PortalAuthConstants.SMS_SCENE_SET_PASSWORD, mobile, bo.getCode());
@@ -69,7 +69,7 @@ public class PortalMemberAuthController {
     @Operation(summary = "绑定微信")
     @PostMapping("/bind/wechat")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> bindWechat(@Valid @RequestBody PortalWechatLoginBo bo) {
+    public Result<Void> bindWechat(@Valid @RequestBody PortalWechatLoginBo bo) {
         Long memberId = PortalMemberContext.requireMemberId();
         wechatAuthService.bindWechat(bo, memberId);
         return Result.success("绑定成功");
@@ -90,7 +90,7 @@ public class PortalMemberAuthController {
     @Operation(summary = "解绑登录方式")
     @DeleteMapping("/unbind/{authType}")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
-    public Result<?> unbind(@PathVariable Integer authType,
+    public Result<Void> unbind(@PathVariable Integer authType,
                           @RequestBody(required = false) PortalUnbindAuthBo bo) {
         PortalAuthType type = PortalAuthType.fromCode(authType);
         Long memberId = PortalMemberContext.requireMemberId();

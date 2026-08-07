@@ -137,6 +137,10 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         }
     }
 
+    /** 序列化失败时的预构建 JSON 片段（消息部分需转义后拼入） */
+    private static final String FALLBACK_PREFIX = "{\"code\":" + HttpStatus.UNAUTHORIZED.value() + ",\"message\":\"";
+    private static final String FALLBACK_SUFFIX = "\"}";
+
     /**
      * 写入 401 JSON 响应并结束请求（响应式写回 {@link DataBuffer}）。
      */
@@ -150,7 +154,9 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().writeWith(Mono.just(buffer));
         } catch (JsonProcessingException e) {
             log.error("Error serializing unauthorized response", e);
-            String jsonResponse = "{\"code\":" + HttpStatus.UNAUTHORIZED.value() + ",\"message\":\"" + message + "\"}";
+            // 对消息进行基本转义，防止 JSON 注入
+            String escaped = message.replace("\\", "\\\\").replace("\"", "\\\"");
+            String jsonResponse = FALLBACK_PREFIX + escaped + FALLBACK_SUFFIX;
             byte[] bytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
             DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
             return exchange.getResponse().writeWith(Mono.just(buffer));

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -46,6 +47,8 @@ public class SysUserAuthSupport {
         return toAuthDto(user);
     }
 
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public SysUserAuthDto toAuthDto(SysUser user) {
         List<SysRole> roleEntities = sysUserMapper.getRolesByUserId(user.getUserId());
         // getRolesByUserId 对 admin 角色会带出停用项；认证用 roleKey 必须与旧逻辑一致，仅启用角色进入 JWT
@@ -72,6 +75,10 @@ public class SysUserAuthSupport {
                 .roles(roleKeys)
                 .roleList(roleList)
                 .avatar(user.getAvatar())
+                .email(user.getEmail())
+                .phonenumber(user.getPhonenumber())
+                .sex(user.getSex())
+                .createTime(user.getCreateTime() != null ? user.getCreateTime().format(DATE_FMT) : null)
                 .build();
     }
 }

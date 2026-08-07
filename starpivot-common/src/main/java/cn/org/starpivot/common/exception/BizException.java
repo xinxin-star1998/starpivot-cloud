@@ -7,9 +7,9 @@ public class BizException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 错误码
+     * 错误码（基本类型，默认 0 表示未设置）
      */
-    private Integer code;
+    private int code;
 
     /**
      * 错误提示
@@ -26,7 +26,7 @@ public class BizException extends RuntimeException {
         this.message = message;
     }
 
-    public BizException(Integer code, String message) {
+    public BizException(int code, String message) {
         this.code = code;
         this.message = message;
     }
@@ -36,11 +36,12 @@ public class BizException extends RuntimeException {
         this.message = message;
     }
 
+    @Override
     public String getMessage() {
         return message;
     }
 
-    public Integer getCode() {
+    public int getCode() {
         return code;
     }
 

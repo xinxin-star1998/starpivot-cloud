@@ -9,6 +9,8 @@ import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.common.excel.ExcelImportOptions;
 import cn.org.starpivot.common.excel.ExcelImportResult;
 import cn.org.starpivot.common.excel.ExcelToolkit;
+import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.exception.ErrorCode;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.system.domain.bo.UserReqBo;
 import cn.org.starpivot.system.domain.bo.UserVO;
@@ -82,7 +84,7 @@ public class SysUserController {
     public Result<UserVO> getUserById(@Parameter(description = "用户ID") @PathVariable Long userId) {
         UserVO userVO = sysUserService.selectByUserId(userId);
         if (userVO == null) {
-            return Result.error("用户不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "用户不存在");
         }
         return Result.success(userVO);
     }

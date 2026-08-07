@@ -78,7 +78,7 @@ public class OmsOrderController {
     @Operation(summary = "订单发货")
     @PutMapping("/deliver")
     @PreAuthorize("hasAuthority('mall:order:deliver')")
-    public Result<?> deliver(@Valid @RequestBody OmsDeliverBo bo) {
+    public Result<Void> deliver(@Valid @RequestBody OmsDeliverBo bo) {
         omsOrderService.deliver(bo);
         return Result.success("发货成功");
     }
@@ -93,7 +93,7 @@ public class OmsOrderController {
     @Operation(summary = "关闭订单")
     @PutMapping("/close")
     @PreAuthorize("hasAuthority('mall:order:close')")
-    public Result<?> close(@Valid @RequestBody OmsOrderCloseBo bo) {
+    public Result<Void> close(@Valid @RequestBody OmsOrderCloseBo bo) {
         omsOrderService.close(bo);
         return Result.success("关闭成功");
     }

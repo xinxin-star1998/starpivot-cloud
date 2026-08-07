@@ -82,15 +82,15 @@ public final class JwtUtils {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            throw new JwtTokenException(JwtTokenException.TokenError.EXPIRED, "Token has expired", e);
+            throw new JwtTokenException(JwtTokenException.TokenError.EXPIRED, "令牌已过期", e);
         } catch (UnsupportedJwtException e) {
-            throw new JwtTokenException(JwtTokenException.TokenError.UNSUPPORTED, "Unsupported JWT token", e);
+            throw new JwtTokenException(JwtTokenException.TokenError.UNSUPPORTED, "不支持的令牌类型", e);
         } catch (MalformedJwtException e) {
-            throw new JwtTokenException(JwtTokenException.TokenError.MALFORMED, "Malformed JWT token", e);
+            throw new JwtTokenException(JwtTokenException.TokenError.MALFORMED, "令牌结构异常", e);
         } catch (SignatureException e) {
-            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_SIGNATURE, "Invalid JWT signature", e);
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_SIGNATURE, "令牌签名无效", e);
         } catch (IllegalArgumentException e) {
-            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_FORMAT, "Invalid token format", e);
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_FORMAT, "令牌格式无效", e);
         }
     }
 
@@ -109,7 +109,7 @@ public final class JwtUtils {
         String username = claims.getSubject();
 
         if (username == null || username.isEmpty()) {
-            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_CLAIMS, "Username claim is missing");
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_CLAIMS, "用户名声明缺失");
         }
 
         List<String> roles = claims.get(SecurityConstants.CLAIM_ROLES, List.class);
@@ -307,7 +307,7 @@ public final class JwtUtils {
      */
     private static void validateTokenAndSecret(String token, String secret) {
         if (token == null || token.isEmpty()) {
-            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_FORMAT, "Token cannot be null or empty");
+            throw new JwtTokenException(JwtTokenException.TokenError.INVALID_FORMAT, "令牌不能为空");
         }
         if (secret == null || secret.isEmpty()) {
             throw new IllegalArgumentException("Secret cannot be null or empty");
@@ -345,12 +345,12 @@ public final class JwtUtils {
         private final TokenError error;
 
         public enum TokenError {
-            EXPIRED("Token has expired"),
-            INVALID_SIGNATURE("Invalid token signature"),
-            MALFORMED("Malformed token structure"),
-            UNSUPPORTED("Unsupported token type"),
-            INVALID_FORMAT("Invalid token format"),
-            INVALID_CLAIMS("Invalid token claims");
+            EXPIRED("令牌已过期"),
+            INVALID_SIGNATURE("令牌签名无效"),
+            MALFORMED("令牌结构异常"),
+            UNSUPPORTED("不支持的令牌类型"),
+            INVALID_FORMAT("令牌格式无效"),
+            INVALID_CLAIMS("令牌声明无效");
 
             private final String message;
 

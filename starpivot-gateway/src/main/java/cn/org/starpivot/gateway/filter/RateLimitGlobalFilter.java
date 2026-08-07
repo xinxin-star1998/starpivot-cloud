@@ -52,18 +52,21 @@ public class RateLimitGlobalFilter implements GlobalFilter, Ordered {
         String clientKey = resolveClientKey(exchange.getRequest());
         String redisKey = CacheConstants.gatewayRateLimitKey(rule.getId(), clientKey);
 
+        // onErrorResume 仅覆盖 tryAcquire (Redis) 的错误，避免 chain.filter 内部的
+        // 错误被误捕获后二次执行过滤器链，导致 ReadOnlyHttpHeaders 等异常
         return tryAcquire(redisKey, rule.getLimit(), rule.getWindowSeconds())
+                .onErrorResume(ex -> {
+                    log.warn("Rate limit check failed, allowing request: rule={}, path={}, error={}",
+                            rule.getId(), path, ex.getMessage());
+                    // Redis 不可用时降级放行，不做限流
+                    return Mono.just(true);
+                })
                 .flatMap(allowed -> {
                     if (Boolean.TRUE.equals(allowed)) {
                         return chain.filter(exchange);
                     }
                     log.warn("Rate limit exceeded: rule={}, client={}, path={}", rule.getId(), clientKey, path);
                     return tooManyRequests(exchange);
-                })
-                .onErrorResume(ex -> {
-                    log.warn("Rate limit check failed, allowing request: rule={}, path={}, error={}",
-                            rule.getId(), path, ex.getMessage());
-                    return chain.filter(exchange);
                 });
     }
 

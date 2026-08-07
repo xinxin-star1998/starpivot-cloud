@@ -80,8 +80,8 @@ public class GlobalExceptionHandler {
                 .body(Result.error("系统繁忙，请稍后重试"));
     }
 
-    private ResponseEntity<Result<Void>> buildBusinessErrorResponse(Integer code, String message) {
-        int resolved = code != null ? code : ErrorCode.BIZ_ERROR;
+    private ResponseEntity<Result<Void>> buildBusinessErrorResponse(int code, String message) {
+        int resolved = code != 0 ? code : ErrorCode.BIZ_ERROR;
         if (resolved == ErrorCode.UNAUTHORIZED) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Result.error(resolved, message));

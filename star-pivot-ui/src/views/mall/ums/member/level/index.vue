@@ -39,6 +39,7 @@ import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
 import ArtTable from '@/components/core/tables/art-table/index.vue'
 import LevelDialog from './modules/level-dialog.vue'
 import type {DialogType} from '@/types'
+import {formatMoney} from '@/utils/mall/money'
 
 defineOptions({ name: 'MemberLevel' })
 
@@ -67,7 +68,7 @@ defineOptions({ name: 'MemberLevel' })
           prop: 'freeFreightPoint',
           label: '免邮积分',
           width: 100,
-          formatter: (row) => (row.freeFreightPoint != null ? Number(row.freeFreightPoint).toFixed(0) : '-')
+          formatter: (row) => formatMoney(row.freeFreightPoint, '-', 0)
         },
         {
           prop: 'defaultStatus',
