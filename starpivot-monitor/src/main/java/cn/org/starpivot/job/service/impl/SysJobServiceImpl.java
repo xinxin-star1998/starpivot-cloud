@@ -46,6 +46,9 @@ public class SysJobServiceImpl extends ServiceImpl<SysJobMapper, SysJob> impleme
 
     private static final String JOB_KEY_PREFIX = "JOB_";
 
+    /** 启动时加载任务的安全上限 */
+    private static final int STARTUP_LOAD_MAX = 1000;
+
     /**
      * 分页查询定时任务列表。
      *
@@ -271,7 +274,13 @@ public class SysJobServiceImpl extends ServiceImpl<SysJobMapper, SysJob> impleme
      */
     @Override
     public void loadScheduledJobsOnStartup() {
-        List<SysJob> list = lambdaQuery().eq(SysJob::getStatus, JobConstants.SUCCESS).list();
+        List<SysJob> list = lambdaQuery()
+                .eq(SysJob::getStatus, JobConstants.SUCCESS)
+                .last("limit " + STARTUP_LOAD_MAX)
+                .list();
+        if (list.size() >= STARTUP_LOAD_MAX) {
+            log.warn("启动加载定时任务达到安全上限 {} 条，超出部分未加载", STARTUP_LOAD_MAX);
+        }
         for (SysJob job : list) {
             try {
                 scheduleJob(job);

@@ -3,6 +3,7 @@ package cn.org.starpivot.system.service.impl;
 import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.entity.DataScope;
 import cn.org.starpivot.common.entity.PageResponse;
@@ -37,6 +38,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -101,6 +104,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @return 菜单列表
      */
     @Override
+    @Cacheable(cacheNames = CacheConstants.USER_MENUS, key = "'all:' + #userId")
     public List<SysMenu> getUserMenus(Long userId) {
         List<SysRole> roles = getRolesByUserId(userId);
         boolean isAdmin = roles != null && roles.stream()
@@ -153,6 +157,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheConstants.USER_ROLES, key = "#userId")
     public List<SysRole> getRolesByUserId(Long userId) {
         return sysUserMapper.getRolesByUserId(userId);
     }
@@ -179,6 +184,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheConstants.USER_MENUS, key = "#userId")
     public List<SysMenu> getMenuByUserId(Long userId) {
         return sysUserMapper.getMenuByUserId(userId);
     }
@@ -239,6 +245,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @throws BizException 用户不存在、用户名冲突或无权修改时抛出
      */
     @Override
+    @CacheEvict(cacheNames = {CacheConstants.USER_ROLES, CacheConstants.USER_MENUS}, key = "#userId")
     @Transactional(rollbackFor = Exception.class)
     public boolean updateUser(UserDTO userDTO) {
         SysUser user = this.getById(userDTO.getUserId());
@@ -324,6 +331,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @throws BizException 用户不存在时抛出
      */
     @Override
+    @CacheEvict(cacheNames = {CacheConstants.USER_ROLES, CacheConstants.USER_MENUS}, key = "#userId")
     @Transactional(rollbackFor = Exception.class)
     public boolean changeUserStatus(Long userId, String status) {
         SysUser user = this.getById(userId);
@@ -345,6 +353,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @throws BizException 用户不存在时抛出
      */
     @Override
+    @CacheEvict(cacheNames = {CacheConstants.USER_ROLES, CacheConstants.USER_MENUS}, key = "#userId")
     public boolean resetUserPassword(Long userId, String password) {
         SysUser user = this.getById(userId);
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
@@ -372,6 +381,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @throws BizException 用户不存在、旧密码错误或新旧密码相同时抛出
      */
     @Override
+    @CacheEvict(cacheNames = {CacheConstants.USER_ROLES, CacheConstants.USER_MENUS}, key = "#userId")
     @Transactional(rollbackFor = Exception.class)
     public boolean updateUserPassword(Long userId, String oldPassword, String newPassword) {
         SysUser user = this.getById(userId);
@@ -403,6 +413,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @return 有有效删除时返回 {@code true}，入参为空返回 {@code false}
      */
     @Override
+    @CacheEvict(cacheNames = {CacheConstants.USER_ROLES, CacheConstants.USER_MENUS}, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteUserByIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {

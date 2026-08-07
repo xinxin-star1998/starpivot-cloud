@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -112,7 +113,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色权限字符串已存在时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_ROLES, allEntries = true)
+    })
     @Transactional(rollbackFor = Exception.class)
     public boolean insertRole(RoleDTO roleDTO) {
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
@@ -150,7 +154,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色不存在、权限字符串冲突或修改超级管理员时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_ROLES, allEntries = true)
+    })
     @Transactional(rollbackFor = Exception.class)
     public boolean updateRole(RoleDTO roleDTO) {
         SysRole role = this.getById(roleDTO.getRoleId());
@@ -200,7 +207,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 删除超级管理员或已被用户使用的角色时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_ROLES, allEntries = true)
+    })
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRoleByIds(List<Long> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
@@ -253,7 +263,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色不存在或停用超级管理员时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.ROLE_LIST, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_ROLES, allEntries = true)
+    })
     public boolean changeRoleStatus(Long roleId, String status) {
         SysRole role = this.getById(roleId);
         AssertUtils.notNull(role, ErrorCode.ROLE_NOT_FOUND);
@@ -370,6 +383,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      * @throws BizException 角色不存在时抛出
      */
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.USER_ROLES, allEntries = true),
+            @CacheEvict(cacheNames = CacheConstants.USER_MENUS, allEntries = true)
+    })
     @Transactional(rollbackFor = Exception.class)
     public boolean assignPermission(RolePermissionAssignDTO rolePermissionAssignDTO) {
         Long roleId = rolePermissionAssignDTO.getRoleId();

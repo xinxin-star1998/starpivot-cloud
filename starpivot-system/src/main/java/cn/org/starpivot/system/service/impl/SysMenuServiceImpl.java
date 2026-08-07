@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -74,6 +75,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheConstants.USER_MENUS, key = "'tree:' + #userId")
     public List<SysMenu> getUserMenuTree(Long userId) {
         List<SysRole> roles = sysUserService.getRolesByUserId(userId);
 
@@ -108,7 +110,10 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_MENUS, allEntries = true)
+    })
     public boolean insertMenu(MenuDTO menuDTO) {
         if (!checkMenuNameUnique(menuDTO.getMenuName(), menuDTO.getParentId(), null)) {
             throw new BizException(ErrorCode.MENU_NAME_EXISTS, "菜单名称已存在");
@@ -144,7 +149,10 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_MENUS, allEntries = true)
+    })
     public boolean updateMenu(MenuDTO menuDTO) {
         SysMenu menu = this.getById(menuDTO.getMenuId());
         if (menu == null) {
@@ -181,7 +189,10 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheConstants.MENU_TREE, key = "'all'"),
+            @CacheEvict(cacheNames = CacheConstants.USER_MENUS, allEntries = true)
+    })
     public boolean deleteMenuByIds(List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {
             return false;

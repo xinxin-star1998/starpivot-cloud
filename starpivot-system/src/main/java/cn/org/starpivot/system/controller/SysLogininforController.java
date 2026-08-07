@@ -11,6 +11,8 @@ import cn.org.starpivot.system.domain.bo.LogininforReqBo;
 import cn.org.starpivot.system.domain.bo.LogininforVO;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
 import cn.org.starpivot.system.service.SysLogininforService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,7 @@ public class SysLogininforController {
      * @return 登录日志视图分页结果
      */
     @Log(title = "登录日志")
+    @Operation(summary = "分页查询登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:query')")
     @PostMapping("/logininforPageList")
     public Result<PageResponse<LogininforVO>> list(@Valid @RequestBody LogininforReqBo logininforReqBo) {
@@ -59,9 +62,10 @@ public class SysLogininforController {
      * @return 登录日志视图对象
      */
     @Log(title = "登录日志")
+    @Operation(summary = "获取登录日志详情")
     @PreAuthorize("hasAuthority('system:logininfor:query')")
     @GetMapping("/{infoId}")
-    public Result<LogininforVO> getLogininforById(@PathVariable Long infoId) {
+    public Result<LogininforVO> getLogininforById(@Parameter(description = "日志ID") @PathVariable Long infoId) {
         SysLogininfor logininfor = sysLogininforService.getById(infoId);
         if (logininfor == null) {
             return Result.error("登录日志不存在");
@@ -78,6 +82,7 @@ public class SysLogininforController {
      * @return 操作结果
      */
     @Log(title = "删除登录日志", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:delete')")
     @DeleteMapping("/removeLogininfor")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
@@ -91,6 +96,7 @@ public class SysLogininforController {
      * @return 操作结果
      */
     @Log(title = "清空登录日志", businessType = BusinessType.CLEAN)
+    @Operation(summary = "清空全部登录日志")
     @PreAuthorize("hasAuthority('system:logininfor:delete')")
     @DeleteMapping("/clean")
     public Result<?> clean() {

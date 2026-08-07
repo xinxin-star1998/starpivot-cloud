@@ -11,6 +11,8 @@ import cn.org.starpivot.system.domain.bo.SysConfigVO;
 import cn.org.starpivot.system.domain.dto.SysConfigDTO;
 import cn.org.starpivot.system.domain.dto.SysConfigQueryDTO;
 import cn.org.starpivot.system.service.SysConfigService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,7 @@ public class SysConfigController {
      * @param queryDTO 查询条件
      * @return 参数配置分页结果
      */
+    @Operation(summary = "分页查询参数配置")
     @PreAuthorize("hasAuthority('system:config:query')")
     @PostMapping("/configPageList")
     public Result<PageResponse<SysConfigVO>> list(@RequestBody SysConfigQueryDTO queryDTO) {
@@ -54,9 +57,10 @@ public class SysConfigController {
      * @param configId 配置主键
      * @return 参数配置视图对象
      */
+    @Operation(summary = "获取参数配置详情")
     @PreAuthorize("hasAuthority('system:config:query')")
     @GetMapping("/{configId}")
-    public Result<SysConfigVO> getInfo(@PathVariable Long configId) {
+    public Result<SysConfigVO> getInfo(@Parameter(description = "配置ID") @PathVariable Long configId) {
         return Result.success(sysConfigService.selectSysConfigByConfigId(configId));
     }
 
@@ -67,6 +71,7 @@ public class SysConfigController {
      * @return 操作结果
      */
     @Log(title = "新增参数", businessType = BusinessType.INSERT)
+    @Operation(summary = "新增参数配置")
     @PreAuthorize("hasAuthority('system:config:add')")
     @PostMapping
     public Result<?> add(@Valid @RequestBody SysConfigDTO sysConfigDTO) {
@@ -81,6 +86,7 @@ public class SysConfigController {
      * @return 操作结果
      */
     @Log(title = "修改参数", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改参数配置")
     @PreAuthorize("hasAuthority('system:config:edit')")
     @PutMapping
     public Result<?> edit(@Valid @RequestBody SysConfigDTO sysConfigDTO) {
@@ -95,6 +101,7 @@ public class SysConfigController {
      * @return 操作结果
      */
     @Log(title = "删除参数", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除参数配置")
     @PreAuthorize("hasAuthority('system:config:delete')")
     @DeleteMapping("/removeConfig")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {

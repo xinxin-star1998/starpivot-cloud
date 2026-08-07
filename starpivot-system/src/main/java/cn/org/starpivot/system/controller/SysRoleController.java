@@ -89,6 +89,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "新增角色", businessType = BusinessType.INSERT)
+    @Operation(summary = "新增角色")
     @PreAuthorize("hasAuthority('system:role:add')")
     @PostMapping("/addRole")
     public Result<Void> add(@Valid @RequestBody RoleDTO roleDTO) {
@@ -103,6 +104,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "修改角色", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改角色")
     @PreAuthorize("hasAuthority('system:role:edit')")
     @PutMapping("/updateRole")
     public Result<Void> edit(@Valid @RequestBody RoleDTO roleDTO) {
@@ -117,6 +119,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "删除角色", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除角色")
     @PreAuthorize("hasAuthority('system:role:delete')")
     @DeleteMapping("/removeRole")
     public Result<Void> remove(@RequestBody DeleteRequest deleteRequest) {
@@ -131,6 +134,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "修改角色状态", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改角色状态")
     @PreAuthorize("hasAuthority('system:role:edit')")
     @PutMapping("/changeStatus")
     public Result<Void> changeStatus(@RequestBody RoleDTO roleDTO) {
@@ -145,6 +149,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "分配角色数据权限", businessType = BusinessType.GRANT)
+    @Operation(summary = "分配角色数据权限")
     @PreAuthorize("hasAuthority('system:role:assignDataScope')")
     @PostMapping("/assignPermission")
     public Result<Void> assignPermission(@RequestBody RolePermissionAssignDTO rolePermissionAssignDTO) {
@@ -158,6 +163,7 @@ public class SysRoleController {
      * @param roleId 角色主键
      * @return 部门 ID 列表
      */
+    @Operation(summary = "查询角色关联部门ID")
     @PreAuthorize("hasAuthority('system:role:query')")
     @GetMapping("/{roleId}/deptIds")
     public Result<List<Long>> getDeptIds(@PathVariable("roleId") Long roleId) {
@@ -170,6 +176,7 @@ public class SysRoleController {
      * @param roleId 角色主键
      * @return 菜单 ID 列表
      */
+    @Operation(summary = "查询角色已分配菜单ID")
     @PreAuthorize("hasAuthority('system:role:query')")
     @GetMapping("/getMenuIdsByRoleId/{roleId}")
     public Result<List<Long>> getMenuIdsByRoleId(@PathVariable("roleId") Long roleId) {
@@ -182,6 +189,7 @@ public class SysRoleController {
      * @param assignUserReqBo 角色 ID 及分页条件
      * @return 用户分页结果
      */
+    @Operation(summary = "查询已分配角色的用户列表")
     @PreAuthorize("hasAuthority('system:role:allocatedList')")
     @PostMapping("/allocatedList")
     public Result<PageResponse<SysUser>> getUserListByRoleId(@RequestBody AssignUserReqBo assignUserReqBo) {
@@ -194,6 +202,7 @@ public class SysRoleController {
      * @param assignUserReqBo 角色 ID 及分页条件
      * @return 用户分页结果
      */
+    @Operation(summary = "查询未分配角色的用户列表")
     @PreAuthorize("hasAuthority('system:role:unallocatedList')")
     @PostMapping("/unallocatedList")
     public Result<PageResponse<SysUser>> getUserListNotInByRoleId(@RequestBody AssignUserReqBo assignUserReqBo) {
@@ -207,6 +216,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "分配角色用户", businessType = BusinessType.GRANT)
+    @Operation(summary = "为角色批量分配用户")
     @PreAuthorize("hasAuthority('system:role:assignUser')")
     @PostMapping("/assignUser")
     public Result<Void> assignUser(@RequestBody UserRoleDTO userRoleDTO) {
@@ -221,6 +231,7 @@ public class SysRoleController {
      * @return 操作结果
      */
     @Log(title = "取消角色用户授权", businessType = BusinessType.GRANT)
+    @Operation(summary = "取消角色用户授权")
     @PreAuthorize("hasAuthority('system:role:cancelUser')")
     @DeleteMapping("/cancelUser")
     public Result<Void> cancelUser(@RequestBody UserRole userRole) {

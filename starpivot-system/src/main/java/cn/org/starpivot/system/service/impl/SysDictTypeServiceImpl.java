@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,11 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictType> implements SysDictTypeService {
+
+    /** selectList 安全上限，防止数据量异常增长时 OOM */
+    private static final int SELECT_LIST_MAX = 1000;
 
     private final SysDictDataMapper sysDictDataMapper;
 
@@ -204,7 +209,11 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
      */
     @Override
     public List<SysDictTypeVO> selectList() {
-        return this.list().stream().map(this::convertToVO).collect(Collectors.toList());
+        List<SysDictType> list = this.list(new LambdaQueryWrapper<SysDictType>().last("limit " + SELECT_LIST_MAX));
+        if (list.size() >= SELECT_LIST_MAX) {
+            log.warn("字典类型全量查询达到安全上限 {} 条，请改用分页查询", SELECT_LIST_MAX);
+        }
+        return list.stream().map(this::convertToVO).collect(Collectors.toList());
     }
 
     /**

@@ -11,6 +11,8 @@ import cn.org.starpivot.system.domain.bo.SysNoticeVO;
 import cn.org.starpivot.system.domain.dto.SysNoticeDTO;
 import cn.org.starpivot.system.domain.dto.SysNoticeQueryDTO;
 import cn.org.starpivot.system.service.ISysNoticeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +51,7 @@ public class SysNoticeController
      * @param queryDTO 查询参数
      * @return 分页结果
      */
+    @Operation(summary = "分页查询通知公告")
     @PreAuthorize("hasAuthority('system:notice:query')")
     @PostMapping("/noticePageList")
     public Result<PageResponse<SysNoticeVO>> noticePageList(@RequestBody SysNoticeQueryDTO queryDTO)
@@ -63,9 +66,10 @@ public class SysNoticeController
      * @param noticeId 通知公告主键
      * @return 通知公告信息
      */
+    @Operation(summary = "获取通知公告详情")
     @PreAuthorize("hasAuthority('system:notice:query')")
     @GetMapping(value = "/getNoticeInfo/{noticeId}")
-    public Result<SysNoticeVO> getNoticeInfo(@PathVariable("noticeId") Integer noticeId)
+    public Result<SysNoticeVO> getNoticeInfo(@Parameter(description = "公告ID") @PathVariable("noticeId") Integer noticeId)
     {
         SysNoticeVO sysNoticeVO = sysNoticeService.selectSysNoticeByNoticeId(noticeId);
         return Result.success(sysNoticeVO);
@@ -78,6 +82,7 @@ public class SysNoticeController
      * @return 操作结果
      */
     @Log(title = "新增通知公告", businessType = BusinessType.INSERT)
+    @Operation(summary = "新增通知公告")
     @PreAuthorize("hasAuthority('system:notice:add')")
     @PostMapping
     public Result<?> addNotice(@Valid @RequestBody SysNoticeDTO sysNoticeDTO)
@@ -93,6 +98,7 @@ public class SysNoticeController
      * @return 操作结果
      */
     @Log(title = "修改通知公告", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改通知公告")
     @PreAuthorize("hasAuthority('system:notice:edit')")
     @PutMapping
     public Result<?> edit(@Valid @RequestBody SysNoticeDTO sysNoticeDTO)
@@ -108,6 +114,7 @@ public class SysNoticeController
      * @return 操作结果
      */
     @Log(title = "删除通知公告", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除通知公告")
     @PreAuthorize("hasAuthority('system:notice:delete')")
     @DeleteMapping("/removeNotice")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest)

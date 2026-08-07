@@ -47,6 +47,10 @@ public final class CacheConstants {
     public static final String GENERATOR_SESSION = "generator_session";
     /** 定时任务分布式锁 */
     public static final String SCHEDULE_LOCK = "schedule_lock";
+    /** 用户角色列表（Spring Cache） */
+    public static final String USER_ROLES = "user_roles";
+    /** 用户菜单列表（Spring Cache） */
+    public static final String USER_MENUS = "user_menus";
 
     // ── login_tokens 子类型 ─────────────────────────────────────────────
 
@@ -64,6 +68,8 @@ public final class CacheConstants {
     public static final Duration TTL_MENU_TREE = Duration.ofHours(1);
     public static final Duration TTL_DEPT_TREE = Duration.ofHours(1);
     public static final Duration TTL_ROLE_LIST = Duration.ofHours(1);
+    public static final Duration TTL_USER_ROLES = Duration.ofMinutes(15);
+    public static final Duration TTL_USER_MENUS = Duration.ofMinutes(15);
     public static final Duration TTL_DASHBOARD = Duration.ofMinutes(5);
 
     // ── 键构建 ──────────────────────────────────────────────────────────
@@ -142,6 +148,8 @@ public final class CacheConstants {
         REMARKS.put(ROLE_LIST, "角色列表");
         REMARKS.put(DASHBOARD, "控制台统计");
         REMARKS.put(GENERATOR_SESSION, "代码生成会话");
+        REMARKS.put(USER_ROLES, "用户角色");
+        REMARKS.put(USER_MENUS, "用户菜单");
     }
 
     /** 监控页固定展示的缓存分组（顺序与若依一致，并扩展项目自有分组） */
@@ -159,7 +167,9 @@ public final class CacheConstants {
                 DEPT_TREE,
                 ROLE_LIST,
                 DASHBOARD,
-                GENERATOR_SESSION
+                GENERATOR_SESSION,
+                USER_ROLES,
+                USER_MENUS
         );
     }
 
@@ -185,6 +195,8 @@ public final class CacheConstants {
         map.put(MENU_TREE, TTL_MENU_TREE);
         map.put(DEPT_TREE, TTL_DEPT_TREE);
         map.put(ROLE_LIST, TTL_ROLE_LIST);
+        map.put(USER_ROLES, TTL_USER_ROLES);
+        map.put(USER_MENUS, TTL_USER_MENUS);
         return map;
     }
 }

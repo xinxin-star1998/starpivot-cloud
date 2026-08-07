@@ -58,6 +58,7 @@ public class SysMenuController {
      * @return 操作结果
      */
     @Log(title = "新增菜单", businessType = BusinessType.INSERT)
+    @Operation(summary = "新增菜单")
     @PreAuthorize("hasAuthority('system:menu:add')")
     @PostMapping("/add")
     public Result<?> add(@Valid @RequestBody MenuDTO menuDTO) {
@@ -72,6 +73,7 @@ public class SysMenuController {
      * @return 操作结果
      */
     @Log(title = "修改菜单", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改菜单")
     @PreAuthorize("hasAuthority('system:menu:edit')")
     @PutMapping
     public Result<?> edit(@Valid @RequestBody MenuDTO menuDTO) {
@@ -86,6 +88,7 @@ public class SysMenuController {
      * @return 操作结果
      */
     @Log(title = "删除菜单", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除菜单")
     @PreAuthorize("hasAuthority('system:menu:delete')")
     @DeleteMapping("/removeMenu")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
@@ -98,6 +101,7 @@ public class SysMenuController {
      *
      * @return 父级候选菜单列表
      */
+    @Operation(summary = "查询父级菜单列表")
     @PreAuthorize("hasAuthority('system:menu:query')")
     @GetMapping("/getParent")
     public Result<List<SysMenu>> getParent() {
@@ -110,6 +114,7 @@ public class SysMenuController {
      * @param menuId 菜单主键
      * @return 菜单实体
      */
+    @Operation(summary = "获取菜单详情")
     @PreAuthorize("hasAuthority('system:menu:query')")
     @GetMapping("/getById/{menuId}")
     public Result<SysMenu> getById(@Parameter(description = "菜单ID") @PathVariable("menuId") Long menuId) {

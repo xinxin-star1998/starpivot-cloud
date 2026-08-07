@@ -12,6 +12,8 @@ import cn.org.starpivot.system.domain.bo.PostVO;
 import cn.org.starpivot.system.domain.dto.PostDTO;
 import cn.org.starpivot.system.domain.dto.PostQueryDTO;
 import cn.org.starpivot.system.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class PostController {
      * @param queryDTO 查询条件
      * @return 岗位分页结果
      */
+    @Operation(summary = "分页查询岗位")
     @PreAuthorize("hasAuthority('system:post:query')")
     @PostMapping("/postPageList")
     public Result<PageResponse<PostVO>> list(@RequestBody PostQueryDTO queryDTO) {
@@ -56,6 +59,7 @@ public class PostController {
      *
      * @return 岗位简要信息列表
      */
+    @Operation(summary = "岗位简要下拉列表")
     @PreAuthorize("hasAuthority('system:post:query')")
     @GetMapping("/simpleList")
     public Result<List<PostBo>> simpleList() {
@@ -67,6 +71,7 @@ public class PostController {
      *
      * @return 岗位视图列表
      */
+    @Operation(summary = "查询全部岗位")
     @PreAuthorize("hasAuthority('system:post:query')")
     @GetMapping("/all")
     public Result<List<PostVO>> all() {
@@ -79,9 +84,10 @@ public class PostController {
      * @param postId 岗位主键
      * @return 岗位视图对象
      */
+    @Operation(summary = "获取岗位详情")
     @PreAuthorize("hasAuthority('system:post:query')")
     @GetMapping("/{postId}")
-    public Result<PostVO> getInfo(@PathVariable Long postId) {
+    public Result<PostVO> getInfo(@Parameter(description = "岗位ID") @PathVariable Long postId) {
         return Result.success(postService.selectPostById(postId));
     }
 
@@ -92,6 +98,7 @@ public class PostController {
      * @return 操作结果
      */
     @Log(title = "新增岗位", businessType = BusinessType.INSERT)
+    @Operation(summary = "新增岗位")
     @PreAuthorize("hasAuthority('system:post:add')")
     @PostMapping
     public Result<?> add(@Valid @RequestBody PostDTO postDTO) {
@@ -106,6 +113,7 @@ public class PostController {
      * @return 操作结果
      */
     @Log(title = "修改岗位", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改岗位")
     @PreAuthorize("hasAuthority('system:post:edit')")
     @PutMapping
     public Result<?> edit(@Valid @RequestBody PostDTO postDTO) {
@@ -120,6 +128,7 @@ public class PostController {
      * @return 操作结果
      */
     @Log(title = "删除岗位", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除岗位")
     @PreAuthorize("hasAuthority('system:post:delete')")
     @DeleteMapping("/removePost")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {

@@ -71,6 +71,7 @@ public class SysDeptController {
      * @return 操作结果
      */
     @Log(title = "新增部门", businessType = BusinessType.INSERT)
+    @Operation(summary = "新增部门")
     @PreAuthorize("hasAuthority('system:dept:add')")
     @PostMapping
     public Result<?> add(@Valid @RequestBody DeptDTO deptDTO) {
@@ -85,6 +86,7 @@ public class SysDeptController {
      * @return 操作结果
      */
     @Log(title = "修改部门", businessType = BusinessType.UPDATE)
+    @Operation(summary = "修改部门")
     @PreAuthorize("hasAuthority('system:dept:edit')")
     @PutMapping
     public Result<?> edit(@Valid @RequestBody DeptDTO deptDTO) {
@@ -99,6 +101,7 @@ public class SysDeptController {
      * @return 操作结果
      */
     @Log(title = "删除部门", businessType = BusinessType.DELETE)
+    @Operation(summary = "批量删除部门")
     @PreAuthorize("hasAuthority('system:dept:delete')")
     @DeleteMapping("/removeDept")
     public Result<?> remove(@RequestBody DeleteRequest deleteRequest) {
