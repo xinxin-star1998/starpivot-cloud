@@ -5,6 +5,7 @@ import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.monitor.domain.vo.OnlineUserVO;
 import cn.org.starpivot.monitor.service.MonitorService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ public class OnlineUserController {
      * @param ipaddr   登录 IP（可选，模糊匹配）
      * @return 在线用户列表
      */
+    @Operation(summary = "查询在线用户列表")
     @Log(title = "在线用户")
     @PreAuthorize("hasAuthority('monitor:online:query')")
     @GetMapping
@@ -47,6 +49,7 @@ public class OnlineUserController {
      * @param sessionId 会话标识
      * @return 操作结果
      */
+    @Operation(summary = "强制用户下线")
     @Log(title = "强退在线用户", businessType = BusinessType.FORCE)
     @PreAuthorize("hasAuthority('monitor:online:force-logout')")
     @DeleteMapping("/{sessionId}")

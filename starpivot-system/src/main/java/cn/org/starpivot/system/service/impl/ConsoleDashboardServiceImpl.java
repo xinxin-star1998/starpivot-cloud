@@ -1,6 +1,9 @@
 package cn.org.starpivot.system.service.impl;
 
+import cn.org.starpivot.api.mall.order.OrderInternalClient;
+import cn.org.starpivot.api.mall.order.dto.OrderSalesMonthAmountDto;
 import cn.org.starpivot.common.cache.CacheConstants;
+import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
 import cn.org.starpivot.system.domain.entity.SysOperLog;
@@ -22,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +50,7 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
     private final SysLogininforService sysLogininforService;
     private final SysOperLogService sysOperLogService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final OrderInternalClient orderInternalClient;
 
     /**
      * {@inheritDoc}
@@ -55,6 +60,9 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
     public ConsoleDashboardVo getConsoleData() {
         ConsoleDashboardVo cached = (ConsoleDashboardVo) redisTemplate.opsForValue().get(CACHE_KEY);
         if (cached != null) {
+            if (cached.getSalesTrend() == null) {
+                cached.setSalesTrend(emptySalesTrend());
+            }
             return cached;
         }
 
@@ -65,6 +73,7 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
         vo.setTodoList(buildTodoList());
         vo.setDynamicList(buildDynamicList());
         vo.setNewUserList(buildNewUserList());
+        vo.setSalesTrend(buildSalesTrend());
 
         redisTemplate.opsForValue().set(CACHE_KEY, vo, CACHE_EXPIRE_MINUTES, TimeUnit.MINUTES);
         return vo;
@@ -383,5 +392,87 @@ public class ConsoleDashboardServiceImpl implements ConsoleDashboardService {
      */
     private String safe(String value) {
         return StringUtils.hasText(value) ? value : "-";
+    }
+
+    /**
+     * 构建近 12 个月销售趋势数据（通过订单服务内部接口聚合已付款金额）。
+     *
+     * @return 含 x 轴月份与对应销售额的趋势数据及环比增长率
+     */
+    private ConsoleDashboardVo.SalesTrendData buildSalesTrend() {
+        List<String> xAxis = new ArrayList<>(12);
+        List<BigDecimal> data = new ArrayList<>(12);
+        LocalDate firstDayOfCurrentMonth = LocalDate.now().withDayOfMonth(1);
+
+        String startYearMonth = firstDayOfCurrentMonth.minusMonths(11).format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        String endYearMonth = firstDayOfCurrentMonth.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        Map<String, BigDecimal> amountByMonth = new HashMap<>();
+        try {
+            Result<List<OrderSalesMonthAmountDto>> result =
+                    orderInternalClient.sumPayAmountByMonth(startYearMonth, endYearMonth);
+            if (result != null && result.isSuccess() && result.getData() != null) {
+                for (OrderSalesMonthAmountDto row : result.getData()) {
+                    if (row == null || !StringUtils.hasText(row.getYearMonth())) {
+                        continue;
+                    }
+                    BigDecimal amount = row.getTotalAmount() != null ? row.getTotalAmount() : BigDecimal.ZERO;
+                    amountByMonth.put(row.getYearMonth(), amount);
+                }
+            } else {
+                log.warn("Failed to query sales trend via order Feign, code={}, message={}",
+                        result != null ? result.getCode() : null,
+                        result != null ? result.getMessage() : null);
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to query sales trend via order Feign, returning empty data", ex);
+        }
+
+        BigDecimal prevMonthAmount = BigDecimal.ZERO;
+        BigDecimal currentMonthAmount = BigDecimal.ZERO;
+
+        for (int i = 0; i < 12; i++) {
+            LocalDate month = firstDayOfCurrentMonth.minusMonths(11 - i);
+            xAxis.add(month.format(MONTH_FORMATTER));
+
+            String monthKey = month.getYear() + "-" + String.format("%02d", month.getMonthValue());
+            BigDecimal amount = amountByMonth.getOrDefault(monthKey, BigDecimal.ZERO);
+            data.add(amount);
+
+            if (i == 10) {
+                prevMonthAmount = amount;
+            } else if (i == 11) {
+                currentMonthAmount = amount;
+            }
+        }
+
+        String growth = calcAmountChange(currentMonthAmount, prevMonthAmount);
+
+        ConsoleDashboardVo.SalesTrendData salesTrend = new ConsoleDashboardVo.SalesTrendData();
+        salesTrend.setXAxisData(xAxis);
+        salesTrend.setData(data);
+        salesTrend.setGrowth(growth);
+        return salesTrend;
+    }
+
+    private ConsoleDashboardVo.SalesTrendData emptySalesTrend() {
+        ConsoleDashboardVo.SalesTrendData salesTrend = new ConsoleDashboardVo.SalesTrendData();
+        salesTrend.setXAxisData(List.of());
+        salesTrend.setData(List.of());
+        salesTrend.setGrowth("+0%");
+        return salesTrend;
+    }
+
+    private String calcAmountChange(BigDecimal current, BigDecimal previous) {
+        BigDecimal curr = current != null ? current : BigDecimal.ZERO;
+        BigDecimal prev = previous != null ? previous : BigDecimal.ZERO;
+        if (prev.compareTo(BigDecimal.ZERO) <= 0) {
+            return curr.compareTo(BigDecimal.ZERO) > 0 ? "+100%" : "+0%";
+        }
+        BigDecimal ratio = curr.subtract(prev)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(prev, 0, RoundingMode.HALF_UP);
+        String sign = ratio.signum() >= 0 ? "+" : "";
+        return sign + ratio.toPlainString() + "%";
     }
 }

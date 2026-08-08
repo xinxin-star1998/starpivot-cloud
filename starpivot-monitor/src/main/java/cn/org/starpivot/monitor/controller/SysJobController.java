@@ -14,6 +14,7 @@ import cn.org.starpivot.job.domain.dto.SysJobDTO;
 import cn.org.starpivot.job.domain.dto.SysJobLogQueryDTO;
 import cn.org.starpivot.job.domain.dto.SysJobQueryDTO;
 import cn.org.starpivot.job.service.ISysJobService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,9 +42,10 @@ public class SysJobController {
      * @param query 查询条件与分页参数
      * @return 任务分页结果
      */
+    @Operation(summary = "分页查询定时任务")
     @PreAuthorize("hasAuthority('monitor:job:query')")
     @PostMapping("/jobPageList")
-    public Result<PageResponse<SysJobVO>> list(@RequestBody SysJobQueryDTO query) {
+    public Result<PageResponse<SysJobVO>> list(@Valid @RequestBody SysJobQueryDTO query) {
         return Result.success(sysJobService.selectJobPage(query));
     }
 
@@ -53,6 +55,7 @@ public class SysJobController {
      * @param jobId 任务 ID
      * @return 任务详情
      */
+    @Operation(summary = "查询定时任务详情")
     @PreAuthorize("hasAuthority('monitor:job:query')")
     @GetMapping("/{jobId}")
     public Result<SysJobVO> getInfo(@PathVariable Long jobId) {
@@ -65,6 +68,7 @@ public class SysJobController {
      * @param dto 任务配置
      * @return 操作结果
      */
+    @Operation(summary = "新增定时任务")
     @Log(title = "新增定时任务", businessType = BusinessType.INSERT)
     @PreAuthorize("hasAuthority('monitor:job:add')")
     @PostMapping
@@ -79,6 +83,7 @@ public class SysJobController {
      * @param dto 任务配置（须含任务 ID）
      * @return 操作结果
      */
+    @Operation(summary = "修改定时任务")
     @Log(title = "修改定时任务", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('monitor:job:edit')")
     @PutMapping
@@ -93,10 +98,11 @@ public class SysJobController {
      * @param request 待删除的任务 ID 列表
      * @return 操作结果
      */
+    @Operation(summary = "批量删除定时任务")
     @Log(title = "删除定时任务", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('monitor:job:delete')")
     @DeleteMapping("/removeJob")
-    public Result<?> remove(@RequestBody DeleteRequest request) {
+    public Result<?> remove(@Valid @RequestBody DeleteRequest request) {
         sysJobService.deleteJobByIds(validateIds(request.getIds()));
         return Result.success("删除成功");
     }
@@ -107,10 +113,11 @@ public class SysJobController {
      * @param commonDto 任务 ID 与目标状态
      * @return 操作结果
      */
+    @Operation(summary = "修改定时任务状态")
     @Log(title = "修改定时任务状态", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('monitor:job:edit')")
     @PostMapping("/changeStatus")
-    public Result<?> changeStatus(@RequestBody SysJobCommonDto commonDto) {
+    public Result<?> changeStatus(@Valid @RequestBody SysJobCommonDto commonDto) {
         sysJobService.changeStatus(commonDto.getJobId(), commonDto.getStatus());
         return Result.success("操作成功");
     }
@@ -121,6 +128,7 @@ public class SysJobController {
      * @param jobId 任务 ID
      * @return 操作结果
      */
+    @Operation(summary = "立即触发任务执行")
     @PreAuthorize("hasAuthority('monitor:job:edit')")
     @PutMapping("/run/{jobId}")
     public Result<?> runOnce(@PathVariable Long jobId) {
@@ -134,9 +142,10 @@ public class SysJobController {
      * @param query 查询条件与分页参数
      * @return 日志分页结果
      */
+    @Operation(summary = "分页查询任务执行日志")
     @PreAuthorize("hasAuthority('monitor:job:query')")
     @PostMapping("/jobLogPageList")
-    public Result<PageResponse<SysJobLogVO>> logList(@RequestBody SysJobLogQueryDTO query) {
+    public Result<PageResponse<SysJobLogVO>> logList(@Valid @RequestBody SysJobLogQueryDTO query) {
         return Result.success(sysJobService.selectJobLogPage(query));
     }
 
@@ -145,6 +154,7 @@ public class SysJobController {
      *
      * @return 操作结果
      */
+    @Operation(summary = "清空任务执行日志")
     @Log(title = "清空定时任务日志", businessType = BusinessType.CLEAN)
     @PreAuthorize("hasAuthority('monitor:job:delete')")
     @DeleteMapping("/log/clear")

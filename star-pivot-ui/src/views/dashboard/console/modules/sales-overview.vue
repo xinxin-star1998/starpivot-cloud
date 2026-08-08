@@ -3,7 +3,7 @@
     <div class="art-card-header">
       <div class="title">
         <h4>{{ t('dashboard.salesOverview.title') }}</h4>
-        <p>{{ t('dashboard.salesOverview.growth') }}<span class="text-success">+15%</span></p>
+        <p>{{ t('dashboard.salesOverview.growth') }}<span :class="growthClass">{{ growthText }}</span></p>
       </div>
     </div>
     <ArtLineChart
@@ -18,19 +18,24 @@
 
 <script setup lang="ts">
 import {useI18n} from 'vue-i18n'
-import type {DashboardTrendData} from '@/types/api/dashboard'
+import type {SalesTrendData} from '@/types/api/dashboard'
 
 const { t } = useI18n()
 
   const props = withDefaults(
     defineProps<{
-      trendData: DashboardTrendData
+      trendData: SalesTrendData
     }>(),
     {
-      trendData: () => ({ xAxisData: [], data: [] })
+      trendData: () => ({ xAxisData: [], data: [], growth: '+0%' })
     }
   )
 
-  const data = computed(() => props.trendData.data)
-  const xAxisData = computed(() => props.trendData.xAxisData)
+  const data = computed(() => props.trendData?.data ?? [])
+  const xAxisData = computed(() => props.trendData?.xAxisData ?? [])
+  const growthText = computed(() => props.trendData?.growth || '+0%')
+  const growthClass = computed(() => {
+    const g = growthText.value
+    return g.startsWith('-') ? 'text-danger' : 'text-success'
+  })
 </script>

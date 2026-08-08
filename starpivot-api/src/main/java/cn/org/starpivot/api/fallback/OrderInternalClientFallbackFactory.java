@@ -54,6 +54,12 @@ public class OrderInternalClientFallbackFactory implements FallbackFactory<Order
             public Result<Void> syncConfirmReceive(Long orderId) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }
+
+            @Override
+            public Result<List<OrderSalesMonthAmountDto>> sumPayAmountByMonth(
+                    String startYearMonth, String endYearMonth) {
+                return FeignFallbackSupport.silentFallback(cause, ACTION, List.of());
+            }
         };
     }
 }

@@ -33,6 +33,12 @@ export interface DashboardNewUserItem {
   percentage: number
 }
 
+export interface SalesTrendData {
+  xAxisData: string[]
+  data: number[]
+  growth: string
+}
+
 export interface ConsoleDashboardData {
   cardList: DashboardCardItem[]
   visitTrend: DashboardTrendData
@@ -40,4 +46,5 @@ export interface ConsoleDashboardData {
   todoList: DashboardTodoItem[]
   dynamicList: DashboardDynamicItem[]
   newUserList: DashboardNewUserItem[]
+  salesTrend: SalesTrendData
 }

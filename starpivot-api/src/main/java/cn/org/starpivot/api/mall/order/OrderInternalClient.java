@@ -2,14 +2,10 @@ package cn.org.starpivot.api.mall.order;
 
 import cn.org.starpivot.api.fallback.OrderInternalClientFallbackFactory;
 import cn.org.starpivot.api.mall.order.dto.*;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.api.tms.dto.InternalOrderDeliverRequest;
+import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -48,4 +44,15 @@ public interface OrderInternalClient {
 
     @PutMapping("/internal/mall/order/{orderId}/confirm-receive")
     Result<Void> syncConfirmReceive(@PathVariable("orderId") Long orderId);
+
+    /**
+     * 按月聚合已付款订单支付金额（供系统工作台销售趋势）。
+     *
+     * @param startYearMonth 起始年月（含），格式 yyyy-MM
+     * @param endYearMonth   截止年月（含），格式 yyyy-MM
+     */
+    @GetMapping("/internal/mall/order/sales/monthly")
+    Result<List<OrderSalesMonthAmountDto>> sumPayAmountByMonth(
+            @RequestParam("startYearMonth") String startYearMonth,
+            @RequestParam("endYearMonth") String endYearMonth);
 }

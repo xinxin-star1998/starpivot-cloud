@@ -59,7 +59,7 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteGenTableByIds(List<Long> tableIds) {
         genTableMapper.deleteGenTableByIds(tableIds);
         genTableColumnMapper.deleteGenTableColumnByIds(tableIds);
@@ -76,7 +76,7 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void synchDb(String tableName) {
         importSupport.synchDb(tableName);
     }
@@ -127,13 +127,13 @@ public class GenTableServiceImpl extends ServiceImpl<GenTableMapper, GenTable> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void importGenTable(List<GenTable> tableList, String operName) {
         importSupport.importGenTable(tableList, operName);
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateGenTable(GenTable genTable) {
         String options = JSON.toJSONString(genTable.getParams());
         genTable.setOptions(options);

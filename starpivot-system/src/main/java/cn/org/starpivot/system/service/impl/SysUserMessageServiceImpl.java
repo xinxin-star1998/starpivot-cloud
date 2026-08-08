@@ -18,7 +18,7 @@ import cn.org.starpivot.system.mapper.SysUserMapper;
 import cn.org.starpivot.system.mapper.SysUserMessageMapper;
 import cn.org.starpivot.system.mapper.UserRoleMapper;
 import cn.org.starpivot.system.service.ISysUserMessageService;
-import cn.org.starpivot.system.service.MessagePushService;
+import cn.org.starpivot.system.service.channel.MessageChannelDispatcher;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -26,14 +26,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -44,7 +44,7 @@ public class SysUserMessageServiceImpl implements ISysUserMessageService {
     private final SysUserMapper sysUserMapper;
     private final SysRoleMapper sysRoleMapper;
     private final UserRoleMapper userRoleMapper;
-    private final MessagePushService messagePushService;
+    private final MessageChannelDispatcher messageChannelDispatcher;
 
     @Override
     @Transactional(readOnly = true)
@@ -102,18 +102,31 @@ public class SysUserMessageServiceImpl implements ISysUserMessageService {
             return;
         }
         LocalDateTime now = LocalDateTime.now();
-        Map<Long, SysUserMessage> latestByUser = new LinkedHashMap<>();
+        java.util.ArrayList<SysUserMessage> insertedMessages = new java.util.ArrayList<>();
         for (Long userId : request.getUserIds()) {
             if (userId == null) {
                 continue;
             }
             SysUserMessage row = buildRow(userId, request, now);
             messageMapper.insert(row);
-            latestByUser.put(userId, row);
+            insertedMessages.add(row);
         }
-        for (Map.Entry<Long, SysUserMessage> entry : latestByUser.entrySet()) {
-            long unread = unreadCount(entry.getKey());
-            messagePushService.publish(entry.getKey(), toVo(entry.getValue()), unread);
+        dispatchAfterCommit(insertedMessages, request.getTitle(), request.getContent());
+    }
+
+    private void dispatchAfterCommit(List<SysUserMessage> messages, String title, String content) {
+        if (messages == null || messages.isEmpty()) {
+            return;
+        }
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    messageChannelDispatcher.dispatch(messages, title, content);
+                }
+            });
+        } else {
+            messageChannelDispatcher.dispatch(messages, title, content);
         }
     }
 

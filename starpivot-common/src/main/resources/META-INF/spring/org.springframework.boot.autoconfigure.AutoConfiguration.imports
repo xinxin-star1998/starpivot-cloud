@@ -6,4 +6,6 @@ cn.org.starpivot.common.config.MicroserviceAuthenticationAutoConfiguration
 cn.org.starpivot.common.config.MybatisPlusAutoConfiguration
 cn.org.starpivot.common.config.StarPivotSchedulingAutoConfiguration
 cn.org.starpivot.common.config.DistributedScheduledAutoConfiguration
+cn.org.starpivot.common.config.FeignRetryAutoConfiguration
+cn.org.starpivot.common.config.SafeDefaultsAutoConfiguration
 cn.org.starpivot.common.security.JwtSecretRefreshAutoConfiguration

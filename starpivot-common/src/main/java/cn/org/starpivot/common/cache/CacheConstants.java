@@ -118,8 +118,18 @@ public final class CacheConstants {
         return RATE_LIMIT + ":gateway:" + ruleId + ":" + clientKey;
     }
 
+    /** 限流统计：指定规则的总请求计数 */
+    public static String gatewayRateLimitTotalKey(String ruleId) {
+        return RATE_LIMIT + ":stats:total:" + ruleId;
+    }
+
+    /** 限流统计：指定规则的被拦截计数 */
+    public static String gatewayRateLimitBlockedKey(String ruleId) {
+        return RATE_LIMIT + ":stats:blocked:" + ruleId;
+    }
+
     public static String dashboardKey() {
-        return DASHBOARD + ":console";
+        return DASHBOARD + ":console:v2";
     }
 
     public static String generatorSessionKey(String sessionId) {

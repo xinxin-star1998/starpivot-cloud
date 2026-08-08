@@ -24,6 +24,9 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import static cn.org.starpivot.common.cache.CacheConstants.gatewayRateLimitBlockedKey;
+import static cn.org.starpivot.common.cache.CacheConstants.gatewayRateLimitTotalKey;
+
 /**
  * 网关 Redis 固定窗口限流过滤器，保护登录、验证码、短信等公开接口。
  */
@@ -52,6 +55,10 @@ public class RateLimitGlobalFilter implements GlobalFilter, Ordered {
         String clientKey = resolveClientKey(exchange.getRequest());
         String redisKey = CacheConstants.gatewayRateLimitKey(rule.getId(), clientKey);
 
+        // 记录该规则的总请求计数（带 TTL，避免统计 key 永久堆积）
+        String totalKey = gatewayRateLimitTotalKey(rule.getId());
+        bumpStatCounter(totalKey).subscribe();
+
         // onErrorResume 仅覆盖 tryAcquire (Redis) 的错误，避免 chain.filter 内部的
         // 错误被误捕获后二次执行过滤器链，导致 ReadOnlyHttpHeaders 等异常
         return tryAcquire(redisKey, rule.getLimit(), rule.getWindowSeconds())
@@ -65,8 +72,25 @@ public class RateLimitGlobalFilter implements GlobalFilter, Ordered {
                     if (Boolean.TRUE.equals(allowed)) {
                         return chain.filter(exchange);
                     }
+                    // 记录被拦截的请求计数
+                    String blockedKey = gatewayRateLimitBlockedKey(rule.getId());
+                    bumpStatCounter(blockedKey).subscribe();
                     log.warn("Rate limit exceeded: rule={}, client={}, path={}", rule.getId(), clientKey, path);
                     return tooManyRequests(exchange);
+                });
+    }
+
+    private Mono<Boolean> bumpStatCounter(String key) {
+        return redisTemplate.opsForValue().increment(key)
+                .flatMap(count -> {
+                    if (count != null && count == 1L) {
+                        return redisTemplate.expire(key, Duration.ofDays(7)).thenReturn(true);
+                    }
+                    return Mono.just(true);
+                })
+                .onErrorResume(ex -> {
+                    log.warn("rate-limit stat increment failed: key={}, error={}", key, ex.toString());
+                    return Mono.just(false);
                 });
     }
 

@@ -150,6 +150,18 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
+        <!-- Spring Cloud OpenFeign（可选，仅存在时注册 Retryer） -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Resilience4j 熔断器（可选，仅存在时激活熔断指标） -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- Micrometer Tracing + Zipkin 分布式追踪 -->
         <dependency>
             <groupId>io.micrometer</groupId>

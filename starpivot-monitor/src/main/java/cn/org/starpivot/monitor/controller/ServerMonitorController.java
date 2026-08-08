@@ -4,6 +4,7 @@ import cn.org.starpivot.common.annotation.Log;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.monitor.domain.vo.ServerInfoVO;
 import cn.org.starpivot.monitor.service.MonitorService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ public class ServerMonitorController {
      *
      * @return 包装后的服务器监控数据
      */
+    @Operation(summary = "查询服务器运行状态")
     @Log(title = "服务器监控")
     @PreAuthorize("hasAuthority('monitor:server:query')")
     @GetMapping

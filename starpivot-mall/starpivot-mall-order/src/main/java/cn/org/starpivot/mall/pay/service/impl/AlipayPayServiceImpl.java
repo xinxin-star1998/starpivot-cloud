@@ -12,25 +12,31 @@ import cn.org.starpivot.mall.portal.PortalConstants;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
-import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradeFastpayRefundQueryRequest;
+import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradeRefundRequest;
-import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.alipay.api.response.AlipayTradeFastpayRefundQueryResponse;
+import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -40,11 +46,16 @@ public class AlipayPayServiceImpl implements AlipayPayService {
     private static final String PRODUCT_CODE = "FAST_INSTANT_TRADE_PAY";
     private static final String TRADE_SUCCESS = "TRADE_SUCCESS";
     private static final String TRADE_FINISHED = "TRADE_FINISHED";
+    private static final String NOTIFY_LOCK_PREFIX = "pay:notify:lock:";
+    private static final long NOTIFY_LOCK_SECONDS = 30;
+    private static final String UNLOCK_SCRIPT =
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 
     private final AlipayProperties alipayProperties;
     private final OmsOrderMapper omsOrderMapper;
     private final PortalOrderPayService portalOrderPayService;
     private final ObjectMapper objectMapper;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     public boolean isAvailable() {
@@ -233,26 +244,46 @@ public class AlipayPayServiceImpl implements AlipayPayService {
                 return false;
             }
 
-            OmsOrder order = omsOrderMapper.selectOne(
-                    Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
-            if (order == null) {
-                log.warn("Alipay notify order not found: {}", orderSn);
+            // 幂等防护：基于订单号的 Redis 分布式锁；Redis 故障时降级依赖 DB 幂等
+            String lockKey = NOTIFY_LOCK_PREFIX + orderSn;
+            String lockToken = UUID.randomUUID().toString();
+            Boolean locked;
+            try {
+                locked = stringRedisTemplate.opsForValue()
+                        .setIfAbsent(lockKey, lockToken, NOTIFY_LOCK_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception redisEx) {
+                log.error("Alipay notify Redis lock failed, degrade to DB idempotency, orderSn={}", orderSn, redisEx);
+                locked = Boolean.TRUE;
+                lockToken = null;
+            }
+            if (Boolean.FALSE.equals(locked)) {
+                log.warn("Alipay notify concurrent callback detected, skipping, orderSn={}", orderSn);
                 return false;
             }
+            try {
+                OmsOrder order = omsOrderMapper.selectOne(
+                        Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
+                if (order == null) {
+                    log.warn("Alipay notify order not found: {}", orderSn);
+                    return false;
+                }
 
-            if (!verifyPayAmount(order, params.get("total_amount"))) {
-                log.warn("Alipay notify amount mismatch, orderSn={}, expected={}, actual={}",
-                        orderSn, order.getPayAmount(), params.get("total_amount"));
-                return false;
-            }
+                if (!verifyPayAmount(order, params.get("total_amount"))) {
+                    log.warn("Alipay notify amount mismatch, orderSn={}, expected={}, actual={}",
+                            orderSn, order.getPayAmount(), params.get("total_amount"));
+                    return false;
+                }
 
-            String callbackJson = objectMapper.writeValueAsString(params);
-            boolean confirmed = portalOrderPayService.confirmPaid(order, tradeNo, tradeStatus, callbackJson);
-            if (!confirmed && Integer.valueOf(PortalConstants.ORDER_STATUS_CLOSED).equals(order.getStatus())) {
-                log.warn("Alipay notify could not confirm closed order, orderSn={}", orderSn);
-                return false;
+                String callbackJson = objectMapper.writeValueAsString(params);
+                boolean confirmed = portalOrderPayService.confirmPaid(order, tradeNo, tradeStatus, callbackJson);
+                if (!confirmed && Integer.valueOf(PortalConstants.ORDER_STATUS_CLOSED).equals(order.getStatus())) {
+                    log.warn("Alipay notify could not confirm closed order, orderSn={}", orderSn);
+                    return false;
+                }
+                return true;
+            } finally {
+                scheduleUnlock(lockKey, lockToken);
             }
-            return true;
         } catch (Exception ex) {
             log.error("Alipay notify handle failed", ex);
             return false;
@@ -299,7 +330,7 @@ public class AlipayPayServiceImpl implements AlipayPayService {
 
     private boolean verifyPayAmount(OmsOrder order, String totalAmountStr) {
         if (order.getPayAmount() == null || !StringUtils.hasText(totalAmountStr)) {
-            return true;
+            return false;
         }
         try {
             BigDecimal paid = new BigDecimal(totalAmountStr.trim()).setScale(2, RoundingMode.HALF_UP);
@@ -307,6 +338,32 @@ public class AlipayPayServiceImpl implements AlipayPayService {
             return expected.compareTo(paid) == 0;
         } catch (NumberFormatException ex) {
             return false;
+        }
+    }
+
+    private void scheduleUnlock(String lockKey, String lockToken) {
+        if (lockToken == null) {
+            return;
+        }
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    releaseLock(lockKey, lockToken);
+                }
+            });
+        } else {
+            releaseLock(lockKey, lockToken);
+        }
+    }
+
+    private void releaseLock(String lockKey, String lockToken) {
+        try {
+            stringRedisTemplate.execute(
+                    new DefaultRedisScript<>(UNLOCK_SCRIPT, Long.class),
+                    java.util.List.of(lockKey), lockToken);
+        } catch (Exception ex) {
+            log.warn("Failed to release Alipay notify lock, key={}", lockKey, ex);
         }
     }
 

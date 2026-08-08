@@ -5,6 +5,7 @@ import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.enums.BusinessType;
 import cn.org.starpivot.monitor.domain.vo.RedisCacheVO;
 import cn.org.starpivot.monitor.service.MonitorService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,7 @@ public class CacheController {
      *
      * @return 缓存分组列表
      */
+    @Operation(summary = "查询缓存分组列表")
     @Log(title = "Redis缓存管理")
     @PreAuthorize("hasAuthority('monitor:cache:query')")
     @GetMapping("/cachePageList")
@@ -43,6 +45,7 @@ public class CacheController {
      * @param cacheName 缓存分组名称
      * @return 键信息列表
      */
+    @Operation(summary = "查询缓存键列表")
     @Log(title = "Redis缓存管理")
     @PreAuthorize("hasAuthority('monitor:cache:query')")
     @GetMapping("/keys")
@@ -57,6 +60,7 @@ public class CacheController {
      * @param key       缓存键
      * @return 键值内容及元信息
      */
+    @Operation(summary = "查看缓存键内容")
     @Log(title = "Redis缓存管理")
     @PreAuthorize("hasAuthority('monitor:cache:query')")
     @GetMapping("/content")
@@ -72,6 +76,7 @@ public class CacheController {
      * @param cacheName 缓存分组名称
      * @return 删除的键数量
      */
+    @Operation(summary = "删除缓存分组")
     @Log(title = "删除Redis缓存分组", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('monitor:cache:remove')")
     @DeleteMapping("/group/{cacheName}")
@@ -87,6 +92,7 @@ public class CacheController {
      * @param key       缓存键
      * @return 操作结果
      */
+    @Operation(summary = "删除缓存键")
     @Log(title = "删除Redis缓存键", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('monitor:cache:remove')")
     @DeleteMapping("/key")
@@ -100,6 +106,7 @@ public class CacheController {
      *
      * @return 操作结果
      */
+    @Operation(summary = "清空全部缓存")
     @Log(title = "清空Redis缓存", businessType = BusinessType.CLEAN)
     @PreAuthorize("hasAuthority('monitor:cache:clear')")
     @DeleteMapping("/clear")

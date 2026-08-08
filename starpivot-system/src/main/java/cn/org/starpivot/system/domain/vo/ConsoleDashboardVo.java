@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -53,6 +54,11 @@ public class ConsoleDashboardVo {
      * 新用户列表
      */
     private List<NewUserItem> newUserList;
+
+    /**
+     * 销售趋势数据（近 12 个月已付款订单金额）
+     */
+    private SalesTrendData salesTrend;
 
     /**
      * 统计卡片项。
@@ -182,5 +188,30 @@ public class ConsoleDashboardVo {
          * 占比百分比
          */
         private Integer percentage;
+    }
+
+    /**
+     * 销售趋势数据。
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SalesTrendData {
+
+        /**
+         * X 轴月份标签
+         */
+        private List<String> xAxisData;
+
+        /**
+         * 每月销售金额序列
+         */
+        private List<BigDecimal> data;
+
+        /**
+         * 环比增长率文本（如 +10%）
+         */
+        private String growth;
     }
 }

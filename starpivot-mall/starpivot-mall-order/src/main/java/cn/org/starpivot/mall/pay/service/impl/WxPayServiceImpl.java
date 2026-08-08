@@ -29,28 +29,36 @@ import com.wechat.pay.java.service.payments.nativepay.model.Amount;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayRequest;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayResponse;
 import com.wechat.pay.java.service.refund.RefundService;
-import com.wechat.pay.java.service.refund.model.AmountReq;
-import com.wechat.pay.java.service.refund.model.CreateRequest;
-import com.wechat.pay.java.service.refund.model.QueryByOutRefundNoRequest;
-import com.wechat.pay.java.service.refund.model.Refund;
-import com.wechat.pay.java.service.refund.model.RefundNotification;
-import com.wechat.pay.java.service.refund.model.Status;
+import com.wechat.pay.java.service.refund.model.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WxPayServiceImpl implements WxPayService {
+
+    private static final String NOTIFY_LOCK_PREFIX = "pay:notify:lock:";
+    private static final String REFUND_LOCK_PREFIX = "pay:refund:lock:";
+    private static final long NOTIFY_LOCK_SECONDS = 30;
+    private static final String UNLOCK_SCRIPT =
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 
     private final WxPayProperties wxPayProperties;
     private final OmsOrderMapper omsOrderMapper;
@@ -58,6 +66,7 @@ public class WxPayServiceImpl implements WxPayService {
     private final MemberFeignSupport memberFeignSupport;
     private final ObjectMapper objectMapper;
     private final OmsRefundNotifyService omsRefundNotifyService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     public boolean isAvailable() {
@@ -316,24 +325,44 @@ public class WxPayServiceImpl implements WxPayService {
             }
 
             String orderSn = transaction.getOutTradeNo();
-            OmsOrder order = omsOrderMapper.selectOne(
-                    Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
-            if (order == null) {
-                log.warn("Wx notify order not found: {}", orderSn);
-                return failureBody("ORDER_NOT_FOUND");
+            // 幂等防护：基于订单号的 Redis 分布式锁；Redis 故障时降级依赖 DB 幂等
+            String lockKey = NOTIFY_LOCK_PREFIX + orderSn;
+            String lockToken = UUID.randomUUID().toString();
+            Boolean locked;
+            try {
+                locked = stringRedisTemplate.opsForValue()
+                        .setIfAbsent(lockKey, lockToken, NOTIFY_LOCK_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception redisEx) {
+                log.error("Wx notify Redis lock failed, degrade to DB idempotency, orderSn={}", orderSn, redisEx);
+                locked = Boolean.TRUE;
+                lockToken = null;
             }
-            if (!verifyPayAmount(order, transaction.getAmount() != null ? transaction.getAmount().getTotal() : null)) {
-                log.warn("Wx notify amount mismatch, orderSn={}", orderSn);
-                return failureBody("AMOUNT_MISMATCH");
+            if (Boolean.FALSE.equals(locked)) {
+                log.warn("Wx notify concurrent callback detected, orderSn={}", orderSn);
+                return failureBody("PROCESSING");
             }
+            try {
+                OmsOrder order = omsOrderMapper.selectOne(
+                        Wrappers.<OmsOrder>lambdaQuery().eq(OmsOrder::getOrderSn, orderSn).last("LIMIT 1"));
+                if (order == null) {
+                    log.warn("Wx notify order not found: {}", orderSn);
+                    return failureBody("ORDER_NOT_FOUND");
+                }
+                if (!verifyPayAmount(order, transaction.getAmount() != null ? transaction.getAmount().getTotal() : null)) {
+                    log.warn("Wx notify amount mismatch, orderSn={}", orderSn);
+                    return failureBody("AMOUNT_MISMATCH");
+                }
 
-            String callbackJson = objectMapper.writeValueAsString(transaction);
-            portalOrderPayService.confirmPaid(
-                    order,
-                    transaction.getTransactionId(),
-                    transaction.getTradeState().name(),
-                    callbackJson);
-            return successBody();
+                String callbackJson = objectMapper.writeValueAsString(transaction);
+                portalOrderPayService.confirmPaid(
+                        order,
+                        transaction.getTransactionId(),
+                        transaction.getTradeState().name(),
+                        callbackJson);
+                return successBody();
+            } finally {
+                scheduleUnlock(lockKey, lockToken);
+            }
         } catch (Exception ex) {
             log.error("Wx notify handle failed", ex);
             return failureBody("HANDLE_ERROR");
@@ -362,12 +391,34 @@ public class WxPayServiceImpl implements WxPayService {
                 return successBody();
             }
 
-            Status refundStatus = notification.getRefundStatus();
-            String statusName = refundStatus != null ? refundStatus.name() : null;
-            String callbackJson = objectMapper.writeValueAsString(notification);
-            omsRefundNotifyService.handleWxRefundNotify(
-                    notification.getOutRefundNo(), statusName, callbackJson);
-            return successBody();
+            // 幂等防护：基于退款单号的 Redis 分布式锁；Redis 故障时降级依赖业务幂等
+            String outRefundNo = notification.getOutRefundNo();
+            String lockKey = REFUND_LOCK_PREFIX + outRefundNo;
+            String lockToken = UUID.randomUUID().toString();
+            Boolean locked;
+            try {
+                locked = stringRedisTemplate.opsForValue()
+                        .setIfAbsent(lockKey, lockToken, NOTIFY_LOCK_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception redisEx) {
+                log.error("Wx refund notify Redis lock failed, degrade to DB idempotency, outRefundNo={}",
+                        outRefundNo, redisEx);
+                locked = Boolean.TRUE;
+                lockToken = null;
+            }
+            if (Boolean.FALSE.equals(locked)) {
+                log.warn("Wx refund notify concurrent callback detected, outRefundNo={}", outRefundNo);
+                return failureBody("PROCESSING");
+            }
+            try {
+                Status refundStatus = notification.getRefundStatus();
+                String statusName = refundStatus != null ? refundStatus.name() : null;
+                String callbackJson = objectMapper.writeValueAsString(notification);
+                omsRefundNotifyService.handleWxRefundNotify(
+                        outRefundNo, statusName, callbackJson);
+                return successBody();
+            } finally {
+                scheduleUnlock(lockKey, lockToken);
+            }
         } catch (Exception ex) {
             log.error("Wx refund notify handle failed", ex);
             return failureBody("HANDLE_ERROR");
@@ -408,7 +459,7 @@ public class WxPayServiceImpl implements WxPayService {
 
     private boolean verifyPayAmount(OmsOrder order, Integer totalFen) {
         if (order.getPayAmount() == null || totalFen == null) {
-            return true;
+            return false;
         }
         return toFen(order.getPayAmount()) == totalFen;
     }
@@ -424,5 +475,31 @@ public class WxPayServiceImpl implements WxPayService {
     /** 读取原始通知 body */
     public static String readBody(HttpServletRequest request) throws java.io.IOException {
         return StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
+    }
+
+    private void scheduleUnlock(String lockKey, String lockToken) {
+        if (lockToken == null) {
+            return;
+        }
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    releaseLock(lockKey, lockToken);
+                }
+            });
+        } else {
+            releaseLock(lockKey, lockToken);
+        }
+    }
+
+    private void releaseLock(String lockKey, String lockToken) {
+        try {
+            stringRedisTemplate.execute(
+                    new DefaultRedisScript<>(UNLOCK_SCRIPT, Long.class),
+                    List.of(lockKey), lockToken);
+        } catch (Exception ex) {
+            log.warn("Failed to release Wx notify lock, key={}", lockKey, ex);
+        }
     }
 }

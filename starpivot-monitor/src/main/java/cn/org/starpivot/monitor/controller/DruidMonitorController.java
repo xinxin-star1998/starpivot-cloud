@@ -4,6 +4,7 @@ import cn.org.starpivot.common.annotation.Log;
 import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.monitor.domain.vo.DruidMonitorVO;
 import cn.org.starpivot.monitor.service.MonitorService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,7 @@ public class DruidMonitorController {
      * @param slowSqlThreshold   慢 SQL 阈值（毫秒），仅当包含慢 SQL 时生效
      * @return 包装后的 Druid 监控数据
      */
+    @Operation(summary = "查询Druid连接池监控数据")
     @Log(title = "Druid监控")
     @PreAuthorize("hasAuthority('monitor:druid:query')")
     @GetMapping

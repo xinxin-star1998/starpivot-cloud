@@ -22,6 +22,8 @@ import cn.org.starpivot.mall.portal.domain.vo.PortalProductDetailVo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalProductListVo;
 import cn.org.starpivot.mall.portal.service.PortalProductService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -50,7 +52,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PortalProductServiceImpl implements PortalProductService {
 
     private final PmsSpuInfoMapper pmsSpuInfoMapper;
@@ -62,6 +63,33 @@ public class PortalProductServiceImpl implements PortalProductService {
     private final MallStockFeignSupport mallStockFeignSupport;
     private final PmsProductSearchSyncService productSearchSyncService;
     private final ObjectProvider<PmsProductElasticsearchService> productElasticsearchServiceProvider;
+    private final Counter esFallbackCounter;
+
+    /** 构造注入，初始化 Micrometer 降级计数器 */
+    public PortalProductServiceImpl(
+            PmsSpuInfoMapper pmsSpuInfoMapper,
+            PmsSkuInfoMapper pmsSkuInfoMapper,
+            PmsSpuImagesMapper pmsSpuImagesMapper,
+            PmsBrandMapper pmsBrandMapper,
+            PmsSpuCommentMapper pmsSpuCommentMapper,
+            PmsSpuInfoService pmsSpuInfoService,
+            MallStockFeignSupport mallStockFeignSupport,
+            PmsProductSearchSyncService productSearchSyncService,
+            ObjectProvider<PmsProductElasticsearchService> productElasticsearchServiceProvider,
+            MeterRegistry meterRegistry) {
+        this.pmsSpuInfoMapper = pmsSpuInfoMapper;
+        this.pmsSkuInfoMapper = pmsSkuInfoMapper;
+        this.pmsSpuImagesMapper = pmsSpuImagesMapper;
+        this.pmsBrandMapper = pmsBrandMapper;
+        this.pmsSpuCommentMapper = pmsSpuCommentMapper;
+        this.pmsSpuInfoService = pmsSpuInfoService;
+        this.mallStockFeignSupport = mallStockFeignSupport;
+        this.productSearchSyncService = productSearchSyncService;
+        this.productElasticsearchServiceProvider = productElasticsearchServiceProvider;
+        this.esFallbackCounter = Counter.builder("es.fallback.count")
+                .description("Elasticsearch search fallback to database count")
+                .register(meterRegistry);
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -75,6 +103,7 @@ public class PortalProductServiceImpl implements PortalProductService {
                 }
             } catch (Exception ex) {
                 log.warn("Elasticsearch search failed, fallback to database", ex);
+                esFallbackCounter.increment();
             }
         }
         return searchFromDatabase(bo);

@@ -22,6 +22,7 @@ spring:
           default:
             connectTimeout: ${FEIGN_CONNECT_TIMEOUT:3000}
             readTimeout: ${FEIGN_READ_TIMEOUT:10000}
+            loggerLevel: ${FEIGN_LOGGER_LEVEL:BASIC}
       httpclient:
         hc5:
           enabled: true
@@ -34,6 +35,9 @@ spring:
             failureRateThreshold: ${FEIGN_CB_FAILURE_RATE:50}
             waitDurationInOpenState: ${FEIGN_CB_OPEN_DURATION:10s}
             permittedNumberOfCallsInHalfOpenState: 3
+            slowCallDurationThreshold: ${FEIGN_CB_SLOW_CALL_DURATION:10s}
+            slowCallRateThreshold: ${FEIGN_CB_SLOW_CALL_RATE:80}
+            automaticTransitionFromOpenToHalfOpenEnabled: true
 
 starpivot:
   api:
@@ -53,6 +57,12 @@ starpivot:
     trust-gateway-headers: ${TRUST_GATEWAY_HEADERS:false}
   scheduling:
     pool-size: ${SCHEDULING_POOL_SIZE:4}
+  # Feign 重试（默认关闭；开启后也仅对 GET/HEAD 重试）
+  feign:
+    retry-enabled: ${FEIGN_RETRY_ENABLED:false}
+    initial-interval: ${FEIGN_RETRY_INITIAL_INTERVAL:1000}
+    max-interval: ${FEIGN_RETRY_MAX_INTERVAL:5000}
+    max-attempts: ${FEIGN_RETRY_MAX_ATTEMPTS:3}
 
 management:
   endpoints:
@@ -63,7 +73,7 @@ management:
     health:
       show-details: when_authorized
     prometheus:
-      access: unrestricted
+      access: ${PROMETHEUS_ACCESS:restricted}
   metrics:
     tags:
       application: ${spring.application.name}

@@ -8,7 +8,7 @@
         <ActiveUser :trend-data="dashboardData.userTrend" />
       </ElCol>
       <ElCol :sm="24" :md="12" :lg="14">
-        <SalesOverview :trend-data="dashboardData.visitTrend" />
+        <SalesOverview :trend-data="dashboardData.salesTrend" />
       </ElCol>
     </ElRow>
 
@@ -57,7 +57,8 @@ import TodoList from './modules/todo-list.vue'
     userTrend: { xAxisData: [], data: [] },
     todoList: [],
     dynamicList: [],
-    newUserList: []
+    newUserList: [],
+    salesTrend: { xAxisData: [], data: [], growth: '+0%' }
   })
 
   const dashboardData = ref<ConsoleDashboardData>(createDefaultData())

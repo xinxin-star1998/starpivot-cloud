@@ -73,4 +73,11 @@ public class MallOrderInternalExtensionsController {
         orderInternalService.syncConfirmReceive(orderId);
         return Result.success();
     }
+
+    @GetMapping("/internal/mall/order/sales/monthly")
+    public Result<List<OrderSalesMonthAmountDto>> sumPayAmountByMonth(
+            @RequestParam("startYearMonth") String startYearMonth,
+            @RequestParam("endYearMonth") String endYearMonth) {
+        return Result.success(orderInternalService.sumPayAmountByMonth(startYearMonth, endYearMonth));
+    }
 }

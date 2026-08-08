@@ -26,10 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -151,6 +151,19 @@ public class OrderInternalService {
     @Transactional(rollbackFor = Exception.class)
     public void syncConfirmReceive(Long orderId) {
         omsOrderLifecycleService.confirmReceive(orderId, "tms-auto");
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderSalesMonthAmountDto> sumPayAmountByMonth(String startYearMonth, String endYearMonth) {
+        YearMonth start = YearMonth.parse(startYearMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
+        YearMonth end = YearMonth.parse(endYearMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
+        if (end.isBefore(start)) {
+            return Collections.emptyList();
+        }
+        LocalDateTime startTime = start.atDay(1).atStartOfDay();
+        LocalDateTime endTimeExclusive = end.plusMonths(1).atDay(1).atStartOfDay();
+        List<OrderSalesMonthAmountDto> rows = omsOrderMapper.sumPayAmountByMonth(startTime, endTimeExclusive);
+        return rows != null ? rows : Collections.emptyList();
     }
 
     private OrderRewardContextDto.OrderItemLine toItemLine(OmsOrderItem item) {
