@@ -3,6 +3,8 @@ package cn.org.starpivot.mall.pay.service.impl;
 import cn.org.starpivot.api.mall.order.dto.OrderPaidLineDto;
 import cn.org.starpivot.api.mall.order.dto.OrderPaidMessage;
 import cn.org.starpivot.api.mall.ware.dto.StockDeductionLineDto;
+import cn.org.starpivot.api.member.MemberInternalClient;
+import cn.org.starpivot.api.member.dto.MemberSubscribeNotifyRequest;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.mall.common.ProductFeignSupport;
 import cn.org.starpivot.mall.common.PromotionFeignSupport;
@@ -24,16 +26,19 @@ import cn.org.starpivot.mall.portal.service.PortalMemberRewardService;
 import cn.org.starpivot.mall.portal.service.PortalStockLockService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PortalOrderPayServiceImpl implements PortalOrderPayService {
@@ -50,6 +55,7 @@ public class PortalOrderPayServiceImpl implements PortalOrderPayService {
     private final MallSecurityProperties mallSecurityProperties;
     private final ObjectProvider<PortalOrderPaidOutboxPublisher> orderPaidOutboxPublisherProvider;
     private final ObjectProvider<PortalOrderPaidFollowupOutboxPublisher> orderPaidFollowupOutboxPublisherProvider;
+    private final MemberInternalClient memberInternalClient;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -118,7 +124,28 @@ public class PortalOrderPayServiceImpl implements PortalOrderPayService {
             portalMemberRewardService.grantOnPaid(order);
         }
         saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_WAIT_DELIVER, order.getMemberUsername(), historyNote);
+        notifyPaySuccessSubscribe(order);
         return true;
+    }
+
+    private void notifyPaySuccessSubscribe(OmsOrder order) {
+        if (order.getMemberId() == null) {
+            return;
+        }
+        try {
+            MemberSubscribeNotifyRequest req = new MemberSubscribeNotifyRequest();
+            req.setScene("pay_success");
+            req.setMemberId(order.getMemberId());
+            req.setOrderId(order.getId());
+            req.setOrderSn(order.getOrderSn());
+            if (order.getPayAmount() != null) {
+                req.setAmountText(order.getPayAmount().setScale(2, RoundingMode.HALF_UP).toPlainString());
+            }
+            req.setPage("pages/orders/detail/index?id=" + order.getId());
+            memberInternalClient.notifySubscribe(req);
+        } catch (Exception ex) {
+            log.warn("支付成功订阅消息通知失败 orderId={}: {}", order.getId(), ex.getMessage());
+        }
     }
 
     private boolean useOrderPaidOutbox() {

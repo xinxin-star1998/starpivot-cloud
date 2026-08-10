@@ -48,7 +48,7 @@ import {ref} from 'vue'
 import {applyOrderReturn, fetchOrderDetail} from '@/api/order'
 import type {PortalOrder, PortalOrderItem} from '@/api/types'
 import {canApplyReturn} from '@/utils/logistics'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 
 interface ReturnRow extends PortalOrderItem {
   maxQty: number
@@ -86,10 +86,7 @@ function changeQty(row: ReturnRow, delta: number) {
 }
 
 async function loadOrder() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   if (!orderId) return
   loading.value = true
   try {

@@ -78,6 +78,7 @@
         <button v-if="order.status === 0" class="btn-primary" @click="payOrder">去支付</button>
         <button v-if="order.status === 2" class="btn-outline" @click="trackLogistics">查看物流</button>
         <button v-if="order.status === 2" class="btn-primary" @click="receive">确认收货</button>
+        <button v-if="reviewableSpuId" class="btn-outline" @click="goReview">去评价</button>
         <button v-if="canReturn" class="btn-outline" @click="goReturn">申请退货</button>
       </view>
     </template>
@@ -88,17 +89,20 @@
 <script setup lang="ts">
 import {onLoad} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
+import {fetchReviewableSpuIds} from '@/api/comment'
 import {cancelOrder, confirmReceive, fetchOrderDetail, fetchOrderLogistics} from '@/api/order'
 import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
 import type {PortalOrder, PortalOrderItem, PortalShipmentTracking} from '@/api/types'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
 import {formatMoney} from '@/utils/money'
+import {requestOrderSubscribeMessage} from '@/utils/subscribe'
 
 const loading = ref(true)
 const order = ref<PortalOrder | null>(null)
 const logistics = ref<PortalShipmentTracking | null>(null)
+const reviewableSpuId = ref<number>()
 let orderId = 0
 
 const { imageSrc, prefetchImages } = useGoodsImages()
@@ -116,7 +120,7 @@ const canReturn = computed(() => canApplyReturn(order.value))
 
 const showActions = computed(() => {
   const status = order.value?.status
-  return status === 0 || status === 2 || status === 3
+  return status === 0 || status === 2 || status === 3 || !!reviewableSpuId.value
 })
 
 function statusText(status?: number) {
@@ -131,17 +135,35 @@ function itemPic(item: PortalOrderItem) {
   return item.skuPic || item.spuPic || ''
 }
 
-async function loadDetail() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
+async function refreshReviewable() {
+  reviewableSpuId.value = undefined
+  const status = order.value?.status
+  if (status !== 2 && status !== 3) return
+  const spuIds = [
+    ...new Set(
+      (order.value?.orderItemList || [])
+        .map((i) => i.spuId)
+        .filter((id): id is number => id != null)
+    )
+  ]
+  if (!spuIds.length) return
+  try {
+    const res = await fetchReviewableSpuIds(spuIds)
+    reviewableSpuId.value = res.reviewableSpuIds?.[0]
+  } catch {
+    reviewableSpuId.value = undefined
   }
+}
+
+async function loadDetail() {
+  if (!requireLogin()) return
   if (!orderId) return
   loading.value = true
   try {
     order.value = await fetchOrderDetail(orderId)
     const pics = (order.value?.orderItemList || []).map((item) => itemPic(item))
     await prefetchImages(pics)
+    await refreshReviewable()
     if (canShowLogistics(order.value)) {
       try {
         logistics.value = await fetchOrderLogistics(orderId)
@@ -176,6 +198,7 @@ async function payOrder() {
     const params = await fetchWxJsapiPay(orderId)
     if (params.mock) {
       await mockWxPay(orderId)
+      await requestOrderSubscribeMessage()
       uni.showToast({ title: 'Mock 支付成功' })
       await loadDetail()
       return
@@ -192,6 +215,7 @@ async function payOrder() {
         fail: (err) => reject(new Error(err.errMsg || '支付取消'))
       })
     })
+    await requestOrderSubscribeMessage()
     uni.showToast({ title: '支付成功' })
     await loadDetail()
   } catch (e) {
@@ -227,6 +251,11 @@ function copySn() {
 function goReturn() {
   if (!orderId) return
   uni.navigateTo({ url: `/pages/orders/return/index?orderId=${orderId}` })
+}
+
+function goReview() {
+  if (!reviewableSpuId.value) return
+  uni.navigateTo({ url: `/pages/product/detail?id=${reviewableSpuId.value}&review=1` })
 }
 
 onLoad((query) => {

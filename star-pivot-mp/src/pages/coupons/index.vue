@@ -51,7 +51,7 @@ import {onShow} from '@dcloudio/uni-app'
 import {ref} from 'vue'
 import {fetchClaimableCoupons, fetchMyCoupons, receiveCoupon} from '@/api/coupon'
 import type {PortalClaimableCoupon, PortalMyCoupon} from '@/api/types'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 import {formatMoney} from '@/utils/money'
 
 const tab = ref<'claim' | 'mine'>('claim')
@@ -73,10 +73,7 @@ function statusLabel(s?: number) {
 }
 
 async function loadClaimable() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   loading.value = true
   try {
     claimable.value = await fetchClaimableCoupons()
@@ -88,10 +85,7 @@ async function loadClaimable() {
 }
 
 async function loadMine() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   loading.value = true
   try {
     mine.value = await fetchMyCoupons()

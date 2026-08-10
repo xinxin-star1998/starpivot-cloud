@@ -6,15 +6,13 @@ import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.PortalMemberContext;
 import cn.org.starpivot.mall.portal.auth.PortalAuthConstants;
 import cn.org.starpivot.mall.portal.auth.PortalAuthType;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalBindMobileBo;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalSetPasswordBo;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalUnbindAuthBo;
-import cn.org.starpivot.mall.portal.auth.domain.bo.PortalWechatLoginBo;
+import cn.org.starpivot.mall.portal.auth.domain.bo.*;
 import cn.org.starpivot.mall.portal.auth.domain.vo.PortalMemberAuthVo;
 import cn.org.starpivot.mall.portal.auth.domain.vo.PortalWechatAuthorizeVo;
 import cn.org.starpivot.mall.portal.auth.service.PortalMemberAuthService;
 import cn.org.starpivot.mall.portal.auth.service.PortalSmsService;
 import cn.org.starpivot.mall.portal.auth.service.PortalWechatAuthService;
+import cn.org.starpivot.mall.portal.auth.wechat.WechatMiniProgramClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,6 +34,7 @@ public class PortalMemberAuthController {
     private final PortalMemberAuthService memberAuthService;
     private final PortalSmsService smsService;
     private final PortalWechatAuthService wechatAuthService;
+    private final WechatMiniProgramClient wechatMiniProgramClient;
 
     @Operation(summary = "已绑定登录方式列表")
     @GetMapping("/bindings")
@@ -52,6 +51,22 @@ public class PortalMemberAuthController {
         Long memberId = PortalMemberContext.requireMemberId();
         smsService.verifyAndConsume(PortalAuthConstants.SMS_SCENE_BIND, bo.getMobile(), bo.getCode());
         memberAuthService.bindMobile(memberId, bo.getMobile());
+        return Result.success("绑定成功");
+    }
+
+    @Operation(summary = "微信小程序授权绑定手机号")
+    @PostMapping("/bind/mobile/mini")
+    @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
+    public Result<Void> bindMobileByMini(@Valid @RequestBody PortalBindMiniMobileBo bo) {
+        Long memberId = PortalMemberContext.requireMemberId();
+        if (!wechatMiniProgramClient.isConfigured()) {
+            throw new BizException("微信小程序能力未启用");
+        }
+        String mobile = wechatMiniProgramClient.getPhoneNumber(bo.getCode());
+        if (!StringUtils.hasText(mobile) || !mobile.matches("^1[3-9]\\d{9}$")) {
+            throw new BizException("获取到的手机号无效");
+        }
+        memberAuthService.bindMobile(memberId, mobile);
         return Result.success("绑定成功");
     }
 

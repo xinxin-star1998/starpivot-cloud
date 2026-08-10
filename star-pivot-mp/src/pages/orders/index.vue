@@ -14,7 +14,7 @@
       </view>
     </scroll-view>
 
-    <view v-if="loading" class="hint">加载中...</view>
+    <view v-if="loading && !orders.length" class="hint">加载中...</view>
     <view v-else-if="!orders.length" class="empty">
       <text class="empty-icon">📋</text>
       <text class="empty-text">暂无相关订单</text>
@@ -44,30 +44,44 @@
             <button v-if="order.status === 0" size="mini" class="btn-primary" @click="payOrder(order.id)">去支付</button>
             <button v-if="canShowLogistics(order)" size="mini" class="btn-outline" @click="trackLogistics(order)">物流</button>
             <button v-if="order.status === 2" size="mini" class="btn-primary" @click="receive(order.id)">确认收货</button>
+            <button v-if="canReview(order)" size="mini" class="btn-outline" @click="goReview(order)">去评价</button>
             <button v-if="canApplyReturn(order)" size="mini" class="btn-outline" @click="goReturn(order.id)">退货</button>
           </view>
         </view>
       </view>
+      <view v-if="hasMore" class="load-more">
+        <button size="mini" class="load-btn" :loading="loadingMore" @click="loadMore">加载更多</button>
+      </view>
+      <view v-else-if="orders.length" class="load-end">没有更多了</view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import {onLoad, onShow} from '@dcloudio/uni-app'
-import {ref} from 'vue'
+import {onLoad, onReachBottom, onShow} from '@dcloudio/uni-app'
+import {computed, ref} from 'vue'
+import {fetchReviewableSpuIds} from '@/api/comment'
 import {cancelOrder, confirmReceive, fetchOrders} from '@/api/order'
 import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
 import type {PortalOrder, PortalOrderItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
 import {formatMoney} from '@/utils/money'
+import {requestOrderSubscribeMessage} from '@/utils/subscribe'
 
+const PAGE_SIZE = 10
 const orders = ref<PortalOrder[]>([])
 const loading = ref(false)
+const loadingMore = ref(false)
+const pageNum = ref(1)
+const total = ref(0)
 const filterStatus = ref<number | undefined>(undefined)
 const afterSaleMode = ref(false)
+const reviewableSpuIds = ref<Set<number>>(new Set())
 const { imageSrc, prefetchImages } = useGoodsImages()
+
+const hasMore = computed(() => orders.value.length < total.value)
 
 const tabs = [
   { label: '全部', value: undefined },
@@ -98,9 +112,22 @@ function itemPic(item: PortalOrderItem) {
   return imageSrc(item.skuPic || item.spuPic) || '/static/logo.png'
 }
 
+function canReview(order: PortalOrder) {
+  if (order.status !== 2 && order.status !== 3) return false
+  return (order.orderItemList || []).some(
+    (item) => item.spuId != null && reviewableSpuIds.value.has(item.spuId)
+  )
+}
+
+function findFirstReviewableSpuId(order: PortalOrder): number | undefined {
+  return (order.orderItemList || []).find(
+    (item) => item.spuId != null && reviewableSpuIds.value.has(item.spuId)
+  )?.spuId
+}
+
 function switchTab(status?: number) {
   filterStatus.value = status
-  loadOrders()
+  loadOrders(true)
 }
 
 function goDetail(id?: number) {
@@ -108,33 +135,82 @@ function goDetail(id?: number) {
   uni.navigateTo({ url: `/pages/orders/detail/index?id=${id}` })
 }
 
-async function loadOrders() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
+function goReview(order: PortalOrder) {
+  const spuId = findFirstReviewableSpuId(order)
+  if (!spuId) {
+    uni.navigateTo({ url: '/pages/account/reviews/index' })
     return
   }
-  loading.value = true
+  uni.navigateTo({ url: `/pages/product/detail?id=${spuId}&review=1` })
+}
+
+async function refreshReviewable(list: PortalOrder[]) {
+  const spuIds = [
+    ...new Set(
+      list
+        .filter((o) => o.status === 2 || o.status === 3)
+        .flatMap((o) => (o.orderItemList || []).map((i) => i.spuId).filter(Boolean) as number[])
+    )
+  ]
+  if (!spuIds.length) {
+    reviewableSpuIds.value = new Set()
+    return
+  }
   try {
-    const page = await fetchOrders(1, 20, filterStatus.value)
+    const res = await fetchReviewableSpuIds(spuIds)
+    reviewableSpuIds.value = new Set(res.reviewableSpuIds || [])
+  } catch {
+    reviewableSpuIds.value = new Set()
+  }
+}
+
+async function loadOrders(reset = true) {
+  if (!requireLogin()) return
+  if (reset) {
+    pageNum.value = 1
+    orders.value = []
+    total.value = 0
+  }
+  const isFirst = pageNum.value === 1
+  if (isFirst) loading.value = true
+  else loadingMore.value = true
+  try {
+    const page = await fetchOrders(
+      pageNum.value,
+      afterSaleMode.value ? 50 : PAGE_SIZE,
+      filterStatus.value
+    )
     let rows = page.rows || []
     if (afterSaleMode.value) {
       rows = rows.filter((o) => canApplyReturn(o))
+      orders.value = rows
+      total.value = rows.length
+    } else {
+      orders.value = reset ? rows : [...orders.value, ...rows]
+      total.value = page.total || 0
     }
-    orders.value = rows
+    await refreshReviewable(orders.value)
     const pics = orders.value.flatMap((o) => (o.orderItemList || []).map((i) => i.skuPic || i.spuPic))
     await prefetchImages(pics)
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
+}
+
+function loadMore() {
+  if (!hasMore.value || loadingMore.value || loading.value) return
+  pageNum.value += 1
+  loadOrders(false)
 }
 
 async function cancel(id?: number) {
   if (!id) return
   try {
     await cancelOrder(id)
-    await loadOrders()
+    await loadOrders(true)
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   }
@@ -146,8 +222,9 @@ async function payOrder(id?: number) {
     const params = await fetchWxJsapiPay(id)
     if (params.mock) {
       await mockWxPay(id)
+      await requestOrderSubscribeMessage()
       uni.showToast({ title: 'Mock 支付成功' })
-      await loadOrders()
+      await loadOrders(true)
       return
     }
     await new Promise<void>((resolve, reject) => {
@@ -162,8 +239,9 @@ async function payOrder(id?: number) {
         fail: (err) => reject(new Error(err.errMsg || '支付取消'))
       })
     })
+    await requestOrderSubscribeMessage()
     uni.showToast({ title: '支付成功' })
-    await loadOrders()
+    await loadOrders(true)
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   }
@@ -174,7 +252,7 @@ async function receive(id?: number) {
   try {
     await confirmReceive(id)
     uni.showToast({ title: '已确认收货' })
-    await loadOrders()
+    await loadOrders(true)
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   }
@@ -199,7 +277,9 @@ onLoad((query) => {
   }
 })
 
-onShow(loadOrders)
+onShow(() => loadOrders(true))
+
+onReachBottom(() => loadMore())
 </script>
 
 <style scoped lang="scss">
@@ -388,5 +468,23 @@ onShow(loadOrders)
   color: #fff;
   background: $sp-primary;
   border: none;
+}
+
+.load-more,
+.load-end {
+  padding: 24rpx;
+  text-align: center;
+}
+
+.load-btn {
+  background: #fff;
+  color: $sp-primary;
+  border: 1rpx solid $sp-primary;
+  border-radius: $sp-radius-pill;
+}
+
+.load-end {
+  font-size: 24rpx;
+  color: $sp-text-muted;
 }
 </style>

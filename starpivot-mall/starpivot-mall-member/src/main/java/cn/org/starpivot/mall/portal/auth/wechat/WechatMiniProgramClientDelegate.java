@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * 按配置选择真实或 Mock 小程序客户端。
  */
@@ -37,6 +39,16 @@ public class WechatMiniProgramClientDelegate implements WechatMiniProgramClient 
         return profile;
     }
 
+    @Override
+    public String getPhoneNumber(String phoneCode) {
+        return activeClient().getPhoneNumber(phoneCode);
+    }
+
+    @Override
+    public void sendSubscribeMessage(String openId, String templateId, String page, Map<String, String> data) {
+        activeClient().sendSubscribeMessage(openId, templateId, page, data);
+    }
+
     private WechatMiniProgramClient activeClient() {
         PortalAuthProperties.MiniProgram mini = authProperties.getMiniProgram();
         if (mini.isEnabled() && realClient.isConfigured()) {
@@ -45,7 +57,7 @@ public class WechatMiniProgramClientDelegate implements WechatMiniProgramClient 
         if (mini.isMockEnabled()) {
             return mockClient;
         }
-        throw new BizException("微信小程序登录未启用");
+        throw new BizException("微信小程序能力未启用");
     }
 
     private static boolean hasText(String value) {

@@ -53,6 +53,17 @@
     <view v-if="bindVisible" class="modal-mask" @click="bindVisible = false">
       <view class="modal" @click.stop>
         <text class="modal-title">绑定手机号</text>
+        <!-- #ifdef MP-WEIXIN -->
+        <button
+          class="wx-phone-btn"
+          open-type="getPhoneNumber"
+          :loading="miniPhoneSubmitting"
+          @getphonenumber="onGetPhoneNumber"
+        >
+          微信一键授权手机号
+        </button>
+        <view class="or-divider"><text>或使用短信验证</text></view>
+        <!-- #endif -->
         <input v-model="bindForm.mobile" class="input" maxlength="11" placeholder="手机号" />
         <view class="sms-row">
           <input v-model="bindForm.code" class="input flex" maxlength="6" placeholder="验证码" />
@@ -132,9 +143,17 @@
 <script setup lang="ts">
 import {onShow} from '@dcloudio/uni-app'
 import {computed, reactive, ref} from 'vue'
-import {bindMobile, fetchAuthBindings, fetchAuthConfig, fetchSmsSend, setPassword, unbindMobile} from '@/api/auth'
+import {
+  bindMobile,
+  bindMobileByMini,
+  fetchAuthBindings,
+  fetchAuthConfig,
+  fetchSmsSend,
+  setPassword,
+  unbindMobile
+} from '@/api/auth'
 import type {PortalAuthConfig, PortalMemberAuthBinding} from '@/api/types'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 
 const AUTH_TYPE_PASSWORD = 1
 const AUTH_TYPE_MOBILE = 2
@@ -150,6 +169,7 @@ const unbindVisible = ref(false)
 
 const bindSending = ref(false)
 const bindSubmitting = ref(false)
+const miniPhoneSubmitting = ref(false)
 const bindCountdown = ref(0)
 const passwordSending = ref(false)
 const passwordSubmitting = ref(false)
@@ -204,10 +224,7 @@ function startCountdown(target: typeof bindCountdown, timerRef: () => ReturnType
 }
 
 async function load() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   loading.value = true
   try {
     const [list, config] = await Promise.all([fetchAuthBindings(), fetchAuthConfig()])
@@ -274,6 +291,29 @@ async function submitBind() {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   } finally {
     bindSubmitting.value = false
+  }
+}
+
+async function onGetPhoneNumber(e: {
+  detail?: { errMsg?: string; code?: string; errno?: number }
+}) {
+  const detail = e.detail || {}
+  if (!detail.code) {
+    if (detail.errMsg && !/cancel|deny|fail/i.test(detail.errMsg)) {
+      uni.showToast({ title: detail.errMsg, icon: 'none' })
+    }
+    return
+  }
+  miniPhoneSubmitting.value = true
+  try {
+    await bindMobileByMini(detail.code)
+    bindVisible.value = false
+    uni.showToast({ title: '绑定成功' })
+    await load()
+  } catch (err) {
+    uni.showToast({ title: (err as Error).message, icon: 'none' })
+  } finally {
+    miniPhoneSubmitting.value = false
   }
 }
 
@@ -467,6 +507,26 @@ onShow(load)
   font-size: 32rpx;
   font-weight: 700;
   text-align: center;
+}
+.wx-phone-btn {
+  margin: 0 0 16rpx;
+  background: $sp-success;
+  color: #fff;
+  border-radius: $sp-radius-pill;
+  border: none;
+  font-size: 28rpx;
+
+  &::after {
+    border: none;
+  }
+}
+.or-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8rpx 0 20rpx;
+  font-size: 22rpx;
+  color: $sp-text-muted;
 }
 .input {
   width: 100%;

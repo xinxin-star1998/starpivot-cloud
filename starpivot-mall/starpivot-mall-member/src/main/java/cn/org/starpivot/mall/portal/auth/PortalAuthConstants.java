@@ -54,4 +54,12 @@ public final class PortalAuthConstants {
     public static String loginFailKey(String identifier) {
         return "mall:portal:login:fail:" + identifier;
     }
+
+    public static String miniAccessTokenKey(String appId) {
+        return "mall:portal:mini:access-token:" + appId;
+    }
+
+    public static final String SUBSCRIBE_SCENE_PAY_SUCCESS = "pay_success";
+    public static final String SUBSCRIBE_SCENE_DELIVER = "deliver";
+    public static final String SUBSCRIBE_SCENE_PENDING_REVIEW = "pending_review";
 }

@@ -1,5 +1,7 @@
 package cn.org.starpivot.mall.oms.service.impl;
 
+import cn.org.starpivot.api.member.MemberInternalClient;
+import cn.org.starpivot.api.member.dto.MemberSubscribeNotifyRequest;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
@@ -25,6 +27,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,12 +51,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> implements OmsOrderService {
 
     private final OmsOrderItemMapper omsOrderItemMapper;
     private final OmsOrderOperateHistoryMapper omsOrderOperateHistoryMapper;
     private final PortalStockLockService portalStockLockService;
     private final OmsOrderStockService omsOrderStockService;
+    private final MemberInternalClient memberInternalClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -105,6 +110,26 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
         order.setModifyTime(LocalDateTime.now());
         baseMapper.updateById(order);
         saveOperateHistory(order.getId(), PortalConstants.ORDER_STATUS_DELIVERED, "订单发货");
+        notifyDeliverSubscribe(order);
+    }
+
+    private void notifyDeliverSubscribe(OmsOrder order) {
+        if (order.getMemberId() == null) {
+            return;
+        }
+        try {
+            MemberSubscribeNotifyRequest req = new MemberSubscribeNotifyRequest();
+            req.setScene("deliver");
+            req.setMemberId(order.getMemberId());
+            req.setOrderId(order.getId());
+            req.setOrderSn(order.getOrderSn());
+            req.setDeliveryCompany(order.getDeliveryCompany());
+            req.setDeliverySn(order.getDeliverySn());
+            req.setPage("pages/orders/detail/index?id=" + order.getId());
+            memberInternalClient.notifySubscribe(req);
+        } catch (Exception ex) {
+            log.warn("发货订阅消息通知失败 orderId={}: {}", order.getId(), ex.getMessage());
+        }
     }
 
     @Override

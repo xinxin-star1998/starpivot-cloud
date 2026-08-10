@@ -92,5 +92,31 @@ public class PortalAuthProperties {
         private String mockOpenId = "mock_mini_open_001";
         private String mockNickname = "小程序测试用户";
         private String mockAvatar = "";
+        /** Mock 手机号授权返回的号码 */
+        private String mockMobile = "13800138000";
+        /** Mock 手机号授权码（可与任意 code 在 mock 模式下接受） */
+        private String mockPhoneCode = "mock_phone_code";
+        private Subscribe subscribe = new Subscribe();
+    }
+
+    @Data
+    public static class Subscribe {
+        /** 是否启用订阅消息发送 */
+        private boolean enabled = false;
+        private SubscribeTemplate paySuccess = new SubscribeTemplate();
+        private SubscribeTemplate deliver = new SubscribeTemplate();
+        private SubscribeTemplate pendingReview = new SubscribeTemplate();
+    }
+
+    @Data
+    public static class SubscribeTemplate {
+        private String templateId = "";
+        /** 点击跳转小程序页面，可用 {orderId} 占位 */
+        private String page = "";
+        /**
+         * 微信模板字段名列表，按场景预置值顺序填充。
+         * 例：character_string1,amount2,thing3
+         */
+        private java.util.List<String> dataKeys = new java.util.ArrayList<>();
     }
 }

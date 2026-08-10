@@ -27,7 +27,7 @@ import {ref} from 'vue'
 import {fetchCollectList, removeCollect} from '@/api/collect'
 import type {PortalCollectItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 import {formatMoney} from '@/utils/money'
 
 const loading = ref(false)
@@ -35,10 +35,7 @@ const items = ref<PortalCollectItem[]>([])
 const { imageSrc, prefetchImages } = useGoodsImages()
 
 async function loadList() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   loading.value = true
   try {
     const page = await fetchCollectList(1, 50)

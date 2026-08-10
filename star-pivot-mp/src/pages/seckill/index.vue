@@ -2,7 +2,7 @@
   <view class="page">
     <view class="header">
       <view class="header-main">
-        <text class="title">{{ page.title || '京东秒杀' }}</text>
+        <text class="title">{{ page.title || '限时秒杀' }}</text>
         <view v-if="sessionState === 'ongoing'" class="countdown">
           <text class="cd-label">距结束</text>
           <text class="cd-block">{{ countdown.h }}</text>
@@ -88,7 +88,8 @@ import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
 import {fetchSeckillPage, submitSeckillOrder} from '@/api/seckill'
 import type {PortalAddress, PortalHomeProduct, PortalSeckillPage} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
+import {requestOrderSubscribeMessage} from '@/utils/subscribe'
 import {formatMoney} from '@/utils/money'
 
 const loading = ref(false)
@@ -188,10 +189,7 @@ function onAddressChange(e: { detail: { value: string } }) {
 }
 
 async function openBuy(item: PortalHomeProduct) {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   if (!item.skuId || !activeSessionId.value) return
   buyTarget.value = item
   buyQuantity.value = 1
@@ -207,6 +205,7 @@ async function payOrder(orderId: number) {
   const params = await fetchWxJsapiPay(orderId)
   if (params.mock) {
     await mockWxPay(orderId)
+    await requestOrderSubscribeMessage()
     return
   }
   await new Promise<void>((resolve, reject) => {
@@ -221,6 +220,7 @@ async function payOrder(orderId: number) {
       fail: (err) => reject(new Error(err.errMsg || '支付取消'))
     })
   })
+  await requestOrderSubscribeMessage()
 }
 
 async function submitBuy() {

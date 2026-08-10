@@ -24,7 +24,12 @@
           </view>
         </view>
         <view v-else class="hint">暂无收货地址，请先添加</view>
-        <button class="link-btn" @click="goAddresses">+ 新增 / 管理地址</button>
+        <view class="addr-actions">
+          <button class="link-btn" :loading="importingAddress" @click="importAddressFromWechat">
+            从微信导入
+          </button>
+          <button class="link-btn" @click="goAddresses">+ 新增 / 管理地址</button>
+        </view>
       </view>
 
       <view class="panel">
@@ -100,17 +105,19 @@
 <script setup lang="ts">
 import {onLoad, onShow} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
-import {fetchAddressList} from '@/api/address'
+import {fetchAddressList, fetchAddressSave} from '@/api/address'
 import {fetchCart} from '@/api/cart'
 import {fetchCheckoutCoupons} from '@/api/coupon'
 import {fetchOrderPriceTrial, fetchOrderSubmit, fetchOrderSubmitToken} from '@/api/order'
 import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
 import type {PortalAddress, PortalCartItem, PortalCheckoutCoupon, PortalOrderPriceTrial} from '@/api/types'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 import {formatMoney, toCents} from '@/utils/money'
+import {requestOrderSubscribeMessage} from '@/utils/subscribe'
 
 const loading = ref(true)
 const submitting = ref(false)
+const importingAddress = ref(false)
 const addresses = ref<PortalAddress[]>([])
 const checkoutItems = ref<PortalCartItem[]>([])
 const checkoutCoupons = ref<PortalCheckoutCoupon[]>([])
@@ -251,10 +258,7 @@ function onCouponChange(e: { detail: { value: string } }) {
 }
 
 async function loadData() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   loading.value = true
   try {
     const [addrList, tokenResult] = await Promise.all([
@@ -292,6 +296,7 @@ async function payOrder(orderId: number) {
   const params = await fetchWxJsapiPay(orderId)
   if (params.mock) {
     await mockWxPay(orderId)
+    await requestOrderSubscribeMessage()
     uni.showToast({ title: 'Mock 支付成功' })
     setTimeout(() => uni.redirectTo({ url: '/pages/orders/index' }), 600)
     return
@@ -308,6 +313,7 @@ async function payOrder(orderId: number) {
       fail: (err) => reject(new Error(err.errMsg || '支付取消'))
     })
   })
+  await requestOrderSubscribeMessage()
   uni.showToast({ title: '支付成功' })
   setTimeout(() => uni.redirectTo({ url: '/pages/orders/index' }), 600)
 }
@@ -338,6 +344,41 @@ async function handleSubmit() {
 
 function goAddresses() {
   uni.navigateTo({ url: '/pages/account/addresses/index' })
+}
+
+async function importAddressFromWechat() {
+  if (!requireLogin()) return
+  importingAddress.value = true
+  try {
+    const chosen = await new Promise<UniApp.ChooseAddressSuccess>((resolve, reject) => {
+      uni.chooseAddress({
+        success: resolve,
+        fail: (err) => reject(new Error(err.errMsg || '取消选择地址'))
+      })
+    })
+    await fetchAddressSave({
+      name: chosen.userName || '',
+      phone: chosen.telNumber || '',
+      postCode: chosen.postalCode || undefined,
+      province: chosen.provinceName || '',
+      city: chosen.cityName || '',
+      region: chosen.countyName || '',
+      detailAddress: chosen.detailInfo || '',
+      defaultStatus: addresses.value.length ? 0 : 1
+    })
+    uni.showToast({ title: '导入成功' })
+    await loadData()
+  } catch (e) {
+    const msg = (e as Error).message || ''
+    if (/cancel|取消|deny|auth|fail cancel/i.test(msg)) return
+    if (/requiredPrivateInfos|privacy/i.test(msg)) {
+      uni.showToast({ title: '请重新编译小程序后再试微信导入', icon: 'none' })
+      return
+    }
+    uni.showToast({ title: msg || '导入失败', icon: 'none' })
+  } finally {
+    importingAddress.value = false
+  }
 }
 
 onLoad((query) => {
@@ -447,6 +488,11 @@ onShow(loadData)
   &::after {
     border: none;
   }
+}
+.addr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
 }
 .coupon-picker {
   padding: 20rpx;

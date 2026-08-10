@@ -48,6 +48,7 @@ import {fetchSubjectDetail} from '@/api/subject'
 import type {PortalProductListItem, PortalSubjectDetail} from '@/api/types'
 import {buildSharePayload, subjectSharePath} from '@/utils/share'
 import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 import {formatMoney} from '@/utils/money'
 
 const loading = ref(true)
@@ -105,10 +106,7 @@ function loadMore() {
 }
 
 async function toggleCollect() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   collectLoading.value = true
   try {
     if (collected.value) {

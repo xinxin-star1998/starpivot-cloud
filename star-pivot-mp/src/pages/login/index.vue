@@ -40,10 +40,12 @@
 </template>
 
 <script setup lang="ts">
+import {onLoad} from '@dcloudio/uni-app'
 import {ref} from 'vue'
 import {fetchMiniProgramLogin, fetchSmsLogin, fetchSmsSend} from '@/api/auth'
 import {MOCK_MINI_LOGIN_CODE, USE_MOCK_LOGIN} from '@/config'
 import {setLogin} from '@/stores/member'
+import {navigateAfterLogin} from '@/utils/auth'
 import {refreshCartBadge} from '@/utils/tabbar-cart'
 
 const loading = ref(false)
@@ -51,6 +53,7 @@ const smsLoading = ref(false)
 const mobile = ref('')
 const smsCode = ref('')
 const countdown = ref(0)
+const redirect = ref('')
 let timer: ReturnType<typeof setInterval> | null = null
 
 function resolveLoginCode(): Promise<string> {
@@ -69,6 +72,11 @@ function resolveLoginCode(): Promise<string> {
   })
 }
 
+function finishLogin() {
+  uni.showToast({ title: '登录成功' })
+  setTimeout(() => navigateAfterLogin(redirect.value || undefined), 400)
+}
+
 async function handleWechatLogin() {
   loading.value = true
   try {
@@ -76,8 +84,7 @@ async function handleWechatLogin() {
     const result = await fetchMiniProgramLogin(code)
     setLogin(result)
     refreshCartBadge()
-    uni.showToast({ title: '登录成功' })
-    setTimeout(() => uni.navigateBack(), 500)
+    finishLogin()
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   } finally {
@@ -109,14 +116,23 @@ async function handleSmsLogin() {
     const result = await fetchSmsLogin(mobile.value, smsCode.value)
     setLogin(result)
     refreshCartBadge()
-    uni.showToast({ title: '登录成功' })
-    setTimeout(() => uni.navigateBack(), 500)
+    finishLogin()
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
   } finally {
     smsLoading.value = false
   }
 }
+
+onLoad((query) => {
+  if (query?.redirect) {
+    try {
+      redirect.value = decodeURIComponent(String(query.redirect))
+    } catch {
+      redirect.value = String(query.redirect)
+    }
+  }
+})
 </script>
 
 <style scoped lang="scss">

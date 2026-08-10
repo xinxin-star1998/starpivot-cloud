@@ -2,7 +2,7 @@
   <view class="page">
     <view v-if="!isLogin()" class="empty-wrap">
       <view class="empty-state">
-        <view class="empty-icon">🔐</view>
+        <view class="empty-icon">登</view>
         <text class="empty-title">登录后查看购物车</text>
         <text class="empty-desc">登录即可同步您的购物车商品</text>
         <button class="empty-action" @click="goLogin">去登录</button>
@@ -11,7 +11,7 @@
 
     <view v-else-if="!items.length" class="empty-wrap">
       <view class="empty-state">
-        <view class="empty-icon">🛒</view>
+        <view class="empty-icon">车</view>
         <text class="empty-title">购物车还是空的</text>
         <text class="empty-desc">快去挑选心仪的商品吧</text>
         <button class="empty-action" @click="goHome">去逛逛</button>
@@ -43,7 +43,7 @@
           </view>
         </view>
         <view class="remove-wrap" @click="removeItem(item.skuId)">
-          <text class="remove-icon">🗑</text>
+          <text class="remove-icon">删</text>
         </view>
       </view>
     </view>
@@ -73,6 +73,7 @@ import {fetchCart, removeFromCart, updateCartItem} from '@/api/cart'
 import type {PortalCartItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {isLogin} from '@/stores/member'
+import {goLogin} from '@/utils/auth'
 import {syncCartBadgeFromItems} from '@/utils/tabbar-cart'
 import {formatMoney} from '@/utils/money'
 
@@ -163,10 +164,6 @@ function goCheckout() {
   uni.navigateTo({ url: '/pages/checkout/index?mode=cart' })
 }
 
-function goLogin() {
-  uni.navigateTo({ url: '/pages/login/index' })
-}
-
 function goHome() {
   uni.switchTab({ url: '/pages/index/index' })
 }
@@ -206,9 +203,11 @@ onShow(loadCart)
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 72rpx;
-  background: linear-gradient(135deg, #fff5f5 0%, $sp-primary-light 100%);
-  border-radius: 50%;
+  font-size: 48rpx;
+  font-weight: 600;
+  color: $sp-primary;
+  background: $sp-primary-light;
+  border-radius: 40rpx;
 }
 
 .empty-title {
@@ -390,8 +389,8 @@ onShow(loadCart)
 }
 
 .remove-icon {
-  font-size: 32rpx;
-  opacity: 0.5;
+  font-size: 24rpx;
+  color: $sp-text-muted;
 }
 
 .footer {

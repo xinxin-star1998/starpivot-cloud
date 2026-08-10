@@ -2,7 +2,10 @@
   <view class="page">
     <view v-if="!addresses.length && !showForm" class="empty">
       <text>暂无收货地址</text>
-      <button class="btn" @click="openForm()">新增地址</button>
+      <view class="empty-actions">
+        <button class="btn-outline" :loading="importing" @click="importFromWechat">从微信导入</button>
+        <button class="btn" @click="openForm()">新增地址</button>
+      </view>
     </view>
 
     <view v-if="addresses.length && !showForm" class="list">
@@ -21,7 +24,10 @@
           <button size="mini" @click="remove(item.id)">删除</button>
         </view>
       </view>
-      <button class="btn-add" @click="openForm()">+ 新增地址</button>
+      <view class="list-actions">
+        <button class="btn-outline" :loading="importing" @click="importFromWechat">从微信导入</button>
+        <button class="btn-add" @click="openForm()">+ 新增地址</button>
+      </view>
     </view>
 
     <view v-if="showForm" class="form card">
@@ -59,11 +65,12 @@ import {nextTick, reactive, ref} from 'vue'
 import {fetchAddressList, fetchAddressRemove, fetchAddressSave, fetchAddressUpdate} from '@/api/address'
 import type {PortalAddress, PortalAddressSavePayload} from '@/api/types'
 import RegionPicker, {type RegionNames} from '@/components/region-picker.vue'
-import {isLogin} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 
 const addresses = ref<PortalAddress[]>([])
 const showForm = ref(false)
 const saving = ref(false)
+const importing = ref(false)
 
 const emptyForm = (): PortalAddressSavePayload => ({
   name: '',
@@ -120,11 +127,52 @@ function onDefaultChange(e: { detail: { value: boolean } }) {
 }
 
 async function loadList() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   addresses.value = await fetchAddressList()
+}
+
+async function importFromWechat() {
+  if (!requireLogin()) return
+  importing.value = true
+  try {
+    const chosen = await new Promise<UniApp.ChooseAddressSuccess>((resolve, reject) => {
+      uni.chooseAddress({
+        success: resolve,
+        fail: (err) => reject(new Error(err.errMsg || '取消选择地址'))
+      })
+    })
+
+    const payload: PortalAddressSavePayload = {
+      name: chosen.userName || '',
+      phone: chosen.telNumber || '',
+      postCode: chosen.postalCode || undefined,
+      province: chosen.provinceName || '',
+      city: chosen.cityName || '',
+      region: chosen.countyName || '',
+      detailAddress: chosen.detailInfo || '',
+      defaultStatus: addresses.value.length ? 0 : 1
+    }
+    if (!payload.name || !payload.phone || !payload.province || !payload.detailAddress) {
+      uni.showToast({ title: '微信地址信息不完整', icon: 'none' })
+      return
+    }
+    await fetchAddressSave(payload)
+    uni.showToast({ title: '导入成功' })
+    showForm.value = false
+    await loadList()
+  } catch (e) {
+    const msg = (e as Error).message || ''
+    if (/cancel|取消|deny|auth|fail cancel/i.test(msg)) {
+      return
+    }
+    if (/requiredPrivateInfos|privacy/i.test(msg)) {
+      uni.showToast({ title: '请重新编译小程序后再试微信导入', icon: 'none' })
+      return
+    }
+    uni.showToast({ title: msg || '导入失败', icon: 'none' })
+  } finally {
+    importing.value = false
+  }
 }
 
 async function save() {
@@ -281,16 +329,32 @@ textarea {
   text-align: center;
   color: $sp-text-muted;
 }
-.btn,
-.btn-add {
+.empty-actions,
+.list-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
   margin-top: 24rpx;
-  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
-  color: #fff;
+}
+.btn,
+.btn-add,
+.btn-outline {
+  margin: 0;
   border-radius: $sp-radius-pill;
   border: none;
 
   &::after {
     border: none;
   }
+}
+.btn,
+.btn-add {
+  background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
+  color: #fff;
+}
+.btn-outline {
+  color: $sp-primary;
+  background: #fff;
+  border: 1rpx solid $sp-primary;
 }
 </style>

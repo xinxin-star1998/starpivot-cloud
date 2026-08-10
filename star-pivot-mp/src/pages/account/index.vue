@@ -2,30 +2,28 @@
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else-if="center">
-      <view class="jd-header">
-        <view class="header-inner">
-          <view class="profile" @click="goProfile">
-            <image class="avatar" :src="center.member.header || defaultAvatar" mode="aspectFill" />
-            <view class="meta">
-              <text class="name">{{ center.member.nickname || center.member.username || '京东用户' }}</text>
-              <text v-if="center.levelName" class="level">{{ center.levelName }}</text>
-              <text v-else class="sub">{{ center.member.mobile || '点击完善资料' }}</text>
-            </view>
-            <text class="profile-arrow">›</text>
+      <view class="top-bar" :style="topBarStyle">
+        <view class="profile" @click="goProfile">
+          <image class="avatar" :src="center.member.header || defaultAvatar" mode="aspectFill" />
+          <view class="meta">
+            <text class="name">{{ center.member.nickname || center.member.username || '星枢会员' }}</text>
+            <text v-if="center.levelName" class="level">{{ center.levelName }}</text>
+            <text v-else class="sub">{{ center.member.mobile || '点击完善资料' }}</text>
           </view>
-          <view class="assets">
-            <view class="asset-item">
-              <text class="asset-num">{{ center.member.integration ?? 0 }}</text>
-              <text class="asset-label">京豆</text>
-            </view>
-            <view class="asset-item">
-              <text class="asset-num">{{ center.couponCount ?? 0 }}</text>
-              <text class="asset-label">优惠券</text>
-            </view>
-            <view class="asset-item">
-              <text class="asset-num">{{ center.member.growth ?? 0 }}</text>
-              <text class="asset-label">成长值</text>
-            </view>
+          <text class="profile-arrow">›</text>
+        </view>
+        <view class="assets">
+          <view class="asset-item">
+            <text class="asset-num">{{ center.member.integration ?? 0 }}</text>
+            <text class="asset-label">积分</text>
+          </view>
+          <view class="asset-item" @click="goCoupons">
+            <text class="asset-num">{{ center.couponCount ?? 0 }}</text>
+            <text class="asset-label">优惠券</text>
+          </view>
+          <view class="asset-item">
+            <text class="asset-num">{{ center.member.growth ?? 0 }}</text>
+            <text class="asset-label">成长值</text>
           </view>
         </view>
       </view>
@@ -37,27 +35,27 @@
         </view>
         <view class="order-icons">
           <view class="order-icon" @click="goOrders(0)">
-            <text class="icon">💳</text>
+            <view class="icon-mark">付</view>
             <text class="label">待付款</text>
             <text v-if="badgeCount('0')" class="badge">{{ badgeCount('0') }}</text>
           </view>
           <view class="order-icon" @click="goOrders(1)">
-            <text class="icon">📦</text>
+            <view class="icon-mark">发</view>
             <text class="label">待发货</text>
             <text v-if="badgeCount('1')" class="badge">{{ badgeCount('1') }}</text>
           </view>
           <view class="order-icon" @click="goOrders(2)">
-            <text class="icon">🚚</text>
+            <view class="icon-mark">收</view>
             <text class="label">待收货</text>
             <text v-if="badgeCount('2')" class="badge">{{ badgeCount('2') }}</text>
           </view>
           <view class="order-icon" @click="goReviews">
-            <text class="icon">💬</text>
+            <view class="icon-mark">评</view>
             <text class="label">待评价</text>
             <text v-if="badgeCount('review')" class="badge">{{ badgeCount('review') }}</text>
           </view>
           <view class="order-icon" @click="goAfterSales">
-            <text class="icon">↩</text>
+            <view class="icon-mark">退</view>
             <text class="label">退换/售后</text>
           </view>
         </view>
@@ -66,19 +64,19 @@
       <view class="tool-card">
         <view class="tool-grid">
           <view class="tool-item" @click="goFavorites">
-            <text class="tool-icon">❤</text>
+            <view class="tool-mark">藏</view>
             <text class="tool-label">商品收藏</text>
           </view>
           <view class="tool-item" @click="goHistory">
-            <text class="tool-icon">👣</text>
+            <view class="tool-mark">览</view>
             <text class="tool-label">浏览记录</text>
           </view>
           <view class="tool-item" @click="goCoupons">
-            <text class="tool-icon">🎫</text>
+            <view class="tool-mark">券</view>
             <text class="tool-label">优惠券</text>
           </view>
           <view class="tool-item" @click="goAddresses">
-            <text class="tool-icon">📍</text>
+            <view class="tool-mark">址</view>
             <text class="tool-label">收货地址</text>
           </view>
         </view>
@@ -101,9 +99,9 @@
     </template>
 
     <view v-else class="guest-page">
-      <view class="jd-header guest-header">
+      <view class="top-bar guest-header" :style="topBarStyle">
         <view class="guest-profile" @click="goLogin">
-          <view class="guest-avatar">👤</view>
+          <view class="guest-avatar">会</view>
           <view class="guest-meta">
             <text class="guest-title">登录 / 注册</text>
             <text class="guest-desc">登录享更多优惠</text>
@@ -117,11 +115,11 @@
           <text class="card-more">请先登录 ›</text>
         </view>
         <view class="order-icons">
-          <view class="order-icon" @click="goLogin"><text class="icon">💳</text><text class="label">待付款</text></view>
-          <view class="order-icon" @click="goLogin"><text class="icon">📦</text><text class="label">待发货</text></view>
-          <view class="order-icon" @click="goLogin"><text class="icon">🚚</text><text class="label">待收货</text></view>
-          <view class="order-icon" @click="goLogin"><text class="icon">💬</text><text class="label">待评价</text></view>
-          <view class="order-icon" @click="goLogin"><text class="icon">↩</text><text class="label">退换/售后</text></view>
+          <view class="order-icon" @click="goLogin"><view class="icon-mark">付</view><text class="label">待付款</text></view>
+          <view class="order-icon" @click="goLogin"><view class="icon-mark">发</view><text class="label">待发货</text></view>
+          <view class="order-icon" @click="goLogin"><view class="icon-mark">收</view><text class="label">待收货</text></view>
+          <view class="order-icon" @click="goLogin"><view class="icon-mark">评</view><text class="label">待评价</text></view>
+          <view class="order-icon" @click="goLogin"><view class="icon-mark">退</view><text class="label">退换/售后</text></view>
         </view>
       </view>
     </view>
@@ -130,16 +128,23 @@
 
 <script setup lang="ts">
 import {onShow} from '@dcloudio/uni-app'
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {fetchMemberCenter} from '@/api/member'
 import {fetchOrderStatusCounts} from '@/api/order'
 import type {PortalMemberCenter} from '@/api/types'
 import {clearSession, isLogin} from '@/stores/member'
+import {goLogin} from '@/utils/auth'
+import {getCustomNavMetrics} from '@/utils/nav-bar'
 
 const loading = ref(false)
 const center = ref<PortalMemberCenter | null>(null)
 const statusCounts = ref<Record<string, number>>({})
 const defaultAvatar = 'https://img.yzcdn.cn/vant/cat.jpeg'
+const navMetrics = ref(getCustomNavMetrics())
+const topBarStyle = computed(() => ({
+  paddingTop: `${navMetrics.value.statusBarHeight + navMetrics.value.contentTopGap}px`,
+  paddingRight: `${Math.max(24, navMetrics.value.menuRightGap)}px`
+}))
 
 function badgeCount(key: string) {
   const n = statusCounts.value[key] || 0
@@ -173,10 +178,6 @@ async function refresh() {
   } finally {
     loading.value = false
   }
-}
-
-function goLogin() {
-  uni.navigateTo({ url: '/pages/login/index' })
 }
 
 function goOrders(status?: number) {
@@ -233,7 +234,10 @@ function handleLogout() {
   uni.showToast({ title: '已退出' })
 }
 
-onShow(refresh)
+onShow(() => {
+  navMetrics.value = getCustomNavMetrics()
+  refresh()
+})
 </script>
 
 <style scoped lang="scss">
@@ -243,13 +247,11 @@ onShow(refresh)
   background: $sp-bg-page;
 }
 
-.jd-header {
-  padding: calc(env(safe-area-inset-top) + 24rpx) 24rpx 48rpx;
+.top-bar {
+  padding-left: 24rpx;
+  padding-bottom: 40rpx;
   background: linear-gradient(180deg, $sp-primary 0%, $sp-primary-dark 100%);
-}
-
-.header-inner {
-  position: relative;
+  box-sizing: border-box;
 }
 
 .profile {
@@ -262,7 +264,7 @@ onShow(refresh)
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  border: 3rpx solid rgba(255, 255, 255, 0.5);
+  border: 3rpx solid rgba(255, 255, 255, 0.45);
   flex-shrink: 0;
 }
 
@@ -303,9 +305,9 @@ onShow(refresh)
 .assets {
   display: flex;
   justify-content: space-around;
-  margin-top: 32rpx;
+  margin-top: 36rpx;
   padding-top: 24rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+  border-top: 1rpx solid rgba(255, 255, 255, 0.18);
 }
 
 .asset-item {
@@ -335,7 +337,7 @@ onShow(refresh)
 }
 
 .order-card {
-  margin-top: -24rpx;
+  margin-top: -20rpx;
   position: relative;
   z-index: 1;
 }
@@ -375,7 +377,7 @@ onShow(refresh)
 .badge {
   position: absolute;
   top: -4rpx;
-  right: 8rpx;
+  right: 0;
   min-width: 28rpx;
   padding: 0 8rpx;
   font-size: 18rpx;
@@ -386,8 +388,17 @@ onShow(refresh)
   border-radius: 999rpx;
 }
 
-.order-icon .icon {
-  font-size: 44rpx;
+.icon-mark {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $sp-text;
+  background: #f5f5f5;
+  border-radius: 18rpx;
 }
 
 .order-icon .label {
@@ -398,7 +409,7 @@ onShow(refresh)
 .tool-grid {
   display: flex;
   flex-wrap: wrap;
-  padding: 16rpx 0;
+  padding: 8rpx 0 16rpx;
 }
 
 .tool-item {
@@ -410,8 +421,17 @@ onShow(refresh)
   padding: 20rpx 0;
 }
 
-.tool-icon {
-  font-size: 40rpx;
+.tool-mark {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $sp-primary;
+  background: $sp-primary-light;
+  border-radius: 18rpx;
 }
 
 .tool-label {
@@ -459,7 +479,7 @@ onShow(refresh)
 }
 
 .guest-header {
-  padding-bottom: 32rpx;
+  padding-bottom: 40rpx;
 }
 
 .guest-profile {
@@ -474,7 +494,9 @@ onShow(refresh)
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #fff;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
 }

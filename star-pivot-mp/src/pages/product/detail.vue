@@ -1,19 +1,11 @@
 ﻿<template>
-
   <view class="page">
-
     <view v-if="loading" class="hint">加载中...</view>
-
     <template v-else-if="detail">
-
       <swiper v-if="images.length" class="gallery" circular indicator-dots>
-
         <swiper-item v-for="(img, idx) in images" :key="idx">
-
-          <image class="gallery-img" :src="imageSrc(img)" mode="aspectFill" />
-
+          <image class="gallery-img" :src="imageSrc(img)" mode="aspectFill" lazy-load />
         </swiper-item>
-
       </swiper>
 
       <view class="info card">
@@ -22,15 +14,45 @@
           <text class="name">{{ detail.spuName }}</text>
         </view>
         <view class="price-row">
-          <text class="price"><text class="yen">¥</text>{{ formatMoney(selectedSku?.price ?? detail.price, '0.00') }}</text>
-          <text v-if="commentSummary?.total" class="rating">★ {{ commentSummary.avgStar }} · {{ commentSummary.total }}评</text>
+          <text class="price">
+            <text class="yen">¥</text>{{ formatMoney(selectedSku?.price ?? detail.price, '0.00') }}
+          </text>
+          <text v-if="commentSummary?.total" class="rating">
+            ★ {{ commentSummary.avgStar }} · {{ commentSummary.total }}评
+          </text>
         </view>
         <text class="desc">{{ detail.spuDescription }}</text>
       </view>
-      <view v-if="detail.skus?.length" class="sku-select-row card" @click="openSkuPopup">
+
+      <view v-if="detail.skus?.length" class="sku-select-row card" @click="openSkuPopup()">
         <text class="panel-label">已选</text>
-        <text class="sku-selected">{{ selectedSkuLabel }}</text>
+        <text class="sku-selected">{{ selectedSkuLabel }} · {{ quantity }}件</text>
         <text class="arrow">›</text>
+      </view>
+
+      <view v-if="canComment" id="review-form" class="comment-form card">
+        <text class="panel-title">发表评价</text>
+        <view class="stars">
+          <text
+            v-for="n in 5"
+            :key="n"
+            class="star"
+            :class="{ on: commentForm.star >= n }"
+            @click="commentForm.star = n"
+          >★</text>
+        </view>
+        <textarea v-model="commentForm.content" placeholder="分享你的使用体验..." />
+        <view class="img-row">
+          <view v-for="(url, i) in commentPreviewUrls" :key="url" class="img-item">
+            <image class="preview" :src="url" mode="aspectFill" @click="previewCommentImages(i)" />
+            <text class="img-remove" @click="removeCommentImage(i)">✕</text>
+          </view>
+          <view v-if="commentImageKeys.length < 3" class="img-add" @click="chooseCommentImages">
+            <text>+</text>
+            <text class="img-add-tip">晒图</text>
+          </view>
+        </view>
+        <button class="submit-btn" :loading="commentSubmitting" @click="submitProductComment">提交评价</button>
       </view>
 
       <view v-if="relatedProducts.length" class="related panel card">
@@ -54,57 +76,52 @@
       </view>
 
       <view class="comments panel card">
-
         <view class="panel-head">
-
           <text class="panel-title">商品评价</text>
-
           <text v-if="comments.length" class="more" @click="loadMoreComments">更多</text>
-
         </view>
-
         <view v-for="c in comments" :key="c.id" class="comment-item">
-
           <view class="comment-stars">
-
             <text v-for="n in 5" :key="n" class="star" :class="{ on: (c.star || 0) >= n }">★</text>
-
           </view>
-
           <text class="comment-user">{{ c.memberNickName || '用户' }}</text>
-
           <text class="comment-content">{{ c.content }}</text>
-
+          <view v-if="c.id && commentImageMap[c.id]?.length" class="img-row">
+            <image
+              v-for="(url, i) in commentImageMap[c.id]"
+              :key="url"
+              class="preview"
+              :src="url"
+              mode="aspectFill"
+              @click="previewUrls(commentImageMap[c.id], i)"
+            />
+          </view>
         </view>
-
         <view v-if="!comments.length" class="hint-inline">暂无评价</view>
-
       </view>
 
-
-
       <view class="footer">
-
         <view class="icon-btn" @click="toggleCollect">
-
           <text>{{ collected ? '♥' : '♡' }}</text>
-
           <text class="icon-label">收藏</text>
-
         </view>
-
         <button class="btn-cart" @click="handleAddCart">加入购物车</button>
-
         <button class="btn-buy" @click="handleBuyNow">立即购买</button>
-
       </view>
 
       <view v-if="skuPopupVisible" class="sku-mask" @click="closeSkuPopup">
         <view class="sku-popup" @click.stop>
           <view class="popup-head">
-            <image v-if="images.length" class="popup-thumb" :src="imageSrc(images[0])" mode="aspectFill" />
+            <image
+              v-if="images.length"
+              class="popup-thumb"
+              :src="imageSrc(images[0])"
+              mode="aspectFill"
+            />
             <view class="popup-meta">
-              <text class="popup-price">¥{{ formatMoney(selectedSku?.price ?? detail.price, '0.00') }}</text>
+              <text class="popup-price">
+                ¥{{ formatMoney(selectedSku?.price ?? detail.price, '0.00') }}
+              </text>
               <text class="popup-selected">已选：{{ selectedSkuLabel }}</text>
             </view>
             <text class="popup-close" @click="closeSkuPopup">✕</text>
@@ -123,88 +140,73 @@
               </view>
             </view>
           </scroll-view>
+          <view class="qty-row">
+            <text class="qty-label">数量</text>
+            <view class="qty-ctrl">
+              <text class="qty-btn" :class="{ disabled: quantity <= 1 }" @click="changeQty(-1)">−</text>
+              <text class="qty">{{ quantity }}</text>
+              <text class="qty-btn" :class="{ disabled: quantity >= maxQty }" @click="changeQty(1)">+</text>
+            </view>
+          </view>
           <view class="popup-footer">
             <button class="popup-confirm" @click="confirmSkuPopup">确定</button>
           </view>
         </view>
       </view>
-
     </template>
-
   </view>
-
 </template>
 
-
-
 <script setup lang="ts">
-
 import {onLoad, onShareAppMessage} from '@dcloudio/uni-app'
-
-import {computed, ref} from 'vue'
-
+import {computed, reactive, ref} from 'vue'
 import {addCollect, fetchCollectStatus, removeCollect} from '@/api/collect'
-
-import {fetchCommentList, fetchCommentSummary} from '@/api/comment'
-
+import {fetchCanComment, fetchCommentList, fetchCommentSummary, submitComment} from '@/api/comment'
 import {addToCart} from '@/api/cart'
-
+import {uploadImage} from '@/api/image'
 import {fetchProductDetail, fetchRelatedProducts, productCover} from '@/api/product'
-
 import type {PortalComment, PortalCommentSummary, PortalProductDetail, PortalProductListItem} from '@/api/types'
-
 import {isLogin} from '@/stores/member'
-import {buildSharePayload, productSharePath} from '@/utils/share'
+import {requireLogin} from '@/utils/auth'
 import {addBrowseRecord} from '@/utils/browse-history'
-import {refreshCartBadge} from '@/utils/tabbar-cart'
+import {resolveCommentResourceUrls} from '@/utils/comment-resources'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {formatMoney} from '@/utils/money'
-
+import {buildSharePayload, productSharePath} from '@/utils/share'
+import {refreshCartBadge} from '@/utils/tabbar-cart'
 
 const detail = ref<PortalProductDetail | null>(null)
-
 const selectedSku = ref<{
-
   skuId?: number
-
   price?: number
-
   skuName?: string
-
   saleAttrs?: string
-
+  stock?: number
 } | null>(null)
-
+const quantity = ref(1)
 const loading = ref(false)
-
 const collected = ref(false)
-
 const commentSummary = ref<PortalCommentSummary | null>(null)
-
 const comments = ref<PortalComment[]>([])
-
 const commentPage = ref(1)
-
+const commentImageMap = ref<Record<number, string[]>>({})
 const relatedProducts = ref<PortalProductListItem[]>([])
-
 const skuPopupVisible = ref(false)
-
 const pendingSkuAction = ref<'cart' | 'buy' | null>(null)
-
+const canComment = ref(false)
+const commentSubmitting = ref(false)
+const commentForm = reactive({ star: 5, content: '' })
+const commentImageKeys = ref<string[]>([])
+const commentPreviewUrls = ref<string[]>([])
+const openReviewOnLoad = ref(false)
 let productId = 0
 
 const { imageSrc, prefetchImages } = useGoodsImages()
 
-
-
 const images = computed(() => {
-
   if (!detail.value) return []
-
   if (detail.value.images?.length) return detail.value.images
-
   return detail.value.pic ? [detail.value.pic] : []
-
 })
 
 const selectedSkuLabel = computed(() => {
@@ -214,21 +216,85 @@ const selectedSkuLabel = computed(() => {
 
 const hasMultipleSkus = computed(() => (detail.value?.skus?.length || 0) > 1)
 
+const maxQty = computed(() => {
+  const stock = selectedSku.value?.stock
+  if (stock != null && stock > 0) return Math.min(stock, 99)
+  return 99
+})
 
+function changeQty(delta: number) {
+  quantity.value = Math.min(maxQty.value, Math.max(1, quantity.value + delta))
+}
+
+function previewUrls(urls: string[], index: number) {
+  uni.previewImage({ urls, current: urls[index] })
+}
+
+function previewCommentImages(index: number) {
+  previewUrls(commentPreviewUrls.value, index)
+}
+
+function removeCommentImage(index: number) {
+  commentImageKeys.value.splice(index, 1)
+  commentPreviewUrls.value.splice(index, 1)
+}
+
+function chooseCommentImages() {
+  if (!requireLogin()) return
+  const remain = 3 - commentImageKeys.value.length
+  if (remain <= 0) return
+  uni.chooseImage({
+    count: remain,
+    sizeType: ['compressed'],
+    sourceType: ['album', 'camera'],
+    success: async (res) => {
+      uni.showLoading({ title: '上传中' })
+      try {
+        for (const filePath of res.tempFilePaths) {
+          const result = await uploadImage(filePath)
+          commentImageKeys.value.push(result.objectName)
+          commentPreviewUrls.value.push(
+            result.displayUrl || result.permanentUrl || result.objectName
+          )
+        }
+      } catch (e) {
+        uni.showToast({ title: (e as Error).message, icon: 'none' })
+      } finally {
+        uni.hideLoading()
+      }
+    }
+  })
+}
+
+async function resolveCommentImages(list: PortalComment[]) {
+  for (const row of list) {
+    if (!row.id || !row.resources || commentImageMap.value[row.id]) continue
+    const urls = await resolveCommentResourceUrls(row.resources)
+    if (urls.length) commentImageMap.value[row.id] = urls
+  }
+}
+
+async function refreshCanComment() {
+  if (!isLogin() || !productId) {
+    canComment.value = false
+    return
+  }
+  try {
+    const res = await fetchCanComment(productId)
+    canComment.value = !!res.canComment
+  } catch {
+    canComment.value = false
+  }
+}
 
 async function loadDetail() {
-
   if (!productId) return
-
   loading.value = true
-
   try {
-
     const product = await fetchProductDetail(productId)
-
     detail.value = product
-
     selectedSku.value = product.skus?.length === 1 ? product.skus[0] : null
+    quantity.value = 1
 
     addBrowseRecord({
       spuId: productId,
@@ -248,6 +314,8 @@ async function loadDetail() {
       commentSummary.value = summary
       comments.value = commentPageData.rows || []
       commentPage.value = 1
+      commentImageMap.value = {}
+      await resolveCommentImages(comments.value)
       relatedProducts.value = related || []
       await prefetchImages(relatedProducts.value.map((item) => productCover(item)))
     } catch {
@@ -263,133 +331,124 @@ async function loadDetail() {
       } catch {
         collected.value = false
       }
+      await refreshCanComment()
     }
 
+    if (openReviewOnLoad.value && canComment.value) {
+      setTimeout(() => {
+        uni.pageScrollTo({ selector: '#review-form', duration: 300 })
+      }, 200)
+    }
   } catch (e) {
-
     uni.showToast({ title: (e as Error).message, icon: 'none' })
-
   } finally {
-
     loading.value = false
-
   }
-
 }
-
-
 
 async function loadMoreComments() {
-
   commentPage.value += 1
-
   try {
-
     const page = await fetchCommentList(productId, commentPage.value, 10)
-
-    comments.value = [...comments.value, ...(page.rows || [])]
-
+    const rows = page.rows || []
+    comments.value = [...comments.value, ...rows]
+    await resolveCommentImages(rows)
   } catch (e) {
-
     uni.showToast({ title: (e as Error).message, icon: 'none' })
-
   }
-
 }
 
-
+async function submitProductComment() {
+  if (!requireLogin()) return
+  const skuId = selectedSku.value?.skuId || detail.value?.skus?.[0]?.skuId
+  if (!skuId) {
+    if (hasMultipleSkus.value) {
+      openSkuPopup()
+      uni.showToast({ title: '请先选择规格', icon: 'none' })
+      return
+    }
+    uni.showToast({ title: '暂无可评价规格', icon: 'none' })
+    return
+  }
+  const content = commentForm.content.trim()
+  if (!content) {
+    uni.showToast({ title: '请填写评价内容', icon: 'none' })
+    return
+  }
+  commentSubmitting.value = true
+  try {
+    await submitComment({
+      spuId: productId,
+      skuId,
+      star: commentForm.star,
+      content,
+      resources: commentImageKeys.value.length ? commentImageKeys.value.join(',') : undefined
+    })
+    uni.showToast({ title: '评价成功' })
+    commentForm.content = ''
+    commentForm.star = 5
+    commentImageKeys.value = []
+    commentPreviewUrls.value = []
+    canComment.value = false
+    await loadDetail()
+  } catch (e) {
+    uni.showToast({ title: (e as Error).message, icon: 'none' })
+  } finally {
+    commentSubmitting.value = false
+  }
+}
 
 async function toggleCollect() {
-
-  if (!ensureLogin()) return
-
+  if (!requireLogin()) return
   try {
-
     if (collected.value) {
-
       await removeCollect(productId)
-
       collected.value = false
-
       uni.showToast({ title: '已取消收藏' })
-
     } else {
-
       await addCollect(productId)
-
       collected.value = true
-
       uni.showToast({ title: '收藏成功' })
-
     }
-
   } catch (e) {
-
     uni.showToast({ title: (e as Error).message, icon: 'none' })
-
   }
-
 }
 
-
-
 async function handleAddCart() {
-
-  if (!ensureLogin()) return
-
+  if (!requireLogin()) return
   if (hasMultipleSkus.value && !selectedSku.value?.skuId) {
     openSkuPopup('cart')
     return
   }
-
   const skuId = selectedSku.value?.skuId
-
   if (!skuId) {
-
     uni.showToast({ title: '请选择规格', icon: 'none' })
-
     return
-
   }
-
   try {
-
-    await addToCart(skuId, 1)
-
+    await addToCart(skuId, quantity.value)
     refreshCartBadge()
     uni.showToast({ title: '已加入购物车' })
-
   } catch (e) {
-
     uni.showToast({ title: (e as Error).message, icon: 'none' })
-
   }
-
 }
 
-
-
 function handleBuyNow() {
-
-  if (!ensureLogin()) return
-
+  if (!requireLogin()) return
   if (hasMultipleSkus.value && !selectedSku.value?.skuId) {
     openSkuPopup('buy')
     return
   }
-
   const skuId = selectedSku.value?.skuId
-
   if (!skuId) {
-
     uni.showToast({ title: '请选择规格', icon: 'none' })
-
     return
-
   }
-
-  uni.navigateTo({ url: `/pages/checkout/index?mode=buy&skuId=${skuId}&quantity=1` })
-
+  uni.navigateTo({
+    url: `/pages/checkout/index?mode=buy&skuId=${skuId}&quantity=${quantity.value}`
+  })
 }
 
 function openSkuPopup(action: 'cart' | 'buy' | null = null) {
@@ -421,44 +480,22 @@ function goProduct(id?: number) {
   uni.navigateTo({ url: `/pages/product/detail?id=${id}` })
 }
 
-function ensureLogin() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return false
-  }
-  return true
-}
-
 onLoad((query) => {
-
   productId = Number(query?.id || 0)
-
+  openReviewOnLoad.value = query?.review === '1'
   loadDetail()
-
 })
 
-
-
 onShareAppMessage(() =>
-
   buildSharePayload({
-
     title: detail.value?.spuName || 'StarPivot 好物推荐',
-
     path: productSharePath(productId),
-
     imageUrl: detail.value?.pic || images.value[0]
-
   })
-
 )
-
 </script>
 
-
-
 <style scoped lang="scss">
-
 .page {
   min-height: 100vh;
   padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
@@ -481,10 +518,6 @@ onShareAppMessage(() =>
   background: #fff;
   border-radius: $sp-radius-lg;
   box-shadow: $sp-shadow-sm;
-}
-
-.info {
-  margin-top: 16rpx;
 }
 
 .title-row {
@@ -557,6 +590,88 @@ onShareAppMessage(() =>
 .arrow {
   font-size: 32rpx;
   color: $sp-text-muted;
+}
+
+.comment-form {
+  .panel-title {
+    display: block;
+    margin-bottom: 16rpx;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 140rpx;
+    padding: 16rpx;
+    background: $sp-bg-page;
+    border-radius: $sp-radius-sm;
+    font-size: 26rpx;
+    box-sizing: border-box;
+  }
+
+  .submit-btn {
+    margin-top: 20rpx;
+    background: linear-gradient(135deg, $sp-accent 0%, $sp-primary 100%);
+    color: #fff;
+    border-radius: $sp-radius-pill;
+    border: none;
+
+    &::after {
+      border: none;
+    }
+  }
+}
+
+.img-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.img-item {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+}
+
+.preview {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $sp-radius-sm;
+  background: #f8f8f8;
+}
+
+.img-remove {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
+}
+
+.img-add {
+  width: 140rpx;
+  height: 140rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  font-size: 40rpx;
+  color: $sp-text-muted;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-sm;
+  border: 1rpx dashed $sp-border;
+}
+
+.img-add-tip {
+  font-size: 22rpx;
 }
 
 .related-scroll {
@@ -672,9 +787,52 @@ onShareAppMessage(() =>
 
 .sku-scroll {
   flex: 1;
-  min-height: 200rpx;
-  max-height: 50vh;
-  height: 50vh;
+  min-height: 160rpx;
+  max-height: 36vh;
+  height: 36vh;
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 20rpx 0;
+}
+
+.qty-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $sp-text;
+}
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  background: $sp-bg-page;
+  border-radius: $sp-radius-pill;
+  overflow: hidden;
+}
+
+.qty-btn {
+  width: 64rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: center;
+  font-size: 32rpx;
+  color: $sp-text;
+}
+
+.qty-btn.disabled {
+  color: #ccc;
+}
+
+.qty {
+  min-width: 64rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
 .popup-footer {
@@ -699,13 +857,9 @@ onShareAppMessage(() =>
   }
 }
 
-.sku-panel {
-  margin-top: 16rpx;
-}
-
 .panel-label {
   display: block;
-  margin-bottom: 16rpx;
+  margin-bottom: 0;
   font-size: 28rpx;
   font-weight: 600;
   color: $sp-text;
@@ -766,7 +920,8 @@ onShareAppMessage(() =>
 
 .star {
   color: #ddd;
-  font-size: 24rpx;
+  font-size: 28rpx;
+  margin-right: 4rpx;
 }
 
 .star.on {
@@ -851,4 +1006,3 @@ onShareAppMessage(() =>
   font-size: 26rpx;
 }
 </style>
-

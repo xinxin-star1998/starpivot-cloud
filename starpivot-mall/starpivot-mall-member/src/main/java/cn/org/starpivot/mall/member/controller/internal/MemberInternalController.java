@@ -6,6 +6,7 @@ import cn.org.starpivot.mall.member.internal.MemberIntegrationInternalService;
 import cn.org.starpivot.mall.member.internal.MemberInternalService;
 import cn.org.starpivot.mall.member.internal.MemberRewardInternalService;
 import cn.org.starpivot.mall.portal.auth.service.PortalMemberAuthService;
+import cn.org.starpivot.mall.portal.subscribe.service.PortalMiniSubscribeService;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class MemberInternalController {
     private final PortalMemberAuthService portalMemberAuthService;
     private final MemberIntegrationInternalService memberIntegrationInternalService;
     private final MemberRewardInternalService memberRewardInternalService;
+    private final PortalMiniSubscribeService portalMiniSubscribeService;
 
     @GetMapping("/{memberId}")
     public Result<MemberDto> getMember(@PathVariable("memberId") Long memberId) {
@@ -77,6 +79,12 @@ public class MemberInternalController {
     @PostMapping("/reward/clawback-on-return")
     public Result<Void> clawbackRewardOnReturn(@Valid @RequestBody MemberOrderReturnRewardRequest request) {
         memberRewardInternalService.clawbackOnReturn(request);
+        return Result.success();
+    }
+
+    @PostMapping("/subscribe/notify")
+    public Result<Void> notifySubscribe(@RequestBody MemberSubscribeNotifyRequest request) {
+        portalMiniSubscribeService.notifyQuietly(request);
         return Result.success();
     }
 }

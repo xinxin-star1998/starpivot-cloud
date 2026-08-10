@@ -46,6 +46,15 @@ export function bindMobile(mobile: string, code: string) {
   })
 }
 
+/** 微信小程序手机号快速验证组件 code 绑定 */
+export function bindMobileByMini(code: string) {
+  return request<void>({
+    url: '/portal/member/auth/bind/mobile/mini',
+    method: 'POST',
+    data: { code }
+  })
+}
+
 export function setPassword(password: string, code: string) {
   return request<void>({
     url: '/portal/member/auth/set-password',

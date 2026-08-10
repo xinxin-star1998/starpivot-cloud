@@ -99,7 +99,7 @@
         {
           "path": "index",
           "style": {
-            "navigationBarTitleText": "京东秒杀",
+            "navigationBarTitleText": "限时秒杀",
             "navigationBarBackgroundColor": "#e1251b",
             "navigationBarTextStyle": "white"
           }

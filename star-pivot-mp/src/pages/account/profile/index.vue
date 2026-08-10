@@ -37,7 +37,8 @@ import {onShow} from '@dcloudio/uni-app'
 import {reactive, ref} from 'vue'
 import {uploadImage} from '@/api/image'
 import {fetchMemberInfo, updateMemberProfile} from '@/api/member'
-import {isLogin, setMember} from '@/stores/member'
+import {setMember} from '@/stores/member'
+import {requireLogin} from '@/utils/auth'
 
 const saving = ref(false)
 const uploading = ref(false)
@@ -50,10 +51,7 @@ const form = reactive({
 })
 
 async function load() {
-  if (!isLogin()) {
-    uni.navigateTo({ url: '/pages/login/index' })
-    return
-  }
+  if (!requireLogin()) return
   const member = await fetchMemberInfo()
   form.nickname = member.nickname || ''
   form.header = member.header || ''

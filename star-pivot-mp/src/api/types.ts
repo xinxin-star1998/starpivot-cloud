@@ -36,13 +36,25 @@ export interface PortalBanner {
 export interface PortalCategory {
   catId?: number
   name?: string
+  parentCid?: number
+  catLevel?: number
+  showStatus?: number
+  sort?: number
+  icon?: string
   children?: PortalCategory[]
 }
 
 export interface PortalHomeData {
   banners: PortalBanner[]
   categories: PortalCategory[]
+  categoryBrands?: Record<number, PortalBrandBrief[]>
   homeBlocks?: PortalHomeBlock[]
+}
+
+export interface PortalBrandBrief {
+  brandId?: number
+  name?: string
+  logo?: string
 }
 
 export interface PortalHomeBlock {
@@ -83,6 +95,7 @@ export interface PortalProductDetail {
   spuDescription?: string
   price?: number
   pic?: string
+  coverImg?: string
   images?: string[]
   skus?: Array<{
     skuId?: number
@@ -147,6 +160,7 @@ export interface PortalRegion {
 
 export interface PortalOrderItem {
   skuId?: number
+  spuId?: number
   spuName?: string
   skuName?: string
   skuPic?: string
@@ -308,9 +322,13 @@ export interface PortalCommentSummary {
 
 export interface PortalComment {
   id?: number
+  spuId?: number
+  spuName?: string
+  skuId?: number
   memberNickName?: string
   star?: number
   content?: string
+  resources?: string
   createTime?: string
 }
 

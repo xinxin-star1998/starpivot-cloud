@@ -51,6 +51,11 @@ public class MemberInternalClientFallbackFactory implements FallbackFactory<Memb
             public Result<Void> clawbackRewardOnReturn(MemberOrderReturnRewardRequest request) {
                 return FeignFallbackSupport.unavailable(cause, ACTION);
             }
+
+            @Override
+            public Result<Void> notifySubscribe(MemberSubscribeNotifyRequest request) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
         };
     }
 }

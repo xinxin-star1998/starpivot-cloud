@@ -44,4 +44,7 @@ public interface MemberInternalClient {
 
     @PostMapping("/internal/member/reward/clawback-on-return")
     Result<Void> clawbackRewardOnReturn(@RequestBody MemberOrderReturnRewardRequest request);
+
+    @PostMapping("/internal/member/subscribe/notify")
+    Result<Void> notifySubscribe(@RequestBody MemberSubscribeNotifyRequest request);
 }
