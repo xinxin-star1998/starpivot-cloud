@@ -56,8 +56,8 @@ class OmsOrderLifecycleServiceTest {
         void shouldConfirmDeliveredOrder() {
             OmsOrder order = buildOrder(1L, PortalConstants.ORDER_STATUS_DELIVERED);
             when(omsOrderMapper.selectById(1L)).thenReturn(order);
-            when(omsOrderMapper.updateById(any())).thenReturn(1);
-            when(omsOrderOperateHistoryMapper.insert(any())).thenReturn(1);
+            when(omsOrderMapper.updateById(any(OmsOrder.class))).thenReturn(1);
+            when(omsOrderOperateHistoryMapper.insert(any(OmsOrderOperateHistory.class))).thenReturn(1);
 
             lifecycleService.confirmReceive(1L, "member_1");
 
@@ -130,8 +130,8 @@ class OmsOrderLifecycleServiceTest {
             OmsOrder expiredOrder = buildOrder(10L, PortalConstants.ORDER_STATUS_DELIVERED);
             expiredOrder.setDeliveryTime(LocalDateTime.now().minusDays(10));
             when(omsOrderMapper.selectList(any())).thenReturn(List.of(expiredOrder));
-            when(omsOrderMapper.updateById(any())).thenReturn(1);
-            when(omsOrderOperateHistoryMapper.insert(any())).thenReturn(1);
+            when(omsOrderMapper.updateById(any(OmsOrder.class))).thenReturn(1);
+            when(omsOrderOperateHistoryMapper.insert(any(OmsOrderOperateHistory.class))).thenReturn(1);
 
             int count = lifecycleService.autoConfirmDeliveredOrders();
             assertEquals(1, count);
