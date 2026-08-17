@@ -14,10 +14,11 @@ import tseslint from 'typescript-eslint'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// 读取 .auto-import.json 文件的内容，并将其解析为 JSON 对象
-const autoImportConfig = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, '.auto-import.json'), 'utf-8')
-)
+// .auto-import.json 由 unplugin-auto-import 在 vite 启动时生成，CI 上可能尚不存在
+const autoImportPath = path.resolve(__dirname, '.auto-import.json')
+const autoImportConfig = fs.existsSync(autoImportPath)
+  ? JSON.parse(fs.readFileSync(autoImportPath, 'utf-8'))
+  : {globals: {}}
 
 export default [
   // 指定文件匹配规则
@@ -51,6 +52,8 @@ export default [
       }
     },
     rules: {
+      // TypeScript / vue-tsc 已负责未定义检查；避免 CI 在缺少 .auto-import.json 时误报 auto-import API
+      'no-undef': 'off',
       quotes: ['error', 'single'], // 使用单引号
       semi: ['error', 'never'], // 语句末尾不加分号
       'no-var': 'error', // 要求使用 let 或 const 而不是 var

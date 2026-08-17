@@ -120,6 +120,16 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 只插桩业务代码。jsqlparser 的 JavaCC 生成类（如 CCJSqlParserTokenManager.jjMoveNfa_0）
+                         已接近 JVM 64KB 方法上限，JaCoCo 插桩会触发 MethodTooLargeException / IllegalClassFormatException -->
+                    <includes>
+                        <include>cn/org/starpivot/**</include>
+                    </includes>
+                    <excludes>
+                        <exclude>net/sf/jsqlparser/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
