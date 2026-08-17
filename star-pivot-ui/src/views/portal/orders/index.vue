@@ -10,10 +10,7 @@
         type="button"
         class="status-tab"
         :class="{ active: activeStatus === tab.key }"
-        @click="
-          activeStatus = tab.key
-          handleTabChange()
-        "
+        @click="activeStatus = tab.key, handleTabChange()"
       >
         {{ tab.label }}
         <span v-if="tabBadge(tab.key)" class="status-tab__badge">{{
