@@ -8,7 +8,7 @@
         type="button"
         class="tab-switch__btn"
         :class="{ active: activeTab === 'claim' }"
-        @click="activeTab = 'claim'; handleTabChange()"
+        @click="switchTab('claim')"
       >
         <ArtSvgIcon icon="ri:gift-line" />
         领券中心
@@ -17,7 +17,7 @@
         type="button"
         class="tab-switch__btn"
         :class="{ active: activeTab === 'mine' }"
-        @click="activeTab = 'mine'; handleTabChange()"
+        @click="switchTab('mine')"
       >
         <ArtSvgIcon icon="ri:coupon-3-line" />
         我的优惠券
@@ -70,7 +70,7 @@
         </div>
       </div>
       <ElEmpty v-if="!myList.length" description="暂无优惠券">
-        <ElButton type="primary" @click="activeTab = 'claim', handleTabChange()">去领券</ElButton>
+        <ElButton type="primary" @click="switchTab('claim')">去领券</ElButton>
       </ElEmpty>
     </div>
   </div>
@@ -119,6 +119,11 @@
 
   async function loadMine() {
     myList.value = await fetchPortalCouponMine()
+  }
+
+  async function switchTab(tab: 'claim' | 'mine') {
+    activeTab.value = tab
+    await handleTabChange()
   }
 
   async function handleTabChange() {

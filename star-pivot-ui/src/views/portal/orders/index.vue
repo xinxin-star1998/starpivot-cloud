@@ -10,7 +10,7 @@
         type="button"
         class="status-tab"
         :class="{ active: activeStatus === tab.key }"
-        @click="activeStatus = tab.key, handleTabChange()"
+        @click="switchStatusTab(tab.key)"
       >
         {{ tab.label }}
         <span v-if="tabBadge(tab.key)" class="status-tab__badge">{{
@@ -408,6 +408,11 @@
     if (typeof status === 'string' && statusTabs.some((tab) => tab.key === status)) {
       activeStatus.value = status
     }
+  }
+
+  function switchStatusTab(key: string) {
+    activeStatus.value = key
+    handleTabChange()
   }
 
   function handleTabChange() {
