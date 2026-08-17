@@ -28,7 +28,9 @@
         <ElDescriptionsItem label="登录次数">{{ detail.loginCount ?? 0 }}</ElDescriptionsItem>
         <ElDescriptionsItem label="关注数">{{ detail.attendCount ?? 0 }}</ElDescriptionsItem>
         <ElDescriptionsItem label="粉丝数">{{ detail.fansCount ?? 0 }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="邀请好友">{{ detail.inviteFriendCount ?? 0 }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="邀请好友">{{
+          detail.inviteFriendCount ?? 0
+        }}</ElDescriptionsItem>
         <ElDescriptionsItem label="收藏商品">
           {{ detail.collectProductCount ?? 0 }}
         </ElDescriptionsItem>
@@ -48,16 +50,16 @@
 </template>
 
 <script setup lang="ts">
-import {
-  fetchMemberStatisticsByMemberId,
-  fetchMemberStatisticsRefresh,
-  type MemberStatisticsVo
-} from '@/api/mall/member-statistics'
-import {useAuth} from '@/hooks/core/useAuth'
-import {formatMoney} from '@/utils/mall/money'
-import {ElMessage} from 'element-plus'
+  import {
+    fetchMemberStatisticsByMemberId,
+    fetchMemberStatisticsRefresh,
+    type MemberStatisticsVo
+  } from '@/api/mall/member-statistics'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { formatMoney } from '@/utils/mall/money'
+  import { ElMessage } from 'element-plus'
 
-interface Props {
+  interface Props {
     visible: boolean
     memberId?: number
   }

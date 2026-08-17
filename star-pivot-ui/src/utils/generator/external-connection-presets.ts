@@ -1,4 +1,4 @@
-import type {ExternalDbConnection} from '@/api/generator/gen-external'
+import type { ExternalDbConnection } from '@/api/generator/gen-external'
 
 const STORAGE_KEY = 'gen_external_connection_presets'
 const LAST_CONN_KEY = 'gen_external_last_connection'
@@ -15,7 +15,9 @@ type LegacyConnectionPreset = ConnectionPreset & {
 }
 
 function stripLegacyPasswordFields(preset: LegacyConnectionPreset): ConnectionPreset {
-  const { savePassword: _s, password: _p, ...rest } = preset
+  const { savePassword: _savePassword, password: _password, ...rest } = preset
+  void _savePassword
+  void _password
   return rest
 }
 
@@ -27,9 +29,7 @@ export function loadConnectionPresets(): ConnectionPreset[] {
     if (!Array.isArray(parsed)) return []
 
     const cleaned = parsed.map(stripLegacyPasswordFields)
-    const hadLegacyPassword = parsed.some(
-      (p) => Boolean(p.savePassword) || Boolean(p.password)
-    )
+    const hadLegacyPassword = parsed.some((p) => Boolean(p.savePassword) || Boolean(p.password))
     if (hadLegacyPassword) {
       persistConnectionPresets(cleaned)
     }
@@ -66,6 +66,7 @@ export function saveLastConnection(conn: ExternalDbConnection) {
 export function toPresetConnection(
   conn: ExternalDbConnection
 ): Omit<ExternalDbConnection, 'password'> {
-  const { password: _p, ...rest } = conn
+  const { password: _password, ...rest } = conn
+  void _password
   return rest
 }

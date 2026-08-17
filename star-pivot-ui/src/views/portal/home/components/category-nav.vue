@@ -1,9 +1,6 @@
 <!-- 首页左侧分类导航 + Mega Menu -->
 <template>
-  <div
-    class="category-nav"
-    @mouseleave="handleNavLeave"
-  >
+  <div class="category-nav" @mouseleave="handleNavLeave">
     <ul class="category-nav__list">
       <li
         v-for="cat in categories"
@@ -54,7 +51,7 @@
             </div>
           </div>
           <ElEmpty
-            v-if="!(activeCategory.children?.length)"
+            v-if="!activeCategory.children?.length"
             description="暂无子分类"
             :image-size="60"
           />
@@ -86,9 +83,9 @@
 </template>
 
 <script setup lang="ts">
-import type {PortalBrandBrief, PortalCategory} from '@/api/portal/types'
+  import type { PortalBrandBrief, PortalCategory } from '@/api/portal/types'
 
-defineOptions({ name: 'PortalHomeCategoryNav' })
+  defineOptions({ name: 'PortalHomeCategoryNav' })
 
   const props = defineProps<{
     categories: PortalCategory[]
@@ -104,9 +101,7 @@ defineOptions({ name: 'PortalHomeCategoryNav' })
   const activeCatId = ref<number | undefined>()
   const megaHovered = ref(false)
 
-  const activeCategory = computed(() =>
-    props.categories.find((c) => c.catId === activeCatId.value)
-  )
+  const activeCategory = computed(() => props.categories.find((c) => c.catId === activeCatId.value))
 
   const activeBrands = computed(() => {
     if (activeCatId.value == null) return []
@@ -159,7 +154,6 @@ defineOptions({ name: 'PortalHomeCategoryNav' })
 </script>
 
 <style scoped lang="scss">
-
   .category-nav {
     width: 200px;
     flex-shrink: 0;

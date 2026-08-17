@@ -1,33 +1,23 @@
 <template>
   <span class="external-action-btn-wrap">
-    <ElTooltip
-      v-if="tipContent"
-      :content="tipContent"
-      placement="top"
-      :show-after="200"
-    >
+    <ElTooltip v-if="tipContent" :content="tipContent" placement="top" :show-after="200">
       <span class="external-action-btn-trigger">
         <ElButton v-bind="btnProps" class="external-action-btn" @click="emit('click', $event)">
           <slot />
         </ElButton>
       </span>
     </ElTooltip>
-    <ElButton
-      v-else
-      v-bind="btnProps"
-      class="external-action-btn"
-      @click="emit('click', $event)"
-    >
+    <ElButton v-else v-bind="btnProps" class="external-action-btn" @click="emit('click', $event)">
       <slot />
     </ElButton>
   </span>
 </template>
 
 <script setup lang="ts">
-import type {ButtonProps} from 'element-plus'
-import {ElButton, ElTooltip} from 'element-plus'
+  import type { ButtonProps } from 'element-plus'
+  import { ElButton, ElTooltip } from 'element-plus'
 
-defineOptions({ inheritAttrs: false })
+  defineOptions({ inheritAttrs: false })
 
   const props = defineProps<{
     /** 简要说明（并入 Tooltip） */

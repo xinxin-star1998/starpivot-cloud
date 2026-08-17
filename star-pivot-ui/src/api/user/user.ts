@@ -1,5 +1,10 @@
 import request from '@/utils/http'
-import {type ExcelImportResultVo, fetchExcelExport, fetchExcelImport, fetchExcelTemplate} from '@/api/common/excel'
+import {
+  type ExcelImportResultVo,
+  fetchExcelExport,
+  fetchExcelImport,
+  fetchExcelTemplate
+} from '@/api/common/excel'
 
 /**
  * 获取用户列表（分页）

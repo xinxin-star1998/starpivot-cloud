@@ -57,9 +57,7 @@
             class="mall-file-picker__search"
             @keyup.enter="handleSearch"
           />
-          <ElButton type="primary" :loading="uploading" @click="triggerUpload">
-            上传素材
-          </ElButton>
+          <ElButton type="primary" :loading="uploading" @click="triggerUpload"> 上传素材 </ElButton>
           <ElButton @click="handleSearch">查询</ElButton>
           <input
             ref="uploadInputRef"
@@ -90,9 +88,14 @@
                 </div>
               </template>
             </ElImage>
-            <p class="mall-file-picker__name" :title="file.fileName">{{ shortName(file.fileName) }}</p>
+            <p class="mall-file-picker__name" :title="file.fileName">{{
+              shortName(file.fileName)
+            }}</p>
           </div>
-          <ElEmpty v-if="!loading && files.length === 0" description="暂无图片，可点击「上传素材」添加" />
+          <ElEmpty
+            v-if="!loading && files.length === 0"
+            description="暂无图片，可点击「上传素材」添加"
+          />
         </div>
 
         <div v-if="total > pageSize" class="mall-file-picker__pager">
@@ -123,16 +126,16 @@
 </template>
 
 <script setup lang="ts">
-import {fetchFileList} from '@/api/file/file'
-import {fetchFolderTree} from '@/api/file/folder'
-import type {SysFile, SysFileFolder} from '@/api/file/types'
-import {uploadMallImage} from '@/api/mall/mall-image'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {ElMessage} from 'element-plus'
-import {defaultResponseAdapter, extractTableData} from '@/utils/table/tableUtils'
-import {isStorageObjectName, normalizeToObjectName} from '@/utils/mall/goods-image-url'
+  import { fetchFileList } from '@/api/file/file'
+  import { fetchFolderTree } from '@/api/file/folder'
+  import type { SysFile, SysFileFolder } from '@/api/file/types'
+  import { uploadMallImage } from '@/api/mall/mall-image'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { ElMessage } from 'element-plus'
+  import { defaultResponseAdapter, extractTableData } from '@/utils/table/tableUtils'
+  import { isStorageObjectName, normalizeToObjectName } from '@/utils/mall/goods-image-url'
 
-defineOptions({ name: 'MallFilePickerDialog' })
+  defineOptions({ name: 'MallFilePickerDialog' })
 
   const props = withDefaults(
     defineProps<{
@@ -171,8 +174,7 @@ defineOptions({ name: 'MallFilePickerDialog' })
 
   const searchForm = ref({ fileName: '' })
 
-  const isSelected = (file: SysFile) =>
-    selected.value.some((item) => sameFile(item, file))
+  const isSelected = (file: SysFile) => selected.value.some((item) => sameFile(item, file))
 
   const sameFile = (a: SysFile, b: SysFile) => {
     if (a.fileId != null && b.fileId != null) return a.fileId === b.fileId
@@ -249,7 +251,11 @@ defineOptions({ name: 'MallFilePickerDialog' })
       files.value = []
       total.value = 0
       const message = error instanceof Error ? error.message : '加载素材失败'
-      ElMessage.error(message.includes('403') ? '无文件中心查询权限，请联系管理员分配 file:resource:query' : message)
+      ElMessage.error(
+        message.includes('403')
+          ? '无文件中心查询权限，请联系管理员分配 file:resource:query'
+          : message
+      )
     } finally {
       loading.value = false
     }

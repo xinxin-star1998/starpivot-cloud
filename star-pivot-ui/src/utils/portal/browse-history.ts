@@ -1,4 +1,4 @@
-import {notifyPortalBrowseChanged} from './browse-event'
+import { notifyPortalBrowseChanged } from './browse-event'
 
 export interface PortalBrowseRecord {
   spuId: number

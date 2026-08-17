@@ -1,14 +1,20 @@
-import type {NavigationGuardNext, RouteLocationNormalized, Router} from 'vue-router'
-import {useMenuStore} from '@/store/modules/menu'
-import {useWorktabStore} from '@/store/modules/worktab'
-import {loadingService} from '@/utils/ui'
-import {useCommon} from '@/hooks/core/useCommon'
-import {fetchGetUserInfo} from '@/api/auth'
-import {ApiStatus} from '@/utils/http/status'
-import {isHttpError} from '@/utils/http/error'
-import {safeLog, safeWarn} from '@/utils'
-import {DynamicRouteAppender, IframeRouteManager, MenuProcessor, RoutePermissionValidator, RouteRegistry} from '../core'
-import {useUserStore} from '@/store/modules/user'
+import type { NavigationGuardNext, RouteLocationNormalized, Router } from 'vue-router'
+import { useMenuStore } from '@/store/modules/menu'
+import { useWorktabStore } from '@/store/modules/worktab'
+import { loadingService } from '@/utils/ui'
+import { useCommon } from '@/hooks/core/useCommon'
+import { fetchGetUserInfo } from '@/api/auth'
+import { ApiStatus } from '@/utils/http/status'
+import { isHttpError } from '@/utils/http/error'
+import { safeLog, safeWarn } from '@/utils'
+import {
+  DynamicRouteAppender,
+  IframeRouteManager,
+  MenuProcessor,
+  RoutePermissionValidator,
+  RouteRegistry
+} from '../core'
+import { useUserStore } from '@/store/modules/user'
 
 // 路由注册器实例
 let routeRegistry: RouteRegistry | null = null

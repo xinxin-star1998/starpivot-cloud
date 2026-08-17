@@ -7,7 +7,12 @@
           <ArtSvgIcon icon="ri:filter-3-line" />
           筛选
         </ElButton>
-        <ElSelect v-model="sort" placeholder="排序" style="width: 140px" @change="loadProducts(true)">
+        <ElSelect
+          v-model="sort"
+          placeholder="排序"
+          style="width: 140px"
+          @change="loadProducts(true)"
+        >
           <ElOption label="默认" value="default" />
           <ElOption label="价格升序" value="priceAsc" />
           <ElOption label="价格降序" value="priceDesc" />
@@ -16,7 +21,11 @@
       </template>
     </PortalPageHeader>
 
-    <PortalSearchBar v-model="inputKeyword" class="portal-search__bar" @search="handleSearchSubmit" />
+    <PortalSearchBar
+      v-model="inputKeyword"
+      class="portal-search__bar"
+      @search="handleSearchSubmit"
+    />
 
     <div class="portal-search__layout">
       <SearchCategorySidebar
@@ -76,20 +85,20 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalHome} from '@/api/portal/home'
-import {fetchPortalProductSearch} from '@/api/portal/product'
-import type {PortalBrandBrief, PortalCategory, PortalProductListItem} from '@/api/portal/types'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
-import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
-import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
-import SearchCategorySidebar from './components/search-category-sidebar.vue'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {PORTAL_PRODUCT_PLACEHOLDER_IMG} from '@/utils/portal/product-placeholder'
-import {addPortalSearchKeyword} from '@/utils/portal/search-history'
+  import { fetchPortalHome } from '@/api/portal/home'
+  import { fetchPortalProductSearch } from '@/api/portal/product'
+  import type { PortalBrandBrief, PortalCategory, PortalProductListItem } from '@/api/portal/types'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
+  import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
+  import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
+  import SearchCategorySidebar from './components/search-category-sidebar.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+  import { addPortalSearchKeyword } from '@/utils/portal/search-history'
 
-defineOptions({ name: 'PortalSearch' })
+  defineOptions({ name: 'PortalSearch' })
 
   const router = useRouter()
   const route = useRoute()
@@ -125,7 +134,9 @@ defineOptions({ name: 'PortalSearch' })
     return '商品搜索'
   })
 
-  const showSearchHints = computed(() => !keyword.value && catalogId.value == null && brandId.value == null)
+  const showSearchHints = computed(
+    () => !keyword.value && catalogId.value == null && brandId.value == null
+  )
 
   const filterHint = computed(() => {
     const parts: string[] = []
@@ -217,11 +228,17 @@ defineOptions({ name: 'PortalSearch' })
   }
 
   function selectCategory(id?: number) {
-    router.push({ path: '/portal/search', query: buildQuery({ catalogId: id, brandId: brandId.value }) })
+    router.push({
+      path: '/portal/search',
+      query: buildQuery({ catalogId: id, brandId: brandId.value })
+    })
   }
 
   function selectBrand(id?: number) {
-    router.push({ path: '/portal/search', query: buildQuery({ catalogId: catalogId.value, brandId: id }) })
+    router.push({
+      path: '/portal/search',
+      query: buildQuery({ catalogId: catalogId.value, brandId: id })
+    })
   }
 
   function onDrawerSelectCategory(id?: number) {
@@ -280,7 +297,11 @@ defineOptions({ name: 'PortalSearch' })
   function handleSearchSubmit(text: string) {
     router.push({
       path: '/portal/search',
-      query: buildQuery({ catalogId: catalogId.value, brandId: brandId.value, keyword: text || undefined })
+      query: buildQuery({
+        catalogId: catalogId.value,
+        brandId: brandId.value,
+        keyword: text || undefined
+      })
     })
   }
 
@@ -322,7 +343,6 @@ defineOptions({ name: 'PortalSearch' })
 </script>
 
 <style scoped lang="scss">
-
   .portal-search__layout {
     display: flex;
     gap: 20px;

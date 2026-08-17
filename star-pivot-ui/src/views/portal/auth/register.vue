@@ -84,7 +84,13 @@
                 </template>
               </ElInput>
             </ElFormItem>
-            <ElButton type="primary" size="large" class="submit-btn" :loading="loading" native-type="submit">
+            <ElButton
+              type="primary"
+              size="large"
+              class="submit-btn"
+              :loading="loading"
+              native-type="submit"
+            >
               注册
             </ElButton>
           </ElForm>
@@ -139,8 +145,16 @@
                 </ElButton>
               </div>
             </ElFormItem>
-            <p v-if="authConfig.smsMockEnabled" class="sms-mock-tip">开发模式：验证码 {{ mockCodeHint }}</p>
-            <ElButton type="primary" size="large" class="submit-btn" :loading="loading" native-type="submit">
+            <p v-if="authConfig.smsMockEnabled" class="sms-mock-tip"
+              >开发模式：验证码 {{ mockCodeHint }}</p
+            >
+            <ElButton
+              type="primary"
+              size="large"
+              class="submit-btn"
+              :loading="loading"
+              native-type="submit"
+            >
               注册并登录
             </ElButton>
           </ElForm>
@@ -156,20 +170,20 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {
-  fetchPortalAuthConfig,
-  fetchPortalSmsRegister,
-  fetchPortalSmsSend,
-  startPortalWechatOAuth
-} from '@/api/portal/auth'
-import {fetchPortalRegister} from '@/api/portal/member'
-import type {PortalAuthConfig} from '@/api/portal/types'
-import {usePortalMemberStore} from '@/store/modules/portal-member'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import {
+    fetchPortalAuthConfig,
+    fetchPortalSmsRegister,
+    fetchPortalSmsSend,
+    startPortalWechatOAuth
+  } from '@/api/portal/auth'
+  import { fetchPortalRegister } from '@/api/portal/member'
+  import type { PortalAuthConfig } from '@/api/portal/types'
+  import { usePortalMemberStore } from '@/store/modules/portal-member'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
-defineOptions({ name: 'PortalRegister' })
+  defineOptions({ name: 'PortalRegister' })
 
   const route = useRoute()
   const router = useRouter()

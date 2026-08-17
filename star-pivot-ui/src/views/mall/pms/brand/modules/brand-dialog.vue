@@ -17,11 +17,7 @@
         <ElInput v-model="formData.name" maxlength="128" placeholder="名称" show-word-limit />
       </ElFormItem>
       <ElFormItem label="Logo" prop="logo">
-        <BrandLogoUpload
-          ref="logoUploadRef"
-          v-model="formData.logo"
-          :brand-id="formData.brandId"
-        />
+        <BrandLogoUpload ref="logoUploadRef" v-model="formData.logo" :brand-id="formData.brandId" />
       </ElFormItem>
       <ElFormItem label="介绍" prop="descript">
         <ElInput v-model="formData.descript" :rows="3" placeholder="品牌介绍" type="textarea" />
@@ -52,18 +48,18 @@
 </template>
 
 <script lang="ts" setup>
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  fetchMallBrandAdd,
-  fetchMallBrandById,
-  fetchMallBrandUpdate,
-  type MallBrandSavePayload,
-  type MallBrandVo
-} from '@/api/mall/brand'
-import type {DialogType} from '@/types'
-import BrandLogoUpload from './brand-logo-upload.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchMallBrandAdd,
+    fetchMallBrandById,
+    fetchMallBrandUpdate,
+    type MallBrandSavePayload,
+    type MallBrandVo
+  } from '@/api/mall/brand'
+  import type { DialogType } from '@/types'
+  import BrandLogoUpload from './brand-logo-upload.vue'
 
-interface Props {
+  interface Props {
     visible: boolean
     type: DialogType
     brandData?: Partial<MallBrandVo>

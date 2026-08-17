@@ -56,12 +56,15 @@
 </template>
 
 <script setup lang="ts">
-import type {TreeInstance} from 'element-plus'
-import {ElButton, ElEmpty, ElMessage, ElScrollbar, ElTree} from 'element-plus'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {buildPreviewPathTree, type PreviewTreeNode} from '@/utils/generator/build-preview-path-tree'
+  import type { TreeInstance } from 'element-plus'
+  import { ElButton, ElEmpty, ElMessage, ElScrollbar, ElTree } from 'element-plus'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import {
+    buildPreviewPathTree,
+    type PreviewTreeNode
+  } from '@/utils/generator/build-preview-path-tree'
 
-const props = defineProps<{
+  const props = defineProps<{
     previewCodeMap: Record<string, string>
   }>()
 

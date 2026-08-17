@@ -32,9 +32,9 @@
  * @author Art Design Pro Team
  */
 
-import {$t} from '@/locales'
-import type {ColumnOption} from '@/types/component'
-import {formatDateTime, isDateTimeColumnProp} from '@/utils/common/datetime'
+import { $t } from '@/locales'
+import type { ColumnOption } from '@/types/component'
+import { formatDateTime, isDateTimeColumnProp } from '@/utils/common/datetime'
 
 /**
  * 特殊列类型

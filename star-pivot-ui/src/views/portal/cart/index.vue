@@ -1,7 +1,10 @@
 <!-- C 端购物车 -->
 <template>
   <div v-loading="loading" class="portal-cart">
-    <PortalPageHeader title="购物车" :subtitle="cart.items?.length ? `共 ${cart.items.length} 件商品` : undefined" />
+    <PortalPageHeader
+      title="购物车"
+      :subtitle="cart.items?.length ? `共 ${cart.items.length} 件商品` : undefined"
+    />
 
     <template v-if="cart.items?.length">
       <div class="cart-toolbar">
@@ -31,7 +34,13 @@
           >
             移入收藏
           </ElButton>
-          <ElButton v-if="invalidCount" link type="danger" :loading="clearingInvalid" @click="clearInvalid">
+          <ElButton
+            v-if="invalidCount"
+            link
+            type="danger"
+            :loading="clearingInvalid"
+            @click="clearInvalid"
+          >
             清理失效({{ invalidCount }})
           </ElButton>
         </div>
@@ -46,7 +55,12 @@
           <span class="col-qty">数量</span>
           <span class="col-action">操作</span>
         </div>
-        <div v-for="item in cart.items" :key="item.skuId" class="cart-item" :class="{ invalid: !item.valid }">
+        <div
+          v-for="item in cart.items"
+          :key="item.skuId"
+          class="cart-item"
+          :class="{ invalid: !item.valid }"
+        >
           <ElCheckbox
             :model-value="item.checked"
             :disabled="!item.valid"
@@ -103,17 +117,17 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalCart, fetchPortalCartRemove, fetchPortalCartUpdate} from '@/api/portal/cart'
-import {fetchPortalCollectAdd} from '@/api/portal/collect'
-import type {PortalCart, PortalCartItem} from '@/api/portal/types'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {formatMoney} from '@/utils/mall/money'
-import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
-import {ElMessage, ElMessageBox} from 'element-plus'
-import PortalPageHeader from '../components/portal-page-header.vue'
+  import { fetchPortalCart, fetchPortalCartRemove, fetchPortalCartUpdate } from '@/api/portal/cart'
+  import { fetchPortalCollectAdd } from '@/api/portal/collect'
+  import type { PortalCart, PortalCartItem } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
+  import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import PortalPageHeader from '../components/portal-page-header.vue'
 
-defineOptions({ name: 'PortalCart' })
+  defineOptions({ name: 'PortalCart' })
 
   const router = useRouter()
   const { requireLogin } = usePortalAuth()
@@ -135,7 +149,9 @@ defineOptions({ name: 'PortalCart' })
   const checkedValidCount = computed(
     () => (cart.value.items || []).filter((item) => item.valid && item.checked).length
   )
-  const checkedCount = computed(() => (cart.value.items || []).filter((item) => item.checked).length)
+  const checkedCount = computed(
+    () => (cart.value.items || []).filter((item) => item.checked).length
+  )
   const allChecked = computed(
     () => validItems.value.length > 0 && validItems.value.every((item) => item.checked)
   )
@@ -182,16 +198,12 @@ defineOptions({ name: 'PortalCart' })
 
     let removeAfter = false
     try {
-      await ElMessageBox.confirm(
-        `确定将已选的 ${spuIds.length} 件商品移入收藏吗？`,
-        '移入收藏',
-        {
-          confirmButtonText: '收藏并移除',
-          cancelButtonText: '仅收藏',
-          distinguishCancelAndClose: true,
-          type: 'info'
-        }
-      )
+      await ElMessageBox.confirm(`确定将已选的 ${spuIds.length} 件商品移入收藏吗？`, '移入收藏', {
+        confirmButtonText: '收藏并移除',
+        cancelButtonText: '仅收藏',
+        distinguishCancelAndClose: true,
+        type: 'info'
+      })
       removeAfter = true
     } catch (action) {
       if (action !== 'cancel') return
@@ -242,7 +254,9 @@ defineOptions({ name: 'PortalCart' })
       return
     }
     try {
-      await ElMessageBox.confirm(`确定删除已选的 ${skuIds.length} 件商品吗？`, '提示', { type: 'warning' })
+      await ElMessageBox.confirm(`确定删除已选的 ${skuIds.length} 件商品吗？`, '提示', {
+        type: 'warning'
+      })
       removingChecked.value = true
       await fetchPortalCartRemove(skuIds)
       await loadCart()
@@ -316,7 +330,6 @@ defineOptions({ name: 'PortalCart' })
 </script>
 
 <style scoped lang="scss">
-
   .cart-toolbar {
     display: flex;
     align-items: center;

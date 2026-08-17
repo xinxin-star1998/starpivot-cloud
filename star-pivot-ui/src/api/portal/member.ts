@@ -1,11 +1,11 @@
 import request from '@/utils/http'
 import type {
-    PortalLoginPayload,
-    PortalLoginResult,
-    PortalMember,
-    PortalMemberCenter,
-    PortalMemberProfilePayload,
-    PortalRegisterPayload
+  PortalLoginPayload,
+  PortalLoginResult,
+  PortalMember,
+  PortalMemberCenter,
+  PortalMemberProfilePayload,
+  PortalRegisterPayload
 } from './types'
 
 export function fetchPortalRegister(data: PortalRegisterPayload) {

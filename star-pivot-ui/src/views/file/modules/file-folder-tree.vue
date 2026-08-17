@@ -80,11 +80,7 @@
                   <ElDropdownItem v-if="hasAuth('file:folder:edit')" command="edit">
                     重命名
                   </ElDropdownItem>
-                  <ElDropdownItem
-                    v-if="hasAuth('file:folder:delete')"
-                    command="delete"
-                    divided
-                  >
+                  <ElDropdownItem v-if="hasAuth('file:folder:delete')" command="delete" divided>
                     删除
                   </ElDropdownItem>
                 </ElDropdownMenu>
@@ -99,15 +95,15 @@
 </template>
 
 <script setup lang="ts">
-import type {FileCategoryNode} from '@/api/file/types'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {useAuth} from '@/hooks/core/useAuth'
-import {getCategoryIcon} from '../constants'
-import {MoreFilled, Search} from '@element-plus/icons-vue'
-import type {ElTree} from 'element-plus'
-import {computed, nextTick, ref, watch} from 'vue'
+  import type { FileCategoryNode } from '@/api/file/types'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { getCategoryIcon } from '../constants'
+  import { MoreFilled, Search } from '@element-plus/icons-vue'
+  import type { ElTree } from 'element-plus'
+  import { computed, nextTick, ref, watch } from 'vue'
 
-defineOptions({ name: 'FileFolderTree' })
+  defineOptions({ name: 'FileFolderTree' })
 
   const ALL_NODE_KEY = 'all-files'
 
@@ -152,8 +148,7 @@ defineOptions({ name: 'FileFolderTree' })
 
   const totalFileCount = computed(() =>
     props.categories.reduce(
-      (sum, cat) =>
-        sum + (cat.children || []).reduce((s, f) => s + (f.fileCount ?? 0), 0),
+      (sum, cat) => sum + (cat.children || []).reduce((s, f) => s + (f.fileCount ?? 0), 0),
       0
     )
   )

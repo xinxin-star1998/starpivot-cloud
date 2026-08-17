@@ -25,23 +25,23 @@
 </template>
 
 <script setup lang="ts">
-import {h} from 'vue'
-import {useTable} from '@/hooks/core/useTable'
-import {
-  COMMENT_SHOW_STATUS_MAP,
-  type CommentVo,
-  fetchCommentList,
-  fetchCommentRemove,
-  fetchCommentUpdateShowStatus
-} from '@/api/mall/comment'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import CommentSearch from './modules/comment-search.vue'
-import CommentDetailDrawer from './modules/comment-detail-drawer.vue'
-import {ElButton, ElMessageBox, ElRate, ElSpace, ElTag} from 'element-plus'
-import {useAuth} from '@/hooks/core/useAuth'
+  import { h } from 'vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    COMMENT_SHOW_STATUS_MAP,
+    type CommentVo,
+    fetchCommentList,
+    fetchCommentRemove,
+    fetchCommentUpdateShowStatus
+  } from '@/api/mall/comment'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import CommentSearch from './modules/comment-search.vue'
+  import CommentDetailDrawer from './modules/comment-detail-drawer.vue'
+  import { ElButton, ElMessageBox, ElRate, ElSpace, ElTag } from 'element-plus'
+  import { useAuth } from '@/hooks/core/useAuth'
 
-defineOptions({ name: 'CmsCommentManage' })
+  defineOptions({ name: 'CmsCommentManage' })
 
   const { hasAuth } = useAuth()
 
@@ -130,10 +130,8 @@ defineOptions({ name: 'CmsCommentManage' })
             if (hasAuth('mall:comment:edit') && row.id != null) {
               const nextStatus = row.showStatus === 1 ? 0 : 1
               actions.push(
-                h(
-                  ElButton,
-                  { link: true, type: 'warning', onClick: () => toggleShow(row) },
-                  () => (nextStatus === 1 ? '显示' : '隐藏')
+                h(ElButton, { link: true, type: 'warning', onClick: () => toggleShow(row) }, () =>
+                  nextStatus === 1 ? '显示' : '隐藏'
                 )
               )
             }

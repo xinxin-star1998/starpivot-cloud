@@ -8,7 +8,10 @@
         type="button"
         class="tab-switch__btn"
         :class="{ active: activeTab === 'claim' }"
-        @click="activeTab = 'claim'; handleTabChange()"
+        @click="
+          activeTab = 'claim'
+          handleTabChange()
+        "
       >
         <ArtSvgIcon icon="ri:gift-line" />
         领券中心
@@ -17,7 +20,10 @@
         type="button"
         class="tab-switch__btn"
         :class="{ active: activeTab === 'mine' }"
-        @click="activeTab = 'mine'; handleTabChange()"
+        @click="
+          activeTab = 'mine'
+          handleTabChange()
+        "
       >
         <ArtSvgIcon icon="ri:coupon-3-line" />
         我的优惠券
@@ -70,21 +76,32 @@
         </div>
       </div>
       <ElEmpty v-if="!myList.length" description="暂无优惠券">
-        <ElButton type="primary" @click="activeTab = 'claim'; handleTabChange()">去领券</ElButton>
+        <ElButton
+          type="primary"
+          @click="
+            activeTab = 'claim'
+            handleTabChange()
+          "
+          >去领券</ElButton
+        >
       </ElEmpty>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {fetchPortalCouponClaimable, fetchPortalCouponMine, fetchPortalCouponReceive} from '@/api/portal/coupon'
-import type {PortalClaimableCoupon, PortalMyCoupon} from '@/api/portal/types'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {formatMoney} from '@/utils/mall/money'
-import PortalPageHeader from '../components/portal-page-header.vue'
+  import {
+    fetchPortalCouponClaimable,
+    fetchPortalCouponMine,
+    fetchPortalCouponReceive
+  } from '@/api/portal/coupon'
+  import type { PortalClaimableCoupon, PortalMyCoupon } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { formatMoney } from '@/utils/mall/money'
+  import PortalPageHeader from '../components/portal-page-header.vue'
 
-defineOptions({ name: 'PortalCoupons' })
+  defineOptions({ name: 'PortalCoupons' })
 
   const { requireLogin } = usePortalAuth()
 
@@ -150,7 +167,6 @@ defineOptions({ name: 'PortalCoupons' })
 </script>
 
 <style lang="scss" scoped>
-
   .tab-switch {
     display: flex;
     gap: 12px;

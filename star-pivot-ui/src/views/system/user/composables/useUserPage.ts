@@ -1,11 +1,11 @@
-import {fetchGetUserList} from '@/api/user/user'
-import {useTable} from '@/hooks/core/useTable'
-import {useTableSearch, useTableSelection} from '@/hooks/core/useTableSearch'
-import {useAuth} from '@/hooks/core/useAuth'
-import {useUserStore} from '@/store/modules/user'
-import {DialogType} from '@/types'
-import {createUserColumns, transformUserListRecords} from './useUserColumns'
-import {useUserActions} from './useUserActions'
+import { fetchGetUserList } from '@/api/user/user'
+import { useTable } from '@/hooks/core/useTable'
+import { useTableSearch, useTableSelection } from '@/hooks/core/useTableSearch'
+import { useAuth } from '@/hooks/core/useAuth'
+import { useUserStore } from '@/store/modules/user'
+import { DialogType } from '@/types'
+import { createUserColumns, transformUserListRecords } from './useUserColumns'
+import { useUserActions } from './useUserActions'
 
 type UserListItem = Api.SystemManage.UserListItem
 
@@ -50,10 +50,17 @@ export function useUserPage() {
     })
   }
 
-  let deleteUserFn!: (row: UserListItem) => Promise<void>
-  let unlockUserFn!: (row: UserListItem) => Promise<void>
-  let resetPwdFn!: (row: UserListItem) => Promise<void>
-  let handleStatusChangeFn!: (row: UserListItem, value: boolean) => Promise<void>
+  const deferredActions: {
+    deleteUser: (row: UserListItem) => Promise<void>
+    unlockUser: (row: UserListItem) => Promise<void>
+    resetPwd: (row: UserListItem) => Promise<void>
+    handleStatusChange: (row: UserListItem, value: boolean) => Promise<void>
+  } = {
+    deleteUser: () => Promise.resolve(),
+    unlockUser: () => Promise.resolve(),
+    resetPwd: () => Promise.resolve(),
+    handleStatusChange: () => Promise.resolve()
+  }
 
   const table = useTable({
     core: {
@@ -68,10 +75,10 @@ export function useUserPage() {
           hasAuth,
           currentUserId,
           showDialog,
-          deleteUser: (row) => deleteUserFn(row),
-          unlockUser: (row) => unlockUserFn(row),
-          resetPwd: (row) => resetPwdFn(row),
-          handleStatusChange: (row, value) => handleStatusChangeFn(row, value)
+          deleteUser: (row) => deferredActions.deleteUser(row),
+          unlockUser: (row) => deferredActions.unlockUser(row),
+          resetPwd: (row) => deferredActions.resetPwd(row),
+          handleStatusChange: (row, value) => deferredActions.handleStatusChange(row, value)
         })
     },
     transform: {
@@ -85,10 +92,10 @@ export function useUserPage() {
     refreshData: table.refreshData
   })
 
-  deleteUserFn = actions.deleteUser
-  unlockUserFn = actions.unlockUser
-  resetPwdFn = actions.resetPwd
-  handleStatusChangeFn = actions.handleStatusChange
+  deferredActions.deleteUser = actions.deleteUser
+  deferredActions.unlockUser = actions.unlockUser
+  deferredActions.resetPwd = actions.resetPwd
+  deferredActions.handleStatusChange = actions.handleStatusChange
 
   const { handleSearch } = useTableSearch(table.searchParams, table.getData)
 

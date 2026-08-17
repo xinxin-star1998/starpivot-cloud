@@ -26,7 +26,9 @@
       </div>
     </div>
     <ElEmpty v-else description="还没有发表评价">
-      <ElButton type="primary" @click="router.push('/portal/account/pending-reviews')">去评价</ElButton>
+      <ElButton type="primary" @click="router.push('/portal/account/pending-reviews')"
+        >去评价</ElButton
+      >
     </ElEmpty>
 
     <div v-if="total > items.length" class="load-more">
@@ -36,13 +38,13 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalMyCommentPageList} from '@/api/portal/comment'
-import type {PortalComment} from '@/api/portal/types'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveCommentResourceUrls} from '@/utils/portal/comment-resources'
+  import { fetchPortalMyCommentPageList } from '@/api/portal/comment'
+  import type { PortalComment } from '@/api/portal/types'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveCommentResourceUrls } from '@/utils/portal/comment-resources'
 
-defineOptions({ name: 'PortalReviews' })
+  defineOptions({ name: 'PortalReviews' })
 
   const router = useRouter()
   const { requireLogin } = usePortalAuth()
@@ -103,7 +105,6 @@ defineOptions({ name: 'PortalReviews' })
 </script>
 
 <style scoped lang="scss">
-
   .review-list {
     display: flex;
     flex-direction: column;

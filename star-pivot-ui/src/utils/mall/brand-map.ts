@@ -1,5 +1,5 @@
-import {fetchMallBrandList, type MallBrandVo} from '@/api/mall/brand'
-import {defaultResponseAdapter, extractTableData} from '@/utils/table/tableUtils'
+import { fetchMallBrandList, type MallBrandVo } from '@/api/mall/brand'
+import { defaultResponseAdapter, extractTableData } from '@/utils/table/tableUtils'
 
 const CACHE_TTL_MS = 5 * 60 * 1000
 

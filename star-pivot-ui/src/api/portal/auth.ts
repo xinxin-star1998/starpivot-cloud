@@ -1,10 +1,10 @@
 import request from '@/utils/http'
 import type {
-    PortalAuthConfig,
-    PortalLoginResult,
-    PortalMemberAuthBinding,
-    PortalSmsLoginPayload,
-    PortalSmsSendPayload
+  PortalAuthConfig,
+  PortalLoginResult,
+  PortalMemberAuthBinding,
+  PortalSmsLoginPayload,
+  PortalSmsSendPayload
 } from './types'
 
 export function fetchPortalAuthConfig() {
@@ -133,7 +133,8 @@ export async function startPortalWechatOAuth(options: {
   mode: 'login' | 'register' | 'bind'
   redirect?: string
 }) {
-  const redirect = options.redirect || (options.mode === 'bind' ? '/portal/account/security' : '/portal')
+  const redirect =
+    options.redirect || (options.mode === 'bind' ? '/portal/account/security' : '/portal')
   sessionStorage.setItem(WECHAT_MODE_KEY, options.mode)
   sessionStorage.setItem(WECHAT_REDIRECT_KEY, redirect)
   const { authorizeUrl } = await fetchPortalWechatAuthorize({ redirect, mode: options.mode })

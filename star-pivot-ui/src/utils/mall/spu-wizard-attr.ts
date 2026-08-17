@@ -1,6 +1,6 @@
-import {fetchGetAttrList, type MallAttr} from '@/api/mall/attr'
-import {fetchGetGroupList, type Group} from '@/api/mall/group'
-import {defaultResponseAdapter, extractTableData} from '@/utils/table/tableUtils'
+import { fetchGetAttrList, type MallAttr } from '@/api/mall/attr'
+import { fetchGetGroupList, type Group } from '@/api/mall/group'
+import { defaultResponseAdapter, extractTableData } from '@/utils/table/tableUtils'
 
 /** 从分页结果取列表行（后端标准字段 rows） */
 export function pageRows<T>(page: unknown): T[] {

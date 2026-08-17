@@ -67,16 +67,20 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessageBox} from 'element-plus'
-import {fetchPortalAddressList, fetchPortalAddressRemove, fetchPortalAddressSave} from '@/api/portal/address'
-import type {PortalAddress, PortalAddressSavePayload} from '@/api/portal/types'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import PortalRegionFields from '@/views/portal/components/portal-region-fields.vue'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {handleMutationError} from '@/utils/http/mutation'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessageBox } from 'element-plus'
+  import {
+    fetchPortalAddressList,
+    fetchPortalAddressRemove,
+    fetchPortalAddressSave
+  } from '@/api/portal/address'
+  import type { PortalAddress, PortalAddressSavePayload } from '@/api/portal/types'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import PortalRegionFields from '@/views/portal/components/portal-region-fields.vue'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
 
-defineOptions({ name: 'PortalAddresses' })
+  defineOptions({ name: 'PortalAddresses' })
 
   const { requireLogin } = usePortalAuth()
 
@@ -177,7 +181,6 @@ defineOptions({ name: 'PortalAddresses' })
 </script>
 
 <style scoped lang="scss">
-
   .address-list {
     display: flex;
     flex-direction: column;

@@ -10,7 +10,12 @@
         <ElInput v-model="formData.name" placeholder="如：黄金会员" maxlength="64" />
       </ElFormItem>
       <ElFormItem label="成长值门槛">
-        <ElInputNumber v-model="formData.growthPoint" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.growthPoint"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="免邮积分门槛">
         <ElInputNumber
@@ -22,7 +27,12 @@
         />
       </ElFormItem>
       <ElFormItem label="评论成长值">
-        <ElInputNumber v-model="formData.commentGrowthPoint" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.commentGrowthPoint"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="默认等级">
         <ElRadioGroup v-model="formData.defaultStatus">
@@ -60,16 +70,16 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  fetchMemberLevelAdd,
-  fetchMemberLevelById,
-  fetchMemberLevelUpdate,
-  type MemberLevelSavePayload
-} from '@/api/mall/member-level'
-import type {DialogType} from '@/types'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchMemberLevelAdd,
+    fetchMemberLevelById,
+    fetchMemberLevelUpdate,
+    type MemberLevelSavePayload
+  } from '@/api/mall/member-level'
+  import type { DialogType } from '@/types'
 
-const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

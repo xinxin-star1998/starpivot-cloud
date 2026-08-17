@@ -38,13 +38,13 @@
 </template>
 
 <script setup lang="ts">
-import {
-  clearPortalSearchHistory,
-  getPortalSearchHistory,
-  PORTAL_HOT_SEARCH_KEYWORDS
-} from '@/utils/portal/search-history'
+  import {
+    clearPortalSearchHistory,
+    getPortalSearchHistory,
+    PORTAL_HOT_SEARCH_KEYWORDS
+  } from '@/utils/portal/search-history'
 
-defineOptions({ name: 'PortalSearchHints' })
+  defineOptions({ name: 'PortalSearchHints' })
 
   withDefaults(
     defineProps<{

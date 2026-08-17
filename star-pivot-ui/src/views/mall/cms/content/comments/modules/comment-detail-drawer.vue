@@ -17,9 +17,13 @@
         <ElDescriptionsItem label="点赞">{{ detail.likesCount ?? 0 }}</ElDescriptionsItem>
         <ElDescriptionsItem label="回复数">{{ detail.replyCount ?? 0 }}</ElDescriptionsItem>
         <ElDescriptionsItem label="IP">{{ detail.memberIp || '-' }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="时间">{{ formatDateTime(detail.createTime) }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="时间">{{
+          formatDateTime(detail.createTime)
+        }}</ElDescriptionsItem>
         <ElDescriptionsItem label="内容">{{ detail.content || '-' }}</ElDescriptionsItem>
-        <ElDescriptionsItem v-if="detail.resources" label="图片">{{ detail.resources }}</ElDescriptionsItem>
+        <ElDescriptionsItem v-if="detail.resources" label="图片">{{
+          detail.resources
+        }}</ElDescriptionsItem>
       </ElDescriptions>
 
       <section v-if="detail.replies?.length" class="reply-section">
@@ -58,11 +62,16 @@
 </template>
 
 <script setup lang="ts">
-import {COMMENT_SHOW_STATUS_MAP, type CommentVo, fetchCommentById, fetchCommentReply} from '@/api/mall/comment'
-import {useAuth} from '@/hooks/core/useAuth'
-import {formatDateTime} from '@/utils/common/datetime'
+  import {
+    COMMENT_SHOW_STATUS_MAP,
+    type CommentVo,
+    fetchCommentById,
+    fetchCommentReply
+  } from '@/api/mall/comment'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { formatDateTime } from '@/utils/common/datetime'
 
-interface Props {
+  interface Props {
     visible: boolean
     commentId?: number
   }

@@ -1,7 +1,7 @@
-import {useI18n} from 'vue-i18n'
-import {ContainerWidthEnum} from '@/enums/appEnum'
+import { useI18n } from 'vue-i18n'
+import { ContainerWidthEnum } from '@/enums/appEnum'
 import AppConfig from '@/config'
-import {headerBarConfig} from '@/config/modules/headerBar'
+import { headerBarConfig } from '@/config/modules/headerBar'
 
 /**
  * 设置项配置选项管理
@@ -215,21 +215,19 @@ export function useSettingsConfig() {
     ]
 
     // 根据 headerBarConfig 过滤设置项
-    return (
-      allSettings
-        .filter((setting) => {
-          // 如果设置项不依赖headerBar配置，则始终显示
-          if (setting.headerBarKey === null) {
-            return true
-          }
+    return allSettings
+      .filter((setting) => {
+        // 如果设置项不依赖headerBar配置，则始终显示
+        if (setting.headerBarKey === null) {
+          return true
+        }
 
-          // 如果依赖headerBar配置，检查对应的功能是否启用
-          const headerBarFeature = headerBarConfig[setting.headerBarKey]
-          return headerBarFeature?.enabled !== false
-        })
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({ headerBarKey: _headerBarKey, ...setting }) => setting)
-    )
+        // 如果依赖headerBar配置，检查对应的功能是否启用
+        const headerBarFeature = headerBarConfig[setting.headerBarKey]
+        return headerBarFeature?.enabled !== false
+      })
+
+      .map(({ headerBarKey: _headerBarKey, ...setting }) => setting)
   })
 
   return {

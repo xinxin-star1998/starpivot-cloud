@@ -40,11 +40,16 @@
 </template>
 
 <script lang="ts" setup>
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {type Config, fetchAddConfig, fetchGetConfigById, fetchUpdateConfig} from '@/api/system/config/config'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import {
+    type Config,
+    fetchAddConfig,
+    fetchGetConfigById,
+    fetchUpdateConfig
+  } from '@/api/system/config/config'
 
-interface Props {
+  interface Props {
     visible: boolean
     type: string
     configData?: Partial<Config>

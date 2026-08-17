@@ -10,10 +10,15 @@
         type="button"
         class="status-tab"
         :class="{ active: activeStatus === tab.key }"
-        @click="activeStatus = tab.key; handleTabChange()"
+        @click="
+          activeStatus = tab.key
+          handleTabChange()
+        "
       >
         {{ tab.label }}
-        <span v-if="tabBadge(tab.key)" class="status-tab__badge">{{ formatTabBadge(tab.key) }}</span>
+        <span v-if="tabBadge(tab.key)" class="status-tab__badge">{{
+          formatTabBadge(tab.key)
+        }}</span>
       </button>
     </div>
 
@@ -94,7 +99,11 @@
     </div>
 
     <ElEmpty v-else :description="emptyDescription">
-      <ElButton v-if="isReviewTab" type="primary" @click="router.push('/portal/account/pending-reviews')">
+      <ElButton
+        v-if="isReviewTab"
+        type="primary"
+        @click="router.push('/portal/account/pending-reviews')"
+      >
         查看待评价商品
       </ElButton>
       <ElButton v-else type="primary" @click="router.push('/portal')">去逛逛</ElButton>
@@ -125,7 +134,12 @@
           <p v-if="detailOrder.deliveryCompany">物流公司：{{ detailOrder.deliveryCompany }}</p>
           <p class="detail-logistics__sn">
             运单号：{{ detailOrder.deliverySn }}
-            <ElButton link type="primary" size="small" @click="copyDeliverySn(detailOrder.deliverySn!)">
+            <ElButton
+              link
+              type="primary"
+              size="small"
+              @click="copyDeliverySn(detailOrder.deliverySn!)"
+            >
               复制
             </ElButton>
           </p>
@@ -176,29 +190,29 @@
 </template>
 
 <script setup lang="ts">
-import {
-  fetchPortalOrderCancel,
-  fetchPortalOrderConfirmReceive,
-  fetchPortalOrderDetail,
-  fetchPortalOrderList,
-  fetchPortalOrderMockPay,
-  fetchPortalOrderStatusCounts
-} from '@/api/portal/order'
-import {fetchPortalAlipayEnabled, fetchPortalAlipayPay} from '@/api/portal/pay'
-import {fetchPortalReviewableSpuIds} from '@/api/portal/comment'
-import type {PortalOrder, PortalOrderItem} from '@/api/portal/types'
-import {formatMoney} from '@/utils/mall/money'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
-import {handleMutationError} from '@/utils/http/mutation'
-import {getPortalOrderStatusLabel, getPortalOrderStatusType} from '@/utils/portal/order-status'
-import LogisticsDialog from './modules/logistics-dialog.vue'
-import {ElMessage, ElMessageBox} from 'element-plus'
-import ReturnDialog from './modules/return-dialog.vue'
-import PortalPageHeader from '../components/portal-page-header.vue'
+  import {
+    fetchPortalOrderCancel,
+    fetchPortalOrderConfirmReceive,
+    fetchPortalOrderDetail,
+    fetchPortalOrderList,
+    fetchPortalOrderMockPay,
+    fetchPortalOrderStatusCounts
+  } from '@/api/portal/order'
+  import { fetchPortalAlipayEnabled, fetchPortalAlipayPay } from '@/api/portal/pay'
+  import { fetchPortalReviewableSpuIds } from '@/api/portal/comment'
+  import type { PortalOrder, PortalOrderItem } from '@/api/portal/types'
+  import { formatMoney } from '@/utils/mall/money'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import { getPortalOrderStatusLabel, getPortalOrderStatusType } from '@/utils/portal/order-status'
+  import LogisticsDialog from './modules/logistics-dialog.vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import ReturnDialog from './modules/return-dialog.vue'
+  import PortalPageHeader from '../components/portal-page-header.vue'
 
-defineOptions({ name: 'PortalOrders' })
+  defineOptions({ name: 'PortalOrders' })
 
   const router = useRouter()
   const route = useRoute()
@@ -247,9 +261,7 @@ defineOptions({ name: 'PortalOrders' })
     return orders.value.filter((order) => hasReviewableItem(order))
   })
 
-  const emptyDescription = computed(() =>
-    isReviewTab.value ? '暂无待评价订单' : '暂无订单'
-  )
+  const emptyDescription = computed(() => (isReviewTab.value ? '暂无待评价订单' : '暂无订单'))
 
   const hasMore = computed(() => {
     if (isReviewTab.value) return false
@@ -544,7 +556,6 @@ defineOptions({ name: 'PortalOrders' })
 </script>
 
 <style scoped lang="scss">
-
   .status-tabs {
     display: flex;
     gap: 8px;

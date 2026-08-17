@@ -1,5 +1,9 @@
 import request from '@/utils/http'
-import type {LogininforList, LogininforListItem, LogininforSearchParams} from '@/types/api/logininfor'
+import type {
+  LogininforList,
+  LogininforListItem,
+  LogininforSearchParams
+} from '@/types/api/logininfor'
 
 /**
  * 获取登录日志列表（分页）

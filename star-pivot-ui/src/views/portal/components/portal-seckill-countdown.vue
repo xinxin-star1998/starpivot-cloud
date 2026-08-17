@@ -7,14 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import {
-  formatCountdown,
-  getSeckillCountdownPrefix,
-  getSeckillCountdownTarget,
-  type SeckillCountdownTarget
-} from '@/utils/portal/seckill-countdown'
+  import {
+    formatCountdown,
+    getSeckillCountdownPrefix,
+    getSeckillCountdownTarget,
+    type SeckillCountdownTarget
+  } from '@/utils/portal/seckill-countdown'
 
-defineOptions({ name: 'PortalSeckillCountdown' })
+  defineOptions({ name: 'PortalSeckillCountdown' })
 
   const props = defineProps<{
     session: SeckillCountdownTarget

@@ -48,23 +48,23 @@
 </template>
 
 <script setup lang="ts">
-import {h} from 'vue'
-import {ElImage, ElMessageBox, ElTag} from 'element-plus'
-import {useTable} from '@/hooks/core/useTable'
-import {
-  CATEGORY_HOT_STATUS_MAP,
-  fetchCategoryHotList,
-  fetchCategoryHotRemove,
-  type HomeCategoryHotVo
-} from '@/api/mall/category-hot'
-import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import CategoryHotDialog from './modules/category-hot-dialog.vue'
-import type {DialogType} from '@/types'
-import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+  import { h } from 'vue'
+  import { ElImage, ElMessageBox, ElTag } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    CATEGORY_HOT_STATUS_MAP,
+    fetchCategoryHotList,
+    fetchCategoryHotRemove,
+    type HomeCategoryHotVo
+  } from '@/api/mall/category-hot'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import CategoryHotDialog from './modules/category-hot-dialog.vue'
+  import type { DialogType } from '@/types'
+  import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
 
-defineOptions({ name: 'CmsCategoryHot' })
+  defineOptions({ name: 'CmsCategoryHot' })
 
   const searchForm = ref({
     title: undefined as string | undefined,

@@ -16,8 +16,12 @@
           @click="goDetail(item.spuId)"
         />
         <div class="history-card__body">
-          <p class="history-card__name" @click="goDetail(item.spuId)">{{ item.spuName || `商品 #${item.spuId}` }}</p>
-          <p v-if="item.price != null" class="history-card__price">¥{{ formatPrice(item.price) }}</p>
+          <p class="history-card__name" @click="goDetail(item.spuId)">{{
+            item.spuName || `商品 #${item.spuId}`
+          }}</p>
+          <p v-if="item.price != null" class="history-card__price"
+            >¥{{ formatPrice(item.price) }}</p
+          >
           <p class="history-card__time">{{ formatTime(item.viewedAt) }}</p>
         </div>
         <ElButton link type="danger" @click="handleRemove(item.spuId)">删除</ElButton>
@@ -30,18 +34,18 @@
 </template>
 
 <script setup lang="ts">
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import {
-  clearPortalBrowseHistory,
-  getPortalBrowseHistory,
-  type PortalBrowseRecord,
-  removePortalBrowseRecord
-} from '@/utils/portal/browse-history'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {formatMoney} from '@/utils/mall/money'
-import {ElMessageBox} from 'element-plus'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import {
+    clearPortalBrowseHistory,
+    getPortalBrowseHistory,
+    type PortalBrowseRecord,
+    removePortalBrowseRecord
+  } from '@/utils/portal/browse-history'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
+  import { ElMessageBox } from 'element-plus'
 
-defineOptions({ name: 'PortalBrowseHistory' })
+  defineOptions({ name: 'PortalBrowseHistory' })
 
   const router = useRouter()
   const items = ref<PortalBrowseRecord[]>([])
@@ -100,7 +104,6 @@ defineOptions({ name: 'PortalBrowseHistory' })
 </script>
 
 <style scoped lang="scss">
-
   .history-list {
     display: flex;
     flex-direction: column;

@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type {CacheContentInfo, CacheKeyInfo, RedisCacheInfo} from '@/types/api/monitor'
+import type { CacheContentInfo, CacheKeyInfo, RedisCacheInfo } from '@/types/api/monitor'
 
 /**
  * 获取缓存列表

@@ -92,13 +92,13 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {fetchAddRole, fetchGetRoleMenus, fetchUpdateRole} from '@/api/role/role'
-import {fetchGetMenuTree, type SysMenu} from '@/api/menu/menu'
-import {useSettingStore} from '@/store/modules/setting'
-import {useCheckableTree} from '@/composables/useCheckableTree'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { fetchAddRole, fetchGetRoleMenus, fetchUpdateRole } from '@/api/role/role'
+  import { fetchGetMenuTree, type SysMenu } from '@/api/menu/menu'
+  import { useSettingStore } from '@/store/modules/setting'
+  import { useCheckableTree } from '@/composables/useCheckableTree'
 
-type RoleListItem = Api.SystemManage.RoleListItem
+  type RoleListItem = Api.SystemManage.RoleListItem
 
   interface Props {
     modelValue: boolean

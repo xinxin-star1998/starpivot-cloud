@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type {PortalCart, PortalCartAddPayload, PortalCartUpdatePayload} from './types'
+import type { PortalCart, PortalCartAddPayload, PortalCartUpdatePayload } from './types'
 
 export function fetchPortalCart() {
   return request.get<PortalCart>({

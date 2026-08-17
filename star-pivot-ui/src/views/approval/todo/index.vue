@@ -57,30 +57,30 @@
 </template>
 
 <script lang="ts" setup>
-import {h} from 'vue'
-import {ElMessage} from 'element-plus'
-import {useTable} from '@/hooks/core/useTable'
-import {useAuth} from '@/hooks/core/useAuth'
-import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import {
-  fetchApprovalApprove,
-  fetchApprovalDoneList,
-  fetchApprovalReject,
-  fetchApprovalTodoList
-} from '@/api/approval/task'
-import type {ApTaskVo} from '@/api/approval/types'
-import ApprovalSearch from './modules/approval-search.vue'
-import ApprovalActionDialog from './modules/approval-action-dialog.vue'
-import {handleMutationError} from '@/utils/http/mutation'
-import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
-import ApprovalNotificationDrawer from '../components/ApprovalNotificationDrawer.vue'
-import {useApprovalTimelineDialog} from '../composables/useApprovalTimelineDialog'
-import {fetchUserMessageUnreadCount} from '@/api/system/message'
-import {formatDateTime} from '@/utils/common/datetime'
+  import { h } from 'vue'
+  import { ElMessage } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import {
+    fetchApprovalApprove,
+    fetchApprovalDoneList,
+    fetchApprovalReject,
+    fetchApprovalTodoList
+  } from '@/api/approval/task'
+  import type { ApTaskVo } from '@/api/approval/types'
+  import ApprovalSearch from './modules/approval-search.vue'
+  import ApprovalActionDialog from './modules/approval-action-dialog.vue'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import ApprovalTimelineDialog from '../components/ApprovalTimelineDialog.vue'
+  import ApprovalNotificationDrawer from '../components/ApprovalNotificationDrawer.vue'
+  import { useApprovalTimelineDialog } from '../composables/useApprovalTimelineDialog'
+  import { fetchUserMessageUnreadCount } from '@/api/system/message'
+  import { formatDateTime } from '@/utils/common/datetime'
 
-defineOptions({ name: 'ApprovalTodo' })
+  defineOptions({ name: 'ApprovalTodo' })
 
   const { hasAuth } = useAuth()
   const { progressVisible, progressInstanceId, openTimelineDialog } = useApprovalTimelineDialog()

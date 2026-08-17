@@ -21,7 +21,12 @@
         <ElInput v-model="formData.url" placeholder="点击跳转 URL" />
       </ElFormItem>
       <ElFormItem label="排序">
-        <ElInputNumber v-model="formData.sort" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.sort"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="状态">
         <ElRadioGroup v-model="formData.status">
@@ -59,12 +64,17 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {fetchHomeAdvAdd, fetchHomeAdvById, fetchHomeAdvUpdate, type HomeAdvSavePayload} from '@/api/mall/home-adv'
-import type {DialogType} from '@/types'
-import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchHomeAdvAdd,
+    fetchHomeAdvById,
+    fetchHomeAdvUpdate,
+    type HomeAdvSavePayload
+  } from '@/api/mall/home-adv'
+  import type { DialogType } from '@/types'
+  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
 
-const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

@@ -3,7 +3,10 @@
     <div class="art-card-header">
       <div class="title">
         <h4>{{ t('dashboard.salesOverview.title') }}</h4>
-        <p>{{ t('dashboard.salesOverview.growth') }}<span :class="growthClass">{{ growthText }}</span></p>
+        <p
+          >{{ t('dashboard.salesOverview.growth')
+          }}<span :class="growthClass">{{ growthText }}</span></p
+        >
       </div>
     </div>
     <ArtLineChart
@@ -17,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import {useI18n} from 'vue-i18n'
-import type {SalesTrendData} from '@/types/api/dashboard'
+  import { useI18n } from 'vue-i18n'
+  import type { SalesTrendData } from '@/types/api/dashboard'
 
-const { t } = useI18n()
+  const { t } = useI18n()
 
   const props = withDefaults(
     defineProps<{

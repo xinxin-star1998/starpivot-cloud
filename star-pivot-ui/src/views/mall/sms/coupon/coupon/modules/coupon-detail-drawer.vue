@@ -88,10 +88,7 @@
       </template>
 
       <div v-if="showActions" class="drawer-actions">
-        <ElButton
-          v-if="hasAuth('mall:coupon:edit')"
-          @click="emit('edit', detail.id)"
-        >
+        <ElButton v-if="hasAuth('mall:coupon:edit')" @click="emit('edit', detail.id)">
           编辑
         </ElButton>
         <ElButton
@@ -115,32 +112,32 @@
 </template>
 
 <script lang="ts" setup>
-import {ElMessageBox} from 'element-plus'
-import {
-  canSubmitCouponAudit,
-  COUPON_TYPE_OPTIONS,
-  COUPON_USE_TYPE_OPTIONS,
-  type CouponVo,
-  fetchCouponById,
-  fetchCouponPublishStatus,
-  fetchCouponSubmitApproval
-} from '@/api/mall/coupon'
-import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
-import {MALL_AUDIT_STATUS_MAP} from '@/utils/mall/audit-status'
-import {fetchMemberLevelList, type MemberLevelVo} from '@/api/mall/member-level'
-import {useAuth} from '@/hooks/core/useAuth'
-import {
-  COUPON_PHASE_STATUS_MAP,
-  COUPON_RUN_STATUS_MAP,
-  formatCouponDateRange,
-  formatCouponMoney,
-  getCouponClaimStatus,
-  getCouponRunStatus,
-  getCouponUseStatus
-} from '@/utils/mall/coupon'
-import {resolveGoodsImageDisplayUrl} from '@/utils/mall/goods-image-url'
+  import { ElMessageBox } from 'element-plus'
+  import {
+    canSubmitCouponAudit,
+    COUPON_TYPE_OPTIONS,
+    COUPON_USE_TYPE_OPTIONS,
+    type CouponVo,
+    fetchCouponById,
+    fetchCouponPublishStatus,
+    fetchCouponSubmitApproval
+  } from '@/api/mall/coupon'
+  import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
+  import { MALL_AUDIT_STATUS_MAP } from '@/utils/mall/audit-status'
+  import { fetchMemberLevelList, type MemberLevelVo } from '@/api/mall/member-level'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import {
+    COUPON_PHASE_STATUS_MAP,
+    COUPON_RUN_STATUS_MAP,
+    formatCouponDateRange,
+    formatCouponMoney,
+    getCouponClaimStatus,
+    getCouponRunStatus,
+    getCouponUseStatus
+  } from '@/utils/mall/coupon'
+  import { resolveGoodsImageDisplayUrl } from '@/utils/mall/goods-image-url'
 
-interface Props {
+  interface Props {
     visible: boolean
     couponId?: number
     showActions?: boolean

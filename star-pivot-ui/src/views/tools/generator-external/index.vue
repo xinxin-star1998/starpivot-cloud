@@ -233,7 +233,7 @@
         <ElTabs v-model="activeTableTab" type="border-card">
           <ElTabPane v-for="name in selectedTableNames" :key="name" :label="name" :name="name">
             <ExternalTableExtraForm
-              :meta="tableMeta[name]"
+              v-model:meta="tableMeta[name]"
               :tpl-category="genConfig.tplCategory"
               :columns="tableColumnsMap[name] || []"
               :current-table-name="name"
@@ -462,89 +462,95 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  ElAlert,
-  ElAutocomplete,
-  ElButton,
-  ElCard,
-  ElCheckbox,
-  ElCol,
-  ElDescriptions,
-  ElDescriptionsItem,
-  ElDivider,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElInputNumber,
-  ElMessage,
-  ElMessageBox,
-  ElOption,
-  ElRow,
-  ElSelect,
-  ElSpace,
-  ElStep,
-  ElSteps,
-  ElTabPane,
-  ElTabs,
-  ElTag,
-  ElTooltip
-} from 'element-plus'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import type {ColumnOption} from '@/types'
-import FileSaver from 'file-saver'
-import {fetchGetDictTypeSelectList, type SysDictType} from '@/api/dict/type'
-import {fetchGetParentMenu} from '@/api/menu/menu'
-import PathConfigForm from './modules/path-config-form.vue'
-import ExternalPreviewDialog from './modules/external-preview-dialog.vue'
-import ExternalWriteDiffDialog from './modules/external-write-diff-dialog.vue'
-import ExternalActionBtn from './modules/external-action-btn.vue'
-import ExternalOutputRootPicker from './modules/external-output-root-picker.vue'
-import ExternalColumnTable from './modules/external-column-table.vue'
-import ExternalTableExtraForm, {type ExternalTableMeta} from './modules/external-table-extra-form.vue'
-import {
-  type ExternalDbConnection,
-  type ExternalGenScope,
-  type ExternalTableItem,
-  type ExternalWriteResult,
-  fetchExternalCapabilities,
-  fetchExternalColumns,
-  fetchExternalConnect,
-  fetchExternalDisconnect,
-  fetchExternalDownload,
-  fetchExternalImportGenTable,
-  fetchExternalSaveDraft,
-  fetchExternalSaveGenConfig,
-  fetchExternalSavePathProfile,
-  fetchExternalSaveTemplateDir,
-  fetchExternalSessionStatus,
-  fetchExternalTables,
-  fetchExternalTemplates,
-  fetchExternalWriteRollback,
-  fetchExternalWriteToDisk,
-  type GenPathProfile,
-  type GenTableColumnItem
-} from '@/api/generator/gen-external'
-import {loadRecentOutputRoots, rememberOutputRoot} from '@/utils/generator/output-root-presets'
-import {clearLastWriteBackup, loadLastWriteBackup, saveLastWriteBackup} from '@/utils/generator/write-backup-state'
-import {
-  type ConnectionPreset,
-  loadConnectionPresets,
-  loadLastConnection,
-  persistConnectionPresets,
-  saveLastConnection,
-  toPresetConnection
-} from '@/utils/generator/external-connection-presets'
-import {
-  clearLastConnectionPassword,
-  clearPresetPassword,
-  getLastConnectionPassword,
-  getPresetPassword,
-  setLastConnectionPassword,
-  setPresetPassword
-} from '@/utils/generator/external-connection-password-store'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    ElAlert,
+    ElAutocomplete,
+    ElButton,
+    ElCard,
+    ElCheckbox,
+    ElCol,
+    ElDescriptions,
+    ElDescriptionsItem,
+    ElDivider,
+    ElForm,
+    ElFormItem,
+    ElInput,
+    ElInputNumber,
+    ElMessage,
+    ElMessageBox,
+    ElOption,
+    ElRow,
+    ElSelect,
+    ElSpace,
+    ElStep,
+    ElSteps,
+    ElTabPane,
+    ElTabs,
+    ElTag,
+    ElTooltip
+  } from 'element-plus'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import type { ColumnOption } from '@/types'
+  import FileSaver from 'file-saver'
+  import { fetchGetDictTypeSelectList, type SysDictType } from '@/api/dict/type'
+  import { fetchGetParentMenu } from '@/api/menu/menu'
+  import PathConfigForm from './modules/path-config-form.vue'
+  import ExternalPreviewDialog from './modules/external-preview-dialog.vue'
+  import ExternalWriteDiffDialog from './modules/external-write-diff-dialog.vue'
+  import ExternalActionBtn from './modules/external-action-btn.vue'
+  import ExternalOutputRootPicker from './modules/external-output-root-picker.vue'
+  import ExternalColumnTable from './modules/external-column-table.vue'
+  import ExternalTableExtraForm, {
+    type ExternalTableMeta
+  } from './modules/external-table-extra-form.vue'
+  import {
+    type ExternalDbConnection,
+    type ExternalGenScope,
+    type ExternalTableItem,
+    type ExternalWriteResult,
+    fetchExternalCapabilities,
+    fetchExternalColumns,
+    fetchExternalConnect,
+    fetchExternalDisconnect,
+    fetchExternalDownload,
+    fetchExternalImportGenTable,
+    fetchExternalSaveDraft,
+    fetchExternalSaveGenConfig,
+    fetchExternalSavePathProfile,
+    fetchExternalSaveTemplateDir,
+    fetchExternalSessionStatus,
+    fetchExternalTables,
+    fetchExternalTemplates,
+    fetchExternalWriteRollback,
+    fetchExternalWriteToDisk,
+    type GenPathProfile,
+    type GenTableColumnItem
+  } from '@/api/generator/gen-external'
+  import { loadRecentOutputRoots, rememberOutputRoot } from '@/utils/generator/output-root-presets'
+  import {
+    clearLastWriteBackup,
+    loadLastWriteBackup,
+    saveLastWriteBackup
+  } from '@/utils/generator/write-backup-state'
+  import {
+    type ConnectionPreset,
+    loadConnectionPresets,
+    loadLastConnection,
+    persistConnectionPresets,
+    saveLastConnection,
+    toPresetConnection
+  } from '@/utils/generator/external-connection-presets'
+  import {
+    clearLastConnectionPassword,
+    clearPresetPassword,
+    getLastConnectionPassword,
+    getPresetPassword,
+    setLastConnectionPassword,
+    setPresetPassword
+  } from '@/utils/generator/external-connection-password-store'
 
-defineOptions({ name: 'GenExternal' })
+  defineOptions({ name: 'GenExternal' })
 
   const SESSION_KEY = 'gen_external_session_id'
 

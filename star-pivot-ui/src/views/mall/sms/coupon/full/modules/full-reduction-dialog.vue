@@ -7,13 +7,30 @@
   >
     <ElForm ref="formRef" :model="formData" :rules="rules" label-width="100px">
       <ElFormItem label="SKU ID" prop="skuId">
-        <ElInputNumber v-model="formData.skuId" :min="1" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.skuId"
+          :min="1"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="满(元)">
-        <ElInputNumber v-model="formData.fullPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.fullPrice"
+          :min="0"
+          :precision="2"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="减(元)">
-        <ElInputNumber v-model="formData.reducePrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.reducePrice"
+          :min="0"
+          :precision="2"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -24,16 +41,16 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  fetchSkuFullReductionAdd,
-  fetchSkuFullReductionById,
-  fetchSkuFullReductionUpdate,
-  type SkuFullReductionSavePayload
-} from '@/api/mall/sku-promotion'
-import type {DialogType} from '@/types'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchSkuFullReductionAdd,
+    fetchSkuFullReductionById,
+    fetchSkuFullReductionUpdate,
+    type SkuFullReductionSavePayload
+  } from '@/api/mall/sku-promotion'
+  import type { DialogType } from '@/types'
 
-const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

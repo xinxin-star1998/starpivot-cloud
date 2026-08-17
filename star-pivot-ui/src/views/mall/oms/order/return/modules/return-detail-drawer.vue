@@ -16,13 +16,17 @@
         <ElDescriptionsItem label="退款金额"
           >¥{{ formatAmount(detail.returnAmount) }}</ElDescriptionsItem
         >
-        <ElDescriptionsItem label="申请时间">{{ formatDateTime(detail.createTime) }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="申请时间">{{
+          formatDateTime(detail.createTime)
+        }}</ElDescriptionsItem>
         <ElDescriptionsItem label="退货人">{{ detail.returnName || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="联系电话">{{ detail.returnPhone || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="退货原因">{{ detail.reason || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="问题描述">{{ detail.description || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="处理人">{{ detail.handleMan || '-' }}</ElDescriptionsItem>
-        <ElDescriptionsItem label="处理时间">{{ formatDateTime(detail.handleTime) }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="处理时间">{{
+          formatDateTime(detail.handleTime)
+        }}</ElDescriptionsItem>
         <ElDescriptionsItem label="处理备注">{{ detail.handleNote || '-' }}</ElDescriptionsItem>
       </ElDescriptions>
 
@@ -54,21 +58,21 @@
 </template>
 
 <script setup lang="ts">
-import {
-  canSubmitReturnAudit,
-  fetchReturnById,
-  fetchReturnSubmitApproval,
-  RETURN_AUDIT_STATUS_MAP,
-  RETURN_STATUS_MAP,
-  type ReturnVo
-} from '@/api/mall/order-return'
-import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
-import {useAuth} from '@/hooks/core/useAuth'
-import {ElMessage, ElMessageBox} from 'element-plus'
-import {formatDateTime} from '@/utils/common/datetime'
-import {formatMoney} from '@/utils/mall/money'
+  import {
+    canSubmitReturnAudit,
+    fetchReturnById,
+    fetchReturnSubmitApproval,
+    RETURN_AUDIT_STATUS_MAP,
+    RETURN_STATUS_MAP,
+    type ReturnVo
+  } from '@/api/mall/order-return'
+  import ApprovalTimeline from '@/views/approval/components/ApprovalTimeline.vue'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { formatDateTime } from '@/utils/common/datetime'
+  import { formatMoney } from '@/utils/mall/money'
 
-interface Props {
+  interface Props {
     visible: boolean
     returnId?: number
   }

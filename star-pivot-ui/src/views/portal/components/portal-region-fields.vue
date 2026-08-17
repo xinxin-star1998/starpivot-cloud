@@ -28,9 +28,12 @@
 </template>
 
 <script setup lang="ts">
-import {type PortalRegionForm, usePortalRegionPicker} from '@/hooks/portal/usePortalRegionPicker'
+  import {
+    type PortalRegionForm,
+    usePortalRegionPicker
+  } from '@/hooks/portal/usePortalRegionPicker'
 
-defineOptions({ name: 'PortalRegionFields' })
+  defineOptions({ name: 'PortalRegionFields' })
 
   const props = defineProps<{
     form: PortalRegionForm

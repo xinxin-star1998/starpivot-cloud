@@ -1,5 +1,5 @@
-import type {CouponVo} from '@/api/mall/coupon'
-import {formatMoney} from '@/utils/mall/money'
+import type { CouponVo } from '@/api/mall/coupon'
+import { formatMoney } from '@/utils/mall/money'
 
 export type CouponRunStatus = 'not_started' | 'claiming' | 'running' | 'expired' | 'depleted'
 

@@ -5,10 +5,18 @@
         <span class="portal-header__slogan">欢迎来到 StarPivot 商城</span>
         <div class="portal-header__top-actions">
           <template v-if="portalStore.isLogin">
-            <button type="button" class="portal-header__link" @click="router.push('/portal/account')">
+            <button
+              type="button"
+              class="portal-header__link"
+              @click="router.push('/portal/account')"
+            >
               会员中心
             </button>
-            <button type="button" class="portal-header__link" @click="router.push('/portal/account/security')">
+            <button
+              type="button"
+              class="portal-header__link"
+              @click="router.push('/portal/account/security')"
+            >
               账号安全
             </button>
             <span class="portal-header__username">{{
@@ -17,9 +25,15 @@
             <button type="button" class="portal-header__link" @click="handleLogout">退出</button>
           </template>
           <template v-else>
-            <button type="button" class="portal-header__link" @click="router.push('/portal/login')">登录</button>
+            <button type="button" class="portal-header__link" @click="router.push('/portal/login')"
+              >登录</button
+            >
             <span class="portal-header__sep">|</span>
-            <button type="button" class="portal-header__link" @click="router.push('/portal/register')">
+            <button
+              type="button"
+              class="portal-header__link"
+              @click="router.push('/portal/register')"
+            >
               注册
             </button>
           </template>
@@ -105,7 +119,14 @@
       </div>
     </div>
 
-    <ElDrawer v-model="mobileSearchVisible" title="搜索商品" direction="ttb" size="auto" destroy-on-close @open="refreshMobileSearchHistory">
+    <ElDrawer
+      v-model="mobileSearchVisible"
+      title="搜索商品"
+      direction="ttb"
+      size="auto"
+      destroy-on-close
+      @open="refreshMobileSearchHistory"
+    >
       <ElInput
         v-model="mobileSearchKeyword"
         placeholder="输入商品关键词"
@@ -118,7 +139,9 @@
           <ArtSvgIcon icon="ri:search-line" />
         </template>
       </ElInput>
-      <ElButton type="primary" class="mobile-search-submit" @click="handleMobileSearch">搜索</ElButton>
+      <ElButton type="primary" class="mobile-search-submit" @click="handleMobileSearch"
+        >搜索</ElButton
+      >
       <div v-if="mobileSearchHistory.length" class="mobile-search-history">
         <span class="mobile-search-history__label">最近搜索</span>
         <div class="mobile-search-history__tags">
@@ -138,14 +161,14 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalCart} from '@/api/portal/cart'
-import {fetchPortalPendingReviewCount} from '@/api/portal/comment'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {usePortalMemberStore} from '@/store/modules/portal-member'
-import {addPortalSearchKeyword, getPortalSearchHistory} from '@/utils/portal/search-history'
-import {openPortalCategoryDrawer} from '@/utils/portal/category-drawer'
+  import { fetchPortalCart } from '@/api/portal/cart'
+  import { fetchPortalPendingReviewCount } from '@/api/portal/comment'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { usePortalMemberStore } from '@/store/modules/portal-member'
+  import { addPortalSearchKeyword, getPortalSearchHistory } from '@/utils/portal/search-history'
+  import { openPortalCategoryDrawer } from '@/utils/portal/category-drawer'
 
-defineOptions({ name: 'PortalHeader' })
+  defineOptions({ name: 'PortalHeader' })
 
   const route = useRoute()
   const router = useRouter()
@@ -254,7 +277,6 @@ defineOptions({ name: 'PortalHeader' })
 </script>
 
 <style scoped lang="scss">
-
   .portal-header {
     position: sticky;
     top: 0;

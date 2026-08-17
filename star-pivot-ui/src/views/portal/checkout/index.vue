@@ -61,9 +61,7 @@
       <div v-for="item in displayItems" :key="item.skuId" class="checkout-item">
         <span class="checkout-item__name">{{ item.skuTitle }}</span>
         <span class="checkout-item__qty">x{{ item.quantity }}</span>
-        <span class="checkout-item__price"
-          >¥{{ formatLineAmount(item) }}</span
-        >
+        <span class="checkout-item__price">¥{{ formatLineAmount(item) }}</span>
       </div>
       <div class="checkout-total">
         <p v-if="priceTrial && priceTrial.promotionAmount > 0" class="checkout-discount">
@@ -75,8 +73,12 @@
         <p v-if="integrationDiscount > 0" class="checkout-discount"
           >积分抵扣：-¥{{ formatPrice(integrationDiscount) }}（{{ useIntegrationInput }} 积分）</p
         >
-        <p v-if="freightAmount > 0" class="checkout-freight">运费：¥{{ formatPrice(freightAmount) }}</p>
-        <p v-else-if="priceTrial?.freeFreight" class="checkout-freight checkout-freight--free">免运费</p>
+        <p v-if="freightAmount > 0" class="checkout-freight"
+          >运费：¥{{ formatPrice(freightAmount) }}</p
+        >
+        <p v-else-if="priceTrial?.freeFreight" class="checkout-freight checkout-freight--free"
+          >免运费</p
+        >
         应付：<strong>¥{{ formatPrice(payAmount) }}</strong>
       </div>
     </section>
@@ -173,7 +175,9 @@
         >
           微信扫码支付
         </ElButton>
-        <ElButton v-else :loading="paying" type="primary" @click="handleMockPay">Mock 支付</ElButton>
+        <ElButton v-else :loading="paying" type="primary" @click="handleMockPay"
+          >Mock 支付</ElButton
+        >
       </template>
     </ElDialog>
 
@@ -194,42 +198,49 @@
         <ElButton v-if="wxPayMock" :loading="paying" type="primary" @click="handleWxMockConfirm">
           Mock 确认支付
         </ElButton>
-        <ElButton v-else type="primary" @click="router.push('/portal/orders')">我已完成支付</ElButton>
+        <ElButton v-else type="primary" @click="router.push('/portal/orders')"
+          >我已完成支付</ElButton
+        >
       </template>
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {fetchPortalAddressList, fetchPortalAddressSave} from '@/api/portal/address'
-import {fetchPortalCart} from '@/api/portal/cart'
-import {fetchPortalCouponCheckout} from '@/api/portal/coupon'
-import {
-  fetchPortalOrderMockPay,
-  fetchPortalOrderPriceTrial,
-  fetchPortalOrderSubmit,
-  fetchPortalOrderSubmitToken
-} from '@/api/portal/order'
-import {
-  fetchPortalAlipayEnabled,
-  fetchPortalAlipayPay,
-  fetchPortalWxMockPay,
-  fetchPortalWxNativePay,
-  fetchPortalWxPayEnabled
-} from '@/api/portal/pay'
-import type {PortalAddress, PortalCartItem, PortalCheckoutCoupon, PortalOrderPriceTrial} from '@/api/portal/types'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {formatMoney, formatMoneyProduct} from '@/utils/mall/money'
-import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
-import {submitAlipayPayForm} from '@/utils/portal/alipay-pay'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import PortalPageHeader from '../components/portal-page-header.vue'
-import PortalRegionFields from '../components/portal-region-fields.vue'
-import QrcodeVue from 'qrcode.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import { fetchPortalAddressList, fetchPortalAddressSave } from '@/api/portal/address'
+  import { fetchPortalCart } from '@/api/portal/cart'
+  import { fetchPortalCouponCheckout } from '@/api/portal/coupon'
+  import {
+    fetchPortalOrderMockPay,
+    fetchPortalOrderPriceTrial,
+    fetchPortalOrderSubmit,
+    fetchPortalOrderSubmitToken
+  } from '@/api/portal/order'
+  import {
+    fetchPortalAlipayEnabled,
+    fetchPortalAlipayPay,
+    fetchPortalWxMockPay,
+    fetchPortalWxNativePay,
+    fetchPortalWxPayEnabled
+  } from '@/api/portal/pay'
+  import type {
+    PortalAddress,
+    PortalCartItem,
+    PortalCheckoutCoupon,
+    PortalOrderPriceTrial
+  } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { formatMoney, formatMoneyProduct } from '@/utils/mall/money'
+  import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
+  import { submitAlipayPayForm } from '@/utils/portal/alipay-pay'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import PortalPageHeader from '../components/portal-page-header.vue'
+  import PortalRegionFields from '../components/portal-region-fields.vue'
+  import QrcodeVue from 'qrcode.vue'
 
-defineOptions({ name: 'PortalCheckout' })
+  defineOptions({ name: 'PortalCheckout' })
 
   const route = useRoute()
   const router = useRouter()
@@ -509,7 +520,10 @@ defineOptions({ name: 'PortalCheckout' })
     }
     try {
       await loadData()
-      const [alipay, wx] = await Promise.all([fetchPortalAlipayEnabled(), fetchPortalWxPayEnabled()])
+      const [alipay, wx] = await Promise.all([
+        fetchPortalAlipayEnabled(),
+        fetchPortalWxPayEnabled()
+      ])
       alipayEnabled.value = alipay
       wxPayEnabled.value = wx.enabled
       wxPayMock.value = wx.mock
@@ -530,7 +544,6 @@ defineOptions({ name: 'PortalCheckout' })
 </script>
 
 <style scoped lang="scss">
-
   .panel {
     background: var(--portal-bg-elevated);
     border-radius: var(--portal-radius-lg);

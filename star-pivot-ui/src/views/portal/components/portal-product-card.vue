@@ -2,12 +2,7 @@
 <template>
   <div class="portal-product-card" @click="emit('click')">
     <div class="portal-product-card__img-wrap">
-      <img
-        :src="imageSrc"
-        :alt="spuName"
-        class="portal-product-card__img"
-        loading="lazy"
-      />
+      <img :src="imageSrc" :alt="spuName" class="portal-product-card__img" loading="lazy" />
       <span v-if="badge" class="portal-product-card__badge">{{ badge }}</span>
       <div v-if="showActions" class="portal-product-card__actions" @click.stop>
         <button
@@ -34,23 +29,14 @@
     <div class="portal-product-card__body">
       <p class="portal-product-card__name">{{ spuName }}</p>
       <p v-if="showBrand && brandName" class="portal-product-card__brand">{{ brandName }}</p>
-      <PortalProductRating
-        v-if="showRating"
-        :avg-star="avgStar"
-        :comment-count="commentCount"
-      />
+      <PortalProductRating v-if="showRating" :avg-star="avgStar" :comment-count="commentCount" />
       <p v-if="stockText" class="portal-product-card__stock">{{ stockText }}</p>
       <p class="portal-product-card__price">
         <span v-if="promoPrice != null" class="promo">
           <span class="currency">¥</span>{{ formatPrice(promoPrice) }}
         </span>
-        <span v-else class="promo">
-          <span class="currency">¥</span>{{ formatPrice(price) }}
-        </span>
-        <span
-          v-if="promoPrice != null && price != null && promoPrice < price"
-          class="origin"
-        >
+        <span v-else class="promo"> <span class="currency">¥</span>{{ formatPrice(price) }} </span>
+        <span v-if="promoPrice != null && price != null && promoPrice < price" class="origin">
           ¥{{ formatPrice(price) }}
         </span>
       </p>
@@ -60,12 +46,12 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
-import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
-import { formatMoney } from '@/utils/mall/money'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
+  import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+  import { formatMoney } from '@/utils/mall/money'
 
-defineOptions({ name: 'PortalProductCard' })
+  defineOptions({ name: 'PortalProductCard' })
 
   const props = withDefaults(
     defineProps<{
@@ -104,9 +90,7 @@ defineOptions({ name: 'PortalProductCard' })
     'add-cart': []
   }>()
 
-  const imageSrc = computed(
-    () => props.imageUrl || props.coverImg || props.placeholderImg
-  )
+  const imageSrc = computed(() => props.imageUrl || props.coverImg || props.placeholderImg)
 
   function formatPrice(p?: number) {
     return formatMoney(p)

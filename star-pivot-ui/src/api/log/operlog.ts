@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type {OperLogList, OperLogListItem, OperLogSearchParams} from '@/types/api/operlog'
+import type { OperLogList, OperLogListItem, OperLogSearchParams } from '@/types/api/operlog'
 
 /**
  * 获取操作日志列表（分页）

@@ -1,7 +1,12 @@
 <!-- 会员收藏 -->
 <template>
   <div class="member-collect-page art-full-height">
-    <CollectSearch v-model="searchForm" :active-tab="activeTab" @search="handleSearch" @reset="handleReset" />
+    <CollectSearch
+      v-model="searchForm"
+      :active-tab="activeTab"
+      @search="handleSearch"
+      @reset="handleReset"
+    />
 
     <ElCard class="art-table-card" shadow="never" style="margin-top: 12px">
       <ElTabs v-model="activeTab" class="collect-tabs" @tab-change="handleTabChange">
@@ -24,17 +29,17 @@
 </template>
 
 <script setup lang="ts">
-import {useTable} from '@/hooks/core/useTable'
-import {
-  fetchMemberCollectSpuList,
-  fetchMemberCollectSubjectList,
-  type MemberCollectListParams
-} from '@/api/mall/member-collect'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import CollectSearch from './modules/collect-search.vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    fetchMemberCollectSpuList,
+    fetchMemberCollectSubjectList,
+    type MemberCollectListParams
+  } from '@/api/mall/member-collect'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import CollectSearch from './modules/collect-search.vue'
 
-defineOptions({ name: 'MemberCollect' })
+  defineOptions({ name: 'MemberCollect' })
 
   const activeTab = ref<'spu' | 'subject'>('spu')
 

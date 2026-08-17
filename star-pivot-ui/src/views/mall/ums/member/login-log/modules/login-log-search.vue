@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import {MEMBER_LOGIN_TYPE_MAP} from '@/api/mall/member-login-log'
+  import { MEMBER_LOGIN_TYPE_MAP } from '@/api/mall/member-login-log'
 
-interface Props {
+  interface Props {
     modelValue: Record<string, unknown>
   }
   interface Emits {

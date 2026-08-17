@@ -34,9 +34,9 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
-defineOptions({ name: 'CaptchaImage' })
+  defineOptions({ name: 'CaptchaImage' })
 
   defineProps<{
     image: string
@@ -60,7 +60,9 @@ defineOptions({ name: 'CaptchaImage' })
     border: 1px solid var(--art-gray-200);
     border-radius: var(--el-border-radius-base, 8px);
     box-shadow: 0 0 0 1px var(--art-gray-200) inset;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
 
     &:hover {
       border-color: var(--theme-color);

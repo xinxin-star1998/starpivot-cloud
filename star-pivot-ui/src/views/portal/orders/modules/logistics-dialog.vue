@@ -26,58 +26,61 @@
 </template>
 
 <script setup lang="ts">
-import type {ShipmentTracking} from '@/api/tms/types'
-import {fetchPortalOrderLogistics} from '@/api/tms/shipment'
-import {buildLogisticsTrackUrl} from '@/utils/portal/logistics'
-import {handleMutationError} from '@/utils/http/mutation'
+  import type { ShipmentTracking } from '@/api/tms/types'
+  import { fetchPortalOrderLogistics } from '@/api/tms/shipment'
+  import { buildLogisticsTrackUrl } from '@/utils/portal/logistics'
+  import { handleMutationError } from '@/utils/http/mutation'
 
-const visible = defineModel<boolean>('visible', { default: false })
-const orderId = defineModel<number | undefined>('orderId')
+  const visible = defineModel<boolean>('visible', { default: false })
+  const orderId = defineModel<number | undefined>('orderId')
 
-const loading = ref(false)
-const tracking = ref<ShipmentTracking>()
+  const loading = ref(false)
+  const tracking = ref<ShipmentTracking>()
 
-watch(
-  () => [visible.value, orderId.value] as const,
-  async ([open, id]) => {
-    if (!open || id == null) return
-    loading.value = true
-    try {
-      tracking.value = await fetchPortalOrderLogistics(id)
-    } catch (error) {
-      handleMutationError(error, '加载物流轨迹失败')
-      visible.value = false
-    } finally {
-      loading.value = false
+  watch(
+    () => [visible.value, orderId.value] as const,
+    async ([open, id]) => {
+      if (!open || id == null) return
+      loading.value = true
+      try {
+        tracking.value = await fetchPortalOrderLogistics(id)
+      } catch (error) {
+        handleMutationError(error, '加载物流轨迹失败')
+        visible.value = false
+      } finally {
+        loading.value = false
+      }
     }
-  }
-)
-
-function openExternal() {
-  if (!tracking.value?.trackingNo) return
-  window.open(
-    buildLogisticsTrackUrl(tracking.value.trackingNo, tracking.value.kuaidi100Com || tracking.value.carrierName),
-    '_blank',
-    'noopener'
   )
-}
 
-function reset() {
-  tracking.value = undefined
-}
+  function openExternal() {
+    if (!tracking.value?.trackingNo) return
+    window.open(
+      buildLogisticsTrackUrl(
+        tracking.value.trackingNo,
+        tracking.value.kuaidi100Com || tracking.value.carrierName
+      ),
+      '_blank',
+      'noopener'
+    )
+  }
+
+  function reset() {
+    tracking.value = undefined
+  }
 </script>
 
 <style scoped>
-.logistics-dialog p {
-  margin: 0 0 8px;
-}
+  .logistics-dialog p {
+    margin: 0 0 8px;
+  }
 
-.logistics-timeline {
-  margin-top: 16px;
-}
+  .logistics-timeline {
+    margin-top: 16px;
+  }
 
-.event-location {
-  color: var(--el-text-color-secondary);
-  font-size: 12px;
-}
+  .event-location {
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+  }
 </style>

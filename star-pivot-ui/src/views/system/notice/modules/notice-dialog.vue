@@ -51,12 +51,17 @@
 </template>
 
 <script setup lang="ts">
-import type {ElOption, FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {fetchAddNotice, fetchGetNoticeById, fetchUpdateNotice, type Notice} from '@/api/system/notice/notice'
-import {DialogType} from '@/types'
+  import type { ElOption, FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import {
+    fetchAddNotice,
+    fetchGetNoticeById,
+    fetchUpdateNotice,
+    type Notice
+  } from '@/api/system/notice/notice'
+  import { DialogType } from '@/types'
 
-interface Props {
+  interface Props {
     visible: boolean
     type: DialogType
     noticeData?: Partial<Notice>

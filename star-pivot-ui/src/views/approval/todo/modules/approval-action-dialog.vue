@@ -14,7 +14,12 @@
             {{ item.value }}
           </ElDescriptionsItem>
         </ElDescriptions>
-        <ElFormItem class="comment-field" label="审批意见" label-position="top" :required="mode === 'reject'">
+        <ElFormItem
+          class="comment-field"
+          label="审批意见"
+          label-position="top"
+          :required="mode === 'reject'"
+        >
           <ElInput
             v-model="comment"
             :rows="5"
@@ -38,12 +43,12 @@
 </template>
 
 <script lang="ts" setup>
-import {computed} from 'vue'
-import {useRouter} from 'vue-router'
-import ApprovalTimeline from '../../components/ApprovalTimeline.vue'
-import {resolveApprovalBizNav} from '../../utils/biz-nav'
+  import { computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import ApprovalTimeline from '../../components/ApprovalTimeline.vue'
+  import { resolveApprovalBizNav } from '../../utils/biz-nav'
 
-interface TaskMetaItem {
+  interface TaskMetaItem {
     label: string
     value?: string
   }
@@ -70,9 +75,7 @@ interface TaskMetaItem {
 
   const router = useRouter()
 
-  const bizNav = computed(() =>
-    resolveApprovalBizNav(props.bizModule, props.bizType, props.bizKey)
-  )
+  const bizNav = computed(() => resolveApprovalBizNav(props.bizModule, props.bizType, props.bizKey))
 
   function goBizDetail() {
     const nav = bizNav.value

@@ -46,7 +46,7 @@
           </ElFormItem>
         </ElCol>
         <ElCol v-if="dialogType === 'add'" :xs="24" :sm="12">
-              <ElFormItem label="用户密码" prop="password">
+          <ElFormItem label="用户密码" prop="password">
             <ElInput
               v-model="formData.password"
               type="password"
@@ -218,17 +218,20 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage, ElTreeSelect} from 'element-plus'
-import {useUserStore} from '@/store/modules/user'
-import {fetchGetRoleSelect} from '@/api/role/role'
-import {fetchGetPostSelect} from '@/api/post/post'
-import {fetchGetDeptTree, type SysDept} from '@/api/dept/dept'
-import {fetchAddUser, fetchGetUserById, fetchUpdateUser} from '@/api/user/user'
-import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
-import {ADMIN_PASSWORD_PATTERN, ADMIN_PASSWORD_RULE_MESSAGE} from '@/utils/sys/password-prompt-guard'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage, ElTreeSelect } from 'element-plus'
+  import { useUserStore } from '@/store/modules/user'
+  import { fetchGetRoleSelect } from '@/api/role/role'
+  import { fetchGetPostSelect } from '@/api/post/post'
+  import { fetchGetDeptTree, type SysDept } from '@/api/dept/dept'
+  import { fetchAddUser, fetchGetUserById, fetchUpdateUser } from '@/api/user/user'
+  import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
+  import {
+    ADMIN_PASSWORD_PATTERN,
+    ADMIN_PASSWORD_RULE_MESSAGE
+  } from '@/utils/sys/password-prompt-guard'
 
-// 角色列表项类型（扩展 RoleListItem，添加 roleCode 字段）
+  // 角色列表项类型（扩展 RoleListItem，添加 roleCode 字段）
   type RoleOption = Api.SystemManage.RoleListItem & { roleCode: string }
 
   interface Props {
@@ -471,7 +474,8 @@ import {ADMIN_PASSWORD_PATTERN, ADMIN_PASSWORD_RULE_MESSAGE} from '@/utils/sys/p
             }
           } else {
             // 编辑用户，不传密码字段
-            const { password: _, ...updateData } = formData
+            const { password: _password, ...updateData } = formData
+            void _password
             await fetchUpdateUser(updateData)
             // 编辑时如果修改了头像，autoUpload为true会自动上传
             // 若编辑的是当前登录用户，同步头像到 store，便于顶部下拉立即展示最新头像

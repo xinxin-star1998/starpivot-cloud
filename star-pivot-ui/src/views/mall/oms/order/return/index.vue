@@ -25,25 +25,25 @@
 </template>
 
 <script setup lang="ts">
-import {h, onMounted} from 'vue'
-import {useRoute} from 'vue-router'
-import {useTable} from '@/hooks/core/useTable'
-import {
-  canCompleteReturn,
-  fetchReturnComplete,
-  fetchReturnList,
-  RETURN_AUDIT_STATUS_MAP,
-  RETURN_STATUS_MAP
-} from '@/api/mall/order-return'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import ReturnSearch from './modules/return-search.vue'
-import ReturnDetailDrawer from './modules/return-detail-drawer.vue'
-import {ElButton, ElSpace, ElTag} from 'element-plus'
-import {useAuth} from '@/hooks/core/useAuth'
-import {formatMoney} from '@/utils/mall/money'
+  import { h, onMounted } from 'vue'
+  import { useRoute } from 'vue-router'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    canCompleteReturn,
+    fetchReturnComplete,
+    fetchReturnList,
+    RETURN_AUDIT_STATUS_MAP,
+    RETURN_STATUS_MAP
+  } from '@/api/mall/order-return'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ReturnSearch from './modules/return-search.vue'
+  import ReturnDetailDrawer from './modules/return-detail-drawer.vue'
+  import { ElButton, ElSpace, ElTag } from 'element-plus'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { formatMoney } from '@/utils/mall/money'
 
-defineOptions({ name: 'OmsOrderReturn' })
+  defineOptions({ name: 'OmsOrderReturn' })
 
   const route = useRoute()
   const { hasAuth } = useAuth()
@@ -85,8 +85,7 @@ defineOptions({ name: 'OmsOrderReturn' })
           prop: 'returnAmount',
           label: '退款金额',
           width: 100,
-          formatter: (row) =>
-            row.returnAmount != null ? `¥${formatMoney(row.returnAmount)}` : '-'
+          formatter: (row) => (row.returnAmount != null ? `¥${formatMoney(row.returnAmount)}` : '-')
         },
         {
           prop: 'auditStatus',

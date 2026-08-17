@@ -34,7 +34,11 @@
           <strong>{{ center.collectCount ?? 0 }}</strong>
           <span>我的收藏</span>
         </button>
-        <button type="button" class="stat-item" @click="router.push('/portal/account/pending-reviews')">
+        <button
+          type="button"
+          class="stat-item"
+          @click="router.push('/portal/account/pending-reviews')"
+        >
           <strong>{{ center.pendingReviewCount ?? 0 }}</strong>
           <span>待评价</span>
         </button>
@@ -57,7 +61,11 @@
           <ArtSvgIcon icon="ri:history-line" />
           <span>浏览足迹</span>
         </button>
-        <button type="button" class="menu-item" @click="router.push('/portal/account/pending-reviews')">
+        <button
+          type="button"
+          class="menu-item"
+          @click="router.push('/portal/account/pending-reviews')"
+        >
           <ArtSvgIcon icon="ri:edit-box-line" />
           <span>待评价</span>
           <span v-if="(center.pendingReviewCount ?? 0) > 0" class="menu-badge">
@@ -117,7 +125,13 @@
           </ElRadioGroup>
         </ElFormItem>
         <ElFormItem label="签名">
-          <ElInput v-model="profileForm.sign" type="textarea" :rows="3" maxlength="200" show-word-limit />
+          <ElInput
+            v-model="profileForm.sign"
+            type="textarea"
+            :rows="3"
+            maxlength="200"
+            show-word-limit
+          />
         </ElFormItem>
       </ElForm>
       <template #footer>
@@ -129,16 +143,16 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalMemberCenter, fetchPortalMemberProfileUpdate} from '@/api/portal/member'
-import {uploadPortalCommentImage} from '@/api/portal/image'
-import type {PortalMemberCenter} from '@/api/portal/types'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {ElMessage} from 'element-plus'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+  import { fetchPortalMemberCenter, fetchPortalMemberProfileUpdate } from '@/api/portal/member'
+  import { uploadPortalCommentImage } from '@/api/portal/image'
+  import type { PortalMemberCenter } from '@/api/portal/types'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { ElMessage } from 'element-plus'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
 
-defineOptions({ name: 'PortalAccount' })
+  defineOptions({ name: 'PortalAccount' })
 
   const router = useRouter()
   const { requireLogin, portalStore } = usePortalAuth()
@@ -244,7 +258,6 @@ defineOptions({ name: 'PortalAccount' })
 </script>
 
 <style scoped lang="scss">
-
   .profile-card {
     display: flex;
     align-items: center;

@@ -1,5 +1,11 @@
 <template>
-  <ElDialog v-model="dialogVisible" title="编辑会员" width="480px" destroy-on-close @closed="resetForm">
+  <ElDialog
+    v-model="dialogVisible"
+    title="编辑会员"
+    width="480px"
+    destroy-on-close
+    @closed="resetForm"
+  >
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="88px">
       <ElFormItem label="昵称" prop="nickname">
         <ElInput v-model="form.nickname" placeholder="昵称" maxlength="64" />
@@ -11,10 +17,20 @@
         </ElRadioGroup>
       </ElFormItem>
       <ElFormItem label="积分">
-        <ElInputNumber v-model="form.integration" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="form.integration"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="成长值">
-        <ElInputNumber v-model="form.growth" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="form.growth"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -25,10 +41,10 @@
 </template>
 
 <script setup lang="ts">
-import {fetchMemberById, fetchMemberUpdate, type MemberSavePayload} from '@/api/mall/member'
-import type {FormInstance, FormRules} from 'element-plus'
+  import { fetchMemberById, fetchMemberUpdate, type MemberSavePayload } from '@/api/mall/member'
+  import type { FormInstance, FormRules } from 'element-plus'
 
-interface Props {
+  interface Props {
     visible: boolean
     memberId?: number
   }

@@ -3,7 +3,11 @@
     <!-- 多图 -->
     <template v-if="multiple">
       <ul class="mall-image-upload__cards">
-        <li v-for="(item, index) in displayItems" :key="item.objectName" class="mall-image-upload__card">
+        <li
+          v-for="(item, index) in displayItems"
+          :key="item.objectName"
+          class="mall-image-upload__card"
+        >
           <ElImage
             :src="item.url"
             fit="cover"
@@ -44,7 +48,12 @@
           <span v-if="canUseFilePicker" class="mall-image-upload__placeholder-text">选择图片</span>
         </div>
         <div v-if="previewUrl && !uploading" class="mall-image-upload__overlay" @click.stop>
-          <button class="mall-image-upload__icon-btn" title="更换" type="button" @click="openPickerOrUpload">
+          <button
+            class="mall-image-upload__icon-btn"
+            title="更换"
+            type="button"
+            @click="openPickerOrUpload"
+          >
             <ArtSvgIcon icon="ri:pencil-line" />
           </button>
           <button
@@ -86,21 +95,21 @@
 </template>
 
 <script setup lang="ts">
-import {Loading, Plus} from '@element-plus/icons-vue'
-import {ElMessage, ElMessageBox} from 'element-plus'
-import {computed, onUnmounted, ref, watch} from 'vue'
-import {uploadMallImage} from '@/api/mall/mall-image'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {
-  isStorageObjectName,
-  normalizeToObjectName,
-  resolveGoodsImageDisplayUrl,
-  resolveGoodsImageDisplayUrls
-} from '@/utils/mall/goods-image-url'
-import {useMenuStore} from '@/store/modules/menu'
-import MallFilePickerDialog from './mall-file-picker-dialog.vue'
+  import { Loading, Plus } from '@element-plus/icons-vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { computed, onUnmounted, ref, watch } from 'vue'
+  import { uploadMallImage } from '@/api/mall/mall-image'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import {
+    isStorageObjectName,
+    normalizeToObjectName,
+    resolveGoodsImageDisplayUrl,
+    resolveGoodsImageDisplayUrls
+  } from '@/utils/mall/goods-image-url'
+  import { useMenuStore } from '@/store/modules/menu'
+  import MallFilePickerDialog from './mall-file-picker-dialog.vue'
 
-defineOptions({ name: 'MallImageUpload' })
+  defineOptions({ name: 'MallImageUpload' })
 
   const props = withDefaults(
     defineProps<{
@@ -150,9 +159,11 @@ defineOptions({ name: 'MallImageUpload' })
 
   const objectNames = computed((): string[] => {
     if (props.multiple) {
-      return (props.modelValue as string[] | undefined)?.map(normalizeToObjectName).filter(
-        (name): name is string => !!name && isStorageObjectName(name)
-      ) ?? []
+      return (
+        (props.modelValue as string[] | undefined)
+          ?.map(normalizeToObjectName)
+          .filter((name): name is string => !!name && isStorageObjectName(name)) ?? []
+      )
     }
     const single = normalizeToObjectName(props.modelValue as string | undefined)
     return single && isStorageObjectName(single) ? [single] : []
@@ -415,7 +426,9 @@ defineOptions({ name: 'MallImageUpload' })
     cursor: pointer;
     background: var(--el-fill-color-lighter);
     border-style: dashed;
-    transition: border-color 0.2s, color 0.2s;
+    transition:
+      border-color 0.2s,
+      color 0.2s;
 
     &:hover {
       color: var(--el-color-primary);

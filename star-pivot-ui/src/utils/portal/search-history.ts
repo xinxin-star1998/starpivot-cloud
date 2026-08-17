@@ -1,4 +1,4 @@
-import {notifyPortalSearchHistoryChanged} from './search-event'
+import { notifyPortalSearchHistoryChanged } from './search-event'
 
 const STORAGE_KEY = 'portal_search_history'
 const MAX_ITEMS = 10
@@ -19,7 +19,10 @@ export function getPortalSearchHistory(): string[] {
 export function addPortalSearchKeyword(keyword: string) {
   const text = keyword.trim()
   if (!text) return
-  const next = [text, ...getPortalSearchHistory().filter((item) => item !== text)].slice(0, MAX_ITEMS)
+  const next = [text, ...getPortalSearchHistory().filter((item) => item !== text)].slice(
+    0,
+    MAX_ITEMS
+  )
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
   notifyPortalSearchHistoryChanged()
 }

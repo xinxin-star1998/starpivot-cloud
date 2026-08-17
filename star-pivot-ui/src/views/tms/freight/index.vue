@@ -21,7 +21,9 @@
     <ElCard class="art-table-card" shadow="never">
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
         <template #left>
-          <ElButton v-auth="'tms:freight:edit'" type="primary" @click="openEdit()">新增规则</ElButton>
+          <ElButton v-auth="'tms:freight:edit'" type="primary" @click="openEdit()"
+            >新增规则</ElButton
+          >
         </template>
       </ArtTableHeader>
       <ArtTable
@@ -34,7 +36,12 @@
       />
     </ElCard>
 
-    <ElDialog v-model="editVisible" :title="editForm.id ? '编辑规则' : '新增规则'" width="560px" destroy-on-close>
+    <ElDialog
+      v-model="editVisible"
+      :title="editForm.id ? '编辑规则' : '新增规则'"
+      width="560px"
+      destroy-on-close
+    >
       <ElForm ref="editFormRef" :model="editForm" :rules="editRules" label-width="110px">
         <ElFormItem label="规则名称" prop="ruleName">
           <ElInput v-model="editForm.ruleName" />
@@ -55,13 +62,28 @@
         </template>
         <template v-else>
           <ElFormItem label="首重(kg)" prop="firstWeightKg">
-            <ElInputNumber v-model="editForm.firstWeightKg" :min="0.001" :precision="3" style="width: 100%" />
+            <ElInputNumber
+              v-model="editForm.firstWeightKg"
+              :min="0.001"
+              :precision="3"
+              style="width: 100%"
+            />
           </ElFormItem>
           <ElFormItem label="首重费用" prop="firstFee">
-            <ElInputNumber v-model="editForm.firstFee" :min="0" :precision="2" style="width: 100%" />
+            <ElInputNumber
+              v-model="editForm.firstFee"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+            />
           </ElFormItem>
           <ElFormItem label="续重单价" prop="continueFeePerKg">
-            <ElInputNumber v-model="editForm.continueFeePerKg" :min="0" :precision="2" style="width: 100%" />
+            <ElInputNumber
+              v-model="editForm.continueFeePerKg"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+            />
           </ElFormItem>
         </template>
         <ElFormItem label="排序">
@@ -86,165 +108,170 @@
 </template>
 
 <script lang="ts" setup>
-import {h} from 'vue'
-import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
-import {useTable} from '@/hooks/core/useTable'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import {
-  fetchTmsFreightList,
-  fetchTmsFreightRemove,
-  fetchTmsFreightSave,
-  freightRuleTypeLabel,
-  type TmsFreightRule,
-  type TmsFreightSavePayload
-} from '@/api/tms/freight'
-import type {FormInstance, FormRules} from 'element-plus'
-import {handleMutationError} from '@/utils/http/mutation'
+  import { h } from 'vue'
+  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import {
+    fetchTmsFreightList,
+    fetchTmsFreightRemove,
+    fetchTmsFreightSave,
+    freightRuleTypeLabel,
+    type TmsFreightRule,
+    type TmsFreightSavePayload
+  } from '@/api/tms/freight'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { handleMutationError } from '@/utils/http/mutation'
 
-defineOptions({ name: 'TmsFreight' })
+  defineOptions({ name: 'TmsFreight' })
 
-const searchForm = ref({ ruleName: '', ruleType: '' })
-const editVisible = ref(false)
-const saving = ref(false)
-const editFormRef = ref<FormInstance>()
-const editForm = ref<TmsFreightSavePayload>({
-  ruleName: '',
-  ruleType: 'FIXED',
-  defaultFlag: '0',
-  baseFee: 10,
-  status: '0',
-  sortOrder: 0
-})
+  const searchForm = ref({ ruleName: '', ruleType: '' })
+  const editVisible = ref(false)
+  const saving = ref(false)
+  const editFormRef = ref<FormInstance>()
+  const editForm = ref<TmsFreightSavePayload>({
+    ruleName: '',
+    ruleType: 'FIXED',
+    defaultFlag: '0',
+    baseFee: 10,
+    status: '0',
+    sortOrder: 0
+  })
 
-const editRules: FormRules = {
-  ruleName: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-  ruleType: [{ required: true, message: '请选择类型', trigger: 'change' }]
-}
+  const editRules: FormRules = {
+    ruleName: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+    ruleType: [{ required: true, message: '请选择类型', trigger: 'change' }]
+  }
 
-const {
-  columns,
-  columnChecks,
-  data,
-  loading,
-  pagination,
-  searchParams,
-  getData,
-  handleSizeChange,
-  handleCurrentChange,
-  refreshData
-} = useTable({
-  core: {
-    apiFn: fetchTmsFreightList,
-    apiParams: { pageNum: 1, pageSize: 20, ...searchForm.value },
-    columnsFactory: () => [
-      { type: 'index', width: 60, label: '序号' },
-      { prop: 'ruleName', label: '名称', minWidth: 140 },
-      {
-        prop: 'ruleType',
-        label: '类型',
-        width: 100,
-        formatter: (row: TmsFreightRule) => freightRuleTypeLabel[row.ruleType || ''] || row.ruleType
-      },
-      {
-        prop: 'defaultFlag',
-        label: '默认',
-        width: 80,
-        formatter: (row: TmsFreightRule) =>
-          h(ElTag, { type: row.defaultFlag === '1' ? 'success' : 'info' }, () =>
-            row.defaultFlag === '1' ? '是' : '否'
-          )
-      },
-      {
-        prop: 'feeDesc',
-        label: '计费说明',
-        minWidth: 180,
-        formatter: (row: TmsFreightRule) =>
-          row.ruleType === 'WEIGHT'
-            ? `首${row.firstWeightKg}kg ${row.firstFee}元，续${row.continueFeePerKg}元/kg`
-            : `固定 ${row.baseFee ?? 0} 元`
-      },
-      {
-        prop: 'actions',
-        label: '操作',
-        width: 140,
-        fixed: 'right',
-        formatter: (row: TmsFreightRule) =>
-          h('div', { class: 'flex gap-2' }, [
-            h('a', { class: 'text-primary cursor-pointer', onClick: () => openEdit(row) }, '编辑'),
-            h(
-              'a',
-              {
-                class: row.defaultFlag === '1' ? 'text-gray-400' : 'text-danger cursor-pointer',
-                onClick: () => row.defaultFlag !== '1' && handleRemove(row)
-              },
-              '删除'
+  const {
+    columns,
+    columnChecks,
+    data,
+    loading,
+    pagination,
+    searchParams,
+    getData,
+    handleSizeChange,
+    handleCurrentChange,
+    refreshData
+  } = useTable({
+    core: {
+      apiFn: fetchTmsFreightList,
+      apiParams: { pageNum: 1, pageSize: 20, ...searchForm.value },
+      columnsFactory: () => [
+        { type: 'index', width: 60, label: '序号' },
+        { prop: 'ruleName', label: '名称', minWidth: 140 },
+        {
+          prop: 'ruleType',
+          label: '类型',
+          width: 100,
+          formatter: (row: TmsFreightRule) =>
+            freightRuleTypeLabel[row.ruleType || ''] || row.ruleType
+        },
+        {
+          prop: 'defaultFlag',
+          label: '默认',
+          width: 80,
+          formatter: (row: TmsFreightRule) =>
+            h(ElTag, { type: row.defaultFlag === '1' ? 'success' : 'info' }, () =>
+              row.defaultFlag === '1' ? '是' : '否'
             )
-          ])
-      }
-    ]
+        },
+        {
+          prop: 'feeDesc',
+          label: '计费说明',
+          minWidth: 180,
+          formatter: (row: TmsFreightRule) =>
+            row.ruleType === 'WEIGHT'
+              ? `首${row.firstWeightKg}kg ${row.firstFee}元，续${row.continueFeePerKg}元/kg`
+              : `固定 ${row.baseFee ?? 0} 元`
+        },
+        {
+          prop: 'actions',
+          label: '操作',
+          width: 140,
+          fixed: 'right',
+          formatter: (row: TmsFreightRule) =>
+            h('div', { class: 'flex gap-2' }, [
+              h(
+                'a',
+                { class: 'text-primary cursor-pointer', onClick: () => openEdit(row) },
+                '编辑'
+              ),
+              h(
+                'a',
+                {
+                  class: row.defaultFlag === '1' ? 'text-gray-400' : 'text-danger cursor-pointer',
+                  onClick: () => row.defaultFlag !== '1' && handleRemove(row)
+                },
+                '删除'
+              )
+            ])
+        }
+      ]
+    }
+  })
+
+  function handleSearch() {
+    Object.assign(searchParams, searchForm.value, { pageNum: 1 })
+    getData()
   }
-})
 
-function handleSearch() {
-  Object.assign(searchParams, searchForm.value, { pageNum: 1 })
-  getData()
-}
-
-function resetSearch() {
-  searchForm.value = { ruleName: '', ruleType: '' }
-  handleSearch()
-}
-
-function openEdit(row?: TmsFreightRule) {
-  editForm.value = row
-    ? {
-        id: row.id,
-        ruleName: row.ruleName || '',
-        ruleType: row.ruleType || 'FIXED',
-        defaultFlag: row.defaultFlag || '0',
-        baseFee: row.baseFee,
-        firstWeightKg: row.firstWeightKg,
-        firstFee: row.firstFee,
-        continueFeePerKg: row.continueFeePerKg,
-        status: row.status || '0',
-        sortOrder: row.sortOrder ?? 0,
-        remark: row.remark
-      }
-    : {
-        ruleName: '',
-        ruleType: 'FIXED',
-        defaultFlag: '0',
-        baseFee: 10,
-        status: '0',
-        sortOrder: 0
-      }
-  editVisible.value = true
-}
-
-async function handleSave() {
-  await editFormRef.value?.validate()
-  saving.value = true
-  try {
-    await fetchTmsFreightSave(editForm.value)
-    ElMessage.success('保存成功')
-    editVisible.value = false
-    refreshData()
-  } catch (error) {
-    handleMutationError(error, '保存失败')
-  } finally {
-    saving.value = false
+  function resetSearch() {
+    searchForm.value = { ruleName: '', ruleType: '' }
+    handleSearch()
   }
-}
 
-async function handleRemove(row: TmsFreightRule) {
-  await ElMessageBox.confirm(`确认删除规则「${row.ruleName}」？`, '提示', { type: 'warning' })
-  try {
-    await fetchTmsFreightRemove(row.id!)
-    ElMessage.success('删除成功')
-    refreshData()
-  } catch (error) {
-    handleMutationError(error, '删除失败')
+  function openEdit(row?: TmsFreightRule) {
+    editForm.value = row
+      ? {
+          id: row.id,
+          ruleName: row.ruleName || '',
+          ruleType: row.ruleType || 'FIXED',
+          defaultFlag: row.defaultFlag || '0',
+          baseFee: row.baseFee,
+          firstWeightKg: row.firstWeightKg,
+          firstFee: row.firstFee,
+          continueFeePerKg: row.continueFeePerKg,
+          status: row.status || '0',
+          sortOrder: row.sortOrder ?? 0,
+          remark: row.remark
+        }
+      : {
+          ruleName: '',
+          ruleType: 'FIXED',
+          defaultFlag: '0',
+          baseFee: 10,
+          status: '0',
+          sortOrder: 0
+        }
+    editVisible.value = true
   }
-}
+
+  async function handleSave() {
+    await editFormRef.value?.validate()
+    saving.value = true
+    try {
+      await fetchTmsFreightSave(editForm.value)
+      ElMessage.success('保存成功')
+      editVisible.value = false
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '保存失败')
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function handleRemove(row: TmsFreightRule) {
+    await ElMessageBox.confirm(`确认删除规则「${row.ruleName}」？`, '提示', { type: 'warning' })
+    try {
+      await fetchTmsFreightRemove(row.id!)
+      ElMessage.success('删除成功')
+      refreshData()
+    } catch (error) {
+      handleMutationError(error, '删除失败')
+    }
+  }
 </script>

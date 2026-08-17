@@ -52,14 +52,14 @@
 </template>
 
 <script setup lang="ts">
-import {uploadFile} from '@/api/file/file'
-import type {FileCategoryNode} from '@/api/file/types'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import type {UploadFile, UploadInstance} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {computed, ref, watch} from 'vue'
+  import { uploadFile } from '@/api/file/file'
+  import type { FileCategoryNode } from '@/api/file/types'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import type { UploadFile, UploadInstance } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import { computed, ref, watch } from 'vue'
 
-const visible = defineModel<boolean>('visible', { default: false })
+  const visible = defineModel<boolean>('visible', { default: false })
 
   const props = defineProps<{
     categories: FileCategoryNode[]

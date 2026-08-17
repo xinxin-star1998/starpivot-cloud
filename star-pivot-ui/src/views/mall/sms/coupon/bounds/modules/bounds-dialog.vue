@@ -7,7 +7,12 @@
   >
     <ElForm ref="formRef" :model="formData" :rules="rules" label-width="100px">
       <ElFormItem label="SPU ID" prop="spuId">
-        <ElInputNumber v-model="formData.spuId" :min="1" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.spuId"
+          :min="1"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="成长值">
         <ElInputNumber
@@ -28,7 +33,12 @@
         />
       </ElFormItem>
       <ElFormItem label="状态位">
-        <ElInputNumber v-model="formData.work" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.work"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
     </ElForm>
     <template #footer>
@@ -39,16 +49,16 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  fetchSpuBoundsAdd,
-  fetchSpuBoundsById,
-  fetchSpuBoundsUpdate,
-  type SpuBoundsSavePayload
-} from '@/api/mall/spu-bounds'
-import type {DialogType} from '@/types'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchSpuBoundsAdd,
+    fetchSpuBoundsById,
+    fetchSpuBoundsUpdate,
+    type SpuBoundsSavePayload
+  } from '@/api/mall/spu-bounds'
+  import type { DialogType } from '@/types'
 
-const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

@@ -59,12 +59,18 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage, ElTreeSelect} from 'element-plus'
-import {fetchAddDept, fetchGetDeptById, fetchGetDeptTree, fetchUpdateDept, type SysDept} from '@/api/dept/dept'
-import {DialogType} from '@/types'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage, ElTreeSelect } from 'element-plus'
+  import {
+    fetchAddDept,
+    fetchGetDeptById,
+    fetchGetDeptTree,
+    fetchUpdateDept,
+    type SysDept
+  } from '@/api/dept/dept'
+  import { DialogType } from '@/types'
 
-interface Props {
+  interface Props {
     visible: boolean
     type: DialogType
     deptData?: Partial<SysDept>

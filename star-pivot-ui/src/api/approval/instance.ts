@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type {ApInstanceVo, ApprovalSubmitRequest, ApprovalTimelineVo} from './types'
+import type { ApInstanceVo, ApprovalSubmitRequest, ApprovalTimelineVo } from './types'
 
 export interface ApInstanceQuery {
   title?: string

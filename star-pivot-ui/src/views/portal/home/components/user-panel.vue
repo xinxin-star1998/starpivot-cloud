@@ -68,13 +68,13 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {fetchPortalCouponClaimable, fetchPortalCouponMine} from '@/api/portal/coupon'
-import {fetchPortalPendingReviewCount} from '@/api/portal/comment'
-import {usePortalMemberStore} from '@/store/modules/portal-member'
-import {formatMoney} from '@/utils/mall/money'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { fetchPortalCouponClaimable, fetchPortalCouponMine } from '@/api/portal/coupon'
+  import { fetchPortalPendingReviewCount } from '@/api/portal/comment'
+  import { usePortalMemberStore } from '@/store/modules/portal-member'
+  import { formatMoney } from '@/utils/mall/money'
 
-defineOptions({ name: 'PortalHomeUserPanel' })
+  defineOptions({ name: 'PortalHomeUserPanel' })
 
   const router = useRouter()
   const portalStore = usePortalMemberStore()
@@ -193,7 +193,6 @@ defineOptions({ name: 'PortalHomeUserPanel' })
 </script>
 
 <style scoped lang="scss">
-
   .user-panel {
     width: 200px;
     flex-shrink: 0;

@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import {getEnabledGlobalComponents} from '@/config/modules/component'
+  import { getEnabledGlobalComponents } from '@/config/modules/component'
 
-defineOptions({ name: 'ArtGlobalComponent' })
+  defineOptions({ name: 'ArtGlobalComponent' })
   const enabledComponents = computed(() => getEnabledGlobalComponents())
 </script>

@@ -1,5 +1,10 @@
 import request from '@/utils/http'
-import type {PortalCheckoutCoupon, PortalClaimableCoupon, PortalMemberCoupon, PortalMyCoupon} from './types'
+import type {
+  PortalCheckoutCoupon,
+  PortalClaimableCoupon,
+  PortalMemberCoupon,
+  PortalMyCoupon
+} from './types'
 
 export interface PortalCouponTrialPayload {
   useCart?: boolean

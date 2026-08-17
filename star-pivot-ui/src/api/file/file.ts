@@ -1,5 +1,10 @@
 import request from '@/utils/http'
-import type {SysFile, SysFileQueryParams, SysFileRecycleQueryParams, SysFileRenameParams} from './types'
+import type {
+  SysFile,
+  SysFileQueryParams,
+  SysFileRecycleQueryParams,
+  SysFileRenameParams
+} from './types'
 
 export function fetchFileList(params: SysFileQueryParams) {
   return request.post<Api.Common.PageResponse<SysFile>>({

@@ -271,7 +271,11 @@
                         placeholder="请输入新密码"
                       />
                     </ElFormItem>
-                    <ElFormItem label="确认新密码" prop="confirmPassword" class="password-panel__half">
+                    <ElFormItem
+                      label="确认新密码"
+                      prop="confirmPassword"
+                      class="password-panel__half"
+                    >
                       <ElInput
                         v-model="passwordForm.confirmPassword"
                         type="password"
@@ -289,7 +293,10 @@
                 <aside class="password-tips" aria-label="密码安全建议">
                   <div class="password-tips__title">安全建议</div>
                   <ul class="password-tips__list">
-                    <li>新密码须为 6–20 位，且同时包含字母和数字（仅允许字母与数字）；与用户管理新增、重置密码规则一致。</li>
+                    <li
+                      >新密码须为 6–20
+                      位，且同时包含字母和数字（仅允许字母与数字）；与用户管理新增、重置密码规则一致。</li
+                    >
                     <li>避免使用生日、手机号、工号等容易被猜测的信息。</li>
                     <li>修改成功后请使用新密码重新登录系统。</li>
                   </ul>
@@ -402,25 +409,36 @@
 </template>
 
 <script setup lang="ts">
-import {useUserStore} from '@/store/modules/user'
-import {fetchGetAvatarPresignedUrl, fetchGetUserById, fetchUpdateUser, fetchUpdateUserPassword} from '@/api/user/user'
-import {fetchGetUserInfo, fetchLogout, fetchUserSessions, forceLogoutAllSessions, forceLogoutSession} from '@/api/auth'
-import {ElMessage, ElMessageBox, type FormInstance, type FormRules} from 'element-plus'
-import {Location, Refresh, SwitchButton} from '@element-plus/icons-vue'
-import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
-import defaultAvatarImg from '@imgs/user/avatar.webp'
-import bgImageImg from '@imgs/user/bg.webp'
-import {useSettingStore} from '@/store/modules/setting'
-import {extractOssObjectPath, needsOssPresignedDisplay} from '@/utils/storage/oss-object-path'
-import dayjs from 'dayjs'
-import {logger} from '@/utils/sys/logger'
-import {
-  ADMIN_PASSWORD_PATTERN,
-  ADMIN_PASSWORD_RULE_MESSAGE,
-  clearSavedLoginPassword
-} from '@/utils/sys/password-prompt-guard'
+  import { useUserStore } from '@/store/modules/user'
+  import {
+    fetchGetAvatarPresignedUrl,
+    fetchGetUserById,
+    fetchUpdateUser,
+    fetchUpdateUserPassword
+  } from '@/api/user/user'
+  import {
+    fetchGetUserInfo,
+    fetchLogout,
+    fetchUserSessions,
+    forceLogoutAllSessions,
+    forceLogoutSession
+  } from '@/api/auth'
+  import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+  import { Location, Refresh, SwitchButton } from '@element-plus/icons-vue'
+  import ArtAvatarUpload from '@/components/core/media/art-avatar-upload/index.vue'
+  import defaultAvatarImg from '@imgs/user/avatar.webp'
+  import bgImageImg from '@imgs/user/bg.webp'
+  import { useSettingStore } from '@/store/modules/setting'
+  import { extractOssObjectPath, needsOssPresignedDisplay } from '@/utils/storage/oss-object-path'
+  import dayjs from 'dayjs'
+  import { logger } from '@/utils/sys/logger'
+  import {
+    ADMIN_PASSWORD_PATTERN,
+    ADMIN_PASSWORD_RULE_MESSAGE,
+    clearSavedLoginPassword
+  } from '@/utils/sys/password-prompt-guard'
 
-defineOptions({ name: 'UserCenter' })
+  defineOptions({ name: 'UserCenter' })
 
   // 主题状态
   const settingStore = useSettingStore()
@@ -693,7 +711,6 @@ defineOptions({ name: 'UserCenter' })
         const userInfoData = (responseData as any)?.user || responseData
 
         if (userInfoData?.userId) {
-          const permissions = (responseData as any)?.permissions || []
           const roles = (responseData as any)?.roles || []
           const formattedUserInfo: Partial<Api.Auth.UserInfo> = {
             user: {

@@ -1,7 +1,10 @@
 <!-- C 端专题活动页 -->
 <template>
   <div v-loading="loading" class="portal-subject">
-    <PortalPageHeader :title="subject.title || '专题活动'" :subtitle="subject.subTitle || '精选好物，限时优惠'">
+    <PortalPageHeader
+      :title="subject.title || '专题活动'"
+      :subtitle="subject.subTitle || '精选好物，限时优惠'"
+    >
       <template #extra>
         <ElButton
           v-if="subjectId"
@@ -40,20 +43,20 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalSubjectDetail} from '@/api/portal/subject'
-import {
-  fetchPortalCollectSubjectAdd,
-  fetchPortalCollectSubjectRemove,
-  fetchPortalCollectSubjectStatus
-} from '@/api/portal/collect'
-import type {PortalProductListItem, PortalSubjectDetail} from '@/api/portal/types'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
-import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+  import { fetchPortalSubjectDetail } from '@/api/portal/subject'
+  import {
+    fetchPortalCollectSubjectAdd,
+    fetchPortalCollectSubjectRemove,
+    fetchPortalCollectSubjectStatus
+  } from '@/api/portal/collect'
+  import type { PortalProductListItem, PortalSubjectDetail } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
+  import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
 
-defineOptions({ name: 'PortalSubject' })
+  defineOptions({ name: 'PortalSubject' })
 
   const route = useRoute()
   const router = useRouter()
@@ -168,7 +171,6 @@ defineOptions({ name: 'PortalSubject' })
 </script>
 
 <style scoped lang="scss">
-
   .portal-subject__banner {
     margin-bottom: 20px;
     border-radius: var(--portal-radius-lg);

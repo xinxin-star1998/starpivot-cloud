@@ -171,7 +171,9 @@
         <span class="steps-title">条件路由（可选）</span>
         <ElButton link type="primary" @click="addRoute">添加路由</ElButton>
       </div>
-      <p class="routes-hint">某步骤完成后按优先级匹配 SpEL，决定跳转目标步骤；留空则按顺序进入下一步。</p>
+      <p class="routes-hint"
+        >某步骤完成后按优先级匹配 SpEL，决定跳转目标步骤；留空则按顺序进入下一步。</p
+      >
 
       <ElTable :data="form.routes" border class="steps-table routes-table" size="small">
         <ElTableColumn label="完成后步骤" min-width="130">
@@ -188,11 +190,7 @@
         </ElTableColumn>
         <ElTableColumn label="条件表达式" min-width="180">
           <template #default="{ row }">
-            <ElInput
-              v-model="row.conditionExpr"
-              placeholder="SpEL 或 default"
-              size="small"
-            />
+            <ElInput v-model="row.conditionExpr" placeholder="SpEL 或 default" size="small" />
           </template>
         </ElTableColumn>
         <ElTableColumn label="跳转步骤" min-width="130">
@@ -228,17 +226,21 @@
 </template>
 
 <script lang="ts" setup>
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {fetchApprovalTemplateDetail, fetchApprovalTemplateSave} from '@/api/approval/template'
-import type {ApTemplate, ApTemplateRoute, ApTemplateStep} from '@/api/approval/types'
-import {APPROVE_MODE_OPTIONS, ASSIGNEE_TYPE_OPTIONS, TIMEOUT_ACTION_OPTIONS} from '../../utils/approval-labels'
-import {handleMutationError} from '@/utils/http/mutation'
-import {fetchGetRoleSelect} from '@/api/role/role'
-import {fetchGetAllPosts} from '@/api/post/post'
-import {fetchGetUserList} from '@/api/user/user'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import { fetchApprovalTemplateDetail, fetchApprovalTemplateSave } from '@/api/approval/template'
+  import type { ApTemplate, ApTemplateRoute, ApTemplateStep } from '@/api/approval/types'
+  import {
+    APPROVE_MODE_OPTIONS,
+    ASSIGNEE_TYPE_OPTIONS,
+    TIMEOUT_ACTION_OPTIONS
+  } from '../../utils/approval-labels'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import { fetchGetRoleSelect } from '@/api/role/role'
+  import { fetchGetAllPosts } from '@/api/post/post'
+  import { fetchGetUserList } from '@/api/user/user'
 
-const visible = defineModel<boolean>('visible', { default: false })
+  const visible = defineModel<boolean>('visible', { default: false })
   const templateId = defineModel<number | undefined>('templateId')
 
   const emit = defineEmits<{ success: [] }>()
@@ -278,10 +280,6 @@ const visible = defineModel<boolean>('visible', { default: false })
       timeoutHours: undefined,
       timeoutAction: 'AUTO_REJECT'
     }
-  }
-
-  function needsAssigneeValue(type?: string) {
-    return type === 'ROLE' || type === 'POST' || type === 'USER'
   }
 
   async function loadOrgOptions() {

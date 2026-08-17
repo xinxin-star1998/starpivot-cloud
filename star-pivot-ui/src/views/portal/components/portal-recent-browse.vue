@@ -3,7 +3,11 @@
   <section v-if="items.length" class="portal-recent-browse">
     <div class="portal-recent-browse__head">
       <h2 class="portal-recent-browse__title">最近浏览</h2>
-      <button type="button" class="portal-recent-browse__more" @click="router.push('/portal/account/history')">
+      <button
+        type="button"
+        class="portal-recent-browse__more"
+        @click="router.push('/portal/account/history')"
+      >
         查看更多
       </button>
     </div>
@@ -27,11 +31,11 @@
 </template>
 
 <script setup lang="ts">
-import {getPortalBrowseHistory, type PortalBrowseRecord} from '@/utils/portal/browse-history'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {formatMoney} from '@/utils/mall/money'
+  import { getPortalBrowseHistory, type PortalBrowseRecord } from '@/utils/portal/browse-history'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
 
-defineOptions({ name: 'PortalRecentBrowse' })
+  defineOptions({ name: 'PortalRecentBrowse' })
 
   const props = withDefaults(
     defineProps<{
@@ -78,7 +82,6 @@ defineOptions({ name: 'PortalRecentBrowse' })
 </script>
 
 <style scoped lang="scss">
-
   .portal-recent-browse {
     margin-bottom: 24px;
     padding: 20px;

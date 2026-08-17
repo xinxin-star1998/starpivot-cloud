@@ -28,10 +28,7 @@
           <p v-if="product.brandName" class="info__brand">{{ product.brandName }}</p>
           <div class="info__title-row">
             <h1 class="info__title">{{ product.spuName }}</h1>
-            <PortalSharePopover
-              :title="product.spuName"
-              :promo-text="sharePromoText"
-            />
+            <PortalSharePopover :title="product.spuName" :promo-text="sharePromoText" />
           </div>
           <div v-if="commentSummary?.total" class="info__rating">
             <ElRate :model-value="summaryAvgStar" disabled show-score score-template="{value} 分" />
@@ -83,16 +80,17 @@
               <ArtSvgIcon :icon="collected ? 'ri:heart-fill' : 'ri:heart-line'" />
               {{ collected ? '已收藏' : '收藏' }}
             </ElButton>
-            <ElButton type="primary" size="large" class="btn-cart" :disabled="!selectedSkuId" @click="handleAddCart">
+            <ElButton
+              type="primary"
+              size="large"
+              class="btn-cart"
+              :disabled="!selectedSkuId"
+              @click="handleAddCart"
+            >
               <ArtSvgIcon icon="ri:shopping-cart-2-line" />
               加入购物车
             </ElButton>
-            <ElButton
-              size="large"
-              class="btn-buy"
-              :disabled="!selectedSkuId"
-              @click="handleBuyNow"
-            >
+            <ElButton size="large" class="btn-buy" :disabled="!selectedSkuId" @click="handleBuyNow">
               立即购买
             </ElButton>
           </div>
@@ -146,7 +144,9 @@
               </label>
             </div>
           </div>
-          <ElButton type="primary" :loading="submittingComment" @click="handleSubmitComment">提交评价</ElButton>
+          <ElButton type="primary" :loading="submittingComment" @click="handleSubmitComment"
+            >提交评价</ElButton
+          >
         </div>
 
         <div v-if="comments.length" class="comment-list">
@@ -200,9 +200,7 @@
             <div class="related-card__body">
               <p class="related-card__name">{{ item.spuName }}</p>
               <PortalProductRating :avg-star="item.avgStar" :comment-count="item.commentCount" />
-              <p class="related-card__price">
-                <span>¥</span>{{ formatPrice(item.price) }}
-              </p>
+              <p class="related-card__price"> <span>¥</span>{{ formatPrice(item.price) }} </p>
             </div>
           </div>
         </div>
@@ -212,30 +210,39 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalProductDetail, fetchPortalProductRelated} from '@/api/portal/product'
-import {fetchPortalCartAdd} from '@/api/portal/cart'
-import {fetchPortalCollectAdd, fetchPortalCollectRemove, fetchPortalCollectStatus} from '@/api/portal/collect'
-import {
-  fetchPortalCanComment,
-  fetchPortalCommentPageList,
-  fetchPortalCommentSubmit,
-  fetchPortalCommentSummary
-} from '@/api/portal/comment'
-import {uploadPortalCommentImage} from '@/api/portal/image'
-import type {PortalComment, PortalCommentSummary, PortalProductDetail, PortalProductListItem} from '@/api/portal/types'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {formatMoney} from '@/utils/mall/money'
-import {resolveCommentResourceUrls} from '@/utils/portal/comment-resources'
-import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
-import {notifyPortalReviewChanged} from '@/utils/portal/review-event'
-import {addPortalBrowseRecord} from '@/utils/portal/browse-history'
-import {ElMessage} from 'element-plus'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
-import PortalSharePopover from '@/views/portal/components/portal-share-popover.vue'
+  import { fetchPortalProductDetail, fetchPortalProductRelated } from '@/api/portal/product'
+  import { fetchPortalCartAdd } from '@/api/portal/cart'
+  import {
+    fetchPortalCollectAdd,
+    fetchPortalCollectRemove,
+    fetchPortalCollectStatus
+  } from '@/api/portal/collect'
+  import {
+    fetchPortalCanComment,
+    fetchPortalCommentPageList,
+    fetchPortalCommentSubmit,
+    fetchPortalCommentSummary
+  } from '@/api/portal/comment'
+  import { uploadPortalCommentImage } from '@/api/portal/image'
+  import type {
+    PortalComment,
+    PortalCommentSummary,
+    PortalProductDetail,
+    PortalProductListItem
+  } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
+  import { resolveCommentResourceUrls } from '@/utils/portal/comment-resources'
+  import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
+  import { notifyPortalReviewChanged } from '@/utils/portal/review-event'
+  import { addPortalBrowseRecord } from '@/utils/portal/browse-history'
+  import { ElMessage } from 'element-plus'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import PortalProductRating from '@/views/portal/components/portal-product-rating.vue'
+  import PortalSharePopover from '@/views/portal/components/portal-share-popover.vue'
 
-defineOptions({ name: 'PortalProductDetail' })
+  defineOptions({ name: 'PortalProductDetail' })
 
   const route = useRoute()
   const router = useRouter()
@@ -394,7 +401,12 @@ defineOptions({ name: 'PortalProductDetail' })
     }
 
     initDefaultSku()
-    await Promise.all([loadCollectStatus(), loadCanComment(), loadCommentSummary(), loadComments(true)])
+    await Promise.all([
+      loadCollectStatus(),
+      loadCanComment(),
+      loadCommentSummary(),
+      loadComments(true)
+    ])
     await loadRelatedProducts()
     scrollToReviewIfNeeded()
   }
@@ -602,7 +614,6 @@ defineOptions({ name: 'PortalProductDetail' })
 </script>
 
 <style scoped lang="scss">
-
   .back-btn {
     display: inline-flex;
     align-items: center;

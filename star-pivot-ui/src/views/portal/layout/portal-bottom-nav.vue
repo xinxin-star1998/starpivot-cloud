@@ -41,12 +41,12 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import { fetchPortalCart } from '@/api/portal/cart'
-import { usePortalMemberStore } from '@/store/modules/portal-member'
-import { openPortalCategoryDrawer } from '@/utils/portal/category-drawer'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { fetchPortalCart } from '@/api/portal/cart'
+  import { usePortalMemberStore } from '@/store/modules/portal-member'
+  import { openPortalCategoryDrawer } from '@/utils/portal/category-drawer'
 
-defineOptions({ name: 'PortalBottomNav' })
+  defineOptions({ name: 'PortalBottomNav' })
 
   const route = useRoute()
   const router = useRouter()

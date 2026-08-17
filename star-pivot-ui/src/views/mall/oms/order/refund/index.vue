@@ -41,25 +41,25 @@
 </template>
 
 <script setup lang="ts">
-import {h, onMounted} from 'vue'
-import {useTable} from '@/hooks/core/useTable'
-import {formatMoney} from '@/utils/mall/money'
-import {
-  fetchRefundAlertSummary,
-  fetchRefundList,
-  REFUND_CHANNEL_MAP,
-  REFUND_STATUS_MAP,
-  type RefundAlertSummary,
-  type RefundVo
-} from '@/api/mall/refund'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import RefundSearch from './modules/refund-search.vue'
-import RefundDetailDrawer from './modules/refund-detail-drawer.vue'
-import {ElButton, ElTag} from 'element-plus'
-import {useAuth} from '@/hooks/core/useAuth'
+  import { h, onMounted } from 'vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import { formatMoney } from '@/utils/mall/money'
+  import {
+    fetchRefundAlertSummary,
+    fetchRefundList,
+    REFUND_CHANNEL_MAP,
+    REFUND_STATUS_MAP,
+    type RefundAlertSummary,
+    type RefundVo
+  } from '@/api/mall/refund'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import RefundSearch from './modules/refund-search.vue'
+  import RefundDetailDrawer from './modules/refund-detail-drawer.vue'
+  import { ElButton, ElTag } from 'element-plus'
+  import { useAuth } from '@/hooks/core/useAuth'
 
-defineOptions({ name: 'OmsRefundLog' })
+  defineOptions({ name: 'OmsRefundLog' })
 
   const { hasAuth } = useAuth()
 
@@ -114,8 +114,7 @@ defineOptions({ name: 'OmsRefundLog' })
           prop: 'refund',
           label: '退款金额',
           width: 100,
-          formatter: (row: RefundVo) =>
-            row.refund != null ? `¥${formatMoney(row.refund)}` : '-'
+          formatter: (row: RefundVo) => (row.refund != null ? `¥${formatMoney(row.refund)}` : '-')
         },
         {
           prop: 'refundStatus',
@@ -171,11 +170,11 @@ defineOptions({ name: 'OmsRefundLog' })
 </script>
 
 <style scoped>
-.refund-alert-banner {
-  margin-top: 12px;
-}
+  .refund-alert-banner {
+    margin-top: 12px;
+  }
 
-.alert-item + .alert-item {
-  margin-top: 4px;
-}
+  .alert-item + .alert-item {
+    margin-top: 4px;
+  }
 </style>

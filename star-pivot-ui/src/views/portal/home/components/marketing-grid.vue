@@ -83,11 +83,11 @@
 </template>
 
 <script setup lang="ts">
-import type {PortalHomeBlock, PortalHomeProduct, PortalSeckillSession} from '@/api/portal/types'
-import {formatMoney} from '@/utils/mall/money'
-import PortalSeckillCountdown from '@/views/portal/components/portal-seckill-countdown.vue'
+  import type { PortalHomeBlock, PortalHomeProduct, PortalSeckillSession } from '@/api/portal/types'
+  import { formatMoney } from '@/utils/mall/money'
+  import PortalSeckillCountdown from '@/views/portal/components/portal-seckill-countdown.vue'
 
-defineOptions({ name: 'PortalHomeMarketingGrid' })
+  defineOptions({ name: 'PortalHomeMarketingGrid' })
 
   const props = defineProps<{
     blocks: PortalHomeBlock[]
@@ -146,7 +146,6 @@ defineOptions({ name: 'PortalHomeMarketingGrid' })
 </script>
 
 <style scoped lang="scss">
-
   .marketing-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

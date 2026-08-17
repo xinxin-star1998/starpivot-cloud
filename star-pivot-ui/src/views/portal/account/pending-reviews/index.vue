@@ -25,13 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalPendingReviews} from '@/api/portal/comment'
-import type {PortalPendingReview} from '@/api/portal/types'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
+  import { fetchPortalPendingReviews } from '@/api/portal/comment'
+  import type { PortalPendingReview } from '@/api/portal/types'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
 
-defineOptions({ name: 'PortalPendingReviews' })
+  defineOptions({ name: 'PortalPendingReviews' })
 
   const router = useRouter()
   const { requireLogin } = usePortalAuth()
@@ -69,7 +69,6 @@ defineOptions({ name: 'PortalPendingReviews' })
 </script>
 
 <style scoped lang="scss">
-
   .pending-list {
     display: flex;
     flex-direction: column;

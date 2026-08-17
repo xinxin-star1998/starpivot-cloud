@@ -19,7 +19,12 @@
         />
       </ElFormItem>
       <ElFormItem label="展示标题">
-        <ElInput v-model="formData.title" maxlength="200" show-word-limit placeholder="留空则使用分类名称" />
+        <ElInput
+          v-model="formData.title"
+          maxlength="200"
+          show-word-limit
+          placeholder="留空则使用分类名称"
+        />
       </ElFormItem>
       <ElFormItem label="展示图标">
         <MallImageUpload
@@ -33,7 +38,12 @@
         <ElInput v-model="formData.url" placeholder="留空则跳转分类搜索页" />
       </ElFormItem>
       <ElFormItem label="排序">
-        <ElInputNumber v-model="formData.sort" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.sort"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="状态">
         <ElRadioGroup v-model="formData.status">
@@ -53,19 +63,23 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  fetchCategoryHotAdd,
-  fetchCategoryHotById,
-  fetchCategoryHotUpdate,
-  type HomeCategoryHotSavePayload
-} from '@/api/mall/category-hot'
-import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
-import {filterVisibleCategoryTree, findCategoryPath, mapCategoryCascaderOptions} from '@/utils/mall/category-tree'
-import type {DialogType} from '@/types'
-import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchCategoryHotAdd,
+    fetchCategoryHotById,
+    fetchCategoryHotUpdate,
+    type HomeCategoryHotSavePayload
+  } from '@/api/mall/category-hot'
+  import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
+  import {
+    filterVisibleCategoryTree,
+    findCategoryPath,
+    mapCategoryCascaderOptions
+  } from '@/utils/mall/category-tree'
+  import type { DialogType } from '@/types'
+  import MallImageUpload from '@/components/mall/mall-image-upload/index.vue'
 
-const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({

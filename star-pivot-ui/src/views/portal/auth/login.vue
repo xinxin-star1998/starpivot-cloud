@@ -17,7 +17,9 @@
       <h1 class="portal-auth__title">欢迎回来</h1>
       <p class="portal-auth__subtitle">
         登录你的会员账号，
-        <RouterLink class="portal-auth__switch-link" :to="registerLink">还没有账号？去注册</RouterLink>
+        <RouterLink class="portal-auth__switch-link" :to="registerLink"
+          >还没有账号？去注册</RouterLink
+        >
       </p>
 
       <ElTabs v-model="activeTab" class="auth-tabs">
@@ -71,7 +73,13 @@
                 </template>
               </ElInput>
             </ElFormItem>
-            <ElButton type="primary" size="large" class="submit-btn" :loading="loading" native-type="submit">
+            <ElButton
+              type="primary"
+              size="large"
+              class="submit-btn"
+              :loading="loading"
+              native-type="submit"
+            >
               登录
             </ElButton>
           </ElForm>
@@ -126,8 +134,16 @@
                 </ElButton>
               </div>
             </ElFormItem>
-            <p v-if="authConfig.smsMockEnabled" class="sms-mock-tip">开发模式：验证码 {{ mockCodeHint }}</p>
-            <ElButton type="primary" size="large" class="submit-btn" :loading="loading" native-type="submit">
+            <p v-if="authConfig.smsMockEnabled" class="sms-mock-tip"
+              >开发模式：验证码 {{ mockCodeHint }}</p
+            >
+            <ElButton
+              type="primary"
+              size="large"
+              class="submit-btn"
+              :loading="loading"
+              native-type="submit"
+            >
               登录
             </ElButton>
           </ElForm>
@@ -136,7 +152,12 @@
 
       <div v-if="authConfig.wechatLogin" class="oauth-section">
         <div class="oauth-divider"><span>其他登录方式</span></div>
-        <button type="button" class="oauth-btn oauth-btn--wechat" :disabled="wechatLoading" @click="handleWechatLogin">
+        <button
+          type="button"
+          class="oauth-btn oauth-btn--wechat"
+          :disabled="wechatLoading"
+          @click="handleWechatLogin"
+        >
           <ArtSvgIcon icon="ri:wechat-fill" />
           微信登录
         </button>
@@ -151,20 +172,20 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {
-  fetchPortalAuthConfig,
-  fetchPortalPasswordLogin,
-  fetchPortalSmsLogin,
-  fetchPortalSmsSend,
-  startPortalWechatOAuth
-} from '@/api/portal/auth'
-import type {PortalAuthConfig} from '@/api/portal/types'
-import {usePortalMemberStore} from '@/store/modules/portal-member'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import {
+    fetchPortalAuthConfig,
+    fetchPortalPasswordLogin,
+    fetchPortalSmsLogin,
+    fetchPortalSmsSend,
+    startPortalWechatOAuth
+  } from '@/api/portal/auth'
+  import type { PortalAuthConfig } from '@/api/portal/types'
+  import { usePortalMemberStore } from '@/store/modules/portal-member'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
-defineOptions({ name: 'PortalLogin' })
+  defineOptions({ name: 'PortalLogin' })
 
   const route = useRoute()
   const router = useRouter()

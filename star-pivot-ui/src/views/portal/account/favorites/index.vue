@@ -7,7 +7,9 @@
       <div v-for="item in items" :key="item.id" class="collect-card">
         <div class="collect-card__img" @click="goDetail(item.spuId!)">
           <img :src="coverUrls.get(item.spuImg || '') || placeholderImg" :alt="item.spuName" />
-          <ElTag v-if="item.publishStatus !== 1" type="info" size="small" class="off-tag">已下架</ElTag>
+          <ElTag v-if="item.publishStatus !== 1" type="info" size="small" class="off-tag"
+            >已下架</ElTag
+          >
         </div>
         <div class="collect-card__body">
           <p class="name" @click="goDetail(item.spuId!)">{{ item.spuName }}</p>
@@ -23,10 +25,19 @@
             >
               加购物车
             </ElButton>
-            <ElButton size="small" type="primary" :disabled="item.publishStatus !== 1" @click="goDetail(item.spuId!)">
+            <ElButton
+              size="small"
+              type="primary"
+              :disabled="item.publishStatus !== 1"
+              @click="goDetail(item.spuId!)"
+            >
               去看看
             </ElButton>
-            <ElButton size="small" :loading="removingId === item.spuId" @click="handleRemove(item.spuId!)">
+            <ElButton
+              size="small"
+              :loading="removingId === item.spuId"
+              @click="handleRemove(item.spuId!)"
+            >
               取消收藏
             </ElButton>
           </div>
@@ -44,17 +55,17 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPortalCollectPageList, fetchPortalCollectRemove} from '@/api/portal/collect'
-import {fetchPortalCartAdd} from '@/api/portal/cart'
-import type {PortalCollectItem} from '@/api/portal/types'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import {resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {formatMoney} from '@/utils/mall/money'
-import {notifyPortalCartChanged} from '@/utils/portal/cart-event'
-import {ElMessage} from 'element-plus'
+  import { fetchPortalCollectPageList, fetchPortalCollectRemove } from '@/api/portal/collect'
+  import { fetchPortalCartAdd } from '@/api/portal/cart'
+  import type { PortalCollectItem } from '@/api/portal/types'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
+  import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
+  import { ElMessage } from 'element-plus'
 
-defineOptions({ name: 'PortalFavorites' })
+  defineOptions({ name: 'PortalFavorites' })
 
   const router = useRouter()
   const { requireLogin } = usePortalAuth()
@@ -142,7 +153,6 @@ defineOptions({ name: 'PortalFavorites' })
 </script>
 
 <style scoped lang="scss">
-
   .collect-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

@@ -7,7 +7,12 @@
   >
     <ElForm ref="formRef" :model="formData" :rules="rules" label-width="100px">
       <ElFormItem label="SKU ID" prop="skuId">
-        <ElInputNumber v-model="formData.skuId" :min="1" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.skuId"
+          :min="1"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="会员等级" prop="memberLevelId">
         <ElSelect v-model="formData.memberLevelId" placeholder="选择等级" style="width: 100%">
@@ -32,18 +37,18 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {
-  fetchMemberLevelList,
-  fetchMemberPriceAdd,
-  fetchMemberPriceById,
-  fetchMemberPriceUpdate,
-  type MemberLevelVo,
-  type MemberPriceSavePayload
-} from '@/api/mall/member-price'
-import type {DialogType} from '@/types'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import {
+    fetchMemberLevelList,
+    fetchMemberPriceAdd,
+    fetchMemberPriceById,
+    fetchMemberPriceUpdate,
+    type MemberLevelVo,
+    type MemberPriceSavePayload
+  } from '@/api/mall/member-price'
+  import type { DialogType } from '@/types'
 
-const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
+  const props = defineProps<{ visible: boolean; type: DialogType; recordId?: number }>()
   const emit = defineEmits<{ 'update:visible': [boolean]; success: [] }>()
 
   const dialogVisible = computed({
@@ -66,7 +71,10 @@ const props = defineProps<{ visible: boolean; type: DialogType; recordId?: numbe
     async (visible) => {
       if (!visible) return
       levelOptions.value = await fetchMemberLevelList()
-      formData.value = { skuId: undefined as unknown as number, memberLevelId: undefined as unknown as number }
+      formData.value = {
+        skuId: undefined as unknown as number,
+        memberLevelId: undefined as unknown as number
+      }
       if (props.type === 'edit' && props.recordId) {
         const detail = await fetchMemberPriceById(props.recordId)
         formData.value = {

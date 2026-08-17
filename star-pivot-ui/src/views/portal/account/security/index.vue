@@ -10,13 +10,19 @@
       </div>
 
       <div v-if="bindings.length" class="binding-list">
-        <div v-for="item in bindings" :key="`${item.authType}-${item.identifier}`" class="binding-item">
+        <div
+          v-for="item in bindings"
+          :key="`${item.authType}-${item.identifier}`"
+          class="binding-item"
+        >
           <div class="binding-item__icon" :class="`binding-item__icon--${item.authType}`">
             <ArtSvgIcon :icon="authIcon(item.authType)" />
           </div>
           <div class="binding-item__body">
             <div class="binding-item__title">{{ item.authTypeLabel }}</div>
-            <div class="binding-item__identifier">{{ item.maskedIdentifier || item.identifier }}</div>
+            <div class="binding-item__identifier">{{
+              item.maskedIdentifier || item.identifier
+            }}</div>
             <div v-if="item.bindTime" class="binding-item__time">绑定于 {{ item.bindTime }}</div>
           </div>
           <div class="binding-item__action">
@@ -37,7 +43,9 @@
             >
               解绑
             </ElButton>
-            <ElTag v-else-if="item.authType === AUTH_TYPE_PASSWORD" type="success" size="small">已启用</ElTag>
+            <ElTag v-else-if="item.authType === AUTH_TYPE_PASSWORD" type="success" size="small"
+              >已启用</ElTag
+            >
             <ElTag v-else type="info" size="small">已绑定</ElTag>
           </div>
         </div>
@@ -87,7 +95,13 @@
     </div>
 
     <!-- 绑定手机号 -->
-    <ElDialog v-model="bindVisible" title="绑定手机号" width="420px" destroy-on-close @closed="resetBindForm">
+    <ElDialog
+      v-model="bindVisible"
+      title="绑定手机号"
+      width="420px"
+      destroy-on-close
+      @closed="resetBindForm"
+    >
       <ElForm ref="bindFormRef" :model="bindForm" :rules="bindRules" label-position="top">
         <ElFormItem label="手机号" prop="mobile">
           <ElInput v-model="bindForm.mobile" maxlength="11" placeholder="请输入手机号" />
@@ -115,13 +129,34 @@
     </ElDialog>
 
     <!-- 设置密码 -->
-    <ElDialog v-model="passwordVisible" title="设置登录密码" width="420px" destroy-on-close @closed="resetPasswordForm">
-      <ElForm ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-position="top">
+    <ElDialog
+      v-model="passwordVisible"
+      title="设置登录密码"
+      width="420px"
+      destroy-on-close
+      @closed="resetPasswordForm"
+    >
+      <ElForm
+        ref="passwordFormRef"
+        :model="passwordForm"
+        :rules="passwordRules"
+        label-position="top"
+      >
         <ElFormItem label="新密码" prop="password">
-          <ElInput v-model="passwordForm.password" type="password" show-password placeholder="6-32 位" />
+          <ElInput
+            v-model="passwordForm.password"
+            type="password"
+            show-password
+            placeholder="6-32 位"
+          />
         </ElFormItem>
         <ElFormItem label="确认密码" prop="confirmPassword">
-          <ElInput v-model="passwordForm.confirmPassword" type="password" show-password placeholder="再次输入密码" />
+          <ElInput
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            show-password
+            placeholder="再次输入密码"
+          />
         </ElFormItem>
         <ElFormItem label="验证码" prop="code">
           <div class="sms-code-row">
@@ -137,17 +172,27 @@
             </ElButton>
           </div>
         </ElFormItem>
-        <p v-if="boundMobile" class="sms-mobile-tip">验证码将发送至 {{ maskMobile(boundMobile) }}</p>
+        <p v-if="boundMobile" class="sms-mobile-tip"
+          >验证码将发送至 {{ maskMobile(boundMobile) }}</p
+        >
         <p v-if="authConfig.smsMockEnabled" class="sms-mock-tip">开发模式验证码：123456</p>
       </ElForm>
       <template #footer>
         <ElButton @click="passwordVisible = false">取消</ElButton>
-        <ElButton type="primary" :loading="passwordSubmitting" @click="submitPassword">保存</ElButton>
+        <ElButton type="primary" :loading="passwordSubmitting" @click="submitPassword"
+          >保存</ElButton
+        >
       </template>
     </ElDialog>
 
     <!-- 解绑手机号 -->
-    <ElDialog v-model="unbindVisible" title="解绑手机号" width="420px" destroy-on-close @closed="resetUnbindForm">
+    <ElDialog
+      v-model="unbindVisible"
+      title="解绑手机号"
+      width="420px"
+      destroy-on-close
+      @closed="resetUnbindForm"
+    >
       <ElAlert type="warning" :closable="false" show-icon class="unbind-alert">
         解绑后将无法使用该手机号登录，请确保至少保留一种其他登录方式。
       </ElAlert>
@@ -166,36 +211,40 @@
             </ElButton>
           </div>
         </ElFormItem>
-        <p v-if="boundMobile" class="sms-mobile-tip">验证码将发送至 {{ maskMobile(boundMobile) }}</p>
+        <p v-if="boundMobile" class="sms-mobile-tip"
+          >验证码将发送至 {{ maskMobile(boundMobile) }}</p
+        >
         <p v-if="authConfig.smsMockEnabled" class="sms-mock-tip">开发模式验证码：123456</p>
       </ElForm>
       <template #footer>
         <ElButton @click="unbindVisible = false">取消</ElButton>
-        <ElButton type="danger" :loading="unbindSubmitting" @click="submitUnbind">确认解绑</ElButton>
+        <ElButton type="danger" :loading="unbindSubmitting" @click="submitUnbind"
+          >确认解绑</ElButton
+        >
       </template>
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessageBox} from 'element-plus'
-import {
-  fetchPortalAuthBindings,
-  fetchPortalAuthConfig,
-  fetchPortalBindMobile,
-  fetchPortalSetPassword,
-  fetchPortalSmsSend,
-  fetchPortalUnbindMobile,
-  fetchPortalUnbindWechat,
-  startPortalWechatOAuth
-} from '@/api/portal/auth'
-import type {PortalAuthConfig, PortalMemberAuthBinding} from '@/api/portal/types'
-import {usePortalAuth} from '@/hooks/portal/usePortalAuth'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import PortalPageHeader from '../../components/portal-page-header.vue'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessageBox } from 'element-plus'
+  import {
+    fetchPortalAuthBindings,
+    fetchPortalAuthConfig,
+    fetchPortalBindMobile,
+    fetchPortalSetPassword,
+    fetchPortalSmsSend,
+    fetchPortalUnbindMobile,
+    fetchPortalUnbindWechat,
+    startPortalWechatOAuth
+  } from '@/api/portal/auth'
+  import type { PortalAuthConfig, PortalMemberAuthBinding } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import PortalPageHeader from '../../components/portal-page-header.vue'
 
-defineOptions({ name: 'PortalAccountSecurity' })
+  defineOptions({ name: 'PortalAccountSecurity' })
 
   const AUTH_TYPE_PASSWORD = 1
   const AUTH_TYPE_MOBILE = 2
@@ -218,9 +267,15 @@ defineOptions({ name: 'PortalAccountSecurity' })
 
   const mobilePattern = /^1[3-9]\d{9}$/
 
-  const hasMobileBinding = computed(() => bindings.value.some((b) => b.authType === AUTH_TYPE_MOBILE))
-  const hasPasswordBinding = computed(() => bindings.value.some((b) => b.authType === AUTH_TYPE_PASSWORD))
-  const hasWechatBinding = computed(() => bindings.value.some((b) => b.authType === AUTH_TYPE_WECHAT))
+  const hasMobileBinding = computed(() =>
+    bindings.value.some((b) => b.authType === AUTH_TYPE_MOBILE)
+  )
+  const hasPasswordBinding = computed(() =>
+    bindings.value.some((b) => b.authType === AUTH_TYPE_PASSWORD)
+  )
+  const hasWechatBinding = computed(() =>
+    bindings.value.some((b) => b.authType === AUTH_TYPE_WECHAT)
+  )
   const canUnbindMobile = computed(() => hasMobileBinding.value && bindings.value.length > 1)
   const canUnbindWechat = computed(() => hasWechatBinding.value && bindings.value.length > 1)
   const boundMobile = computed(
@@ -464,7 +519,6 @@ defineOptions({ name: 'PortalAccountSecurity' })
 </script>
 
 <style scoped lang="scss">
-
   .security-card {
     background: var(--portal-bg-elevated);
     border: 1px solid var(--portal-border);

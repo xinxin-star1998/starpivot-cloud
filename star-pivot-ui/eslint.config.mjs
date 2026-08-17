@@ -1,7 +1,7 @@
 // 从 URL 和路径模块中导入必要的功能
 import fs from 'fs'
-import path, {dirname} from 'path'
-import {fileURLToPath} from 'url'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 // 从 ESLint 插件中导入推荐配置
 import pluginJs from '@eslint/js'
@@ -18,7 +18,7 @@ const __dirname = dirname(__filename)
 const autoImportPath = path.resolve(__dirname, '.auto-import.json')
 const autoImportConfig = fs.existsSync(autoImportPath)
   ? JSON.parse(fs.readFileSync(autoImportPath, 'utf-8'))
-  : {globals: {}}
+  : { globals: {} }
 
 export default [
   // 指定文件匹配规则
@@ -54,6 +54,10 @@ export default [
     rules: {
       // TypeScript / vue-tsc 已负责未定义检查；避免 CI 在缺少 .auto-import.json 时误报 auto-import API
       'no-undef': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }
+      ],
       quotes: ['error', 'single'], // 使用单引号
       semi: ['error', 'never'], // 语句末尾不加分号
       'no-var': 'error', // 要求使用 let 或 const 而不是 var

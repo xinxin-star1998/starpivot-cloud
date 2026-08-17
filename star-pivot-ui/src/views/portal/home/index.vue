@@ -18,8 +18,18 @@
         <div class="portal-home__banner-wrap">
           <ElCarousel v-if="banners.length" height="480px" class="portal-home__banner">
             <ElCarouselItem v-for="item in banners" :key="item.id">
-              <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="banner-link">
-                <img :src="bannerUrls.get(item.pic || '') || ''" :alt="item.name" class="banner-img" />
+              <a
+                v-if="item.url"
+                :href="item.url"
+                target="_blank"
+                rel="noopener"
+                class="banner-link"
+              >
+                <img
+                  :src="bannerUrls.get(item.pic || '') || ''"
+                  :alt="item.name"
+                  class="banner-img"
+                />
               </a>
               <img
                 v-else
@@ -67,7 +77,11 @@
       <PortalRecentBrowse />
 
       <section v-if="showHomeSearch" class="portal-home__quick-search">
-        <PortalSearchBar v-model="homeSearchKeyword" placeholder="搜一搜心仪好物" @search="handleHomeSearch" />
+        <PortalSearchBar
+          v-model="homeSearchKeyword"
+          placeholder="搜一搜心仪好物"
+          @search="handleHomeSearch"
+        />
         <PortalSearchHints compact @select="searchFromHint" />
       </section>
 
@@ -146,36 +160,40 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import { fetchPortalCartAdd } from '@/api/portal/cart'
-import { fetchPortalCollectAdd, fetchPortalCollectRemove } from '@/api/portal/collect'
-import { fetchPortalHome } from '@/api/portal/home'
-import { fetchPortalProductDetail, fetchPortalProductRelated, fetchPortalProductSearch } from '@/api/portal/product'
-import type {
-  PortalBrandBrief,
-  PortalCategory,
-  PortalHomeBlock,
-  PortalHotCategory,
-  PortalProductListItem
-} from '@/api/portal/types'
-import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
-import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-import { getPortalBrowseHistory } from '@/utils/portal/browse-history'
-import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
-import { openPortalCategoryDrawer } from '@/utils/portal/category-drawer'
-import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
-import { addPortalSearchKeyword } from '@/utils/portal/search-history'
-import PortalHomeSkeleton from '@/views/portal/components/portal-home-skeleton.vue'
-import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
-import PortalRecentBrowse from '@/views/portal/components/portal-recent-browse.vue'
-import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
-import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
-import HomeCategoryNav from './components/category-nav.vue'
-import HomeHotCategories from './components/hot-categories.vue'
-import HomeMarketingGrid from './components/marketing-grid.vue'
-import HomeUserPanel from './components/user-panel.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { fetchPortalCartAdd } from '@/api/portal/cart'
+  import { fetchPortalCollectAdd, fetchPortalCollectRemove } from '@/api/portal/collect'
+  import { fetchPortalHome } from '@/api/portal/home'
+  import {
+    fetchPortalProductDetail,
+    fetchPortalProductRelated,
+    fetchPortalProductSearch
+  } from '@/api/portal/product'
+  import type {
+    PortalBrandBrief,
+    PortalCategory,
+    PortalHomeBlock,
+    PortalHotCategory,
+    PortalProductListItem
+  } from '@/api/portal/types'
+  import { usePortalAuth } from '@/hooks/portal/usePortalAuth'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { getPortalBrowseHistory } from '@/utils/portal/browse-history'
+  import { notifyPortalCartChanged } from '@/utils/portal/cart-event'
+  import { openPortalCategoryDrawer } from '@/utils/portal/category-drawer'
+  import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+  import { addPortalSearchKeyword } from '@/utils/portal/search-history'
+  import PortalHomeSkeleton from '@/views/portal/components/portal-home-skeleton.vue'
+  import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
+  import PortalRecentBrowse from '@/views/portal/components/portal-recent-browse.vue'
+  import PortalSearchBar from '@/views/portal/components/portal-search-bar.vue'
+  import PortalSearchHints from '@/views/portal/components/portal-search-hints.vue'
+  import HomeCategoryNav from './components/category-nav.vue'
+  import HomeHotCategories from './components/hot-categories.vue'
+  import HomeMarketingGrid from './components/marketing-grid.vue'
+  import HomeUserPanel from './components/user-panel.vue'
 
-defineOptions({ name: 'PortalHome' })
+  defineOptions({ name: 'PortalHome' })
 
   const router = useRouter()
   const route = useRoute()
@@ -224,7 +242,10 @@ defineOptions({ name: 'PortalHome' })
     return cartLoadingSet.value.has(spuId)
   }
 
-  async function resolveImages(items: { pic?: string; coverImg?: string }[], target: Ref<Map<string, string>>) {
+  async function resolveImages(
+    items: { pic?: string; coverImg?: string }[],
+    target: Ref<Map<string, string>>
+  ) {
     const keys = items.map((i) => i.pic || i.coverImg).filter(Boolean) as string[]
     if (!keys.length) return
     const map = await resolveGoodsImageDisplayUrls(keys)

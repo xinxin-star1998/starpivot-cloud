@@ -39,19 +39,20 @@
                 <ArtSvgIcon class="text-lg !bg-transparent" icon="ri:notification-3-line" />
               </div>
               <div class="w-[calc(100%-45px)] ml-3.5 min-w-0">
-                <h4 class="text-sm font-normal leading-5.5 text-g-900 truncate">{{ item.title }}</h4>
+                <h4 class="text-sm font-normal leading-5.5 text-g-900 truncate">{{
+                  item.title
+                }}</h4>
                 <p class="mt-1 text-xs text-g-500 line-clamp-2">{{ item.content }}</p>
                 <p class="mt-1 text-xs text-g-400">{{ formatDateTime(item.createTime) }}</p>
               </div>
             </div>
           </li>
         </ul>
-        <div
-          v-else
-          class="relative top-25 h-full text-g-500 text-center !bg-transparent"
-        >
+        <div v-else class="relative top-25 h-full text-g-500 text-center !bg-transparent">
           <ArtSvgIcon icon="system-uicons:inbox" class="text-5xl" />
-          <p class="mt-3.5 text-xs !bg-transparent">{{ $t('notice.text[0]') }}{{ $t('notice.bar[0]') }}</p>
+          <p class="mt-3.5 text-xs !bg-transparent"
+            >{{ $t('notice.text[0]') }}{{ $t('notice.bar[0]') }}</p
+          >
         </div>
       </div>
 
@@ -67,124 +68,124 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import {
-  fetchUserMessageList,
-  fetchUserMessageRead,
-  fetchUserMessageReadAll,
-  fetchUserMessageUnreadCount,
-  type UserMessageVo
-} from '@/api/system/message'
-import { formatDateTime } from '@/utils/common/datetime'
-import { resolveMessageBizNav } from '@/utils/system/message-nav'
+  import { useRouter } from 'vue-router'
+  import {
+    fetchUserMessageList,
+    fetchUserMessageRead,
+    fetchUserMessageReadAll,
+    fetchUserMessageUnreadCount,
+    type UserMessageVo
+  } from '@/api/system/message'
+  import { formatDateTime } from '@/utils/common/datetime'
+  import { resolveMessageBizNav } from '@/utils/system/message-nav'
 
-defineOptions({ name: 'ArtNotification' })
+  defineOptions({ name: 'ArtNotification' })
 
-const props = defineProps<{
-  value: boolean
-}>()
+  const props = defineProps<{
+    value: boolean
+  }>()
 
-const emit = defineEmits<{
-  'update:value': [value: boolean]
-  'unread-change': [count: number]
-}>()
+  const emit = defineEmits<{
+    'update:value': [value: boolean]
+    'unread-change': [count: number]
+  }>()
 
-const router = useRouter()
-const show = ref(false)
-const visible = ref(false)
-const loading = ref(false)
-const items = ref<UserMessageVo[]>([])
-const unreadCount = ref(0)
+  const router = useRouter()
+  const show = ref(false)
+  const visible = ref(false)
+  const loading = ref(false)
+  const items = ref<UserMessageVo[]>([])
+  const unreadCount = ref(0)
 
-async function loadData() {
-  loading.value = true
-  try {
-    const [count, page] = await Promise.all([
-      fetchUserMessageUnreadCount(),
-      fetchUserMessageList({ pageNum: 1, pageSize: 10 })
-    ])
-    unreadCount.value = Number(count) || 0
-    items.value = page.rows || []
-    emit('unread-change', unreadCount.value)
-  } catch {
-    items.value = []
-  } finally {
-    loading.value = false
+  async function loadData() {
+    loading.value = true
+    try {
+      const [count, page] = await Promise.all([
+        fetchUserMessageUnreadCount(),
+        fetchUserMessageList({ pageNum: 1, pageSize: 10 })
+      ])
+      unreadCount.value = Number(count) || 0
+      items.value = page.rows || []
+      emit('unread-change', unreadCount.value)
+    } catch {
+      items.value = []
+    } finally {
+      loading.value = false
+    }
   }
-}
 
-async function refreshUnreadCount() {
-  try {
-    unreadCount.value = Number(await fetchUserMessageUnreadCount()) || 0
-    emit('unread-change', unreadCount.value)
-  } catch {
+  async function refreshUnreadCount() {
+    try {
+      unreadCount.value = Number(await fetchUserMessageUnreadCount()) || 0
+      emit('unread-change', unreadCount.value)
+    } catch {
+      unreadCount.value = 0
+      emit('unread-change', 0)
+    }
+  }
+
+  function showNotice(open: boolean) {
+    if (open) {
+      visible.value = true
+      loadData()
+      setTimeout(() => {
+        show.value = true
+      }, 5)
+    } else {
+      show.value = false
+      setTimeout(() => {
+        visible.value = false
+      }, 350)
+    }
+  }
+
+  async function handleClick(item: UserMessageVo) {
+    if (item.messageId && item.readFlag === '0') {
+      await fetchUserMessageRead(item.messageId)
+      item.readFlag = '1'
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+      emit('unread-change', unreadCount.value)
+    }
+    emit('update:value', false)
+    const nav = resolveMessageBizNav(item.bizModule, item.bizType, item.bizKey, item.linkPath)
+    if (nav) {
+      await router.push({ path: nav.path, query: nav.query })
+    }
+  }
+
+  async function handleReadAll() {
+    if (unreadCount.value <= 0) return
+    await fetchUserMessageReadAll()
     unreadCount.value = 0
+    items.value = items.value.map((item) => ({ ...item, readFlag: '1' }))
     emit('unread-change', 0)
   }
-}
 
-function showNotice(open: boolean) {
-  if (open) {
-    visible.value = true
-    loadData()
-    setTimeout(() => {
-      show.value = true
-    }, 5)
-  } else {
-    show.value = false
-    setTimeout(() => {
-      visible.value = false
-    }, 350)
+  function handleViewAll() {
+    emit('update:value', false)
+    router.push('/system/message')
   }
-}
 
-async function handleClick(item: UserMessageVo) {
-  if (item.messageId && item.readFlag === '0') {
-    await fetchUserMessageRead(item.messageId)
-    item.readFlag = '1'
-    unreadCount.value = Math.max(0, unreadCount.value - 1)
-    emit('unread-change', unreadCount.value)
-  }
-  emit('update:value', false)
-  const nav = resolveMessageBizNav(item.bizModule, item.bizType, item.bizKey, item.linkPath)
-  if (nav) {
-    await router.push({ path: nav.path, query: nav.query })
-  }
-}
+  watch(
+    () => props.value,
+    (newValue) => {
+      showNotice(newValue)
+    }
+  )
 
-async function handleReadAll() {
-  if (unreadCount.value <= 0) return
-  await fetchUserMessageReadAll()
-  unreadCount.value = 0
-  items.value = items.value.map((item) => ({ ...item, readFlag: '1' }))
-  emit('unread-change', 0)
-}
+  onMounted(() => {
+    refreshUnreadCount()
+  })
 
-function handleViewAll() {
-  emit('update:value', false)
-  router.push('/system/message')
-}
-
-watch(
-  () => props.value,
-  (newValue) => {
-    showNotice(newValue)
-  }
-)
-
-onMounted(() => {
-  refreshUnreadCount()
-})
-
-defineExpose({
-  refreshUnreadCount
-})
+  defineExpose({
+    refreshUnreadCount
+  })
 </script>
 
 <style scoped>
-@reference '@styles/core/tailwind.css';
+  @reference '@styles/core/tailwind.css';
 
-.art-notification-panel {
-  @apply absolute top-14.5 right-5 w-90 h-125 origin-top-right transition-all duration-300 z-1000;
-}
+  .art-notification-panel {
+    @apply absolute top-14.5 right-5 w-90 h-125 origin-top-right transition-all duration-300 z-1000;
+  }
 </style>

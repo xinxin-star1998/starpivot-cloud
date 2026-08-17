@@ -162,7 +162,22 @@ function spaceAroundDelimiters(code: string): string {
 function spaceAroundOperators(code: string): string {
   let result = code
 
-  const compoundOps = ['<<=', '>>=', '===', '!==', '<=', '>=', '==', '!=', '&&', '||', '+=', '-=', '*=', '/=']
+  const compoundOps = [
+    '<<=',
+    '>>=',
+    '===',
+    '!==',
+    '<=',
+    '>=',
+    '==',
+    '!=',
+    '&&',
+    '||',
+    '+=',
+    '-=',
+    '*=',
+    '/='
+  ]
   for (const op of compoundOps) {
     const pattern = new RegExp(`([^\\s])${escapeRegExp(op)}([^\\s])`, 'g')
     result = result.replace(pattern, `$1 ${op} $2`)
@@ -212,7 +227,10 @@ function skipWhitespace(source: string, index: number): number {
   return i
 }
 
-function readFollowBraceClause(source: string, start: number): { text: string; nextIndex: number; openBrace: boolean } {
+function readFollowBraceClause(
+  source: string,
+  start: number
+): { text: string; nextIndex: number; openBrace: boolean } {
   let text = ''
   let i = start
   let parenDepth = 0
@@ -249,7 +267,11 @@ function readFollowBraceClause(source: string, start: number): { text: string; n
   return { text: text.trimEnd(), nextIndex: i, openBrace }
 }
 
-function consumeToken(source: string, index: number, state: ScanState): { text: string; nextIndex: number } {
+function consumeToken(
+  source: string,
+  index: number,
+  state: ScanState
+): { text: string; nextIndex: number } {
   let text = ''
   let i = index
 
@@ -440,8 +462,7 @@ export function layoutCLikeCode(code: string): string {
 export function formatCLikeCode(code: string, options?: { layout?: boolean }): string {
   const needsSpace = shouldFormatCode(code)
   const needsLayout =
-    options?.layout !== false &&
-    (shouldLayoutCode(code) || (needsSpace && /{/.test(code)))
+    options?.layout !== false && (shouldLayoutCode(code) || (needsSpace && /{/.test(code)))
 
   if (!needsSpace && !needsLayout) {
     return code

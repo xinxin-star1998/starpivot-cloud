@@ -153,16 +153,16 @@
 </template>
 
 <script lang="ts" setup>
-import dayjs from 'dayjs'
-import {computed, onMounted, ref} from 'vue'
-import {type ApStatisticsVo, fetchApprovalStatistics} from '@/api/approval/statistics'
-import ArtLineChart from '@/components/core/charts/art-line-chart/index.vue'
-import ArtRingChart from '@/components/core/charts/art-ring-chart/index.vue'
-import StatisticsSearch from './modules/statistics-search.vue'
-import {bizTypeLabel} from '../utils/approval-labels'
-import {handleMutationError} from '@/utils/http/mutation'
+  import dayjs from 'dayjs'
+  import { computed, onMounted, ref } from 'vue'
+  import { type ApStatisticsVo, fetchApprovalStatistics } from '@/api/approval/statistics'
+  import ArtLineChart from '@/components/core/charts/art-line-chart/index.vue'
+  import ArtRingChart from '@/components/core/charts/art-ring-chart/index.vue'
+  import StatisticsSearch from './modules/statistics-search.vue'
+  import { bizTypeLabel } from '../utils/approval-labels'
+  import { handleMutationError } from '@/utils/http/mutation'
 
-defineOptions({ name: 'ApprovalStatistics' })
+  defineOptions({ name: 'ApprovalStatistics' })
 
   interface KpiCard {
     key: string

@@ -20,10 +20,10 @@
  * @author Art Design Pro Team
  */
 
-import type {AppRouteRecord} from '@/types/router'
-import {safeLog, safeWarn} from '@/utils'
-import {getApiBaseUrl} from '@/utils/http'
-import {buildAbsoluteApiUrl} from '@/utils/http/api-path'
+import type { AppRouteRecord } from '@/types/router'
+import { safeLog, safeWarn } from '@/utils'
+import { getApiBaseUrl } from '@/utils/http'
+import { buildAbsoluteApiUrl } from '@/utils/http/api-path'
 
 interface RouteIndex {
   names: Set<string>

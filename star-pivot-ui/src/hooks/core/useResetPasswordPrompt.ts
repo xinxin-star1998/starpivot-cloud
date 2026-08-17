@@ -1,10 +1,10 @@
-import {ElMessage, ElMessageBox} from 'element-plus'
-import {isUserCancel} from '@/utils/sys/confirm-action'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { isUserCancel } from '@/utils/sys/confirm-action'
 import {
-    ADMIN_PASSWORD_PATTERN,
-    ADMIN_PASSWORD_RULE_MESSAGE,
-    clearSavedLoginPassword,
-    createPasswordPromptAutofillGuard
+  ADMIN_PASSWORD_PATTERN,
+  ADMIN_PASSWORD_RULE_MESSAGE,
+  clearSavedLoginPassword,
+  createPasswordPromptAutofillGuard
 } from '@/utils/sys/password-prompt-guard'
 
 export interface ResetPasswordPromptOptions {

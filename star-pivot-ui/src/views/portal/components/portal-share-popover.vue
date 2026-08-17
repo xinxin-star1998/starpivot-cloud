@@ -1,6 +1,11 @@
 <!-- 商品分享菜单 -->
 <template>
-  <ElPopover trigger="click" placement="bottom-end" :width="220" popper-class="portal-share-popover">
+  <ElPopover
+    trigger="click"
+    placement="bottom-end"
+    :width="220"
+    popper-class="portal-share-popover"
+  >
     <template #reference>
       <button type="button" class="portal-share-trigger">
         <ArtSvgIcon icon="ri:share-forward-line" />
@@ -16,7 +21,12 @@
         <ArtSvgIcon icon="ri:file-copy-line" />
         复制文案
       </button>
-      <button v-if="canNativeShare" type="button" class="portal-share-menu__item" @click="nativeShare">
+      <button
+        v-if="canNativeShare"
+        type="button"
+        class="portal-share-menu__item"
+        @click="nativeShare"
+      >
         <ArtSvgIcon icon="ri:share-line" />
         系统分享
       </button>
@@ -25,10 +35,10 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import {ElMessage} from 'element-plus'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { ElMessage } from 'element-plus'
 
-defineOptions({ name: 'PortalSharePopover' })
+  defineOptions({ name: 'PortalSharePopover' })
 
   const props = withDefaults(
     defineProps<{
@@ -45,7 +55,9 @@ defineOptions({ name: 'PortalSharePopover' })
 
   const canNativeShare = computed(() => typeof navigator !== 'undefined' && !!navigator.share)
 
-  const shareUrl = computed(() => props.url || (typeof window !== 'undefined' ? window.location.href : ''))
+  const shareUrl = computed(
+    () => props.url || (typeof window !== 'undefined' ? window.location.href : '')
+  )
 
   const sharePromoText = computed(() => {
     if (props.promoText) return props.promoText

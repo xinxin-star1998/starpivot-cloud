@@ -77,8 +77,9 @@ export function buildAbsoluteApiUrl(path: string, baseUrl: string): string {
   }
 
   if (normalizedPath.startsWith('/api/v') && /^\/api\/v\d+(\/|$)/.test(normalizedPath)) {
-    const versionPrefix = normalizedPath.match(/^\/api\/v\d+/)?.[0]!
-    if (base.endsWith(versionPrefix)) {
+    const versionMatch = normalizedPath.match(/^\/api\/v\d+/)
+    const versionPrefix = versionMatch?.[0]
+    if (versionPrefix && base.endsWith(versionPrefix)) {
       return `${base}${normalizedPath.slice(versionPrefix.length)}`
     }
   }

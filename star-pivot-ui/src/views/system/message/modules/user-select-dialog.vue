@@ -72,144 +72,144 @@
 </template>
 
 <script lang="ts" setup>
-import { fetchGetUserList } from '@/api/user/user'
+  import { fetchGetUserList } from '@/api/user/user'
 
-export interface SelectedUserItem {
-  userId: number
-  userName?: string
-  nickName?: string
-}
-
-const visible = defineModel<boolean>('visible', { default: false })
-
-const props = defineProps<{
-  selected?: SelectedUserItem[]
-}>()
-
-const emit = defineEmits<{
-  confirm: [users: SelectedUserItem[]]
-}>()
-
-const tableRef = ref()
-const loading = ref(false)
-const tableData = ref<Api.SystemManage.UserListItem[]>([])
-const selectedRows = ref<SelectedUserItem[]>([])
-
-const searchForm = reactive({
-  userName: undefined as string | undefined,
-  phonenumber: undefined as string | undefined
-})
-
-const pagination = reactive({
-  pageNum: 1,
-  pageSize: 10,
-  total: 0
-})
-
-function mapUser(row: Api.SystemManage.UserListItem): SelectedUserItem {
-  return {
-    userId: Number(row.userId),
-    userName: row.userName,
-    nickName: row.nickName
+  export interface SelectedUserItem {
+    userId: number
+    userName?: string
+    nickName?: string
   }
-}
 
-async function loadUsers() {
-  loading.value = true
-  try {
-    const res = await fetchGetUserList({
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize,
-      userName: searchForm.userName,
-      phonenumber: searchForm.phonenumber,
-      status: '0'
-    })
-    tableData.value = res.rows || []
-    pagination.total = Number(res.total) || 0
-    await nextTick()
-    restoreSelection()
-  } finally {
-    loading.value = false
-  }
-}
+  const visible = defineModel<boolean>('visible', { default: false })
 
-function restoreSelection() {
-  const table = tableRef.value
-  if (!table) return
-  table.clearSelection()
-  const selectedIds = new Set(selectedRows.value.map((item) => item.userId))
-  tableData.value.forEach((row) => {
-    if (selectedIds.has(Number(row.userId))) {
-      table.toggleRowSelection(row, true)
-    }
+  const props = defineProps<{
+    selected?: SelectedUserItem[]
+  }>()
+
+  const emit = defineEmits<{
+    confirm: [users: SelectedUserItem[]]
+  }>()
+
+  const tableRef = ref()
+  const loading = ref(false)
+  const tableData = ref<Api.SystemManage.UserListItem[]>([])
+  const selectedRows = ref<SelectedUserItem[]>([])
+
+  const searchForm = reactive({
+    userName: undefined as string | undefined,
+    phonenumber: undefined as string | undefined
   })
-}
 
-function handleSelectionChange(rows: Api.SystemManage.UserListItem[]) {
-  const currentPageIds = new Set(tableData.value.map((row) => Number(row.userId)))
-  const kept = selectedRows.value.filter((item) => !currentPageIds.has(item.userId))
-  const merged = [...kept, ...rows.map(mapUser)]
-  const unique = new Map<number, SelectedUserItem>()
-  merged.forEach((item) => unique.set(item.userId, item))
-  selectedRows.value = Array.from(unique.values())
-}
+  const pagination = reactive({
+    pageNum: 1,
+    pageSize: 10,
+    total: 0
+  })
 
-function handleSearch() {
-  pagination.pageNum = 1
-  loadUsers()
-}
-
-function handleReset() {
-  searchForm.userName = undefined
-  searchForm.phonenumber = undefined
-  pagination.pageNum = 1
-  loadUsers()
-}
-
-function handleSizeChange() {
-  pagination.pageNum = 1
-  loadUsers()
-}
-
-function handleOpen() {
-  selectedRows.value = [...(props.selected || [])]
-  searchForm.userName = undefined
-  searchForm.phonenumber = undefined
-  pagination.pageNum = 1
-  pagination.pageSize = 10
-  loadUsers()
-}
-
-function handleConfirm() {
-  if (!selectedRows.value.length) {
-    ElMessage.warning('请至少选择一名用户')
-    return
+  function mapUser(row: Api.SystemManage.UserListItem): SelectedUserItem {
+    return {
+      userId: Number(row.userId),
+      userName: row.userName,
+      nickName: row.nickName
+    }
   }
-  emit('confirm', selectedRows.value)
-  visible.value = false
-}
+
+  async function loadUsers() {
+    loading.value = true
+    try {
+      const res = await fetchGetUserList({
+        pageNum: pagination.pageNum,
+        pageSize: pagination.pageSize,
+        userName: searchForm.userName,
+        phonenumber: searchForm.phonenumber,
+        status: '0'
+      })
+      tableData.value = res.rows || []
+      pagination.total = Number(res.total) || 0
+      await nextTick()
+      restoreSelection()
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function restoreSelection() {
+    const table = tableRef.value
+    if (!table) return
+    table.clearSelection()
+    const selectedIds = new Set(selectedRows.value.map((item) => item.userId))
+    tableData.value.forEach((row) => {
+      if (selectedIds.has(Number(row.userId))) {
+        table.toggleRowSelection(row, true)
+      }
+    })
+  }
+
+  function handleSelectionChange(rows: Api.SystemManage.UserListItem[]) {
+    const currentPageIds = new Set(tableData.value.map((row) => Number(row.userId)))
+    const kept = selectedRows.value.filter((item) => !currentPageIds.has(item.userId))
+    const merged = [...kept, ...rows.map(mapUser)]
+    const unique = new Map<number, SelectedUserItem>()
+    merged.forEach((item) => unique.set(item.userId, item))
+    selectedRows.value = Array.from(unique.values())
+  }
+
+  function handleSearch() {
+    pagination.pageNum = 1
+    loadUsers()
+  }
+
+  function handleReset() {
+    searchForm.userName = undefined
+    searchForm.phonenumber = undefined
+    pagination.pageNum = 1
+    loadUsers()
+  }
+
+  function handleSizeChange() {
+    pagination.pageNum = 1
+    loadUsers()
+  }
+
+  function handleOpen() {
+    selectedRows.value = [...(props.selected || [])]
+    searchForm.userName = undefined
+    searchForm.phonenumber = undefined
+    pagination.pageNum = 1
+    pagination.pageSize = 10
+    loadUsers()
+  }
+
+  function handleConfirm() {
+    if (!selectedRows.value.length) {
+      ElMessage.warning('请至少选择一名用户')
+      return
+    }
+    emit('confirm', selectedRows.value)
+    visible.value = false
+  }
 </script>
 
 <style scoped>
-.search-form {
-  margin-bottom: 8px;
-}
+  .search-form {
+    margin-bottom: 8px;
+  }
 
-.pagination-wrap {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
-}
+  .pagination-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
 
-.dialog-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
+  .dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
 
-.selected-hint {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
+  .selected-hint {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+  }
 </style>

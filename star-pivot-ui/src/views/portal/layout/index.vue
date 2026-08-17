@@ -35,11 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import PortalCategoryDrawer from '@/views/portal/components/portal-category-drawer.vue'
-import PortalBottomNav from './portal-bottom-nav.vue'
-import PortalHeader from './portal-header.vue'
+  import PortalCategoryDrawer from '@/views/portal/components/portal-category-drawer.vue'
+  import PortalBottomNav from './portal-bottom-nav.vue'
+  import PortalHeader from './portal-header.vue'
 
-defineOptions({ name: 'PortalLayout' })
+  defineOptions({ name: 'PortalLayout' })
 
   const router = useRouter()
   const year = new Date().getFullYear()
@@ -91,7 +91,9 @@ defineOptions({ name: 'PortalLayout' })
 
   @media (width <= 900px) {
     .portal-main {
-      padding-bottom: calc(32px + var(--portal-bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(
+        32px + var(--portal-bottom-nav-height) + env(safe-area-inset-bottom, 0px)
+      );
     }
   }
 

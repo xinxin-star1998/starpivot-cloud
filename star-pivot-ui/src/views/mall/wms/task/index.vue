@@ -25,17 +25,17 @@
 </template>
 
 <script setup lang="ts">
-import {h} from 'vue'
-import {useTable} from '@/hooks/core/useTable'
-import {fetchWareTaskList, TASK_STATUS_MAP} from '@/api/mall/ware-task'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import TaskSearch from './modules/task-search.vue'
-import TaskDetailDrawer from './modules/task-detail-drawer.vue'
-import {ElButton, ElTag} from 'element-plus'
-import {useAuth} from '@/hooks/core/useAuth'
+  import { h } from 'vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import { fetchWareTaskList, TASK_STATUS_MAP } from '@/api/mall/ware-task'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import TaskSearch from './modules/task-search.vue'
+  import TaskDetailDrawer from './modules/task-detail-drawer.vue'
+  import { ElButton, ElTag } from 'element-plus'
+  import { useAuth } from '@/hooks/core/useAuth'
 
-defineOptions({ name: 'WareTask' })
+  defineOptions({ name: 'WareTask' })
 
   const { hasAuth } = useAuth()
 
@@ -82,8 +82,10 @@ defineOptions({ name: 'WareTask' })
           formatter: (row) => {
             const type =
               row.taskStatus === 2 ? 'success' : row.taskStatus === 3 ? 'info' : 'warning'
-            return h(ElTag, { type, size: 'small' }, () =>
-              TASK_STATUS_MAP[row.taskStatus ?? 0] ?? row.taskStatus
+            return h(
+              ElTag,
+              { type, size: 'small' },
+              () => TASK_STATUS_MAP[row.taskStatus ?? 0] ?? row.taskStatus
             )
           }
         },

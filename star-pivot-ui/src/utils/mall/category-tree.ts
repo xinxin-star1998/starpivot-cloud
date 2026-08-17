@@ -1,4 +1,4 @@
-import {fetchMallCategoryTree, type MallCategoryTreeNode} from '@/api/mall/category'
+import { fetchMallCategoryTree, type MallCategoryTreeNode } from '@/api/mall/category'
 
 const CACHE_TTL_MS = 5 * 60 * 1000
 

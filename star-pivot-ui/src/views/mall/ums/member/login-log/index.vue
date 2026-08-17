@@ -19,13 +19,13 @@
 </template>
 
 <script setup lang="ts">
-import {useTable} from '@/hooks/core/useTable'
-import {fetchMemberLoginLogList, MEMBER_LOGIN_TYPE_MAP} from '@/api/mall/member-login-log'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import LoginLogSearch from './modules/login-log-search.vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import { fetchMemberLoginLogList, MEMBER_LOGIN_TYPE_MAP } from '@/api/mall/member-login-log'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import LoginLogSearch from './modules/login-log-search.vue'
 
-defineOptions({ name: 'MemberLoginLog' })
+  defineOptions({ name: 'MemberLoginLog' })
 
   const searchForm = ref({
     memberId: undefined as number | undefined,

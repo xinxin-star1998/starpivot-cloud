@@ -1,5 +1,11 @@
 <template>
-  <ElDialog v-model="dialogVisible" title="合并到采购单" width="480px" align-center destroy-on-close>
+  <ElDialog
+    v-model="dialogVisible"
+    title="合并到采购单"
+    width="480px"
+    align-center
+    destroy-on-close
+  >
     <ElForm ref="formRef" :model="formData" label-width="120px">
       <ElFormItem label="目标采购单 ID">
         <ElInputNumber
@@ -22,9 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import {fetchPurchaseMerge} from '@/api/mall/purchase'
+  import { fetchPurchaseMerge } from '@/api/mall/purchase'
 
-interface Props {
+  interface Props {
     visible: boolean
     detailIds: number[]
   }

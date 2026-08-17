@@ -167,37 +167,41 @@
     <ArtWorkTab />
 
     <!-- 通知 -->
-    <ArtNotification v-model:value="showNotice" ref="noticeRef" @unread-change="noticeUnreadCount = $event" />
+    <ArtNotification
+      v-model:value="showNotice"
+      ref="noticeRef"
+      @unread-change="noticeUnreadCount = $event"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import {useI18n} from 'vue-i18n'
-import {useRouter} from 'vue-router'
-import {useFullscreen, useWindowSize} from '@vueuse/core'
-import {LanguageEnum, MenuTypeEnum} from '@/enums/appEnum'
-import {useSettingStore} from '@/store/modules/setting'
-import {useUserStore} from '@/store/modules/user'
-import {useMenuStore} from '@/store/modules/menu'
-import AppConfig from '@/config'
-import {languageOptions} from '@/locales'
-import {mittBus} from '@/utils/sys'
-import {themeAnimation} from '@/utils/ui/animation'
-import {useCommon} from '@/hooks/core/useCommon'
-import {useHeaderBar} from '@/hooks/core/useHeaderBar'
-import ArtUserMenu from './widget/ArtUserMenu.vue'
-import ArtLogo from '@/components/core/base/art-logo/index.vue'
-import ArtIconButton from '@/components/core/widget/art-icon-button/index.vue'
-import ArtFastEnter from '@/components/core/layouts/art-fast-enter/index.vue'
-import ArtBreadcrumb from '@/components/core/layouts/art-breadcrumb/index.vue'
-import ArtHorizontalMenu from '@/components/core/layouts/art-menus/art-horizontal-menu/index.vue'
-import ArtMixedMenu from '@/components/core/layouts/art-menus/art-mixed-menu/index.vue'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import ArtWorkTab from '@/components/core/layouts/art-work-tab/index.vue'
-import ArtNotification from '@/components/core/layouts/art-notification/index.vue'
-import { useMessageSse } from '@/hooks/core/useMessageSse'
+  import { useI18n } from 'vue-i18n'
+  import { useRouter } from 'vue-router'
+  import { useFullscreen, useWindowSize } from '@vueuse/core'
+  import { LanguageEnum, MenuTypeEnum } from '@/enums/appEnum'
+  import { useSettingStore } from '@/store/modules/setting'
+  import { useUserStore } from '@/store/modules/user'
+  import { useMenuStore } from '@/store/modules/menu'
+  import AppConfig from '@/config'
+  import { languageOptions } from '@/locales'
+  import { mittBus } from '@/utils/sys'
+  import { themeAnimation } from '@/utils/ui/animation'
+  import { useCommon } from '@/hooks/core/useCommon'
+  import { useHeaderBar } from '@/hooks/core/useHeaderBar'
+  import ArtUserMenu from './widget/ArtUserMenu.vue'
+  import ArtLogo from '@/components/core/base/art-logo/index.vue'
+  import ArtIconButton from '@/components/core/widget/art-icon-button/index.vue'
+  import ArtFastEnter from '@/components/core/layouts/art-fast-enter/index.vue'
+  import ArtBreadcrumb from '@/components/core/layouts/art-breadcrumb/index.vue'
+  import ArtHorizontalMenu from '@/components/core/layouts/art-menus/art-horizontal-menu/index.vue'
+  import ArtMixedMenu from '@/components/core/layouts/art-menus/art-mixed-menu/index.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtWorkTab from '@/components/core/layouts/art-work-tab/index.vue'
+  import ArtNotification from '@/components/core/layouts/art-notification/index.vue'
+  import { useMessageSse } from '@/hooks/core/useMessageSse'
 
-defineOptions({ name: 'ArtHeaderBar' })
+  defineOptions({ name: 'ArtHeaderBar' })
 
   // 检测操作系统类型
   const isWindows = navigator.userAgent.includes('Windows')
@@ -236,10 +240,12 @@ defineOptions({ name: 'ArtHeaderBar' })
   const noticeRef = ref<{ refreshUnreadCount?: () => Promise<void> } | null>(null)
   const noticeUnreadCount = ref(0)
 
-  const { connect: connectMessageSse, disconnect: disconnectMessageSse } = useMessageSse((payload) => {
-    noticeUnreadCount.value = Number(payload.unreadCount) || noticeUnreadCount.value + 1
-    noticeRef.value?.refreshUnreadCount?.()
-  })
+  const { connect: connectMessageSse, disconnect: disconnectMessageSse } = useMessageSse(
+    (payload) => {
+      noticeUnreadCount.value = Number(payload.unreadCount) || noticeUnreadCount.value + 1
+      noticeRef.value?.refreshUnreadCount?.()
+    }
+  )
 
   // 菜单类型判断
   const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT)

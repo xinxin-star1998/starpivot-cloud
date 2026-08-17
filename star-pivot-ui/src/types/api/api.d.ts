@@ -396,5 +396,4 @@ declare namespace Api {
         endTime?: string
       }
   }
-
 }

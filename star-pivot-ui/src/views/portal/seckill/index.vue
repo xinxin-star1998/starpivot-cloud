@@ -1,7 +1,10 @@
 <!-- C 端限时秒杀页 -->
 <template>
   <div v-loading="loading" class="portal-seckill">
-    <PortalPageHeader :title="page.title || '限时秒杀'" :subtitle="page.subTitle || '整点场 · 抢完即止'" />
+    <PortalPageHeader
+      :title="page.title || '限时秒杀'"
+      :subtitle="page.subTitle || '整点场 · 抢完即止'"
+    />
 
     <div v-if="page.sessions?.length" class="seckill-tabs">
       <button
@@ -44,10 +47,16 @@
             type="primary"
             size="small"
             class="product-card__buy"
-            :disabled="!item.skuId || (item.seckillStockRemain != null && item.seckillStockRemain <= 0)"
+            :disabled="
+              !item.skuId || (item.seckillStockRemain != null && item.seckillStockRemain <= 0)
+            "
             @click.stop="openBuyDialog(item)"
           >
-            {{ item.seckillStockRemain != null && item.seckillStockRemain <= 0 ? '已抢光' : '立即抢购' }}
+            {{
+              item.seckillStockRemain != null && item.seckillStockRemain <= 0
+                ? '已抢光'
+                : '立即抢购'
+            }}
           </ElButton>
         </template>
       </PortalProductCard>
@@ -83,26 +92,28 @@
       </div>
       <template #footer>
         <ElButton @click="buyDialogVisible = false">取消</ElButton>
-        <ElButton type="primary" :loading="submitting" @click="handleSeckillSubmit">提交订单</ElButton>
+        <ElButton type="primary" :loading="submitting" @click="handleSeckillSubmit"
+          >提交订单</ElButton
+        >
       </template>
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { fetchPortalAddressList } from '@/api/portal/address'
-import { fetchPortalOrderSubmitToken } from '@/api/portal/order'
-import { fetchPortalSeckillOrder, fetchPortalSeckillPage } from '@/api/portal/seckill'
-import type { PortalAddress, PortalHomeProduct, PortalSeckillPage } from '@/api/portal/types'
-import { usePortalMemberStore } from '@/store/modules/portal-member'
-import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-import { formatMoney } from '@/utils/mall/money'
-import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
-import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
-import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
-import PortalSeckillCountdown from '@/views/portal/components/portal-seckill-countdown.vue'
+  import { fetchPortalAddressList } from '@/api/portal/address'
+  import { fetchPortalOrderSubmitToken } from '@/api/portal/order'
+  import { fetchPortalSeckillOrder, fetchPortalSeckillPage } from '@/api/portal/seckill'
+  import type { PortalAddress, PortalHomeProduct, PortalSeckillPage } from '@/api/portal/types'
+  import { usePortalMemberStore } from '@/store/modules/portal-member'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
+  import { PORTAL_PRODUCT_PLACEHOLDER_IMG } from '@/utils/portal/product-placeholder'
+  import PortalPageHeader from '@/views/portal/components/portal-page-header.vue'
+  import PortalProductCard from '@/views/portal/components/portal-product-card.vue'
+  import PortalSeckillCountdown from '@/views/portal/components/portal-seckill-countdown.vue'
 
-defineOptions({ name: 'PortalSeckill' })
+  defineOptions({ name: 'PortalSeckill' })
 
   const router = useRouter()
   const portalStore = usePortalMemberStore()
@@ -208,7 +219,12 @@ defineOptions({ name: 'PortalSeckill' })
   }
 
   async function handleSeckillSubmit() {
-    if (!buyTarget.value?.skuId || !activeSessionId.value || !selectedAddressId.value || !orderToken.value) {
+    if (
+      !buyTarget.value?.skuId ||
+      !activeSessionId.value ||
+      !selectedAddressId.value ||
+      !orderToken.value
+    ) {
       ElMessage.warning('请完善收货地址')
       return
     }

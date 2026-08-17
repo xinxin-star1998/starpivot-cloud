@@ -31,18 +31,18 @@
  * @module store/modules/user
  * @author Art Design Pro Team
  */
-import {defineStore} from 'pinia'
-import {LanguageEnum} from '@/enums/appEnum'
-import {router} from '@/router'
-import {useSettingStore} from './setting'
-import {useWorktabStore} from './worktab'
-import {AppRouteRecord} from '@/types/router'
-import {setPageTitle} from '@/utils/router'
-import {resetRouterState} from '@/router/guards/dynamicRouteGuard'
-import {useMenuStore} from './menu'
-import {StorageConfig} from '@/utils/storage/storage-config'
-import {logger} from '@/utils/sys/logger'
-import {clearAiSessionStorage} from '@/utils/ai/session-storage'
+import { defineStore } from 'pinia'
+import { LanguageEnum } from '@/enums/appEnum'
+import { router } from '@/router'
+import { useSettingStore } from './setting'
+import { useWorktabStore } from './worktab'
+import { AppRouteRecord } from '@/types/router'
+import { setPageTitle } from '@/utils/router'
+import { resetRouterState } from '@/router/guards/dynamicRouteGuard'
+import { useMenuStore } from './menu'
+import { StorageConfig } from '@/utils/storage/storage-config'
+import { logger } from '@/utils/sys/logger'
+import { clearAiSessionStorage } from '@/utils/ai/session-storage'
 
 /**
  * 清理 Pinia 持久化存储（只清登录态相关）

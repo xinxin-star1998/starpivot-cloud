@@ -83,38 +83,38 @@
 </template>
 
 <script setup lang="ts">
-import {h, onMounted} from 'vue'
-import {useRoute} from 'vue-router'
-import {ElMessage, ElMessageBox, ElTag} from 'element-plus'
-import {useTable} from '@/hooks/core/useTable'
-import {
-  canSubmitCouponAudit,
-  COUPON_PUBLISH_OPTIONS,
-  COUPON_TYPE_OPTIONS,
-  COUPON_USE_TYPE_OPTIONS,
-  type CouponVo,
-  fetchCouponList,
-  fetchCouponPublishStatus,
-  fetchCouponRemove,
-  fetchCouponSubmitApproval
-} from '@/api/mall/coupon'
-import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import CouponDialog from './modules/coupon-dialog.vue'
-import CouponDetailDrawer from './modules/coupon-detail-drawer.vue'
-import type {DialogType} from '@/types'
-import {useAuth} from '@/hooks/core/useAuth'
-import {handleMutationError} from '@/utils/http/mutation'
-import {
-  COUPON_RUN_STATUS_MAP,
-  formatCouponDateRange,
-  formatCouponMoney,
-  formatCouponStock,
-  getCouponRunStatus
-} from '@/utils/mall/coupon'
+  import { h, onMounted } from 'vue'
+  import { useRoute } from 'vue-router'
+  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    canSubmitCouponAudit,
+    COUPON_PUBLISH_OPTIONS,
+    COUPON_TYPE_OPTIONS,
+    COUPON_USE_TYPE_OPTIONS,
+    type CouponVo,
+    fetchCouponList,
+    fetchCouponPublishStatus,
+    fetchCouponRemove,
+    fetchCouponSubmitApproval
+  } from '@/api/mall/coupon'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import CouponDialog from './modules/coupon-dialog.vue'
+  import CouponDetailDrawer from './modules/coupon-detail-drawer.vue'
+  import type { DialogType } from '@/types'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import {
+    COUPON_RUN_STATUS_MAP,
+    formatCouponDateRange,
+    formatCouponMoney,
+    formatCouponStock,
+    getCouponRunStatus
+  } from '@/utils/mall/coupon'
 
-defineOptions({ name: 'SmsCoupon' })
+  defineOptions({ name: 'SmsCoupon' })
 
   const route = useRoute()
   const { hasAuth } = useAuth()
@@ -349,11 +349,11 @@ defineOptions({ name: 'SmsCoupon' })
   const submitCouponApproval = async (row: CouponVo) => {
     if (row.id == null) return
     try {
-      await ElMessageBox.confirm(
-        `确定提交优惠券「${row.couponName}」发布审批吗？`,
-        '提交审批',
-        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' }
-      )
+      await ElMessageBox.confirm(`确定提交优惠券「${row.couponName}」发布审批吗？`, '提交审批', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      })
       await fetchCouponSubmitApproval(row.id!)
       refreshData()
     } catch (error) {

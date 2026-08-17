@@ -4,7 +4,10 @@
     <section class="portal-home-skeleton__hero">
       <ElSkeleton animated class="portal-home-skeleton__nav">
         <template #template>
-          <ElSkeletonItem variant="rect" style="width: 100%; height: 100%; border-radius: 16px 0 0 16px" />
+          <ElSkeletonItem
+            variant="rect"
+            style="width: 100%; height: 100%; border-radius: 16px 0 0 16px"
+          />
         </template>
       </ElSkeleton>
       <ElSkeleton animated class="portal-home-skeleton__banner">
@@ -14,7 +17,15 @@
       </ElSkeleton>
       <ElSkeleton animated class="portal-home-skeleton__user">
         <template #template>
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 12px;
+              padding: 16px;
+            "
+          >
             <ElSkeletonItem variant="circle" style="width: 56px; height: 56px" />
             <ElSkeletonItem variant="text" style="width: 80%" />
             <ElSkeletonItem variant="button" style="width: 100%; height: 36px" />
@@ -54,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-defineOptions({ name: 'PortalHomeSkeleton' })
+  defineOptions({ name: 'PortalHomeSkeleton' })
 </script>
 
 <style scoped lang="scss">

@@ -14,16 +14,16 @@
  * @author Art Design Pro Team
  */
 
-import axios, {AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig} from 'axios'
-import {useUserStore} from '@/store/modules/user'
-import {usePortalMemberStore} from '@/store/modules/portal-member'
-import {ApiStatus} from './status'
-import {handleError, HttpError, showError, showSuccess} from './error'
-import {$t} from '@/locales'
-import {BaseResponse} from '@/types'
-import {fetchRefreshToken} from '@/api/auth'
-import {logger} from '@/utils/sys/logger'
-import {normalizeRequestUrl as stripDuplicateApiPrefix} from './api-path'
+import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { useUserStore } from '@/store/modules/user'
+import { usePortalMemberStore } from '@/store/modules/portal-member'
+import { ApiStatus } from './status'
+import { handleError, HttpError, showError, showSuccess } from './error'
+import { $t } from '@/locales'
+import { BaseResponse } from '@/types'
+import { fetchRefreshToken } from '@/api/auth'
+import { logger } from '@/utils/sys/logger'
+import { normalizeRequestUrl as stripDuplicateApiPrefix } from './api-path'
 
 /** 请求配置常量 */
 const REQUEST_TIMEOUT = 15000
@@ -220,7 +220,6 @@ axiosInstance.interceptors.request.use(
     if (typeof request.url === 'string') {
       request.url = normalizeRequestUrl(request.url)
     }
-    const requestUrl = typeof request.url === 'string' ? request.url : ''
     const userStore = useUserStore()
     const portalStore = usePortalMemberStore()
     const portalToken = portalStore.token
@@ -276,7 +275,10 @@ axiosInstance.interceptors.response.use(
     if (code === ApiStatus.unauthorized) {
       const originalRequest = response.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-      if (isAuthEntryRequest(originalRequest.url) || isPortalAuthEntryRequest(originalRequest.url)) {
+      if (
+        isAuthEntryRequest(originalRequest.url) ||
+        isPortalAuthEntryRequest(originalRequest.url)
+      ) {
         throw createHttpError(messageText, code)
       }
 

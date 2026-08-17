@@ -119,21 +119,21 @@
 </template>
 
 <script setup lang="ts">
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElMessage} from 'element-plus'
-import {useI18n} from 'vue-i18n'
-import {fetchForgetPasswordEnabled, fetchForgotPassword} from '@/api/auth'
-import {useCaptcha} from '@/hooks'
-import {useSettingStore} from '@/store/modules/setting'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import CaptchaImage from '@/components/core/views/login/CaptchaImage.vue'
-import {
-  ADMIN_PASSWORD_PATTERN,
-  ADMIN_PASSWORD_RULE_MESSAGE,
-  clearSavedLoginPassword
-} from '@/utils/sys/password-prompt-guard'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import { useI18n } from 'vue-i18n'
+  import { fetchForgetPasswordEnabled, fetchForgotPassword } from '@/api/auth'
+  import { useCaptcha } from '@/hooks'
+  import { useSettingStore } from '@/store/modules/setting'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import CaptchaImage from '@/components/core/views/login/CaptchaImage.vue'
+  import {
+    ADMIN_PASSWORD_PATTERN,
+    ADMIN_PASSWORD_RULE_MESSAGE,
+    clearSavedLoginPassword
+  } from '@/utils/sys/password-prompt-guard'
 
-defineOptions({ name: 'ForgetPassword' })
+  defineOptions({ name: 'ForgetPassword' })
 
   const { t } = useI18n()
   const router = useRouter()
@@ -142,7 +142,8 @@ defineOptions({ name: 'ForgetPassword' })
 
   const formRef = ref<FormInstance>()
   const loading = ref(false)
-  const { captchaToken, captchaImage, loadingCaptcha, refreshCaptcha } = useCaptcha('forget-password')
+  const { captchaToken, captchaImage, loadingCaptcha, refreshCaptcha } =
+    useCaptcha('forget-password')
 
   const clearCaptchaInput = () => {
     formData.captcha = ''

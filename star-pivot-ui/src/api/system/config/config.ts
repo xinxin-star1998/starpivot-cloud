@@ -1,5 +1,5 @@
 ﻿import request from '@/utils/http'
-import {fetchExcelExport} from '@/api/common/excel'
+import { fetchExcelExport } from '@/api/common/excel'
 
 /**
  * 参数配置实体类型

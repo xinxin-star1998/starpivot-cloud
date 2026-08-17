@@ -1,10 +1,10 @@
 ﻿import request from '@/utils/http'
 import type {
-    PortalComment,
-    PortalCommentQueryParams,
-    PortalCommentSubmitPayload,
-    PortalCommentSummary,
-    PortalPendingReview
+  PortalComment,
+  PortalCommentQueryParams,
+  PortalCommentSubmitPayload,
+  PortalCommentSummary,
+  PortalPendingReview
 } from './types'
 
 export function fetchPortalCommentPageList(params: PortalCommentQueryParams) {

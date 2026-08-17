@@ -30,18 +30,23 @@
 </template>
 
 <script setup lang="ts">
-import {h} from 'vue'
-import {ElMessageBox, ElTag} from 'element-plus'
-import {useTable} from '@/hooks/core/useTable'
-import {fetchMemberLevelPage, fetchMemberLevelRemove, type MemberLevelVo, PRIVILEGE_MAP} from '@/api/mall/member-level'
-import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import LevelDialog from './modules/level-dialog.vue'
-import type {DialogType} from '@/types'
-import {formatMoney} from '@/utils/mall/money'
+  import { h } from 'vue'
+  import { ElMessageBox, ElTag } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    fetchMemberLevelPage,
+    fetchMemberLevelRemove,
+    type MemberLevelVo,
+    PRIVILEGE_MAP
+  } from '@/api/mall/member-level'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import LevelDialog from './modules/level-dialog.vue'
+  import type { DialogType } from '@/types'
+  import { formatMoney } from '@/utils/mall/money'
 
-defineOptions({ name: 'MemberLevel' })
+  defineOptions({ name: 'MemberLevel' })
 
   const dialogVisible = ref(false)
   const dialogType = ref<DialogType>('add')
@@ -75,8 +80,10 @@ defineOptions({ name: 'MemberLevel' })
           label: '默认',
           width: 80,
           formatter: (row) =>
-            h(ElTag, { type: row.defaultStatus === 1 ? 'success' : 'info', size: 'small' }, () =>
-              PRIVILEGE_MAP[row.defaultStatus ?? 0] ?? row.defaultStatus
+            h(
+              ElTag,
+              { type: row.defaultStatus === 1 ? 'success' : 'info', size: 'small' },
+              () => PRIVILEGE_MAP[row.defaultStatus ?? 0] ?? row.defaultStatus
             )
         },
         {

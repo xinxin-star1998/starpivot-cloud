@@ -17,7 +17,9 @@
         <ElDescriptionsItem label="状态">
           {{ MEMBER_STATUS_MAP[detail.status ?? 0] ?? detail.status }}
         </ElDescriptionsItem>
-        <ElDescriptionsItem label="注册时间">{{ formatDateTime(detail.createTime) }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="注册时间">{{
+          formatDateTime(detail.createTime)
+        }}</ElDescriptionsItem>
         <ElDescriptionsItem label="城市">{{ detail.city || '-' }}</ElDescriptionsItem>
         <ElDescriptionsItem label="签名">{{ detail.sign || '-' }}</ElDescriptionsItem>
       </ElDescriptions>
@@ -26,10 +28,15 @@
 </template>
 
 <script setup lang="ts">
-import {fetchMemberById, MEMBER_GENDER_MAP, MEMBER_STATUS_MAP, type MemberVo} from '@/api/mall/member'
-import {formatDateTime} from '@/utils/common/datetime'
+  import {
+    fetchMemberById,
+    MEMBER_GENDER_MAP,
+    MEMBER_STATUS_MAP,
+    type MemberVo
+  } from '@/api/mall/member'
+  import { formatDateTime } from '@/utils/common/datetime'
 
-interface Props {
+  interface Props {
     visible: boolean
     memberId?: number
   }

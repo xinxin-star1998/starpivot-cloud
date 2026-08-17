@@ -10,11 +10,7 @@
   >
     <div v-loading="loading" class="portal-category-drawer">
       <ul v-if="categories.length" class="portal-category-drawer__list">
-        <li
-          v-for="cat in categories"
-          :key="cat.catId"
-          class="portal-category-drawer__group"
-        >
+        <li v-for="cat in categories" :key="cat.catId" class="portal-category-drawer__group">
           <button
             type="button"
             class="portal-category-drawer__l1"
@@ -48,7 +44,7 @@
                   {{ l3.name }}
                 </button>
                 <button
-                  v-if="!(l2.children?.length)"
+                  v-if="!l2.children?.length"
                   type="button"
                   class="portal-category-drawer__link"
                   @click="goCategory(l2.catId)"
@@ -86,16 +82,16 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import { fetchPortalHome } from '@/api/portal/home'
-import type { PortalBrandBrief, PortalCategory } from '@/api/portal/types'
-import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
-import {
-  closePortalCategoryDrawer,
-  portalCategoryDrawerVisible
-} from '@/utils/portal/category-drawer'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import { fetchPortalHome } from '@/api/portal/home'
+  import type { PortalBrandBrief, PortalCategory } from '@/api/portal/types'
+  import { resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import {
+    closePortalCategoryDrawer,
+    portalCategoryDrawerVisible
+  } from '@/utils/portal/category-drawer'
 
-defineOptions({ name: 'PortalCategoryDrawer' })
+  defineOptions({ name: 'PortalCategoryDrawer' })
 
   const router = useRouter()
   const visible = portalCategoryDrawerVisible

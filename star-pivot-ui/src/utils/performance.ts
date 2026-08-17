@@ -12,7 +12,7 @@
  * @module utils/performance
  */
 
-import {type Metric, onCLS, onFCP, onINP, onLCP, onTTFB} from 'web-vitals'
+import { type Metric, onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals'
 
 /** 单条性能指标数据结构 */
 export interface PerformanceMetric {
@@ -113,7 +113,7 @@ function logMetric(metric: PerformanceMetric): void {
     poor: '#ff4e42'
   }
   const color = colorMap[metric.rating] || '#999'
-  // eslint-disable-next-line no-console
+
   console.log(
     `%c[Perf] ${metric.name} ${metric.value.toFixed(2)} ${metric.unit} (${metric.rating})%c ${metric.path}`,
     `color: ${color}; font-weight: bold;`,
@@ -139,7 +139,6 @@ function handleMetric(metric: Metric): void {
     currentOptions.onMetric(normalized)
   } catch (err) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.error('[Perf] onMetric callback error:', err)
     }
   }
@@ -178,7 +177,6 @@ async function flushMetrics(): Promise<void> {
     }
   } catch (err) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.error('[Perf] report failed:', err)
     }
   }
@@ -220,7 +218,6 @@ export function setupPerformanceMonitor(options: PerformanceMonitorOptions = {})
   initialized = true
 
   if (currentOptions.enableConsoleLog) {
-    // eslint-disable-next-line no-console
     console.log('[Perf] 性能监控已启动', {
       report: currentOptions.enableReport,
       reportUrl: currentOptions.reportUrl,

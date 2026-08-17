@@ -56,17 +56,21 @@
 </template>
 
 <script setup lang="ts">
-import {useTable} from '@/hooks/core/useTable'
-import {fetchCleanLogininfor, fetchDeleteLogininfor, fetchGetLogininforList} from '@/api/log/logininfor'
-import {ElButton, ElCollapseTransition, ElMessage, ElMessageBox, ElTag} from 'element-plus'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import {useAuth} from '@/hooks/core/useAuth'
-import type {LogininforListItem, LogininforSearchParams} from '@/types/api/logininfor'
-import LogininforDetail from './modules/logininfor-detail.vue'
-import LogininforSearch from './modules/logininfor-search.vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    fetchCleanLogininfor,
+    fetchDeleteLogininfor,
+    fetchGetLogininforList
+  } from '@/api/log/logininfor'
+  import { ElButton, ElCollapseTransition, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import type { LogininforListItem, LogininforSearchParams } from '@/types/api/logininfor'
+  import LogininforDetail from './modules/logininfor-detail.vue'
+  import LogininforSearch from './modules/logininfor-search.vue'
 
-defineOptions({ name: 'Logininfor' })
+  defineOptions({ name: 'Logininfor' })
 
   // ==================== 常量定义 ====================
   /** 权限标识 */

@@ -1,12 +1,12 @@
 ﻿import request from '@/utils/http'
 import type {
-    PortalOrder,
-    PortalOrderPriceTrial,
-    PortalOrderPriceTrialPayload,
-    PortalOrderQueryParams,
-    PortalOrderSubmitPayload,
-    PortalOrderSubmitResult,
-    PortalOrderSubmitToken
+  PortalOrder,
+  PortalOrderPriceTrial,
+  PortalOrderPriceTrialPayload,
+  PortalOrderQueryParams,
+  PortalOrderSubmitPayload,
+  PortalOrderSubmitResult,
+  PortalOrderSubmitToken
 } from './types'
 
 export function fetchPortalOrderSubmitToken() {

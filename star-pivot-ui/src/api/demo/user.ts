@@ -5,13 +5,13 @@
  */
 export interface User {
   id?: number
-  username?: String
-  password?: String
-  realName?: String
-  headUrl?: String
+  username?: string
+  password?: string
+  realName?: string
+  headUrl?: string
   gender?: Integer
-  email?: String
-  mobile?: String
+  email?: string
+  mobile?: string
   deptId?: Long
   superAdmin?: Integer
   status?: Integer
@@ -27,13 +27,13 @@ export interface User {
 export interface UserSearchParams {
   pageNum?: number
   pageSize?: number
-  username?: String
-  password?: String
-  realName?: String
-  headUrl?: String
+  username?: string
+  password?: string
+  realName?: string
+  headUrl?: string
   gender?: Integer
-  email?: String
-  mobile?: String
+  email?: string
+  mobile?: string
   deptId?: Long
   superAdmin?: Integer
   status?: Integer
@@ -58,7 +58,7 @@ export function fetchGetUserList(params: UserSearchParams) {
  */
 export function fetchGetUserById(id: number) {
   return request.get<User>({
-    url: `/api/demo/user/\${id}`
+    url: `/api/demo/user/${id}`
   })
 }
 

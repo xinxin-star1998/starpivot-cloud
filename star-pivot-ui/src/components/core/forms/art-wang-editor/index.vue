@@ -18,19 +18,19 @@
 </template>
 
 <script setup lang="ts">
-import '@wangeditor/editor/dist/css/style.css'
-import {Editor, Toolbar} from '@wangeditor/editor-for-vue'
-import {useUserStore} from '@/store/modules/user'
-import {getApiBaseUrl} from '@/utils/http'
-import {buildAbsoluteApiUrl} from '@/utils/http/api-path'
-import EmojiText from '@/utils/ui/emojo'
-import {
-  normalizeEditorHtmlForStorage,
-  resolveEditorHtmlForDisplay
-} from '@/utils/storage/editor-oss-image'
-import {IDomEditor, IEditorConfig, IToolbarConfig} from '@wangeditor/editor'
+  import '@wangeditor/editor/dist/css/style.css'
+  import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
+  import { useUserStore } from '@/store/modules/user'
+  import { getApiBaseUrl } from '@/utils/http'
+  import { buildAbsoluteApiUrl } from '@/utils/http/api-path'
+  import EmojiText from '@/utils/ui/emojo'
+  import {
+    normalizeEditorHtmlForStorage,
+    resolveEditorHtmlForDisplay
+  } from '@/utils/storage/editor-oss-image'
+  import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
 
-defineOptions({ name: 'ArtWangEditor' })
+  defineOptions({ name: 'ArtWangEditor' })
 
   // Props 定义
   interface Props {
@@ -160,7 +160,10 @@ defineOptions({ name: 'ArtWangEditor' })
           allowedFileTypes: mergedUploadConfig.value.allowedFileTypes,
           server: uploadServer.value,
           headers: authHeader.value,
-          customInsert(res: Record<string, unknown>, insertFn: (url: string, alt: string, href: string) => void) {
+          customInsert(
+            res: Record<string, unknown>,
+            insertFn: (url: string, alt: string, href: string) => void
+          ) {
             const payload = (res?.data ?? res) as { url?: string; displayUrl?: string }
             const displayUrl = payload?.displayUrl || payload?.url || ''
             if (!displayUrl) {

@@ -163,36 +163,36 @@
 </template>
 
 <script setup lang="ts">
-import {
-  deleteFiles,
-  fetchFileList,
-  fetchFilePreviewUrl,
-  fetchRecycleList,
-  purgeRecycleFiles,
-  renameFile,
-  restoreFiles
-} from '@/api/file/file'
-import {deleteFolder, fetchFolderTree} from '@/api/file/folder'
-import type {FileCategoryNode, SysFile, SysFileFolderForm} from '@/api/file/types'
-import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import {useTable} from '@/hooks/core/useTable'
-import {useAuth} from '@/hooks/core/useAuth'
-import {formatFileSize, openFileUrl, resolveFileDisplayUrl} from '@/utils/file/file-center'
-import {handleMutationError} from '@/utils/http/mutation'
-import {ElImage, ElMessage, ElMessageBox, ElTag} from 'element-plus'
-import {computed, h, onActivated, onMounted, ref} from 'vue'
-import {getCategoryLabel, getMediaTypeIcon, MEDIA_TYPE_TAG, MEDIA_TYPES} from './constants'
-import FileFolderTree from './modules/file-folder-tree.vue'
-import FileMoveDialog from './modules/file-move-dialog.vue'
-import FilePreviewDialog from './modules/file-preview-dialog.vue'
-import FileSearch from './modules/file-search.vue'
-import FileUploadDialog from './modules/file-upload-dialog.vue'
-import FolderDialog from './modules/folder-dialog.vue'
+  import {
+    deleteFiles,
+    fetchFileList,
+    fetchFilePreviewUrl,
+    fetchRecycleList,
+    purgeRecycleFiles,
+    renameFile,
+    restoreFiles
+  } from '@/api/file/file'
+  import { deleteFolder, fetchFolderTree } from '@/api/file/folder'
+  import type { FileCategoryNode, SysFile, SysFileFolderForm } from '@/api/file/types'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { formatFileSize, openFileUrl, resolveFileDisplayUrl } from '@/utils/file/file-center'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import { computed, h, onActivated, onMounted, ref } from 'vue'
+  import { getCategoryLabel, getMediaTypeIcon, MEDIA_TYPE_TAG, MEDIA_TYPES } from './constants'
+  import FileFolderTree from './modules/file-folder-tree.vue'
+  import FileMoveDialog from './modules/file-move-dialog.vue'
+  import FilePreviewDialog from './modules/file-preview-dialog.vue'
+  import FileSearch from './modules/file-search.vue'
+  import FileUploadDialog from './modules/file-upload-dialog.vue'
+  import FolderDialog from './modules/folder-dialog.vue'
 
-defineOptions({ name: 'FileManage' })
+  defineOptions({ name: 'FileManage' })
 
   const { hasAuth } = useAuth()
 
@@ -409,14 +409,16 @@ defineOptions({ name: 'FileManage' })
               h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete([row.fileId!]) }),
             recycle &&
               hasAuth('file:resource:restore') &&
-              h(ArtButtonTable, { type: 'resume', tooltip: '恢复', onClick: () => handleRestore([row.fileId!]) }),
+              h(ArtButtonTable, {
+                type: 'resume',
+                tooltip: '恢复',
+                onClick: () => handleRestore([row.fileId!])
+              }),
             recycle &&
               hasAuth('file:resource:purge') &&
               h(ArtButtonTable, {
                 type: 'delete',
-                tooltip: purgeBlocked
-                  ? `仍有 ${refCount} 个业务引用，不可永久删除`
-                  : '永久删除',
+                tooltip: purgeBlocked ? `仍有 ${refCount} 个业务引用，不可永久删除` : '永久删除',
                 iconClass: purgeBlocked ? 'bg-g-300/30 text-g-400 cursor-not-allowed' : undefined,
                 onClick: () => {
                   if (purgeBlocked) {
@@ -672,11 +674,11 @@ defineOptions({ name: 'FileManage' })
 
   async function handlePurge(ids: number[]) {
     try {
-      await ElMessageBox.confirm(
-        '永久删除后文件及存储对象不可恢复，确认继续？',
-        '永久删除',
-        { type: 'warning', confirmButtonText: '永久删除', confirmButtonClass: 'el-button--danger' }
-      )
+      await ElMessageBox.confirm('永久删除后文件及存储对象不可恢复，确认继续？', '永久删除', {
+        type: 'warning',
+        confirmButtonText: '永久删除',
+        confirmButtonClass: 'el-button--danger'
+      })
       await purgeRecycleFiles(ids)
       ElMessage.success('已永久删除')
       selectedRows.value = []

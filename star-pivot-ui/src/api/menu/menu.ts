@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import type {MenuFormData} from '@/views/system/menu/types'
+import type { MenuFormData } from '@/views/system/menu/types'
 
 // 后端菜单实体类型
 export interface SysMenu {

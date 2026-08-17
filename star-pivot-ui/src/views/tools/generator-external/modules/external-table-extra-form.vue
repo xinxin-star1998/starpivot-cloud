@@ -126,10 +126,20 @@
 </template>
 
 <script setup lang="ts">
-import {ElCol, ElDivider, ElForm, ElFormItem, ElInput, ElOption, ElRow, ElSelect, ElTreeSelect} from 'element-plus'
-import type {GenTableColumnItem} from '@/api/generator/gen-external'
+  import {
+    ElCol,
+    ElDivider,
+    ElForm,
+    ElFormItem,
+    ElInput,
+    ElOption,
+    ElRow,
+    ElSelect,
+    ElTreeSelect
+  } from 'element-plus'
+  import type { GenTableColumnItem } from '@/api/generator/gen-external'
 
-export interface ExternalTableMeta {
+  export interface ExternalTableMeta {
     className: string
     businessName: string
     functionName: string
@@ -152,8 +162,9 @@ export interface ExternalTableMeta {
     children?: MenuItem[]
   }
 
+  const meta = defineModel<ExternalTableMeta>('meta', { required: true })
+
   const props = defineProps<{
-    meta: ExternalTableMeta
     tplCategory: string
     columns: GenTableColumnItem[]
     currentTableName: string
@@ -178,12 +189,12 @@ export interface ExternalTableMeta {
   })
 
   function onSubTableChange(name?: string) {
-    props.meta.subTableFkName = ''
+    meta.value.subTableFkName = ''
     subColumns.value = name ? props.allColumnsMap[name] || [] : []
   }
 
   watch(
-    () => props.meta.subTableName,
+    () => meta.value.subTableName,
     (name) => {
       subColumns.value = name ? props.allColumnsMap[name] || [] : []
     },

@@ -26,9 +26,9 @@
 </template>
 
 <script setup lang="ts">
-import type {PortalHotCategory} from '@/api/portal/types'
+  import type { PortalHotCategory } from '@/api/portal/types'
 
-defineOptions({ name: 'PortalHomeHotCategories' })
+  defineOptions({ name: 'PortalHomeHotCategories' })
 
   const props = defineProps<{
     items: PortalHotCategory[]
@@ -56,7 +56,6 @@ defineOptions({ name: 'PortalHomeHotCategories' })
 </script>
 
 <style scoped lang="scss">
-
   .hot-categories {
     background: var(--portal-bg-elevated);
     border-radius: var(--portal-radius-lg);

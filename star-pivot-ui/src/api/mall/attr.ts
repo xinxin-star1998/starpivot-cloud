@@ -1,5 +1,5 @@
 ﻿import request from '@/utils/http'
-import {fetchExcelExport, fetchExcelImport, fetchExcelTemplate} from '@/api/common/excel'
+import { fetchExcelExport, fetchExcelImport, fetchExcelTemplate } from '@/api/common/excel'
 
 /** 商品属性 */
 export interface MallAttr {

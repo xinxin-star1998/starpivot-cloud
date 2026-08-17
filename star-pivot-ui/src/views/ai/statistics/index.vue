@@ -19,7 +19,12 @@
           />
         </ElFormItem>
         <ElFormItem label="用户 ID">
-          <ElInputNumber v-model="searchForm.userId" :min="1" controls-position="right" class="!w-36" />
+          <ElInputNumber
+            v-model="searchForm.userId"
+            :min="1"
+            controls-position="right"
+            class="!w-36"
+          />
         </ElFormItem>
         <ElFormItem label="模型">
           <ElInput v-model="searchForm.model" clearable placeholder="模型名称" class="!w-40" />
@@ -67,103 +72,101 @@
 </template>
 
 <script lang="ts" setup>
-import { h } from 'vue'
-import { ElTag } from 'element-plus'
-import { useTable } from '@/hooks/core/useTable'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import {
-  fetchAiUsageLogList,
-  fetchAiUsageSummary,
-  type AiUsageLogItem,
-  type AiUsageSummary
-} from '@/api/ai/statistics'
-import { handleMutationError } from '@/utils/http/mutation'
+  import { h } from 'vue'
+  import { ElTag } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import {
+    fetchAiUsageLogList,
+    fetchAiUsageSummary,
+    type AiUsageLogItem,
+    type AiUsageSummary
+  } from '@/api/ai/statistics'
+  import { handleMutationError } from '@/utils/http/mutation'
 
-defineOptions({ name: 'AiStatistics' })
+  defineOptions({ name: 'AiStatistics' })
 
-const summary = ref<AiUsageSummary>({})
-const searchForm = ref<{
-  beginTime?: string
-  endTime?: string
-  userId?: number
-  model?: string
-}>({})
+  const summary = ref<AiUsageSummary>({})
+  const searchForm = ref<{
+    beginTime?: string
+    endTime?: string
+    userId?: number
+    model?: string
+  }>({})
 
-const {
-  columns,
-  columnChecks,
-  data,
-  loading,
-  pagination,
-  searchParams,
-  getData,
-  handleSizeChange,
-  handleCurrentChange
-} = useTable({
-  core: {
-    apiFn: fetchAiUsageLogList,
-    apiParams: { pageNum: 1, pageSize: 20 },
-    columnsFactory: () => [
-      { type: 'index', width: 60, label: '序号' },
-      { prop: 'createTime', label: '时间', minWidth: 160 },
-      { prop: 'userId', label: '用户', width: 80 },
-      { prop: 'model', label: '模型', minWidth: 120 },
-      { prop: 'requestType', label: '类型', width: 90 },
-      { prop: 'totalTokens', label: 'Tokens', width: 90 },
-      { prop: 'latencyMs', label: '耗时(ms)', width: 90 },
-      {
-        prop: 'success',
-        label: '结果',
-        width: 80,
-        formatter: (row: AiUsageLogItem) =>
-          h(
-            ElTag,
-            { type: row.success === '0' ? 'success' : 'danger', size: 'small' },
-            () => (row.success === '0' ? '成功' : '失败')
-          )
-      },
-      { prop: 'conversationId', label: '会话 ID', minWidth: 180 }
-    ]
+  const {
+    columns,
+    columnChecks,
+    data,
+    loading,
+    pagination,
+    searchParams,
+    getData,
+    handleSizeChange,
+    handleCurrentChange
+  } = useTable({
+    core: {
+      apiFn: fetchAiUsageLogList,
+      apiParams: { pageNum: 1, pageSize: 20 },
+      columnsFactory: () => [
+        { type: 'index', width: 60, label: '序号' },
+        { prop: 'createTime', label: '时间', minWidth: 160 },
+        { prop: 'userId', label: '用户', width: 80 },
+        { prop: 'model', label: '模型', minWidth: 120 },
+        { prop: 'requestType', label: '类型', width: 90 },
+        { prop: 'totalTokens', label: 'Tokens', width: 90 },
+        { prop: 'latencyMs', label: '耗时(ms)', width: 90 },
+        {
+          prop: 'success',
+          label: '结果',
+          width: 80,
+          formatter: (row: AiUsageLogItem) =>
+            h(ElTag, { type: row.success === '0' ? 'success' : 'danger', size: 'small' }, () =>
+              row.success === '0' ? '成功' : '失败'
+            )
+        },
+        { prop: 'conversationId', label: '会话 ID', minWidth: 180 }
+      ]
+    }
+  })
+
+  async function loadSummary(): Promise<void> {
+    try {
+      summary.value =
+        (await fetchAiUsageSummary({
+          beginTime: searchForm.value.beginTime,
+          endTime: searchForm.value.endTime
+        })) || {}
+    } catch (error) {
+      handleMutationError(error, '加载汇总失败')
+    }
   }
-})
 
-async function loadSummary(): Promise<void> {
-  try {
-    summary.value =
-      (await fetchAiUsageSummary({
-        beginTime: searchForm.value.beginTime,
-        endTime: searchForm.value.endTime
-      })) || {}
-  } catch (error) {
-    handleMutationError(error, '加载汇总失败')
+  function loadLogs(): void {
+    Object.assign(searchParams, searchForm.value)
+    getData()
   }
-}
 
-function loadLogs(): void {
-  Object.assign(searchParams, searchForm.value)
-  getData()
-}
+  async function loadAll(): Promise<void> {
+    await loadSummary()
+    loadLogs()
+  }
 
-async function loadAll(): Promise<void> {
-  await loadSummary()
-  loadLogs()
-}
+  function resetSearch(): void {
+    searchForm.value = {}
+    loadAll()
+  }
 
-function resetSearch(): void {
-  searchForm.value = {}
-  loadAll()
-}
-
-onMounted(() => {
-  loadAll()
-})
+  onMounted(() => {
+    loadAll()
+  })
 </script>
 
 <style scoped lang="scss">
-.ai-statistics-page {
-  .search-card {
-    margin-bottom: 12px;
+  .ai-statistics-page {
+    .search-card {
+      margin-bottom: 12px;
+    }
   }
-}
 </style>

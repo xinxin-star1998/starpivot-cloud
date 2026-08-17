@@ -48,12 +48,17 @@
 </template>
 
 <script lang="ts" setup>
-import type {ApprovalTimelineVo} from '@/api/approval/types'
-import {fetchApprovalTimeline} from '@/api/approval/instance'
-import {formatDateTime} from '@/utils/common/datetime'
-import {instanceStatusLabel, instanceStatusTagType, recordActionLabel, stepStatusLabel} from '../utils/approval-labels'
+  import type { ApprovalTimelineVo } from '@/api/approval/types'
+  import { fetchApprovalTimeline } from '@/api/approval/instance'
+  import { formatDateTime } from '@/utils/common/datetime'
+  import {
+    instanceStatusLabel,
+    instanceStatusTagType,
+    recordActionLabel,
+    stepStatusLabel
+  } from '../utils/approval-labels'
 
-const props = defineProps<{
+  const props = defineProps<{
     instanceId?: number
     /** 外部传入则不再请求 */
     data?: ApprovalTimelineVo

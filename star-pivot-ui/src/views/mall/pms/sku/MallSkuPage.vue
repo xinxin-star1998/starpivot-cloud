@@ -37,24 +37,29 @@
 </template>
 
 <script setup lang="ts">
-import {h} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
-import {ElImage, ElMessageBox, ElTag} from 'element-plus'
-import {useTable} from '@/hooks/core/useTable'
-import {fetchMallSkuList, fetchMallSkuPublishStatus, fetchMallSkuUpdatePrice, type MallSkuVo} from '@/api/mall/sku'
-import {fetchCategoryNameMap, getCategoryDisplayName} from '@/utils/mall/category-tree'
-import {fetchBrandNameMap, getBrandDisplayName} from '@/utils/mall/brand-map'
-import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import SkuSearch from './modules/sku-search.vue'
-import SkuDialog from './modules/sku-dialog.vue'
-import {useAuth} from '@/hooks/core/useAuth'
-import {handleMutationError} from '@/utils/http/mutation'
-import {getCoverDisplayUrl, resolveGoodsImageDisplayUrls} from '@/utils/mall/goods-image-url'
-import {formatMoney} from '@/utils/mall/money'
+  import { h } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { ElImage, ElMessageBox, ElTag } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    fetchMallSkuList,
+    fetchMallSkuPublishStatus,
+    fetchMallSkuUpdatePrice,
+    type MallSkuVo
+  } from '@/api/mall/sku'
+  import { fetchCategoryNameMap, getCategoryDisplayName } from '@/utils/mall/category-tree'
+  import { fetchBrandNameMap, getBrandDisplayName } from '@/utils/mall/brand-map'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import SkuSearch from './modules/sku-search.vue'
+  import SkuDialog from './modules/sku-dialog.vue'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { handleMutationError } from '@/utils/http/mutation'
+  import { getCoverDisplayUrl, resolveGoodsImageDisplayUrls } from '@/utils/mall/goods-image-url'
+  import { formatMoney } from '@/utils/mall/money'
 
-const props = withDefaults(
+  const props = withDefaults(
     defineProps<{
       /** goods-manager：谷粒「商品管理」，SKU 只读检索；admin：SKU 完整维护 */
       mode?: 'goods-manager' | 'admin'
@@ -208,8 +213,7 @@ const props = withDefaults(
         label: '分类',
         minWidth: 120,
         showOverflowTooltip: true,
-        formatter: (row: MallSkuVo) =>
-          getCategoryDisplayName(categoryNameMap.value, row.catalogId)
+        formatter: (row: MallSkuVo) => getCategoryDisplayName(categoryNameMap.value, row.catalogId)
       },
       {
         prop: 'brandId',

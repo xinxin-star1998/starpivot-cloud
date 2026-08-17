@@ -25,22 +25,22 @@
 </template>
 
 <script setup lang="ts">
-import {h} from 'vue'
-import {useTable} from '@/hooks/core/useTable'
-import {
-  fetchMemberStatisticsList,
-  fetchMemberStatisticsRefresh,
-  type MemberStatisticsVo
-} from '@/api/mall/member-statistics'
-import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
-import ArtTable from '@/components/core/tables/art-table/index.vue'
-import StatisticsSearch from './modules/statistics-search.vue'
-import StatisticsDetailDrawer from './modules/statistics-detail-drawer.vue'
-import {ElButton, ElMessage, ElMessageBox} from 'element-plus'
-import {useAuth} from '@/hooks/core/useAuth'
-import {formatMoney} from '@/utils/mall/money'
+  import { h } from 'vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import {
+    fetchMemberStatisticsList,
+    fetchMemberStatisticsRefresh,
+    type MemberStatisticsVo
+  } from '@/api/mall/member-statistics'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import ArtTable from '@/components/core/tables/art-table/index.vue'
+  import StatisticsSearch from './modules/statistics-search.vue'
+  import StatisticsDetailDrawer from './modules/statistics-detail-drawer.vue'
+  import { ElButton, ElMessage, ElMessageBox } from 'element-plus'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { formatMoney } from '@/utils/mall/money'
 
-defineOptions({ name: 'MemberStatistics' })
+  defineOptions({ name: 'MemberStatistics' })
 
   const { hasAuth } = useAuth()
 

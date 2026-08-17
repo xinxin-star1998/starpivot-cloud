@@ -1,5 +1,8 @@
 /** C 端订单状态文案 */
-export const PORTAL_ORDER_STATUS: Record<number, { label: string; type: '' | 'success' | 'warning' | 'info' | 'danger' }> = {
+export const PORTAL_ORDER_STATUS: Record<
+  number,
+  { label: string; type: '' | 'success' | 'warning' | 'info' | 'danger' }
+> = {
   0: { label: '待付款', type: 'warning' },
   1: { label: '待发货', type: 'info' },
   2: { label: '已发货', type: 'info' },

@@ -18,20 +18,10 @@
       </ElDescriptions>
 
       <div v-if="hasAuth('mall:refund:query')" class="action-bar mb-4">
-        <ElButton
-          v-if="canSync(detail)"
-          :loading="syncing"
-          type="primary"
-          @click="handleSync"
-        >
+        <ElButton v-if="canSync(detail)" :loading="syncing" type="primary" @click="handleSync">
           同步渠道状态
         </ElButton>
-        <ElButton
-          v-if="canRetry(detail)"
-          :loading="retrying"
-          type="warning"
-          @click="handleRetry"
-        >
+        <ElButton v-if="canRetry(detail)" :loading="retrying" type="warning" @click="handleRetry">
           重试原路退款
         </ElButton>
       </div>
@@ -43,149 +33,149 @@
 </template>
 
 <script setup lang="ts">
-import {
-  fetchRefundAckAlert,
-  fetchRefundById,
-  fetchRefundRetry,
-  fetchRefundSync,
-  REFUND_CHANNEL_MAP,
-  REFUND_STATUS_MAP,
-  type RefundVo
-} from '@/api/mall/refund'
-import {useAuth} from '@/hooks/core/useAuth'
-import {ElMessage} from 'element-plus'
-import {formatMoney} from '@/utils/mall/money'
+  import {
+    fetchRefundAckAlert,
+    fetchRefundById,
+    fetchRefundRetry,
+    fetchRefundSync,
+    REFUND_CHANNEL_MAP,
+    REFUND_STATUS_MAP,
+    type RefundVo
+  } from '@/api/mall/refund'
+  import { useAuth } from '@/hooks/core/useAuth'
+  import { ElMessage } from 'element-plus'
+  import { formatMoney } from '@/utils/mall/money'
 
-interface Props {
-  visible: boolean
-  refundId?: number
-}
-interface Emits {
-  (e: 'update:visible', value: boolean): void
-  (e: 'changed'): void
-}
+  interface Props {
+    visible: boolean
+    refundId?: number
+  }
+  interface Emits {
+    (e: 'update:visible', value: boolean): void
+    (e: 'changed'): void
+  }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-const { hasAuth } = useAuth()
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
+  const { hasAuth } = useAuth()
 
-const loading = ref(false)
-const syncing = ref(false)
-const retrying = ref(false)
-const detail = ref<RefundVo>()
+  const loading = ref(false)
+  const syncing = ref(false)
+  const retrying = ref(false)
+  const detail = ref<RefundVo>()
 
-const drawerVisible = computed({
-  get: () => props.visible,
-  set: (value) => emit('update:visible', value)
-})
+  const drawerVisible = computed({
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value)
+  })
 
-const formattedContent = computed(() => formatJson(detail.value?.refundContent))
+  const formattedContent = computed(() => formatJson(detail.value?.refundContent))
 
-watch(
-  () => [props.visible, props.refundId] as const,
-  ([visible, id]) => {
-    if (visible && id) {
-      loadDetail(id)
+  watch(
+    () => [props.visible, props.refundId] as const,
+    ([visible, id]) => {
+      if (visible && id) {
+        loadDetail(id)
+      }
+    },
+    { immediate: true }
+  )
+
+  async function loadDetail(id: number) {
+    loading.value = true
+    try {
+      detail.value = await fetchRefundById(id)
+      if (detail.value?.refundStatus === 3 && detail.value.id) {
+        await fetchRefundAckAlert(detail.value.id)
+      }
+    } finally {
+      loading.value = false
     }
-  },
-  { immediate: true }
-)
+  }
 
-async function loadDetail(id: number) {
-  loading.value = true
-  try {
-    detail.value = await fetchRefundById(id)
-    if (detail.value?.refundStatus === 3 && detail.value.id) {
-      await fetchRefundAckAlert(detail.value.id)
+  function canSync(row?: RefundVo) {
+    const status = row?.refundStatus ?? 0
+    return status === 0 || status === 1
+  }
+
+  function canRetry(row?: RefundVo) {
+    const status = row?.refundStatus ?? 0
+    return status === 0 || status === 3
+  }
+
+  function statusTagType(status?: number) {
+    if (status === 2) return 'success'
+    if (status === 3) return 'danger'
+    if (status === 1) return 'warning'
+    return 'info'
+  }
+
+  function formatAmount(value?: number) {
+    return formatMoney(value, '-')
+  }
+
+  function formatJson(raw?: string) {
+    if (!raw) {
+      return '暂无回调内容'
     }
-  } finally {
-    loading.value = false
+    try {
+      return JSON.stringify(JSON.parse(raw), null, 2)
+    } catch {
+      return raw
+    }
   }
-}
 
-function canSync(row?: RefundVo) {
-  const status = row?.refundStatus ?? 0
-  return status === 0 || status === 1
-}
-
-function canRetry(row?: RefundVo) {
-  const status = row?.refundStatus ?? 0
-  return status === 0 || status === 3
-}
-
-function statusTagType(status?: number) {
-  if (status === 2) return 'success'
-  if (status === 3) return 'danger'
-  if (status === 1) return 'warning'
-  return 'info'
-}
-
-function formatAmount(value?: number) {
-  return formatMoney(value, '-')
-}
-
-function formatJson(raw?: string) {
-  if (!raw) {
-    return '暂无回调内容'
+  async function handleSync() {
+    if (!detail.value?.id) {
+      return
+    }
+    syncing.value = true
+    try {
+      detail.value = await fetchRefundSync(detail.value.id)
+      ElMessage.success('退款状态已同步')
+      emit('changed')
+    } finally {
+      syncing.value = false
+    }
   }
-  try {
-    return JSON.stringify(JSON.parse(raw), null, 2)
-  } catch {
-    return raw
-  }
-}
 
-async function handleSync() {
-  if (!detail.value?.id) {
-    return
+  async function handleRetry() {
+    if (!detail.value?.id) {
+      return
+    }
+    retrying.value = true
+    try {
+      detail.value = await fetchRefundRetry(detail.value.id)
+      ElMessage.success('已重新发起原路退款')
+      emit('changed')
+    } finally {
+      retrying.value = false
+    }
   }
-  syncing.value = true
-  try {
-    detail.value = await fetchRefundSync(detail.value.id)
-    ElMessage.success('退款状态已同步')
-    emit('changed')
-  } finally {
-    syncing.value = false
-  }
-}
-
-async function handleRetry() {
-  if (!detail.value?.id) {
-    return
-  }
-  retrying.value = true
-  try {
-    detail.value = await fetchRefundRetry(detail.value.id)
-    ElMessage.success('已重新发起原路退款')
-    emit('changed')
-  } finally {
-    retrying.value = false
-  }
-}
 </script>
 
 <style scoped>
-.section-title {
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 600;
-}
+  .section-title {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
-.callback-json {
-  margin: 0;
-  padding: 12px;
-  max-height: 420px;
-  overflow: auto;
-  border-radius: 6px;
-  background: var(--el-fill-color-light);
-  font-size: 12px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
+  .callback-json {
+    margin: 0;
+    padding: 12px;
+    max-height: 420px;
+    overflow: auto;
+    border-radius: 6px;
+    background: var(--el-fill-color-light);
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
 
-.action-bar {
-  display: flex;
-  gap: 8px;
-}
+  .action-bar {
+    display: flex;
+    gap: 8px;
+  }
 </style>
