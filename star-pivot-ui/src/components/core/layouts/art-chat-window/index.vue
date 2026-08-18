@@ -216,9 +216,7 @@
               @keydown="handleInputKeydown"
             />
             <div class="mt-2 flex-cb">
-              <span class="text-[11px] text-g-500"
-                >Enter 发送 · Shift+Enter 换行 · Esc 停止</span
-              >
+              <span class="text-[11px] text-g-500">Enter 发送 · Shift+Enter 换行 · Esc 停止</span>
               <div class="flex gap-2">
                 <ElButton v-if="sending" type="danger" plain @click="stopGeneration" v-ripple>
                   停止生成

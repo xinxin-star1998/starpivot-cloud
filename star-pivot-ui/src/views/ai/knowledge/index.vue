@@ -43,10 +43,13 @@
             </span>
             <div class="min-w-0">
               <h3 class="kb-card__title">{{ row.kbName }}</h3>
-              <p class="kb-card__desc">{{ row.description || t('ai.knowledge.docStats', {
-                docs: row.docCount ?? 0,
-                chunks: row.chunkCount ?? 0
-              }) }}</p>
+              <p class="kb-card__desc">{{
+                row.description ||
+                t('ai.knowledge.docStats', {
+                  docs: row.docCount ?? 0,
+                  chunks: row.chunkCount ?? 0
+                })
+              }}</p>
             </div>
           </div>
           <ElTag :type="row.status === '0' ? 'success' : 'info'" size="small" effect="plain">
@@ -55,8 +58,12 @@
         </div>
 
         <div class="kb-card__stats">
-          <span class="stat">{{ t('ai.knowledge.indexedCount', { n: row.indexedCount ?? 0 }) }}</span>
-          <span class="stat">{{ t('ai.knowledge.indexingCount', { n: row.indexingCount ?? 0 }) }}</span>
+          <span class="stat">{{
+            t('ai.knowledge.indexedCount', { n: row.indexedCount ?? 0 })
+          }}</span>
+          <span class="stat">{{
+            t('ai.knowledge.indexingCount', { n: row.indexingCount ?? 0 })
+          }}</span>
           <span class="stat" :class="{ 'is-bad': (row.failedCount || 0) > 0 }">
             {{ t('ai.knowledge.failedCount', { n: row.failedCount ?? 0 }) }}
           </span>
@@ -65,7 +72,9 @@
         <div class="kb-card__meta">
           <span>TopK {{ row.topK ?? '-' }}</span>
           <span>{{ t('ai.knowledge.chunkSizeShort') }} {{ row.chunkSize ?? '-' }}</span>
-          <ElTag size="small" :type="healthTag(row).type" effect="plain">{{ healthTag(row).label }}</ElTag>
+          <ElTag size="small" :type="healthTag(row).type" effect="plain">{{
+            healthTag(row).label
+          }}</ElTag>
         </div>
 
         <div class="kb-card__actions">
@@ -84,7 +93,13 @@
           <ElButton v-auth="'ai:knowledge:edit'" text size="small" @click="openKbEdit(row)">
             {{ t('ai.common.edit') }}
           </ElButton>
-          <ElButton v-auth="'ai:knowledge:delete'" text type="danger" size="small" @click="removeKb(row)">
+          <ElButton
+            v-auth="'ai:knowledge:delete'"
+            text
+            type="danger"
+            size="small"
+            @click="removeKb(row)"
+          >
             {{ t('common.delete') }}
           </ElButton>
         </div>
@@ -337,21 +352,14 @@
       ).length
   )
 
-  const {
-    data,
-    loading,
-    pagination,
-    searchParams,
-    getData,
-    handleCurrentChange,
-    refreshData
-  } = useTable({
-    core: {
-      apiFn: fetchAiKnowledgeBaseList,
-      apiParams: { pageNum: 1, pageSize: 12, ...searchForm.value },
-      columnsFactory: () => []
-    }
-  })
+  const { data, loading, pagination, searchParams, getData, handleCurrentChange, refreshData } =
+    useTable({
+      core: {
+        apiFn: fetchAiKnowledgeBaseList,
+        apiParams: { pageNum: 1, pageSize: 12, ...searchForm.value },
+        columnsFactory: () => []
+      }
+    })
 
   function healthTag(row: AiKnowledgeBaseItem): {
     label: string
@@ -712,7 +720,9 @@
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 14px;
     background: var(--el-bg-color);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
 
     &:hover {
       border-color: color-mix(in srgb, var(--el-color-primary) 35%, var(--el-border-color));

@@ -172,9 +172,13 @@
           </dl>
 
           <footer class="provider-card__foot">
-            <ElButton link type="primary" @click="openEdit(row)">{{ t('ai.common.edit') }}</ElButton>
+            <ElButton link type="primary" @click="openEdit(row)">{{
+              t('ai.common.edit')
+            }}</ElButton>
             <ElDropdown
-              v-if="row.chatEnabled === '0' || row.embeddingEnabled === '0' || row.rerankEnabled === '0'"
+              v-if="
+                row.chatEnabled === '0' || row.embeddingEnabled === '0' || row.rerankEnabled === '0'
+              "
               trigger="click"
               @command="(cmd: string) => handleCardCommand(row, cmd)"
             >
@@ -214,7 +218,9 @@
                 </ElDropdownMenu>
               </template>
             </ElDropdown>
-            <ElButton link type="danger" @click="handleDelete(row)">{{ t('common.delete') }}</ElButton>
+            <ElButton link type="danger" @click="handleDelete(row)">{{
+              t('common.delete')
+            }}</ElButton>
           </footer>
         </article>
       </div>
@@ -279,13 +285,21 @@
   const currentProvider = ref<AiProviderItem | null>(null)
   const presetCode = ref('deepseek')
 
-  const { data, loading, pagination, searchParams, getData, handleSizeChange, handleCurrentChange, refreshData } =
-    useTable({
-      core: {
-        apiFn: fetchAiProviderList,
-        apiParams: { pageNum: 1, pageSize: 12, ...searchForm.value }
-      }
-    })
+  const {
+    data,
+    loading,
+    pagination,
+    searchParams,
+    getData,
+    handleSizeChange,
+    handleCurrentChange,
+    refreshData
+  } = useTable({
+    core: {
+      apiFn: fetchAiProviderList,
+      apiParams: { pageNum: 1, pageSize: 12, ...searchForm.value }
+    }
+  })
 
   async function loadPresets(): Promise<void> {
     try {
@@ -353,7 +367,10 @@
     }
   }
 
-  async function handleTest(kind: string, providerId = currentProvider.value?.providerId): Promise<void> {
+  async function handleTest(
+    kind: string,
+    providerId = currentProvider.value?.providerId
+  ): Promise<void> {
     if (!providerId) return
     testing.value = kind
     try {
@@ -475,7 +492,9 @@
     color: var(--el-text-color-regular);
     font-size: 13px;
     cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
 
     &:hover {
       border-color: var(--el-color-primary);

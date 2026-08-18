@@ -217,12 +217,7 @@
         <div class="preview-hero">
           <div class="preview-hero__top">
             <span>{{ t('monitor.job.cronExpression') }}</span>
-            <ElButton
-              text
-              class="copy-btn"
-              :disabled="!draft"
-              @click="copyExpression"
-            >
+            <ElButton text class="copy-btn" :disabled="!draft" @click="copyExpression">
               <ArtSvgIcon icon="ri:file-copy-line" />
               {{ t('monitor.job.cron.copy') }}
             </ElButton>
@@ -241,7 +236,9 @@
           <div class="side-row">
             <div class="side-title">{{ t('monitor.job.status') }}</div>
             <span class="status-pill" :class="validation.ok ? 'is-ok' : 'is-bad'">
-              <ArtSvgIcon :icon="validation.ok ? 'ri:checkbox-circle-fill' : 'ri:close-circle-fill'" />
+              <ArtSvgIcon
+                :icon="validation.ok ? 'ri:checkbox-circle-fill' : 'ri:close-circle-fill'"
+              />
               {{ validation.ok ? t('monitor.job.cron.valid') : t('monitor.job.cron.invalid') }}
             </span>
           </div>
@@ -386,8 +383,7 @@
 
   const bindClock = (state: { hour: number; minute: number }) =>
     computed({
-      get: () =>
-        `${String(state.hour).padStart(2, '0')}:${String(state.minute).padStart(2, '0')}`,
+      get: () => `${String(state.hour).padStart(2, '0')}:${String(state.minute).padStart(2, '0')}`,
       set: (v: string) => {
         const [hh, mm] = (v || '00:00').split(':')
         state.hour = Number(hh) || 0
@@ -1003,8 +999,9 @@
   }
 
   .cron-textarea :deep(.el-textarea__inner) {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-      'Courier New', monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+      monospace;
     font-size: 15px;
     line-height: 1.7;
     letter-spacing: 0.04em;
@@ -1038,8 +1035,9 @@
   .preview-hero__cron {
     margin-top: 10px;
     overflow: hidden;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-      'Courier New', monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+      monospace;
     font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.04em;

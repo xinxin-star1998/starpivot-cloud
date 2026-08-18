@@ -36,7 +36,10 @@
         <ElRow :gutter="16">
           <ElCol :span="12">
             <ElFormItem :label="t('ai.provider.name')" prop="providerName">
-              <ElInput v-model="form.providerName" :placeholder="t('ai.provider.namePlaceholder')" />
+              <ElInput
+                v-model="form.providerName"
+                :placeholder="t('ai.provider.namePlaceholder')"
+              />
             </ElFormItem>
           </ElCol>
           <ElCol :span="12">
@@ -61,7 +64,9 @@
               form.providerId ? t('ai.provider.apiKeyPlaceholder') : t('ai.provider.apiKey')
             "
           />
-          <p v-if="maskedKey" class="field-extra">{{ t('ai.provider.currentKey') }}：{{ maskedKey }}</p>
+          <p v-if="maskedKey" class="field-extra"
+            >{{ t('ai.provider.currentKey') }}：{{ maskedKey }}</p
+          >
         </ElFormItem>
       </section>
 
@@ -121,7 +126,9 @@
             <ElButton type="primary" link @click="syncPresetModels">
               {{ t('ai.provider.syncModels') }}
             </ElButton>
-            <ElButton type="primary" link @click="addModelRow">{{ t('ai.provider.addModel') }}</ElButton>
+            <ElButton type="primary" link @click="addModelRow">{{
+              t('ai.provider.addModel')
+            }}</ElButton>
           </div>
         </div>
         <p class="section-hint">{{ t('ai.provider.modelsHint') }}</p>
@@ -203,11 +210,7 @@
   import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
   import { useI18n } from 'vue-i18n'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import type {
-    AiProviderItem,
-    AiProviderPreset,
-    AiProviderSavePayload
-  } from '@/api/ai/provider'
+  import type { AiProviderItem, AiProviderPreset, AiProviderSavePayload } from '@/api/ai/provider'
   import { resolveVendorMeta } from '../vendor'
 
   const props = defineProps<{
@@ -425,7 +428,9 @@
     border-radius: 10px;
     background: var(--el-bg-color);
     cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
 
     &:hover,
     &.is-active {
