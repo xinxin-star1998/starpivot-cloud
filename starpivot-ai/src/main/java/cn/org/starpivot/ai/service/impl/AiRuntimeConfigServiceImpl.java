@@ -1,17 +1,22 @@
 package cn.org.starpivot.ai.service.impl;
 
-import cn.org.starpivot.ai.config.AiProperties;
-import cn.org.starpivot.ai.config.AiRuntimeSnapshot;
-import cn.org.starpivot.ai.domain.entity.AiConfig;
-import cn.org.starpivot.ai.domain.vo.AiModelVo;
-import cn.org.starpivot.ai.mapper.AiConfigMapper;
-import cn.org.starpivot.ai.service.AiRuntimeConfigService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
+import cn.org.starpivot.ai.config.AiProperties;
+import cn.org.starpivot.ai.config.AiRuntimeModelCatalog;
+import cn.org.starpivot.ai.config.AiRuntimeSnapshot;
+import cn.org.starpivot.ai.domain.entity.AiConfig;
+import cn.org.starpivot.ai.domain.entity.AiProvider;
+import cn.org.starpivot.ai.domain.vo.AiModelVo;
+import cn.org.starpivot.ai.mapper.AiConfigMapper;
+import cn.org.starpivot.ai.provider.AiModelRef;
+import cn.org.starpivot.ai.service.AiProviderService;
+import cn.org.starpivot.ai.service.AiRuntimeConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -22,7 +27,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
+public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService, SmartInitializingSingleton {
 
     private static final String STATUS_NORMAL = "0";
     private static final String DEFAULT_FLAG = "0";
@@ -30,14 +35,26 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
     private final AiConfigMapper aiConfigMapper;
     private final AiProperties aiProperties;
     private final ObjectMapper objectMapper;
+    private final ObjectProvider<AiProviderService> aiProviderService;
 
     private volatile AiRuntimeSnapshot cachedSnapshot;
 
-    @PostConstruct
+    /**
+     * 使用 SmartInitializingSingleton 代替 @PostConstruct，
+     * 确保所有单例 Bean（包括 AiProviderService）都创建完毕后再初始化，
+     * 避免与 AiProviderServiceImpl 之间的循环依赖。
+     */
+    @Override
+    public void afterSingletonsInstantiated() {
+        refresh();
+    }
+
     @Override
     public void refresh() {
         cachedSnapshot = loadSnapshot();
-        log.info("AI runtime config refreshed, source={}", cachedSnapshot.getDefaultModel());
+        log.info("AI runtime config refreshed, defaultModel={} models={}",
+                cachedSnapshot.getDefaultModel(),
+                cachedSnapshot.getModels() != null ? cachedSnapshot.getModels().size() : 0);
     }
 
     @Override
@@ -63,15 +80,16 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
     }
 
     private AiRuntimeSnapshot fromEntity(AiConfig config) {
+        List<AiModelVo> models = mergeChatModels(parseModels(config.getModelsJson()));
         return AiRuntimeSnapshot.builder()
                 .botName(config.getBotName())
                 .botAvatar(config.getBotAvatar())
                 .welcomeMessage(config.getWelcomeMessage())
                 .systemPrompt(config.getSystemPrompt())
-                .defaultModel(config.getDefaultModel())
+                .defaultModel(resolveDefaultModel(config.getDefaultModel(), models))
                 .defaultTemperature(toDouble(config.getDefaultTemperature()))
                 .maxMemoryMessages(config.getMaxMemoryMessages() != null ? config.getMaxMemoryMessages() : 30)
-                .models(parseModels(config.getModelsJson()))
+                .models(models)
                 .ragEnabled(resolveRagEnabled(config.getRagEnabled()))
                 .ragTopK(config.getRagTopK() != null ? config.getRagTopK() : 5)
                 .defaultPromptScene(aiProperties.resolvedDefaultPromptScene())
@@ -80,15 +98,16 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
     }
 
     private AiRuntimeSnapshot fromProperties() {
+        List<AiModelVo> models = mergeChatModels(aiProperties.resolvedModels());
         return AiRuntimeSnapshot.builder()
                 .botName(aiProperties.resolvedBotName())
                 .botAvatar(aiProperties.getBotAvatar())
                 .welcomeMessage(aiProperties.getWelcomeMessage())
                 .systemPrompt(aiProperties.getSystemPrompt())
-                .defaultModel(aiProperties.resolvedDefaultModel())
+                .defaultModel(resolveDefaultModel(aiProperties.resolvedDefaultModel(), models))
                 .defaultTemperature(aiProperties.getDefaultTemperature())
                 .maxMemoryMessages(aiProperties.getMaxMemoryMessages())
-                .models(aiProperties.resolvedModels())
+                .models(models)
                 .ragEnabled(aiProperties.getRag().isEnabled())
                 .ragTopK(5)
                 .defaultPromptScene(aiProperties.resolvedDefaultPromptScene())
@@ -102,6 +121,25 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService {
             return false;
         }
         return "0".equals(ragEnabledFlag);
+    }
+
+    private List<AiModelVo> mergeChatModels(List<AiModelVo> base) {
+        AiProviderService providerService = aiProviderService.getIfAvailable();
+        List<AiModelVo> providerModels = providerService != null ? providerService.listChatModels() : List.of();
+        return AiRuntimeModelCatalog.copy(AiRuntimeModelCatalog.preferProviderModels(providerModels, base));
+    }
+
+    private String resolveDefaultModel(String configured, List<AiModelVo> models) {
+        String providerDefault = null;
+        AiProviderService providerService = aiProviderService.getIfAvailable();
+        if (providerService != null) {
+            AiProvider defaultChat = providerService.findDefaultChatProvider();
+            if (defaultChat != null && StringUtils.hasText(defaultChat.getDefaultChatModel())) {
+                providerDefault = AiModelRef.encode(
+                        defaultChat.getProviderId(), defaultChat.getDefaultChatModel().trim());
+            }
+        }
+        return AiRuntimeModelCatalog.resolveDefaultModel(providerDefault, configured, models);
     }
 
     private List<AiModelVo> parseModels(String modelsJson) {

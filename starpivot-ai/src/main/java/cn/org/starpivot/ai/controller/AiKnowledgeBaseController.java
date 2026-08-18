@@ -4,8 +4,8 @@ import cn.org.starpivot.ai.domain.dto.AiKnowledgeBaseQueryDto;
 import cn.org.starpivot.ai.domain.dto.AiKnowledgeBaseSaveDto;
 import cn.org.starpivot.ai.domain.vo.AiKnowledgeBaseVo;
 import cn.org.starpivot.ai.service.AiKnowledgeBaseService;
-import cn.org.starpivot.common.domain.Result;
 import cn.org.starpivot.common.entity.PageResponse;
+import cn.org.starpivot.common.domain.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -57,5 +57,12 @@ public class AiKnowledgeBaseController {
     public Result<Void> remove(@PathVariable Long kbId) {
         aiKnowledgeBaseService.remove(kbId);
         return Result.success();
+    }
+
+    @PostMapping("/{kbId}/reindex")
+    @PreAuthorize("hasAuthority('ai:knowledge:edit')")
+    @Operation(summary = "整库重建索引")
+    public Result<cn.org.starpivot.ai.domain.vo.AiKnowledgeReindexResultVo> reindexAll(@PathVariable Long kbId) {
+        return Result.success(aiKnowledgeBaseService.reindexAll(kbId));
     }
 }

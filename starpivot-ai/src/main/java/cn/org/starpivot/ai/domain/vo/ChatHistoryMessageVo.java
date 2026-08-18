@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,4 +20,7 @@ public class ChatHistoryMessageVo {
 
     /** 消息时间戳（毫秒） */
     private Long createTime;
+
+    /** 助手消息引用资料（历史回放） */
+    private List<RagSourceVo> sources;
 }

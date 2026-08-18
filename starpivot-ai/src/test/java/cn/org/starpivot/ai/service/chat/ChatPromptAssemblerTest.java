@@ -1,14 +1,17 @@
 package cn.org.starpivot.ai.service.chat;
 
+import cn.org.starpivot.ai.agent.CurrentDateTimeTool;
+import cn.org.starpivot.ai.agent.KnowledgeSearchTool;
 import cn.org.starpivot.ai.config.AiRuntimeSnapshot;
 import cn.org.starpivot.ai.domain.vo.RagRetrievalResult;
+import cn.org.starpivot.ai.memory.ConversationSummaryService;
+import cn.org.starpivot.ai.provider.AiModelClientFactory;
 import cn.org.starpivot.ai.service.AiKnowledgeRetrievalService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +24,7 @@ import static org.mockito.Mockito.verify;
 class ChatPromptAssemblerTest {
 
     @Mock
-    private ChatClient chatClient;
+    private AiModelClientFactory aiModelClientFactory;
 
     @Mock
     private MessageWindowChatMemory chatMemory;
@@ -31,6 +34,15 @@ class ChatPromptAssemblerTest {
 
     @Mock
     private SystemPromptResolver systemPromptResolver;
+
+    @Mock
+    private ConversationSummaryService conversationSummaryService;
+
+    @Mock
+    private KnowledgeSearchTool knowledgeSearchTool;
+
+    @Mock
+    private CurrentDateTimeTool currentDateTimeTool;
 
     @InjectMocks
     private ChatPromptAssembler chatPromptAssembler;

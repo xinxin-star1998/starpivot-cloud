@@ -90,7 +90,6 @@
         { type: 'index', width: 60, label: '序号' },
         { prop: 'configName', label: '配置名称', minWidth: 110 },
         { prop: 'botName', label: '助手名称', minWidth: 110 },
-        { prop: 'defaultModel', label: '默认模型', minWidth: 130 },
         {
           prop: 'isDefault',
           label: '默认',

@@ -5,6 +5,8 @@ import cn.org.starpivot.ai.domain.dto.SessionRenameDto;
 import cn.org.starpivot.ai.domain.vo.ChatHistoryMessageVo;
 import cn.org.starpivot.ai.domain.vo.ChatSessionVo;
 import cn.org.starpivot.ai.memory.ChatHistoryConverter;
+import cn.org.starpivot.ai.memory.ConversationSummaryService;
+import cn.org.starpivot.ai.memory.ConversationTopicStore;
 import cn.org.starpivot.ai.memory.MysqlChatMemoryRepository;
 import cn.org.starpivot.ai.memory.MysqlChatSessionRepository;
 import cn.org.starpivot.common.exception.BizException;
@@ -27,12 +29,17 @@ public class ChatSessionService {
 
     private final MysqlChatMemoryRepository chatMemoryRepository;
     private final MysqlChatSessionRepository chatSessionRepository;
+    private final ConversationSummaryService conversationSummaryService;
+    private final ConversationTopicStore conversationTopicStore;
 
     public void clearHistory(String conversationId) {
         if (!StringUtils.hasText(conversationId)) {
             throw new BizException("conversationId 不能为空");
         }
-        chatMemoryRepository.deleteByConversationId(resolveConversationId(conversationId));
+        String resolved = resolveConversationId(conversationId);
+        chatMemoryRepository.deleteByConversationId(resolved);
+        conversationSummaryService.clear(resolved);
+        conversationTopicStore.clear(resolved);
     }
 
     public ChatSessionVo createSession() {
@@ -52,13 +59,16 @@ public class ChatSessionService {
 
     public List<ChatHistoryMessageVo> listMessages(String conversationId) {
         return chatMemoryRepository.listRawMessages(resolveConversationId(conversationId)).stream()
-                .map(ChatHistoryConverter::toVo)
+                .map(message -> ChatHistoryConverter.toVo(
+                        message, chatMemoryRepository.parseSources(message.getSourcesJson())))
                 .collect(Collectors.toList());
     }
 
     public void deleteSession(String conversationId) {
         String resolvedConversationId = resolveConversationId(conversationId);
         chatMemoryRepository.deleteByConversationId(resolvedConversationId);
+        conversationSummaryService.clear(resolvedConversationId);
+        conversationTopicStore.clear(resolvedConversationId);
         chatSessionRepository.removeSession(requireUserId(), resolvedConversationId);
     }
 

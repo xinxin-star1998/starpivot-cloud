@@ -1,6 +1,7 @@
 package cn.org.starpivot.api.fallback;
 
 import cn.org.starpivot.api.system.SysOperLogClient;
+import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FallbackFactory;
 
 public class SysOperLogClientFallbackFactory implements FallbackFactory<SysOperLogClient> {
@@ -9,6 +10,16 @@ public class SysOperLogClientFallbackFactory implements FallbackFactory<SysOperL
 
     @Override
     public SysOperLogClient create(Throwable cause) {
-        return () -> FeignFallbackSupport.unavailable(cause, ACTION);
+        return new SysOperLogClient() {
+            @Override
+            public Result<Void> cleanAll() {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+
+            @Override
+            public Result<Void> cleanBeforeDays(int days) {
+                return FeignFallbackSupport.unavailable(cause, ACTION);
+            }
+        };
     }
 }

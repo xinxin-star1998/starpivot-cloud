@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication(
         scanBasePackages = "cn.org.starpivot",
@@ -17,6 +18,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients(basePackages = {"cn.org.starpivot.ai", "cn.org.starpivot.api"})
 @MapperScan("cn.org.starpivot.ai.mapper")
 @EnableConfigurationProperties({JwtProperties.class, AiProperties.class})
+@EnableRetry
 public class AiApplication {
 
     public static void main(String[] args) {

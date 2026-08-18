@@ -2,6 +2,7 @@ package cn.org.starpivot.ai.memory;
 
 import cn.org.starpivot.ai.domain.entity.AiChatMessage;
 import cn.org.starpivot.ai.domain.vo.ChatHistoryMessageVo;
+import cn.org.starpivot.ai.domain.vo.RagSourceVo;
 import org.springframework.ai.chat.messages.Message;
 
 import java.time.ZoneId;
@@ -12,6 +13,10 @@ public final class ChatHistoryConverter {
     private ChatHistoryConverter() {}
 
     public static ChatHistoryMessageVo toVo(AiChatMessage message) {
+        return toVo(message, List.of());
+    }
+
+    public static ChatHistoryMessageVo toVo(AiChatMessage message, List<RagSourceVo> sources) {
         Long createTime = message.getCreateTime() != null
                 ? message.getCreateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 : null;
@@ -19,6 +24,7 @@ public final class ChatHistoryConverter {
                 .role(message.getRole())
                 .content(message.getContent())
                 .createTime(createTime)
+                .sources(sources != null && !sources.isEmpty() ? sources : null)
                 .build();
     }
 

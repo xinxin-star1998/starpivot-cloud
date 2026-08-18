@@ -1,12 +1,13 @@
 package cn.org.starpivot.ai.rag;
 
 import cn.org.starpivot.ai.config.AiProperties;
+import cn.org.starpivot.ai.domain.entity.AiProvider;
 import cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo;
+import cn.org.starpivot.ai.provider.AiModelClientFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -25,21 +26,20 @@ public class RagRerankerService {
 
     private final WebClient.Builder webClientBuilder;
     private final AiProperties aiProperties;
-
-    @Value("${spring.ai.openai.embedding.api-key:}")
-    private String embeddingApiKey;
-
-    @Value("${spring.ai.openai.api-key:}")
-    private String openAiApiKey;
+    private final AiModelClientFactory aiModelClientFactory;
 
     private volatile WebClient rerankWebClient;
     private volatile String rerankClientKey;
 
     public boolean isEnabled() {
+        AiProvider provider = aiModelClientFactory.rerankProvider();
+        if (provider != null && StringUtils.hasText(resolveRerankEndpoint(provider))) {
+            return true;
+        }
         AiProperties.RerankerProperties reranker = aiProperties.getRag().getReranker();
         return reranker.isEnabled()
                 && StringUtils.hasText(reranker.getEndpoint())
-                && StringUtils.hasText(resolveApiKey(reranker));
+                && StringUtils.hasText(resolveYamlApiKey(reranker));
     }
 
     public List<AiKnowledgeChunkHitVo> rerank(String question, List<AiKnowledgeChunkHitVo> candidates, int topN) {
@@ -59,23 +59,40 @@ public class RagRerankerService {
 
     private List<AiKnowledgeChunkHitVo> callRerankApi(
             String question, List<AiKnowledgeChunkHitVo> candidates, int topN) {
-        AiProperties.RerankerProperties config = aiProperties.getRag().getReranker();
+        AiProvider provider = aiModelClientFactory.rerankProvider();
+        String endpoint;
+        String apiKey;
+        String model;
+        long timeoutMs = aiProperties.getRag().getReranker().getTimeoutMs();
+        if (provider != null && StringUtils.hasText(resolveRerankEndpoint(provider))) {
+            endpoint = resolveRerankEndpoint(provider);
+            apiKey = provider.getApiKey().trim();
+            model = StringUtils.hasText(provider.getDefaultRerankModel())
+                    ? provider.getDefaultRerankModel().trim()
+                    : "gte-rerank";
+        } else {
+            AiProperties.RerankerProperties config = aiProperties.getRag().getReranker();
+            endpoint = config.getEndpoint();
+            apiKey = resolveYamlApiKey(config);
+            model = config.getModel();
+        }
+
         List<String> docs = candidates.stream()
                 .map(AiKnowledgeChunkHitVo::getContent)
                 .collect(Collectors.toList());
 
         RerankRequest request = new RerankRequest();
-        request.setModel(config.getModel());
+        request.setModel(model);
         request.setInput(new RerankInput(question, docs));
         request.setParameters(new RerankParams(topN, false));
 
-        WebClient client = getRerankWebClient(config);
+        WebClient client = getRerankWebClient(endpoint, apiKey);
 
         RerankResponse response = client.post()
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(RerankResponse.class)
-                .timeout(Duration.ofMillis(config.getTimeoutMs()))
+                .timeout(Duration.ofMillis(timeoutMs > 0 ? timeoutMs : 1500))
                 .block();
 
         if (response == null || response.getOutput() == null || response.getOutput().getResults() == null) {
@@ -95,8 +112,8 @@ public class RagRerankerService {
         return reranked;
     }
 
-    private WebClient getRerankWebClient(AiProperties.RerankerProperties config) {
-        String clientKey = config.getEndpoint() + "|" + resolveApiKey(config);
+    private WebClient getRerankWebClient(String endpoint, String apiKey) {
+        String clientKey = endpoint + "|" + apiKey;
         WebClient cached = rerankWebClient;
         if (cached != null && clientKey.equals(rerankClientKey)) {
             return cached;
@@ -104,8 +121,8 @@ public class RagRerankerService {
         synchronized (this) {
             if (rerankWebClient == null || !clientKey.equals(rerankClientKey)) {
                 rerankWebClient = webClientBuilder
-                        .baseUrl(config.getEndpoint())
-                        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + resolveApiKey(config))
+                        .baseUrl(endpoint)
+                        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                         .build();
                 rerankClientKey = clientKey;
@@ -114,15 +131,16 @@ public class RagRerankerService {
         }
     }
 
-    private String resolveApiKey(AiProperties.RerankerProperties reranker) {
+    private String resolveRerankEndpoint(AiProvider provider) {
+        if (provider != null && StringUtils.hasText(provider.getRerankEndpoint())) {
+            return provider.getRerankEndpoint().trim();
+        }
+        return "";
+    }
+
+    private String resolveYamlApiKey(AiProperties.RerankerProperties reranker) {
         if (StringUtils.hasText(reranker.getApiKey())) {
             return reranker.getApiKey().trim();
-        }
-        if (StringUtils.hasText(embeddingApiKey)) {
-            return embeddingApiKey.trim();
-        }
-        if (StringUtils.hasText(openAiApiKey)) {
-            return openAiApiKey.trim();
         }
         return "";
     }

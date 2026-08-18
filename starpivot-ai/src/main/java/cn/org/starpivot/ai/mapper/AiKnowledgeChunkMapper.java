@@ -1,8 +1,8 @@
 package cn.org.starpivot.ai.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import cn.org.starpivot.ai.domain.entity.AiKnowledgeChunk;
 import cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,6 +17,9 @@ public interface AiKnowledgeChunkMapper extends BaseMapper<AiKnowledgeChunk> {
 
     List<AiKnowledgeChunkHitVo> listEmbeddableChunkBatch(
             @Param("lastChunkId") Long lastChunkId, @Param("limit") int limit);
+
+    List<AiKnowledgeChunkHitVo> listByDocAndChunkIndexes(
+            @Param("docId") Long docId, @Param("indexes") List<Integer> indexes);
 
     int insertBatch(@Param("list") List<AiKnowledgeChunk> list);
 }

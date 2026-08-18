@@ -5,11 +5,14 @@ import cn.org.starpivot.api.system.dto.LoginLogDto;
 import cn.org.starpivot.api.system.dto.RegisterUserRequest;
 import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.common.domain.Result;
+import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
+import cn.org.starpivot.system.domain.entity.SysOperLog;
 import cn.org.starpivot.system.service.SysConfigService;
 import cn.org.starpivot.system.service.SysLogininforService;
 import cn.org.starpivot.system.service.SysOperLogService;
 import cn.org.starpivot.system.service.SysUserService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +97,23 @@ public class SysInternalController {
     @DeleteMapping("/internal/operlog/clean")
     public Result<Void> cleanOperLog() {
         sysOperLogService.remove(null);
+        return Result.success(null);
+    }
+
+    /**
+     * 删除指定天数之前的操作日志（内部维护接口）。
+     *
+     * @param days 保留最近几天
+     * @return 空成功响应
+     */
+    @DeleteMapping("/internal/operlog/clean-before")
+    public Result<Void> cleanOperLogBeforeDays(@RequestParam("days") int days) {
+        if (days < 1 || days > 3650) {
+            throw new BizException("保留天数须在 1～3650 之间");
+        }
+        LocalDateTime threshold = LocalDateTime.now().minusDays(days);
+        sysOperLogService.remove(new LambdaQueryWrapper<SysOperLog>()
+                .lt(SysOperLog::getOperTime, threshold));
         return Result.success(null);
     }
 }

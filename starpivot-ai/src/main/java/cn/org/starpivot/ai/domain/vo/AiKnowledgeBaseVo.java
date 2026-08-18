@@ -22,4 +22,19 @@ public class AiKnowledgeBaseVo {
     private String status;
 
     private LocalDateTime updateTime;
+
+    /** 文档总数 */
+    private Integer docCount;
+
+    /** 分块总数 */
+    private Integer chunkCount;
+
+    /** 已索引文档数 */
+    private Integer indexedCount;
+
+    /** 索引中/待索引文档数 */
+    private Integer indexingCount;
+
+    /** 索引失败文档数 */
+    private Integer failedCount;
 }

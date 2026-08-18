@@ -51,6 +51,29 @@ public final class ResponseFormatGuide {
             不要逐条照搬资料前缀（如【资料1】），不要编造资料中不存在的事实。
             """;
 
+    private static final String AGENT_INSTRUCTION = """
+            ## 工具使用
+            你可以调用工具获取实时时间或检索内部知识库。
+            - 用户问产品功能、配置、操作步骤、菜单路径或平台政策时，先调用 searchKnowledgeBase
+            - 调用 searchKnowledgeBase 时，把追问改写成完整、独立的检索问题（不要用“这个/那个”）
+            - 涉及“现在 / 今天 / 本周 / 截止时间”时，调用 getCurrentDatetime
+            - 工具没有返回有效资料时，明确说明暂未找到，不要编造内部功能
+            """;
+
+    private static final String AGENT_WITH_RAG_INSTRUCTION = """
+            ## 工具使用
+            参考资料已在下方提供，请优先依据资料作答，一般无需再检索知识库。
+            - 仅当资料明显不足或无关时，再调用 searchKnowledgeBase 补充检索
+            - 调用 searchKnowledgeBase 时使用完整、独立的检索问题
+            - 涉及“现在 / 今天 / 本周 / 截止时间”时，调用 getCurrentDatetime
+            - 不要编造资料中不存在的内部功能
+            """;
+
+    private static final String EMPTY_RAG_ABSTAIN = """
+            ## 知识库说明
+            本轮未检索到可靠的内部资料。涉及平台功能、菜单、配置或政策时，请明确说明暂未找到相关说明，不要编造。
+            """;
+
     private ResponseFormatGuide() {
     }
 
@@ -67,5 +90,17 @@ public final class ResponseFormatGuide {
 
     public static String ragInstruction() {
         return RAG_INSTRUCTION;
+    }
+
+    public static String agentInstruction() {
+        return agentInstruction(false);
+    }
+
+    public static String agentInstruction(boolean hasPreloadedRag) {
+        return hasPreloadedRag ? AGENT_WITH_RAG_INSTRUCTION : AGENT_INSTRUCTION;
+    }
+
+    public static String emptyRagAbstain() {
+        return EMPTY_RAG_ABSTAIN;
     }
 }

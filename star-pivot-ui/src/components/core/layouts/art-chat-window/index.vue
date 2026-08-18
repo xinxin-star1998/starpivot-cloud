@@ -210,14 +210,14 @@
               v-model="messageText"
               type="textarea"
               :rows="3"
-              placeholder="输入消息，Ctrl+Enter 发送"
+              placeholder="输入消息，Enter 发送"
               resize="none"
               :disabled="sending"
               @keydown="handleInputKeydown"
             />
             <div class="mt-2 flex-cb">
               <span class="text-[11px] text-g-500"
-                >Ctrl+Enter 发送 · Shift+Enter 换行 · Esc 停止</span
+                >Enter 发送 · Shift+Enter 换行 · Esc 停止</span
               >
               <div class="flex gap-2">
                 <ElButton v-if="sending" type="danger" plain @click="stopGeneration" v-ripple>
@@ -596,10 +596,11 @@
   }
 
   const handleInputKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-      event.preventDefault()
-      sendMessage()
-    }
+    if (event.key !== 'Enter') return
+    if (event.isComposing) return
+    if (event.shiftKey) return
+    event.preventDefault()
+    sendMessage()
   }
 
   const handleEscapeKey = (): void => {

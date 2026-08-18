@@ -8,5 +8,6 @@ public record ChatExecutionPlan(
         String promptScene,
         String model,
         boolean useRag,
+        boolean useAgent,
         boolean autoScene,
         boolean autoModel) {}

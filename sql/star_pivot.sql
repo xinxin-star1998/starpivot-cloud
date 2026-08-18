@@ -1007,7 +1007,7 @@ CREATE TABLE `sys_job`  (
 -- ----------------------------
 -- Records of sys_job
 -- ----------------------------
-INSERT INTO `sys_job` VALUES (1, '定时清空操作日志', 'DEFAULT', 'com.star.pivot.quartz.task.CleanOperLogTask.cleanOperLog()', '0 0 2 ? * MON', '3', '1', '0', 'admin', '2026-02-06 20:41:50', 'admin', '2026-05-18 23:48:38', '每天凌晨2点清空操作日志表 sys_oper_log');
+INSERT INTO `sys_job` VALUES (1, '定时清空操作日志', 'DEFAULT', 'CleanOperLogTask.cleanOperLog()', '0 0 2 * * ?', '3', '1', '0', 'admin', '2026-02-06 20:41:50', 'admin', '2026-05-18 23:48:38', '每天凌晨2点清空操作日志表 sys_oper_log');
 
 -- ----------------------------
 -- Table structure for sys_job_log

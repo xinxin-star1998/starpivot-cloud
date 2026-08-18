@@ -1,8 +1,12 @@
 package cn.org.starpivot.ai.service.chat;
 
 import cn.org.starpivot.ai.config.AiProperties;
+import cn.org.starpivot.ai.config.AiRuntimeSnapshot;
+import cn.org.starpivot.ai.domain.vo.AiModelVo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,6 +50,14 @@ class ChatQueryRouterTest {
     }
 
     @Test
+    void classify_followUpInheritsStickyIntent() {
+        assertEquals(ChatIntent.KNOWLEDGE, router.classify("那个呢", ChatIntent.KNOWLEDGE));
+        assertEquals(ChatIntent.DEVELOPER, router.classify("还有呢", ChatIntent.DEVELOPER));
+        assertEquals(ChatIntent.CHITCHAT, router.classify("谢谢", ChatIntent.KNOWLEDGE));
+        assertEquals(ChatIntent.GENERAL, router.classify("帮我写首诗", ChatIntent.KNOWLEDGE));
+    }
+
+    @Test
     void suggest_knowledgeUsesSupportAndRag() {
         ChatQueryRouter.RoutedSuggestion suggestion = router.suggest(ChatIntent.KNOWLEDGE);
         assertEquals("support", suggestion.promptScene());
@@ -58,6 +70,28 @@ class ChatQueryRouterTest {
         assertEquals("developer", suggestion.promptScene());
         assertEquals("deepseek-reasoner", suggestion.model());
         assertFalse(suggestion.useRag());
+    }
+
+    @Test
+    void suggest_picksFromRuntimeCatalogWhenYamlModelMissing() {
+        AiRuntimeSnapshot runtime = AiRuntimeSnapshot.builder()
+                .defaultModel("kimi-k3")
+                .models(List.of(
+                        AiModelVo.builder().id("kimi-k3").label("Kimi K3").build(),
+                        AiModelVo.builder().id("kimi-k2.7-code").label("Kimi Code").build()))
+                .build();
+
+        assertEquals("kimi-k3", router.suggest(ChatIntent.KNOWLEDGE, runtime).model());
+        assertEquals("kimi-k3", router.suggest(ChatIntent.REASONING, runtime).model());
+        assertEquals("kimi-k2.7-code", router.suggest(ChatIntent.DEVELOPER, runtime).model());
+    }
+
+    @Test
+    void isAmbiguous_detectsDeveloperVsKnowledgeConflict() {
+        assertTrue(router.isAmbiguous("怎么在平台配置 MyBatis 数据源？", ChatIntent.DEVELOPER));
+        assertTrue(router.isAmbiguous("Java 接口报错怎么处理菜单权限", ChatIntent.KNOWLEDGE));
+        assertFalse(router.isAmbiguous("这段 Java 代码报 NullPointerException", ChatIntent.DEVELOPER));
+        assertTrue(router.isAmbiguous("帮我润色这段话", ChatIntent.GENERAL));
     }
 
     @Test

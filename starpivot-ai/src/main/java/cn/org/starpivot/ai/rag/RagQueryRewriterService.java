@@ -1,9 +1,9 @@
 package cn.org.starpivot.ai.rag;
 
 import cn.org.starpivot.ai.config.AiProperties;
+import cn.org.starpivot.ai.provider.AiModelClientFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -18,7 +18,7 @@ public class RagQueryRewriterService {
     private static final String HYDE_CACHE_PREFIX = "ai:hyde:v1:";
     private static final Duration HYDE_CACHE_TTL = Duration.ofMinutes(10);
 
-    private final ChatClient chatClient;
+    private final AiModelClientFactory aiModelClientFactory;
     private final StringRedisTemplate redisTemplate;
     private final AiProperties aiProperties;
 
@@ -45,7 +45,7 @@ public class RagQueryRewriterService {
                 """.formatted(question.trim());
 
         try {
-            String hypothetical = chatClient.prompt().user(prompt).call().content();
+            String hypothetical = aiModelClientFactory.chatClient().prompt().user(prompt).call().content();
             if (!StringUtils.hasText(hypothetical)) {
                 return question;
             }

@@ -6,6 +6,17 @@ server:
 spring:
   application:
     name: starpivot-ai
+  ai:
+    # 密钥改由「AI 中心 → 模型供应商」配置。关闭 Spring AI 默认自动配置，
+    # 避免空的 spring.ai.openai.api-key 导致启动失败。
+    model:
+      chat: none
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
   config:
     import:
       - optional:classpath:application-nacos.yml

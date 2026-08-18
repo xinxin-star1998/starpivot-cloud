@@ -1,10 +1,15 @@
 package cn.org.starpivot.ai.memory;
 
 import cn.org.starpivot.ai.domain.entity.AiChatMessage;
+import cn.org.starpivot.ai.domain.vo.RagSourceVo;
 import cn.org.starpivot.ai.mapper.AiChatMessageMapper;
 import cn.org.starpivot.ai.service.AiRuntimeConfigService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -17,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class MysqlChatMemoryRepository implements ChatMemoryRepository {
@@ -26,6 +32,8 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
     private final AiChatMessageMapper aiChatMessageMapper;
     private final MysqlChatSessionRepository chatSessionRepository;
     private final AiRuntimeConfigService aiRuntimeConfigService;
+    private final ObjectMapper objectMapper;
+    private final ChatPendingSourceStore chatPendingSourceStore;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -99,6 +107,61 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
         return loadRecords(conversationId);
     }
 
+    /**
+     * 把本轮引用资料挂到该会话最新一条 ASSISTANT 消息上（ChatMemory 落库之后调用）。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void attachSourcesToLastAssistant(String conversationId, List<RagSourceVo> sources) {
+        if (!StringUtils.hasText(conversationId) || sources == null || sources.isEmpty()) {
+            return;
+        }
+        chatPendingSourceStore.put(conversationId, sources);
+        AiChatMessage lastAssistant = aiChatMessageMapper.selectOne(new LambdaQueryWrapper<AiChatMessage>()
+                .eq(AiChatMessage::getConversationId, conversationId)
+                .eq(AiChatMessage::getRole, "ASSISTANT")
+                .orderByDesc(AiChatMessage::getSortOrder)
+                .orderByDesc(AiChatMessage::getMessageId)
+                .last("LIMIT 1"));
+        if (lastAssistant == null || lastAssistant.getMessageId() == null) {
+            return;
+        }
+        try {
+            String json = objectMapper.writeValueAsString(sources);
+            aiChatMessageMapper.update(
+                    null,
+                    new LambdaUpdateWrapper<AiChatMessage>()
+                            .set(AiChatMessage::getSourcesJson, json)
+                            .eq(AiChatMessage::getMessageId, lastAssistant.getMessageId()));
+            chatPendingSourceStore.take(conversationId);
+        } catch (Exception ex) {
+            log.warn("[ChatMemory] attach sources failed conversationId={}: {}", conversationId, ex.getMessage());
+        }
+    }
+
+    private void applyPendingSources(AiChatMessage entity, String conversationId) {
+        List<RagSourceVo> pending = chatPendingSourceStore.take(conversationId);
+        if (pending.isEmpty()) {
+            return;
+        }
+        try {
+            entity.setSourcesJson(objectMapper.writeValueAsString(pending));
+        } catch (Exception ex) {
+            log.warn("[ChatMemory] serialize pending sources failed: {}", ex.getMessage());
+        }
+    }
+
+    public List<RagSourceVo> parseSources(String sourcesJson) {
+        if (!StringUtils.hasText(sourcesJson)) {
+            return List.of();
+        }
+        try {
+            List<RagSourceVo> sources = objectMapper.readValue(sourcesJson, new TypeReference<>() {});
+            return sources != null ? sources : List.of();
+        } catch (Exception ex) {
+            return List.of();
+        }
+    }
+
     private void appendMessages(
             String conversationId, List<Message> delta, List<AiChatMessage> existingRecords) {
         if (delta.isEmpty()) {
@@ -116,6 +179,9 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
             entity.setContent(message.getText());
             entity.setSortOrder(nextSortOrder + i);
             entity.setCreateTime(now);
+            if ("ASSISTANT".equals(entity.getRole()) && i == delta.size() - 1) {
+                applyPendingSources(entity, conversationId);
+            }
             aiChatMessageMapper.insert(entity);
         }
     }
@@ -142,6 +208,9 @@ public class MysqlChatMemoryRepository implements ChatMemoryRepository {
             entity.setContent(message.getText());
             entity.setSortOrder(i);
             entity.setCreateTime(now);
+            if ("ASSISTANT".equals(entity.getRole()) && i == incoming.size() - 1) {
+                applyPendingSources(entity, conversationId);
+            }
             aiChatMessageMapper.insert(entity);
         }
         chatSessionRepository.syncMessageStats(conversationId, incoming.size());

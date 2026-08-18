@@ -59,7 +59,14 @@ public class AiRuntimeSnapshot {
             return true;
         }
         String normalized = model.trim();
-        return models.stream().anyMatch(item -> normalized.equals(item.getId()));
+        String bare = cn.org.starpivot.ai.provider.AiModelRef.modelId(normalized);
+        return models.stream().anyMatch(item -> {
+            if (item == null || item.getId() == null) {
+                return false;
+            }
+            String id = item.getId().trim();
+            return normalized.equals(id) || (bare != null && bare.equals(cn.org.starpivot.ai.provider.AiModelRef.modelId(id)));
+        });
     }
 
     public List<AiPromptTemplateVo> resolvedPromptTemplateOptions() {

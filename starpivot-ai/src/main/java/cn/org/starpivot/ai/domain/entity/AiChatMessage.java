@@ -20,6 +20,9 @@ public class AiChatMessage {
 
     private String content;
 
+    /** 助手消息引用资料 JSON（List&lt;RagSourceVo&gt;），用户消息为空 */
+    private String sourcesJson;
+
     private Integer sortOrder;
 
     private LocalDateTime createTime;

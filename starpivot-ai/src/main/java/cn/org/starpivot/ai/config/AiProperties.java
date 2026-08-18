@@ -34,11 +34,17 @@ public class AiProperties {
     /** 助手头像地址（完整 URL，留空则前端使用默认头像） */
     private String botAvatar = "";
 
-    /** 可选模型列表，供前端切换；留空则仅使用 defaultModel */
+    /**
+     * 供应商 API Key 落库加密密钥。建议用环境变量 AI_SECRET_KEY；
+     * 未配置时无法加密新 Key，已加密的 Key 也无法解密。
+     */
+    private String secretKey = "";
+
+    /** 无供应商时的 YAML 回退模型列表；有供应商时由网页配置覆盖 */
     private List<ModelOption> models = new ArrayList<>();
 
-    /** 默认模型 ID，需与 spring.ai.openai.chat.options.model 保持一致 */
-    private String defaultModel = "deepseek-chat";
+    /** 无供应商时的 YAML 回退默认模型；有供应商时忽略 */
+    private String defaultModel = "";
 
     /** 默认采样温度 */
     private Double defaultTemperature = 0.7;
@@ -57,6 +63,12 @@ public class AiProperties {
 
     /** 查询路由：自动选择场景、模型与是否 RAG */
     private QueryRouterProperties queryRouter = new QueryRouterProperties();
+
+    /** 工具调用 Agent（Function Calling） */
+    private AgentProperties agent = new AgentProperties();
+
+    /** 长对话记忆压缩 */
+    private MemoryProperties memory = new MemoryProperties();
 
     public String validatedSystemDbSchema() {
         if (!StringUtils.hasText(systemDbSchema)) {
@@ -195,11 +207,14 @@ public class AiProperties {
 
         private boolean enabled = true;
 
-        /** 常规模型（轻量对话） */
-        private String chatModel = "deepseek-chat";
+        /** 常规模型偏好（需出现在当前供应商模型列表中，否则回退默认模型） */
+        private String chatModel = "";
 
-        /** 推理模型（复杂分析/架构） */
-        private String reasonerModel = "deepseek-reasoner";
+        /** 推理模型偏好（需出现在当前供应商模型列表中，否则按模型名匹配） */
+        private String reasonerModel = "";
+
+        /** 规则分为 GENERAL，或开发/知识等意图冲突时，再用 LLM 校准 */
+        private boolean llmClassifyEnabled = true;
 
         public String resolvedChatModel(String fallback) {
             return StringUtils.hasText(chatModel) ? chatModel.trim() : fallback;
@@ -228,15 +243,43 @@ public class AiProperties {
         /** 向量扫描每批加载条数；0 表示使用默认 2000 */
         private int vectorScanBatchSize = 2000;
 
-        /** 向量扫描最大 chunk 数；0 表示不限制（全量扫描） */
-        private int vectorScanMaxChunks = 0;
+        /** 向量扫描最大 chunk 数；0 表示不限制（全量扫描，生产慎用） */
+        private int vectorScanMaxChunks = 8000;
 
         private String embeddingCacheTtl = "7d";
 
         /** HyDE：用假设性回答增强向量检索 */
         private boolean hydeEnabled = false;
 
+        /**
+         * 主检索已有足够强的向量命中时跳过 HyDE（节省一轮 LLM + 向量扫描）。
+         * 0 表示不跳过。
+         */
+        private double hydeSkipMinScore = 0.55;
+
+        /** 结合会话历史，将追问改写成独立检索查询 */
+        private boolean queryRewriteEnabled = true;
+
         private RerankerProperties reranker = new RerankerProperties();
+    }
+
+    @Data
+    public static class AgentProperties {
+
+        private boolean enabled = true;
+    }
+
+    @Data
+    public static class MemoryProperties {
+
+        /** 长对话滚动摘要，避免窗口截断后丢失早期上下文 */
+        private boolean summaryEnabled = true;
+
+        /** 达到该消息数后开始生成摘要 */
+        private int summaryMinMessages = 12;
+
+        /** 摘要时保留的最近消息条数（不纳入压缩） */
+        private int summaryKeepRecent = 6;
     }
 
     @Data

@@ -1,5 +1,6 @@
 package cn.org.starpivot.ai.rag;
 
+import cn.org.starpivot.ai.provider.AiModelClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingRequest;
@@ -29,7 +30,7 @@ public class EmbeddingService {
     private static final String CACHE_PREFIX = "ai:emb:v1:";
     private static final int BATCH_SIZE = 20;
 
-    private final EmbeddingModel embeddingModel;
+    private final AiModelClientFactory aiModelClientFactory;
     private final StringRedisTemplate redisTemplate;
     private final EmbeddingService self;
 
@@ -37,16 +38,17 @@ public class EmbeddingService {
     private Duration embeddingTtl;
 
     @Autowired
-    public EmbeddingService(@Autowired(required = false) EmbeddingModel embeddingModel,
-                            StringRedisTemplate redisTemplate,
-                            @Lazy EmbeddingService self) {
-        this.embeddingModel = embeddingModel;
+    public EmbeddingService(
+            AiModelClientFactory aiModelClientFactory,
+            StringRedisTemplate redisTemplate,
+            @Lazy EmbeddingService self) {
+        this.aiModelClientFactory = aiModelClientFactory;
         this.redisTemplate = redisTemplate;
         this.self = self;
     }
 
     public boolean isAvailable() {
-        return embeddingModel != null;
+        return aiModelClientFactory.hasEmbeddingCredential();
     }
 
     public List<float[]> embedBatch(List<String> texts) {
@@ -91,6 +93,10 @@ public class EmbeddingService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 1000, multiplier = 2))
     public List<float[]> embedFromApi(List<String> texts) {
+        EmbeddingModel embeddingModel = aiModelClientFactory.embeddingModel();
+        if (embeddingModel == null) {
+            throw new RuntimeException("Embedding API 未配置");
+        }
         List<float[]> result = new ArrayList<>();
         for (int start = 0; start < texts.size(); start += BATCH_SIZE) {
             int end = Math.min(start + BATCH_SIZE, texts.size());
@@ -105,7 +111,15 @@ public class EmbeddingService {
 
     @Recover
     public List<float[]> embedFromApiFallback(Exception ex, List<String> texts) {
-        throw new RuntimeException("Embedding API 调用失败：" + ex.getMessage(), ex);
+        String detail = ex.getMessage();
+        if (detail != null && detail.contains("404")) {
+            throw new RuntimeException(
+                    "Embedding API 调用失败（404）：当前向量供应商地址/模型不正确。"
+                            + "DeepSeek/Kimi 不提供向量接口，请在「模型供应商」添加阿里百炼并启用向量（text-embedding-v3）。原始错误："
+                            + detail,
+                    ex);
+        }
+        throw new RuntimeException("Embedding API 调用失败：" + detail, ex);
     }
 
     public float[] embed(String text) {

@@ -83,7 +83,7 @@ public class AiConfigServiceImpl implements AiConfigService {
         entity.setBotAvatar(trimToNull(dto.getBotAvatar()));
         entity.setWelcomeMessage(trimToNull(dto.getWelcomeMessage()));
         entity.setSystemPrompt(dto.getSystemPrompt().trim());
-        entity.setDefaultModel(dto.getDefaultModel().trim());
+        entity.setDefaultModel(trimToNull(dto.getDefaultModel()));
         entity.setDefaultTemperature(
                 dto.getDefaultTemperature() != null ? dto.getDefaultTemperature() : new BigDecimal("0.70"));
         entity.setMaxMemoryMessages(dto.getMaxMemoryMessages() != null ? dto.getMaxMemoryMessages() : 30);

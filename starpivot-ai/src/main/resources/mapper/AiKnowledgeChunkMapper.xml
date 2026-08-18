@@ -4,11 +4,14 @@
 <mapper namespace="cn.org.starpivot.ai.mapper.AiKnowledgeChunkMapper">
 
     <select id="searchFulltext" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
-        SELECT c.chunk_id   AS chunkId,
-               c.doc_id     AS docId,
-               c.kb_id      AS kbId,
-               d.title      AS docTitle,
-               c.content    AS content,
+        SELECT c.chunk_id       AS chunkId,
+               c.doc_id         AS docId,
+               c.kb_id          AS kbId,
+               d.title          AS docTitle,
+               c.content        AS content,
+               c.page_num       AS pageNum,
+               c.section_title  AS sectionTitle,
+               c.chunk_index    AS chunkIndex,
                MATCH(c.content) AGAINST(#{query} IN NATURAL LANGUAGE MODE) AS score
         FROM ai_knowledge_chunk c
                  INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id
@@ -21,12 +24,15 @@
     </select>
 
     <select id="searchLike" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
-        SELECT c.chunk_id AS chunkId,
-               c.doc_id   AS docId,
-               c.kb_id    AS kbId,
-               d.title    AS docTitle,
-               c.content  AS content,
-               1          AS score
+        SELECT c.chunk_id       AS chunkId,
+               c.doc_id         AS docId,
+               c.kb_id          AS kbId,
+               d.title          AS docTitle,
+               c.content        AS content,
+               c.page_num       AS pageNum,
+               c.section_title  AS sectionTitle,
+               c.chunk_index    AS chunkIndex,
+               1                AS score
         FROM ai_knowledge_chunk c
                  INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id
                      AND c.doc_version = d.doc_version
@@ -44,6 +50,8 @@
                d.title           AS docTitle,
                c.content         AS content,
                c.page_num        AS pageNum,
+               c.section_title   AS sectionTitle,
+               c.chunk_index     AS chunkIndex,
                c.embedding_json  AS embeddingJson,
                0                 AS score
         FROM ai_knowledge_chunk c
@@ -57,6 +65,28 @@
         </if>
         ORDER BY c.chunk_id DESC
         LIMIT #{limit}
+    </select>
+
+    <select id="listByDocAndChunkIndexes" resultType="cn.org.starpivot.ai.domain.vo.AiKnowledgeChunkHitVo">
+        SELECT c.chunk_id       AS chunkId,
+               c.doc_id         AS docId,
+               c.kb_id          AS kbId,
+               d.title          AS docTitle,
+               c.content        AS content,
+               c.page_num       AS pageNum,
+               c.section_title  AS sectionTitle,
+               c.chunk_index    AS chunkIndex,
+               0                AS score
+        FROM ai_knowledge_chunk c
+                 INNER JOIN ai_knowledge_document d ON c.doc_id = d.doc_id
+                     AND c.doc_version = d.doc_version
+                     AND d.del_flag = '0' AND d.status = '0' AND d.index_status = 'DONE'
+                 INNER JOIN ai_knowledge_base b ON c.kb_id = b.kb_id AND b.del_flag = '0' AND b.status = '0'
+        WHERE c.doc_id = #{docId}
+          AND c.chunk_index IN
+        <foreach collection="indexes" item="idx" open="(" separator="," close=")">
+            #{idx}
+        </foreach>
     </select>
 
     <insert id="insertBatch">

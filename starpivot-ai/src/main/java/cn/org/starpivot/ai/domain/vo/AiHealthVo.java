@@ -46,4 +46,7 @@ public class AiHealthVo {
 
     /** 是否启用查询路由（自动场景/模型/RAG） */
     private Boolean queryRouterEnabled;
+
+    /** 是否启用工具调用 Agent */
+    private Boolean agentEnabled;
 }

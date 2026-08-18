@@ -49,6 +49,15 @@ public class AiMetrics {
                 .increment();
     }
 
+    public void recordAgentTool(String toolName) {
+        registry.counter("ai.agent.tool", "tool", safeTag(toolName)).increment();
+    }
+
+    public void recordMemorySummary(long durationMs) {
+        registry.timer("ai.memory.summary.duration").record(durationMs, TimeUnit.MILLISECONDS);
+        registry.counter("ai.memory.summary").increment();
+    }
+
     private String safeTag(String value) {
         return StringUtils.hasText(value) ? value.trim() : "unknown";
     }

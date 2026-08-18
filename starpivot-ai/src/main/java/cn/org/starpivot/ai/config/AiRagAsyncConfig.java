@@ -48,6 +48,17 @@ public class AiRagAsyncConfig {
         return executor;
     }
 
+    @Bean(name = "memorySummaryExecutor")
+    public Executor memorySummaryExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("ai-summary-");
+        executor.initialize();
+        return executor;
+    }
+
     @Bean(name = "chatStreamExecutor")
     public Executor chatStreamExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

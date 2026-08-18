@@ -9,6 +9,16 @@ export interface AiKnowledgeBaseItem {
   chunkOverlap?: number
   status?: string
   updateTime?: string
+  docCount?: number
+  chunkCount?: number
+  indexedCount?: number
+  indexingCount?: number
+  failedCount?: number
+}
+
+export interface AiKnowledgeReindexResult {
+  submitted?: number
+  skipped?: number
 }
 
 export interface AiKnowledgeDocumentItem {
@@ -107,6 +117,12 @@ export function fetchAiKnowledgeDocumentRemove(docId: number) {
 export function fetchAiKnowledgeDocumentReindex(docId: number) {
   return request.post<void>({
     url: `/ai/knowledge/document/${docId}/reindex`
+  })
+}
+
+export function fetchAiKnowledgeBaseReindex(kbId: number) {
+  return request.post<AiKnowledgeReindexResult>({
+    url: `/ai/knowledge/base/${kbId}/reindex`
   })
 }
 

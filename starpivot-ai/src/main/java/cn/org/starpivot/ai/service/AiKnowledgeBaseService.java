@@ -3,6 +3,7 @@ package cn.org.starpivot.ai.service;
 import cn.org.starpivot.ai.domain.dto.AiKnowledgeBaseQueryDto;
 import cn.org.starpivot.ai.domain.dto.AiKnowledgeBaseSaveDto;
 import cn.org.starpivot.ai.domain.vo.AiKnowledgeBaseVo;
+import cn.org.starpivot.ai.domain.vo.AiKnowledgeReindexResultVo;
 import cn.org.starpivot.common.entity.PageResponse;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface AiKnowledgeBaseService {
     Long save(AiKnowledgeBaseSaveDto dto);
 
     void remove(Long kbId);
+
+    AiKnowledgeReindexResultVo reindexAll(Long kbId);
 }

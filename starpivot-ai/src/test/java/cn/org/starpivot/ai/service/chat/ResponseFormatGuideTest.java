@@ -30,4 +30,21 @@ class ResponseFormatGuideTest {
     void ragInstruction_avoidsCitingMaterialNumbers() {
         assertTrue(ResponseFormatGuide.ragInstruction().contains("不要逐条照搬"));
     }
+
+    @Test
+    void agentInstruction_mentionsKnowledgeTool() {
+        assertTrue(ResponseFormatGuide.agentInstruction().contains("searchKnowledgeBase"));
+    }
+
+    @Test
+    void agentInstruction_withRagPrefersPreloadedContext() {
+        String guide = ResponseFormatGuide.agentInstruction(true);
+        assertTrue(guide.contains("参考资料已在下方提供"));
+        assertTrue(guide.contains("一般无需再检索"));
+    }
+
+    @Test
+    void emptyRagAbstain_warnsAgainstInvention() {
+        assertTrue(ResponseFormatGuide.emptyRagAbstain().contains("不要编造"));
+    }
 }

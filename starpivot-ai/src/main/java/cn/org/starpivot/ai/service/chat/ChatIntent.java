@@ -1,7 +1,7 @@
 package cn.org.starpivot.ai.service.chat;
 
 /**
- * 用户消息意图分类（规则路由，无额外 LLM 调用）。
+ * 用户消息意图分类（规则路由 + 可选 LLM 校准）。
  */
 public enum ChatIntent {
 
@@ -21,5 +21,10 @@ public enum ChatIntent {
     REASONING,
 
     /** 未命中特定规则 */
-    GENERAL
+    GENERAL;
+
+    /** 适合在多轮追问中沿用的任务型意图（寒暄/写作等不沿用） */
+    public boolean isSticky() {
+        return this == KNOWLEDGE || this == DEVELOPER || this == ANALYST || this == REASONING;
+    }
 }

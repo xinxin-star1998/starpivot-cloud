@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -27,24 +28,28 @@ public class ChatController {
     private final ChatService chatService;
 
     @Operation(summary = "发送消息")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @PostMapping("/send")
     public Result<ChatReplyVo> send(@Valid @RequestBody ChatSendDto dto) {
         return Result.success(chatService.send(dto));
     }
 
     @Operation(summary = "流式发送消息（SSE）")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@Valid @RequestBody ChatSendDto dto) {
         return chatService.stream(dto);
     }
 
     @Operation(summary = "服务健康与配置")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @GetMapping("/health")
     public Result<AiHealthVo> health() {
         return Result.success(chatService.health());
     }
 
     @Operation(summary = "清空会话历史")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @DeleteMapping("/history")
     public Result<Void> clearHistory(@RequestParam(required = false) String conversationId) {
         chatService.clearHistory(conversationId);
@@ -52,24 +57,28 @@ public class ChatController {
     }
 
     @Operation(summary = "创建新会话")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @PostMapping("/sessions")
     public Result<ChatSessionVo> createSession() {
         return Result.success(chatService.createSession());
     }
 
     @Operation(summary = "会话列表")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @GetMapping("/sessions")
     public Result<List<ChatSessionVo>> listSessions() {
         return Result.success(chatService.listSessions());
     }
 
     @Operation(summary = "重命名会话")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @PutMapping("/sessions/rename")
     public Result<ChatSessionVo> renameSession(@Valid @RequestBody SessionRenameDto dto) {
         return Result.success(chatService.renameSession(dto));
     }
 
     @Operation(summary = "删除会话")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @DeleteMapping("/sessions")
     public Result<Void> deleteSession(@RequestParam String conversationId) {
         chatService.deleteSession(conversationId);
@@ -77,6 +86,7 @@ public class ChatController {
     }
 
     @Operation(summary = "会话消息历史")
+    @PreAuthorize("hasAuthority('ai:chat:use')")
     @GetMapping("/messages")
     public Result<List<ChatHistoryMessageVo>> listMessages(@RequestParam String conversationId) {
         return Result.success(chatService.listMessages(conversationId));

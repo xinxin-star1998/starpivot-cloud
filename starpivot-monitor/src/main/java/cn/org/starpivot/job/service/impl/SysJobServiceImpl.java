@@ -3,6 +3,7 @@ package cn.org.starpivot.job.service.impl;
 import cn.org.starpivot.common.constants.JobConstants;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
+import cn.org.starpivot.common.job.JobInvokeTarget;
 import cn.org.starpivot.common.security.SecurityContextUtils;
 import cn.org.starpivot.job.domain.bo.SysJobLogVO;
 import cn.org.starpivot.job.domain.bo.SysJobVO;
@@ -25,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -335,46 +337,32 @@ public class SysJobServiceImpl extends ServiceImpl<SysJobMapper, SysJob> impleme
      * <p>
      * 检查是否为空、是否包含 {@link JobConstants#JOB_ERROR_STR} 违规字符、
      * 是否以 {@link JobConstants#JOB_WHITELIST_STR} 白名单前缀开头，
-     * 并验证格式为 {@code 包名.类名.方法名()}。
+     * 并验证格式为 {@code 包名.类名.方法名()} 或 {@code 方法名(数字)}。
      * </p>
      *
-     * @param invokeTarget 调用目标，如 {@code cn.org.starpivot.job.task.DemoTask.run()}
+     * @param invokeTarget 调用目标，如 {@code cn.org.starpivot.job.task.CleanOperLogTask.cleanOperLogBeforeDays(30)}
      * @throws BizException 校验不通过时抛出
      */
     private void validateInvokeTarget(String invokeTarget) {
-        if (invokeTarget == null || invokeTarget.isBlank()) throw new BizException("调用目标不能为空");
-        for (String s : JobConstants.JOB_ERROR_STR) {
-            if (invokeTarget.contains(s)) throw new BizException("调用目标包含违规字符");
-        }
-        boolean inWhitelist = false;
-        for (String prefix : JobConstants.JOB_WHITELIST_STR) {
-            if (invokeTarget.startsWith(prefix)) {
-                inWhitelist = true;
-                break;
-            }
-        }
-        if (!inWhitelist) throw new BizException("调用目标不在白名单内，仅允许: " + String.join(", ", JobConstants.JOB_WHITELIST_STR));
-        if (!invokeTarget.matches("^[a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\.([a-zA-Z0-9_]+)\\(\\)$")) {
-            throw new BizException("调用目标格式错误，应为: 包名.类名.方法名()");
+        try {
+            JobInvokeTarget.assertSafe(invokeTarget, JobConstants.JOB_WHITELIST_STR, JobConstants.JOB_ERROR_STR);
+        } catch (IllegalArgumentException ex) {
+            throw new BizException(ex.getMessage());
         }
     }
 
     /**
-     * 通过反射调用 Spring Bean 的无参方法。
-     * <p>从 {@code invokeTarget} 解析类名与方法名，经 {@link ApplicationContext} 获取 Bean 后执行。</p>
+     * 通过反射调用 Spring Bean 方法（支持无参或简单字面量参数）。
      *
-     * @param invokeTarget 调用目标，格式 {@code 全限定类名.方法名()}
+     * @param invokeTarget 调用目标，格式 {@code 全限定类名.方法名()} 或 {@code 方法名(30)}
      * @throws Exception 格式错误、类不存在、方法不存在或反射调用失败时抛出
      */
     private void invokeMethod(String invokeTarget) throws Exception {
-        int lastDot = invokeTarget.lastIndexOf('.');
-        if (lastDot <= 0 || !invokeTarget.endsWith("()")) throw new IllegalArgumentException("调用目标格式错误");
-        String className = invokeTarget.substring(0, lastDot);
-        String methodPart = invokeTarget.substring(lastDot + 1);
-        String methodName = methodPart.substring(0, methodPart.length() - 2);
-        Class<?> clazz = Class.forName(className);
+        JobInvokeTarget.Parsed parsed = JobInvokeTarget.parse(invokeTarget);
+        Class<?> clazz = JobInvokeTarget.resolveClass(parsed.className(), JobConstants.JOB_WHITELIST_STR);
         Object bean = applicationContext.getBean(clazz);
-        bean.getClass().getMethod(methodName).invoke(bean);
+        Method method = JobInvokeTarget.resolveMethod(bean.getClass(), parsed.methodName(), parsed.args());
+        method.invoke(bean, parsed.args().toArray());
     }
 
     /**

@@ -18,16 +18,25 @@
       <ElFormItem label="任务组名" prop="jobGroup">
         <ElInput v-model="formData.jobGroup" placeholder="DEFAULT" />
       </ElFormItem>
-      <ElFormItem label="调用目标" prop="invokeTarget">
+      <ElFormItem prop="invokeTarget">
+        <template #label>
+          <span class="invoke-target-label">
+            调用目标
+            <ElTooltip placement="top">
+              <template #content>
+                <div>格式：类名.方法名() 或 类名.方法名(7)</div>
+                <div>示例：CleanOperLogTask.cleanOperLogBeforeDays(7)</div>
+              </template>
+              <ElIcon class="invoke-target-help"><QuestionFilled /></ElIcon>
+            </ElTooltip>
+          </span>
+        </template>
         <ElInput
           v-model="formData.invokeTarget"
           type="textarea"
           :rows="2"
-          placeholder="如：com.star.pivot.quartz.task.SampleTask.hello()"
+          placeholder="请输入调用目标"
         />
-        <div class="form-tip"
-          >格式：包名.类名.方法名()，仅允许白名单包：com.star.pivot.quartz.task</div
-        >
       </ElFormItem>
       <ElFormItem label="Cron 表达式" prop="cronExpression">
         <ElInput v-model="formData.cronExpression" placeholder="如：0 0/5 * * * ? 表示每5分钟">
@@ -75,6 +84,7 @@
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
   import { ElMessage } from 'element-plus'
+  import { QuestionFilled } from '@element-plus/icons-vue'
   import { fetchAddJob, fetchJobById, fetchUpdateJob, type SysJob } from '@/api/monitor/job'
   import type { DialogType } from '@/types'
   import CronEditorDialog from './cron-editor-dialog.vue'
@@ -254,9 +264,15 @@
     }
   }
 
-  .form-tip {
-    margin-top: 4px;
-    font-size: 12px;
+  .invoke-target-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .invoke-target-help {
+    font-size: 14px;
     color: var(--el-text-color-secondary);
+    cursor: help;
   }
 </style>

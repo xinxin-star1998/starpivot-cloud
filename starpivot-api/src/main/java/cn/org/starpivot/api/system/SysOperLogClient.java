@@ -4,6 +4,7 @@ import cn.org.starpivot.api.fallback.SysOperLogClientFallbackFactory;
 import cn.org.starpivot.common.domain.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * 操作日志 Feign 客户端接口。
@@ -29,4 +30,13 @@ public interface SysOperLogClient {
      */
     @DeleteMapping("/internal/operlog/clean")
     Result<Void> cleanAll();
+
+    /**
+     * 删除指定天数之前的操作日志。
+     *
+     * @param days 保留最近几天，删除更早的记录
+     * @return 操作结果
+     */
+    @DeleteMapping("/internal/operlog/clean-before")
+    Result<Void> cleanBeforeDays(@RequestParam("days") int days);
 }

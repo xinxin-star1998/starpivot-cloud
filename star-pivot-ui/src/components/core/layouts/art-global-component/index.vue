@@ -9,7 +9,18 @@
 
 <script setup lang="ts">
   import { getEnabledGlobalComponents } from '@/config/modules/component'
+  import { useMenuStore } from '@/store/modules/menu'
 
   defineOptions({ name: 'ArtGlobalComponent' })
-  const enabledComponents = computed(() => getEnabledGlobalComponents())
+
+  const menuStore = useMenuStore()
+
+  const enabledComponents = computed(() =>
+    getEnabledGlobalComponents().filter((config) => {
+      if (config.key === 'chat-window') {
+        return menuStore.hasPerm('ai:chat:use')
+      }
+      return true
+    })
+  )
 </script>

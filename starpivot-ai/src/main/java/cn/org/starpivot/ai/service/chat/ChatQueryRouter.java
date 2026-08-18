@@ -1,6 +1,7 @@
 package cn.org.starpivot.ai.service.chat;
 
 import cn.org.starpivot.ai.config.AiProperties;
+import cn.org.starpivot.ai.config.AiRuntimeSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,42 @@ public class ChatQueryRouter {
     }
 
     public ChatIntent classify(String message) {
+        return classify(message, null);
+    }
+
+    public ChatIntent classify(String message, ChatIntent previousIntent) {
+        ChatIntent current = classifyByRules(message);
+        if (ChatFollowUpIntent.shouldInherit(message, current, previousIntent)) {
+            log.debug("[QueryRouter] inherit sticky intent {} for follow-up", previousIntent);
+            return previousIntent;
+        }
+        return current;
+    }
+
+    /**
+     * 规则命中可能冲突时（如开发 vs 平台文档），交给 LLM 精修。
+     */
+    public boolean isAmbiguous(String message, ChatIntent ruleIntent) {
+        if (!StringUtils.hasText(message) || ruleIntent == null) {
+            return false;
+        }
+        if (ruleIntent == ChatIntent.GENERAL) {
+            return true;
+        }
+        String text = message.trim();
+        boolean looksDev = DEVELOPER.matcher(text).find();
+        boolean looksKnowledge = KNOWLEDGE.matcher(text).find() || PLATFORM_DOC.matcher(text).find();
+        boolean looksAnalyst = ANALYST.matcher(text).find();
+        return switch (ruleIntent) {
+            case DEVELOPER -> looksKnowledge;
+            case KNOWLEDGE -> looksDev;
+            case ANALYST -> looksDev || looksKnowledge;
+            case REASONING -> looksKnowledge && !looksDev;
+            default -> false;
+        };
+    }
+
+    private ChatIntent classifyByRules(String message) {
         if (!StringUtils.hasText(message)) {
             return ChatIntent.GENERAL;
         }
@@ -64,17 +101,18 @@ public class ChatQueryRouter {
     }
 
     public RoutedSuggestion suggest(ChatIntent intent) {
-        AiProperties.QueryRouterProperties router = aiProperties.getQueryRouter();
-        String chatModel = router.resolvedChatModel(aiProperties.getDefaultModel());
-        String reasonerModel = router.resolvedReasonerModel("deepseek-reasoner");
+        return suggest(intent, null);
+    }
 
+    public RoutedSuggestion suggest(ChatIntent intent, AiRuntimeSnapshot runtime) {
+        String model = SmartModelSelector.pick(intent, aiProperties.getQueryRouter(), runtime);
         return switch (intent) {
-            case CHITCHAT -> new RoutedSuggestion("default", chatModel, false);
-            case KNOWLEDGE -> new RoutedSuggestion("support", chatModel, true);
-            case DEVELOPER -> new RoutedSuggestion("developer", chatModel, false);
-            case ANALYST -> new RoutedSuggestion("analyst", chatModel, true);
-            case REASONING -> new RoutedSuggestion("developer", reasonerModel, false);
-            case GENERAL -> new RoutedSuggestion("default", chatModel, false);
+            case CHITCHAT -> new RoutedSuggestion("default", model, false);
+            case KNOWLEDGE -> new RoutedSuggestion("support", model, true);
+            case DEVELOPER -> new RoutedSuggestion("developer", model, false);
+            case ANALYST -> new RoutedSuggestion("analyst", model, true);
+            case REASONING -> new RoutedSuggestion("developer", model, false);
+            case GENERAL -> new RoutedSuggestion("default", model, false);
         };
     }
 

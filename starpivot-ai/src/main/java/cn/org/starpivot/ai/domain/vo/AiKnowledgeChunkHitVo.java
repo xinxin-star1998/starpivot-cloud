@@ -19,5 +19,9 @@ public class AiKnowledgeChunkHitVo {
 
     private Integer pageNum;
 
+    private String sectionTitle;
+
+    private Integer chunkIndex;
+
     private String embeddingJson;
 }

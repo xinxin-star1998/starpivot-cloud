@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RagChunkService {
 
-    private final SlidingWindowChunkSplitter slidingWindowChunkSplitter;
+    private final SectionAwareChunkSplitter sectionAwareChunkSplitter;
 
     public List<ChunkResult> chunk(ParseResult parseResult, int chunkSize, int chunkOverlap) {
         if (parseResult == null || !parseResult.isSuccess()) {
@@ -21,8 +21,9 @@ public class RagChunkService {
         ChunkConfig config = ChunkConfig.builder()
                 .chunkSize(chunkSize)
                 .chunkOverlap(chunkOverlap)
+                .structureAware(true)
                 .build();
-        List<ChunkResult> chunks = slidingWindowChunkSplitter.split(parseResult, config);
+        List<ChunkResult> chunks = sectionAwareChunkSplitter.split(parseResult, config);
         return chunks.stream()
                 .filter(c -> c.getContent() != null && c.getContent().length() >= 20)
                 .toList();

@@ -1,27 +1,31 @@
 package cn.org.starpivot.ai.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.org.starpivot.ai.domain.dto.AiKnowledgeBaseQueryDto;
 import cn.org.starpivot.ai.domain.dto.AiKnowledgeBaseSaveDto;
 import cn.org.starpivot.ai.domain.entity.AiKnowledgeBase;
 import cn.org.starpivot.ai.domain.entity.AiKnowledgeChunk;
 import cn.org.starpivot.ai.domain.entity.AiKnowledgeDocument;
 import cn.org.starpivot.ai.domain.vo.AiKnowledgeBaseVo;
+import cn.org.starpivot.ai.domain.vo.AiKnowledgeReindexResultVo;
 import cn.org.starpivot.ai.mapper.AiKnowledgeBaseMapper;
 import cn.org.starpivot.ai.mapper.AiKnowledgeChunkMapper;
 import cn.org.starpivot.ai.mapper.AiKnowledgeDocumentMapper;
+import cn.org.starpivot.ai.service.AiIndexService;
 import cn.org.starpivot.ai.service.AiKnowledgeBaseService;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.security.SecurityContextUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +37,7 @@ public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
     private final AiKnowledgeBaseMapper aiKnowledgeBaseMapper;
     private final AiKnowledgeDocumentMapper aiKnowledgeDocumentMapper;
     private final AiKnowledgeChunkMapper aiKnowledgeChunkMapper;
+    private final AiIndexService aiIndexService;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,7 +50,9 @@ public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
         Page<AiKnowledgeBase> result = aiKnowledgeBaseMapper.selectPage(page, wrapper);
         PageResponse<AiKnowledgeBaseVo> response = new PageResponse<>();
         response.setTotal(result.getTotal());
-        response.setRows(result.getRecords().stream().map(this::toVo).collect(Collectors.toList()));
+        List<AiKnowledgeBaseVo> rows = result.getRecords().stream().map(this::toVo).collect(Collectors.toList());
+        fillStats(rows);
+        response.setRows(rows);
         return response;
     }
 
@@ -63,7 +70,9 @@ public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
     @Override
     @Transactional(readOnly = true)
     public AiKnowledgeBaseVo getById(Long kbId) {
-        return toVo(requireKb(kbId));
+        AiKnowledgeBaseVo vo = toVo(requireKb(kbId));
+        fillStats(List.of(vo));
+        return vo;
     }
 
     @Override
@@ -107,6 +116,71 @@ public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
             aiKnowledgeDocumentMapper.deleteById(doc.getDocId());
         }
         aiKnowledgeBaseMapper.deleteById(kbId);
+    }
+
+    @Override
+    public AiKnowledgeReindexResultVo reindexAll(Long kbId) {
+        requireKb(kbId);
+        List<AiKnowledgeDocument> docs = aiKnowledgeDocumentMapper.selectList(new LambdaQueryWrapper<AiKnowledgeDocument>()
+                .eq(AiKnowledgeDocument::getKbId, kbId)
+                .eq(AiKnowledgeDocument::getStatus, STATUS_NORMAL)
+                .orderByAsc(AiKnowledgeDocument::getDocId));
+        int submitted = 0;
+        int skipped = 0;
+        for (AiKnowledgeDocument doc : docs) {
+            boolean hasFile = "FILE".equals(doc.getSourceType()) && StringUtils.hasText(doc.getObjectName());
+            boolean hasText = StringUtils.hasText(doc.getContent());
+            if (!hasFile && !hasText) {
+                skipped++;
+                continue;
+            }
+            aiIndexService.forceResetIndexState(doc.getDocId());
+            if (hasFile) {
+                aiIndexService.submitFileIndex(doc.getDocId());
+            } else {
+                aiIndexService.submitTextIndex(doc.getDocId());
+            }
+            submitted++;
+        }
+        return AiKnowledgeReindexResultVo.builder().submitted(submitted).skipped(skipped).build();
+    }
+
+    private void fillStats(List<AiKnowledgeBaseVo> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+        List<Long> kbIds = rows.stream().map(AiKnowledgeBaseVo::getKbId).filter(id -> id != null).toList();
+        if (kbIds.isEmpty()) {
+            return;
+        }
+        List<AiKnowledgeDocument> docs = aiKnowledgeDocumentMapper.selectList(new LambdaQueryWrapper<AiKnowledgeDocument>()
+                .in(AiKnowledgeDocument::getKbId, kbIds)
+                .select(
+                        AiKnowledgeDocument::getKbId,
+                        AiKnowledgeDocument::getChunkCount,
+                        AiKnowledgeDocument::getIndexStatus));
+        Map<Long, int[]> stats = new HashMap<>();
+        for (AiKnowledgeDocument doc : docs) {
+            int[] bucket = stats.computeIfAbsent(doc.getKbId(), key -> new int[5]);
+            bucket[0]++; // docCount
+            bucket[1] += doc.getChunkCount() != null ? doc.getChunkCount() : 0;
+            String status = doc.getIndexStatus();
+            if ("DONE".equals(status)) {
+                bucket[2]++;
+            } else if ("FAILED".equals(status)) {
+                bucket[4]++;
+            } else {
+                bucket[3]++; // pending/processing/other
+            }
+        }
+        for (AiKnowledgeBaseVo row : rows) {
+            int[] bucket = stats.getOrDefault(row.getKbId(), new int[5]);
+            row.setDocCount(bucket[0]);
+            row.setChunkCount(bucket[1]);
+            row.setIndexedCount(bucket[2]);
+            row.setIndexingCount(bucket[3]);
+            row.setFailedCount(bucket[4]);
+        }
     }
 
     private AiKnowledgeBase requireKb(Long kbId) {

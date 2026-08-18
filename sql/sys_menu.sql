@@ -43,7 +43,7 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 348 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 352 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
@@ -339,7 +339,7 @@ INSERT INTO `sys_menu` VALUES (330, '轨迹刷新', 325, 3, '', '', NULL, '', 1,
 INSERT INTO `sys_menu` VALUES (331, '运费规则', 323, 3, 'freight', '/tms/freight/index', NULL, 'TmsFreight', 1, 1, 'C', '0', '0', 'tms:freight:query', 'mdi:scale-balance', 'admin', '2026-07-05 18:18:54', '', NULL, 'TMS运费规则');
 INSERT INTO `sys_menu` VALUES (332, '运费查询', 331, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:freight:query', '#', 'admin', '2026-07-05 18:18:54', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (333, '运费编辑', 331, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'tms:freight:edit', '#', 'admin', '2026-07-05 18:18:54', '', NULL, '');
-INSERT INTO `sys_menu` VALUES (334, 'AI 中心', 0, 8, '/ai', '', NULL, 'AiCenter', 1, 1, 'M', '0', '0', '', 'ri:robot-2-line', 'admin', '2026-07-06 10:24:17', '', NULL, 'AI 智能对话管理');
+INSERT INTO `sys_menu` VALUES (334, 'AI 中心', 0, 8, '/ai', '', NULL, 'AiCenter', 1, 1, 'M', '0', '0', 'ai:chat:use', 'ri:robot-2-line', 'admin', '2026-07-06 10:24:17', '', NULL, 'AI 智能对话管理---使用全局 AI 对话窗口');
 INSERT INTO `sys_menu` VALUES (335, '基础配置', 334, 1, 'config', '/ai/config/index', NULL, 'AiConfig', 1, 1, 'C', '0', '0', 'ai:config:query', 'ep:setting', 'admin', '2026-07-06 10:24:17', '', NULL, 'AI 助手基础配置');
 INSERT INTO `sys_menu` VALUES (336, '配置查询', 335, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:config:query', '#', 'admin', '2026-07-06 10:24:17', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (337, '配置编辑', 335, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:config:edit', '#', 'admin', '2026-07-06 10:24:17', '', NULL, '');
@@ -353,5 +353,9 @@ INSERT INTO `sys_menu` VALUES (344, '知识库编辑', 342, 2, '', '', NULL, '',
 INSERT INTO `sys_menu` VALUES (345, '知识库删除', 342, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:knowledge:delete', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
 INSERT INTO `sys_menu` VALUES (346, '用量统计', 334, 4, 'statistics', '/ai/statistics/index', NULL, 'AiStatistics', 1, 1, 'C', '0', '0', 'ai:statistics:query', 'ri:bar-chart-box-line', 'admin', '2026-07-06 10:39:22', '', NULL, 'AI 调用用量统计');
 INSERT INTO `sys_menu` VALUES (347, '统计查询', 346, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:statistics:query', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (348, '模型供应商', 334, 0, 'provider', '/ai/provider/index', NULL, 'AiProvider', 1, 1, 'C', '0', '0', 'ai:provider:query', 'ri:key-2-line', 'admin', '2026-07-06 10:39:22', '', NULL, '网页配置 DeepSeek / Kimi / 百炼等 API');
+INSERT INTO `sys_menu` VALUES (349, '供应商查询', 348, 1, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:provider:query', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (350, '供应商编辑', 348, 2, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:provider:edit', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
+INSERT INTO `sys_menu` VALUES (351, '供应商删除', 348, 3, '', '', NULL, '', 1, 0, 'F', '0', '0', 'ai:provider:delete', '#', 'admin', '2026-07-06 10:39:22', '', NULL, '');
 
 SET FOREIGN_KEY_CHECKS = 1;
