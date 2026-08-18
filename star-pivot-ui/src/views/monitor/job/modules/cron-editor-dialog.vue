@@ -1,227 +1,289 @@
 <template>
   <ElDialog
     v-model="visible"
-    title="配置 Cron 表达式"
-    width="980px"
+    width="1080px"
     append-to-body
     destroy-on-close
+    align-center
     class="cron-editor-dialog"
+    header-class="cron-editor-dialog__header"
+    body-class="cron-editor-dialog__body"
+    footer-class="cron-editor-dialog__footer"
   >
-    <div class="cron-layout">
-      <div class="cron-main">
-        <div class="cron-header">
-          <div class="cron-title">
-            <div class="cron-title__name">调度编辑器</div>
-            <div class="cron-title__desc">默认使用可视化模式，高级模式用于兼容复杂 Cron。</div>
-          </div>
-          <ElRadioGroup v-model="mode" class="mode-toggle">
-            <ElRadioButton label="visual">可视化</ElRadioButton>
-            <ElRadioButton label="advanced">高级模式</ElRadioButton>
-          </ElRadioGroup>
-        </div>
-
-        <div class="cron-section">
-          <div class="cron-section__title">快速预设</div>
-          <ElRow :gutter="12">
-            <ElCol v-for="p in presets" :key="p.label" :span="8">
-              <ElCard
-                shadow="never"
-                class="preset-card"
-                :class="{ 'preset-card--active': draft === p.expression }"
-                @click="applyPreset(p.expression)"
-              >
-                <div class="preset-card__name">{{ p.label }}</div>
-                <div class="preset-card__desc">{{ p.desc }}</div>
-              </ElCard>
-            </ElCol>
-          </ElRow>
-        </div>
-
-        <div class="cron-section">
-          <div class="cron-section__title">可视化配置</div>
-          <ElTabs v-model="visualTab" type="card" class="visual-tabs" :disabled="mode !== 'visual'">
-            <ElTabPane label="按分钟" name="minute">
-              <div class="form-grid">
-                <div class="form-row">
-                  <div class="form-row__label">每</div>
-                  <ElInputNumber
-                    v-model="minute.every"
-                    :min="1"
-                    :max="59"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">分钟执行（秒位固定为 0）</div>
-                </div>
-              </div>
-            </ElTabPane>
-            <ElTabPane label="按小时" name="hour">
-              <div class="form-grid">
-                <div class="form-row">
-                  <div class="form-row__label">每</div>
-                  <ElInputNumber
-                    v-model="hour.every"
-                    :min="1"
-                    :max="23"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">小时，在第</div>
-                  <ElInputNumber
-                    v-model="hour.minute"
-                    :min="0"
-                    :max="59"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">分钟执行</div>
-                </div>
-              </div>
-            </ElTabPane>
-            <ElTabPane label="每日" name="day">
-              <div class="form-grid">
-                <div class="form-row">
-                  <div class="form-row__label">每天</div>
-                  <ElInputNumber v-model="day.hour" :min="0" :max="23" controls-position="right" />
-                  <div class="form-row__label">时</div>
-                  <ElInputNumber
-                    v-model="day.minute"
-                    :min="0"
-                    :max="59"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">分执行</div>
-                </div>
-              </div>
-            </ElTabPane>
-            <ElTabPane label="每周" name="week">
-              <div class="form-grid">
-                <div class="form-row">
-                  <div class="form-row__label">每周</div>
-                  <ElSelect v-model="week.dow" style="width: 140px">
-                    <ElOption
-                      v-for="d in dowOptions"
-                      :key="d.value"
-                      :label="d.label"
-                      :value="d.value"
-                    />
-                  </ElSelect>
-                  <div class="form-row__label">：</div>
-                  <ElInputNumber v-model="week.hour" :min="0" :max="23" controls-position="right" />
-                  <div class="form-row__label">时</div>
-                  <ElInputNumber
-                    v-model="week.minute"
-                    :min="0"
-                    :max="59"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">分执行</div>
-                </div>
-              </div>
-            </ElTabPane>
-            <ElTabPane label="每月" name="month">
-              <div class="form-grid">
-                <div class="form-row">
-                  <div class="form-row__label">每月</div>
-                  <ElInputNumber v-model="month.dom" :min="1" :max="31" controls-position="right" />
-                  <div class="form-row__label">号</div>
-                  <ElInputNumber
-                    v-model="month.hour"
-                    :min="0"
-                    :max="23"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">时</div>
-                  <ElInputNumber
-                    v-model="month.minute"
-                    :min="0"
-                    :max="59"
-                    controls-position="right"
-                  />
-                  <div class="form-row__label">分执行</div>
-                </div>
-              </div>
-            </ElTabPane>
-          </ElTabs>
-
-          <div v-if="mode === 'advanced'" class="advanced-section">
-            <div class="advanced-header">
-              <div class="advanced-title">高级模式</div>
-              <div class="advanced-tip">支持直接输入 Cron，适合复杂任务编排</div>
-            </div>
-            <ElInput
-              v-model="draft"
-              type="textarea"
-              :rows="4"
-              placeholder="请输入 Cron 表达式"
-              maxlength="100"
-              show-word-limit
-            />
-            <div class="advanced-hint">
-              字段顺序：<span class="mono">秒 分 时 日 月 周</span>，兼容 5 位和 6 位，推荐使用 6
-              位。
-            </div>
+    <template #header>
+      <div class="cron-head">
+        <div class="cron-head__brand">
+          <span class="cron-head__icon">
+            <ArtSvgIcon icon="ri:calendar-event-line" />
+          </span>
+          <div>
+            <div class="cron-head__title">{{ t('monitor.job.cronEditor') }}</div>
+            <div class="cron-head__desc">{{ t('monitor.job.cron.hint') }}</div>
           </div>
         </div>
-
-        <div class="cron-section">
-          <div class="cron-section__title">当前表达式</div>
-          <ElInput v-model="draft" readonly />
+        <div class="mode-switch" role="tablist">
+          <button
+            type="button"
+            class="mode-switch__btn"
+            :class="{ 'is-active': mode === 'visual' }"
+            @click="mode = 'visual'"
+          >
+            <ArtSvgIcon icon="ri:layout-grid-line" />
+            {{ t('monitor.job.cron.visual') }}
+          </button>
+          <button
+            type="button"
+            class="mode-switch__btn"
+            :class="{ 'is-active': mode === 'advanced' }"
+            @click="mode = 'advanced'"
+          >
+            <ArtSvgIcon icon="ri:code-s-slash-line" />
+            {{ t('monitor.job.cron.advanced') }}
+          </button>
         </div>
       </div>
+    </template>
 
-      <div class="cron-side">
-        <ElCard shadow="never" class="side-card side-card--summary">
-          <div class="side-title">表达式摘要</div>
-          <div class="side-cron">{{ draft || '-' }}</div>
-          <div class="side-tz">Asia/Shanghai</div>
+    <div class="cron-layout">
+      <div class="cron-main">
+        <section class="cron-panel">
+          <div class="cron-panel__label">{{ t('monitor.job.cron.presets') }}</div>
+          <div class="preset-grid">
+            <button
+              v-for="p in presets"
+              :key="p.expression + p.label"
+              type="button"
+              class="preset-chip"
+              :class="{ 'is-active': draft === p.expression }"
+              @click="applyPreset(p.expression)"
+            >
+              <span class="preset-chip__icon">
+                <ArtSvgIcon :icon="p.icon" />
+              </span>
+              <span class="preset-chip__meta">
+                <span class="preset-chip__name">{{ p.label }}</span>
+                <span class="preset-chip__desc">{{ p.desc }}</span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section v-if="mode === 'visual'" class="cron-panel cron-panel--editor">
+          <div class="freq-tabs">
+            <button
+              v-for="tab in freqTabs"
+              :key="tab.name"
+              type="button"
+              class="freq-tab"
+              :class="{ 'is-active': visualTab === tab.name }"
+              @click="visualTab = tab.name"
+            >
+              <ArtSvgIcon :icon="tab.icon" />
+              <span>{{ tab.label }}</span>
+            </button>
+          </div>
+
+          <div class="cron-sentence">
+            <template v-if="visualTab === 'minute'">
+              <span>{{ t('monitor.job.cron.every') }}</span>
+              <ElInputNumber
+                v-model="minute.every"
+                :min="1"
+                :max="59"
+                controls-position="right"
+                size="large"
+              />
+              <span>{{ t('monitor.job.cron.minutesOnce') }}</span>
+            </template>
+
+            <template v-else-if="visualTab === 'hour'">
+              <span>{{ t('monitor.job.cron.every') }}</span>
+              <ElInputNumber
+                v-model="hour.every"
+                :min="1"
+                :max="23"
+                controls-position="right"
+                size="large"
+              />
+              <span>{{ t('monitor.job.cron.hoursOnce') }}</span>
+              <ElInputNumber
+                v-model="hour.minute"
+                :min="0"
+                :max="59"
+                controls-position="right"
+                size="large"
+              />
+              <span>{{ t('monitor.job.cron.minuteExec') }}</span>
+            </template>
+
+            <template v-else-if="visualTab === 'day'">
+              <span>{{ t('monitor.job.cron.dailyAt') }}</span>
+              <ElTimePicker
+                v-model="dayClock"
+                format="HH:mm"
+                value-format="HH:mm"
+                :clearable="false"
+                :placeholder="t('monitor.job.cron.pickTime')"
+                size="large"
+              />
+              <span>{{ t('monitor.job.cron.execAt') }}</span>
+            </template>
+
+            <template v-else-if="visualTab === 'week'">
+              <div class="sentence-stack">
+                <div class="sentence-line">
+                  <span>{{ t('monitor.job.cron.weeklyOn') }}</span>
+                  <div class="dow-pills">
+                    <button
+                      v-for="d in dowOptions"
+                      :key="d.value"
+                      type="button"
+                      class="dow-pill"
+                      :class="{ 'is-active': week.dow === d.value }"
+                      @click="week.dow = d.value"
+                    >
+                      {{ d.label }}
+                    </button>
+                  </div>
+                </div>
+                <div class="sentence-line">
+                  <ElTimePicker
+                    v-model="weekClock"
+                    format="HH:mm"
+                    value-format="HH:mm"
+                    :clearable="false"
+                    :placeholder="t('monitor.job.cron.pickTime')"
+                    size="large"
+                  />
+                  <span>{{ t('monitor.job.cron.execAt') }}</span>
+                </div>
+              </div>
+            </template>
+
+            <template v-else>
+              <div class="sentence-stack">
+                <div class="sentence-line">
+                  <span>{{ t('monitor.job.cron.monthlyOn') }}</span>
+                </div>
+                <div class="dom-grid">
+                  <button
+                    v-for="n in 31"
+                    :key="n"
+                    type="button"
+                    class="dom-cell"
+                    :class="{ 'is-active': month.dom === n }"
+                    @click="month.dom = n"
+                  >
+                    {{ n }}
+                  </button>
+                </div>
+                <div class="sentence-line">
+                  <ElTimePicker
+                    v-model="monthClock"
+                    format="HH:mm"
+                    value-format="HH:mm"
+                    :clearable="false"
+                    :placeholder="t('monitor.job.cron.pickTime')"
+                    size="large"
+                  />
+                  <span>{{ t('monitor.job.cron.execAt') }}</span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </section>
+
+        <section v-else class="cron-panel cron-panel--editor">
+          <div class="advanced-head">
+            <div class="advanced-title">{{ t('monitor.job.cron.advanced') }}</div>
+            <div class="advanced-tip">{{ t('monitor.job.cron.advancedTip') }}</div>
+          </div>
+          <ElInput
+            v-model="draft"
+            type="textarea"
+            :rows="5"
+            class="cron-textarea"
+            :placeholder="t('monitor.job.cron.placeholder')"
+            maxlength="100"
+            show-word-limit
+          />
+          <div class="advanced-hint">
+            {{ t('monitor.job.cron.fieldOrder') }}
+          </div>
+        </section>
+      </div>
+
+      <aside class="cron-side">
+        <div class="preview-hero">
+          <div class="preview-hero__top">
+            <span>{{ t('monitor.job.cronExpression') }}</span>
+            <ElButton
+              text
+              class="copy-btn"
+              :disabled="!draft"
+              @click="copyExpression"
+            >
+              <ArtSvgIcon icon="ri:file-copy-line" />
+              {{ t('monitor.job.cron.copy') }}
+            </ElButton>
+          </div>
+          <div class="preview-hero__cron">{{ draft || '—' }}</div>
+          <div class="preview-hero__plain">{{ scheduleText || '—' }}</div>
           <div class="chips">
-            <div class="chip" v-for="c in chips" :key="c.k">
+            <div v-for="c in chips" :key="c.k" class="chip">
               <div class="chip__k">{{ c.k }}</div>
               <div class="chip__v">{{ c.v }}</div>
             </div>
           </div>
-        </ElCard>
+        </div>
 
-        <ElCard shadow="never" class="side-card">
+        <div class="side-card">
           <div class="side-row">
-            <div class="side-title">调度校验</div>
-            <ElTag :type="validation.ok ? 'success' : 'danger'" effect="light">
-              {{ validation.ok ? '有效' : '无效' }}
-            </ElTag>
+            <div class="side-title">{{ t('monitor.job.status') }}</div>
+            <span class="status-pill" :class="validation.ok ? 'is-ok' : 'is-bad'">
+              <ArtSvgIcon :icon="validation.ok ? 'ri:checkbox-circle-fill' : 'ri:close-circle-fill'" />
+              {{ validation.ok ? t('monitor.job.cron.valid') : t('monitor.job.cron.invalid') }}
+            </span>
           </div>
-          <div class="side-desc">
-            <template v-if="validation.ok">
-              {{ scheduleText }}
-            </template>
-            <template v-else>
-              {{ validation.message }}
-            </template>
+          <div class="side-desc" :class="{ 'is-bad': !validation.ok }">
+            {{ validation.ok ? scheduleText : validation.message }}
           </div>
-        </ElCard>
+        </div>
 
-        <ElCard shadow="never" class="side-card">
+        <div class="side-card side-card--runs">
           <div class="side-row">
-            <div class="side-title">未来执行</div>
-            <div class="side-tz">Asia/Shanghai</div>
+            <div class="side-title">{{ t('monitor.job.cron.nextRuns') }}</div>
+            <div class="side-tz">{{ t('monitor.job.cron.timezone') }}</div>
           </div>
           <div class="next-list">
-            <div v-for="(t, i) in nextRuns" :key="t + i" class="next-item">
-              <div class="next-item__main">{{ t }}</div>
+            <div v-for="(item, i) in nextRuns" :key="item.time + i" class="next-item">
+              <span class="next-item__idx">{{ String(i + 1).padStart(2, '0') }}</span>
+              <span class="next-item__time">{{ item.time }}</span>
+              <span class="next-item__rel">{{ item.relative }}</span>
             </div>
-            <div v-if="!nextRuns.length" class="next-empty">-</div>
+            <div v-if="!nextRuns.length" class="next-empty">
+              {{ t('monitor.job.cron.emptyNext') }}
+            </div>
           </div>
-        </ElCard>
-      </div>
+        </div>
+      </aside>
     </div>
 
     <template #footer>
-      <ElButton @click="visible = false">取消</ElButton>
-      <ElButton type="primary" :disabled="!validation.ok" @click="confirmUse">确认使用</ElButton>
+      <ElButton @click="visible = false">{{ t('common.cancel') }}</ElButton>
+      <ElButton type="primary" :disabled="!validation.ok" @click="confirmUse">
+        {{ t('monitor.job.cron.confirm') }}
+      </ElButton>
     </template>
   </ElDialog>
 </template>
 
 <script setup lang="ts">
   import dayjs from 'dayjs'
+  import { ElMessage } from 'element-plus'
   import { CronExpressionParser } from 'cron-parser'
+  import { useI18n } from 'vue-i18n'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 
   interface Props {
     modelValue: boolean
@@ -233,47 +295,113 @@
     (e: 'confirm', expression: string): void
   }
 
+  type Mode = 'visual' | 'advanced'
+  type VisualTab = 'minute' | 'hour' | 'day' | 'week' | 'month'
+
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
+  const { t } = useI18n()
 
   const visible = computed({
     get: () => props.modelValue,
     set: (v) => emit('update:modelValue', v)
   })
 
-  type Mode = 'visual' | 'advanced'
   const mode = ref<Mode>('visual')
-
-  const presets = [
-    { label: '每 5 分钟', expression: '0 0/5 * * * ?', desc: '轻量巡检与同步' },
-    { label: '每 15 分钟', expression: '0 0/15 * * * ?', desc: '常规增量任务' },
-    { label: '每小时整点', expression: '0 0 0/1 * * ?', desc: '小时级统计聚合' },
-    { label: '每日凌晨 3 点', expression: '0 0 3 * * ?', desc: '离峰批处理' },
-    { label: '工作日 9 点', expression: '0 0 9 ? * MON-FRI', desc: '业务日常任务' },
-    { label: '每周一 2 点', expression: '0 0 2 ? * MON', desc: '周度维护窗口' }
-  ] as const
-
+  const syncing = ref(false)
   const draft = ref('')
-
-  const visualTab = ref<'minute' | 'hour' | 'day' | 'week' | 'month'>('day')
+  const visualTab = ref<VisualTab>('day')
   const minute = reactive({ every: 5 })
   const hour = reactive({ every: 1, minute: 0 })
   const day = reactive({ hour: 3, minute: 0 })
   const week = reactive({ dow: 'MON', hour: 3, minute: 0 })
   const month = reactive({ dom: 1, hour: 9, minute: 0 })
 
-  const dowOptions = [
-    { label: '周一', value: 'MON' },
-    { label: '周二', value: 'TUE' },
-    { label: '周三', value: 'WED' },
-    { label: '周四', value: 'THU' },
-    { label: '周五', value: 'FRI' },
-    { label: '周六', value: 'SAT' },
-    { label: '周日', value: 'SUN' }
-  ] as const
+  const presets = computed(() => [
+    {
+      label: t('monitor.job.cron.preset5'),
+      expression: '0 0/5 * * * ?',
+      desc: t('monitor.job.cron.preset5Desc'),
+      icon: 'ri:timer-line'
+    },
+    {
+      label: t('monitor.job.cron.preset15'),
+      expression: '0 0/15 * * * ?',
+      desc: t('monitor.job.cron.preset15Desc'),
+      icon: 'ri:timer-flash-line'
+    },
+    {
+      label: t('monitor.job.cron.presetHour'),
+      expression: '0 0 0/1 * * ?',
+      desc: t('monitor.job.cron.presetHourDesc'),
+      icon: 'ri:time-line'
+    },
+    {
+      label: t('monitor.job.cron.presetDaily'),
+      expression: '0 0 3 * * ?',
+      desc: t('monitor.job.cron.presetDailyDesc'),
+      icon: 'ri:moon-clear-line'
+    },
+    {
+      label: t('monitor.job.cron.presetWeekday'),
+      expression: '0 0 9 ? * MON-FRI',
+      desc: t('monitor.job.cron.presetWeekdayDesc'),
+      icon: 'ri:briefcase-line'
+    },
+    {
+      label: t('monitor.job.cron.presetMonday'),
+      expression: '0 0 2 ? * MON',
+      desc: t('monitor.job.cron.presetMondayDesc'),
+      icon: 'ri:calendar-check-line'
+    }
+  ])
+
+  const freqTabs = computed(() => [
+    { name: 'minute' as const, label: t('monitor.job.cron.tabMinute'), icon: 'ri:timer-line' },
+    { name: 'hour' as const, label: t('monitor.job.cron.tabHour'), icon: 'ri:time-line' },
+    { name: 'day' as const, label: t('monitor.job.cron.tabDay'), icon: 'ri:sun-line' },
+    { name: 'week' as const, label: t('monitor.job.cron.tabWeek'), icon: 'ri:calendar-2-line' },
+    { name: 'month' as const, label: t('monitor.job.cron.tabMonth'), icon: 'ri:calendar-todo-line' }
+  ])
+
+  const dowOptions = computed(() => [
+    { label: t('monitor.job.cron.mon'), value: 'MON' },
+    { label: t('monitor.job.cron.tue'), value: 'TUE' },
+    { label: t('monitor.job.cron.wed'), value: 'WED' },
+    { label: t('monitor.job.cron.thu'), value: 'THU' },
+    { label: t('monitor.job.cron.fri'), value: 'FRI' },
+    { label: t('monitor.job.cron.sat'), value: 'SAT' },
+    { label: t('monitor.job.cron.sun'), value: 'SUN' }
+  ])
+
+  const dowMap = computed<Record<string, string>>(() => ({
+    MON: t('monitor.job.cron.mon'),
+    TUE: t('monitor.job.cron.tue'),
+    WED: t('monitor.job.cron.wed'),
+    THU: t('monitor.job.cron.thu'),
+    FRI: t('monitor.job.cron.fri'),
+    SAT: t('monitor.job.cron.sat'),
+    SUN: t('monitor.job.cron.sun')
+  }))
+
+  const bindClock = (state: { hour: number; minute: number }) =>
+    computed({
+      get: () =>
+        `${String(state.hour).padStart(2, '0')}:${String(state.minute).padStart(2, '0')}`,
+      set: (v: string) => {
+        const [hh, mm] = (v || '00:00').split(':')
+        state.hour = Number(hh) || 0
+        state.minute = Number(mm) || 0
+      }
+    })
+
+  const dayClock = bindClock(day)
+  const weekClock = bindClock(week)
+  const monthClock = bindClock(month)
+
+  const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
 
   const buildVisualCron = () => {
-    // Quartz 6 段：秒 分 时 日 月 周
     switch (visualTab.value) {
       case 'minute':
         return `0 0/${minute.every} * * * ?`
@@ -290,8 +418,93 @@
     }
   }
 
+  const parseToVisual = (exp: string) => {
+    const parts = exp.trim().split(/\s+/)
+    if (parts.length < 6) return false
+    const [s, m, h, dom, mon, dow] = parts
+    if (s !== '0') return false
+
+    const minuteEvery = m?.match(/^0\/(\d{1,2})$/)
+    if (minuteEvery && h === '*' && dom === '*' && mon === '*' && (dow === '?' || dow === '*')) {
+      visualTab.value = 'minute'
+      minute.every = clamp(Number(minuteEvery[1]), 1, 59)
+      return true
+    }
+
+    const hourEvery = h?.match(/^0\/(\d{1,2})$/)
+    if (
+      hourEvery &&
+      /^\d{1,2}$/.test(m) &&
+      dom === '*' &&
+      mon === '*' &&
+      (dow === '?' || dow === '*')
+    ) {
+      visualTab.value = 'hour'
+      hour.every = clamp(Number(hourEvery[1]), 1, 23)
+      hour.minute = clamp(Number(m), 0, 59)
+      return true
+    }
+
+    if (
+      /^\d{1,2}$/.test(m) &&
+      /^\d{1,2}$/.test(h) &&
+      dom === '*' &&
+      mon === '*' &&
+      (dow === '?' || dow === '*')
+    ) {
+      visualTab.value = 'day'
+      day.hour = clamp(Number(h), 0, 23)
+      day.minute = clamp(Number(m), 0, 59)
+      return true
+    }
+
+    if (
+      /^\d{1,2}$/.test(m) &&
+      /^\d{1,2}$/.test(h) &&
+      dom === '?' &&
+      mon === '*' &&
+      /^(MON|TUE|WED|THU|FRI|SAT|SUN)$/.test(dow)
+    ) {
+      visualTab.value = 'week'
+      week.dow = dow
+      week.hour = clamp(Number(h), 0, 23)
+      week.minute = clamp(Number(m), 0, 59)
+      return true
+    }
+
+    if (
+      /^\d{1,2}$/.test(m) &&
+      /^\d{1,2}$/.test(h) &&
+      /^\d{1,2}$/.test(dom) &&
+      mon === '*' &&
+      dow === '?'
+    ) {
+      visualTab.value = 'month'
+      month.dom = clamp(Number(dom), 1, 31)
+      month.hour = clamp(Number(h), 0, 23)
+      month.minute = clamp(Number(m), 0, 59)
+      return true
+    }
+
+    return false
+  }
+
+  const applyExpression = (expression: string) => {
+    syncing.value = true
+    if (parseToVisual(expression)) {
+      mode.value = 'visual'
+      draft.value = buildVisualCron()
+    } else {
+      mode.value = 'advanced'
+      draft.value = expression
+    }
+    nextTick(() => {
+      syncing.value = false
+    })
+  }
+
   const applyPreset = (expression: string) => {
-    draft.value = expression
+    applyExpression(expression)
   }
 
   watch(
@@ -311,47 +524,58 @@
       () => month.minute
     ],
     () => {
-      if (mode.value === 'visual') draft.value = buildVisualCron()
-    },
-    { immediate: true }
-  )
-
-  watch(
-    () => props.value,
-    (v) => {
-      if (v && !visible.value) draft.value = v
-    },
-    { immediate: true }
+      if (mode.value === 'visual' && !syncing.value) draft.value = buildVisualCron()
+    }
   )
 
   watch(
     () => visible.value,
     (v) => {
-      if (v) {
-        draft.value = props.value || buildVisualCron()
+      if (!v) return
+      const current = (props.value || '').trim()
+      if (current) applyExpression(current)
+      else {
+        mode.value = 'visual'
+        visualTab.value = 'day'
+        draft.value = buildVisualCron()
       }
     }
   )
 
+  const pad2 = (n: string | number) => String(n).padStart(2, '0')
+  const timeText = (hh: string, mm: string) => `${pad2(hh)}:${pad2(mm)}`
+
   const validation = computed(() => {
     const exp = (draft.value || '').trim()
-    if (!exp) return { ok: false, message: '请输入 Cron 表达式' }
+    if (!exp) return { ok: false, message: t('monitor.job.cronPlaceholder') }
     try {
       CronExpressionParser.parse(exp)
-      return { ok: true, message: '表达式可解析' }
+      return { ok: true, message: t('monitor.job.cron.valid') }
     } catch (e: any) {
-      return { ok: false, message: e?.message || '表达式不可解析' }
+      return { ok: false, message: e?.message || t('monitor.job.cron.invalid') }
     }
   })
+
+  const relativeLabel = (date: Date) => {
+    const mins = Math.max(0, Math.round((date.getTime() - Date.now()) / 60000))
+    if (mins < 1) return t('monitor.job.cron.soon')
+    if (mins < 60) return t('monitor.job.cron.inMinutes', { n: mins })
+    const hours = Math.round(mins / 60)
+    if (hours < 24) return t('monitor.job.cron.inHours', { n: hours })
+    return t('monitor.job.cron.inDays', { n: Math.round(hours / 24) })
+  }
 
   const nextRuns = computed(() => {
     if (!validation.value.ok) return []
     try {
       const it = CronExpressionParser.parse(draft.value.trim(), { currentDate: new Date() })
-      const arr: string[] = []
-      for (let i = 0; i < 6; i++) {
+      const arr: { time: string; relative: string }[] = []
+      for (let i = 0; i < 5; i++) {
         const d = it.next().toDate()
-        arr.push(dayjs(d).format('YYYY/MM/DD HH:mm:ss'))
+        arr.push({
+          time: dayjs(d).format('MM/DD HH:mm:ss'),
+          relative: relativeLabel(d)
+        })
       }
       return arr
     } catch {
@@ -361,23 +585,20 @@
 
   const chips = computed(() => {
     const parts = (draft.value || '').trim().split(/\s+/)
-    const fill = (i: number) => parts[i] ?? '-'
+    const fill = (i: number) => parts[i] ?? '—'
     return [
-      { k: '秒', v: fill(0) },
-      { k: '分', v: fill(1) },
-      { k: '时', v: fill(2) },
-      { k: '日', v: fill(3) },
-      { k: '月', v: fill(4) },
-      { k: '周', v: fill(5) }
+      { k: t('monitor.job.cron.second'), v: fill(0) },
+      { k: t('monitor.job.cron.minute'), v: fill(1) },
+      { k: t('monitor.job.cron.hour'), v: fill(2) },
+      { k: t('monitor.job.cron.day'), v: fill(3) },
+      { k: t('monitor.job.cron.month'), v: fill(4) },
+      { k: t('monitor.job.cron.week'), v: fill(5) }
     ]
   })
 
   const scheduleText = computed(() => {
     if (!validation.value.ok) return ''
     const exp = draft.value.trim()
-    if (!exp) return ''
-
-    // 优先对可视化生成的表达式做自然语言描述
     const parts = exp.split(/\s+/)
     const s = parts[0]
     const m = parts[1]
@@ -385,11 +606,8 @@
     const dom = parts[3]
     const mon = parts[4]
     const dow = parts[5]
+    const map = dowMap.value
 
-    const pad2 = (n: string | number) => String(n).padStart(2, '0')
-    const timeText = (hh: string, mm: string) => `${pad2(hh)}:${pad2(mm)}:00`
-
-    // 0 0/5 * * * ?
     const minuteEvery = m?.match(/^0\/(\d{1,2})$/)
     if (
       s === '0' &&
@@ -399,16 +617,17 @@
       mon === '*' &&
       (dow === '?' || dow === '*')
     ) {
-      return `每 ${minuteEvery[1]} 分钟执行`
+      return t('monitor.job.cron.everyNMinutes', { n: minuteEvery[1] })
     }
 
-    // 0 m 0/h * * ?
     const hourEvery = h?.match(/^0\/(\d{1,2})$/)
     if (s === '0' && hourEvery && dom === '*' && mon === '*' && (dow === '?' || dow === '*')) {
-      return `每 ${hourEvery[1]} 小时，在 ${timeText('00', m)} 执行`
+      return t('monitor.job.cron.everyNHours', {
+        n: hourEvery[1],
+        time: timeText('00', m)
+      })
     }
 
-    // 0 m H * * ?
     if (
       s === '0' &&
       /^\d{1,2}$/.test(m) &&
@@ -417,10 +636,9 @@
       mon === '*' &&
       (dow === '?' || dow === '*')
     ) {
-      return `每天 ${timeText(h, m)} 执行`
+      return t('monitor.job.cron.everyDayAt', { time: timeText(h, m) })
     }
 
-    // 0 m H ? * MON
     if (
       s === '0' &&
       /^\d{1,2}$/.test(m) &&
@@ -429,23 +647,20 @@
       mon === '*' &&
       /^[A-Z]{3}(-[A-Z]{3})?$/.test(dow)
     ) {
-      const map: Record<string, string> = {
-        MON: '周一',
-        TUE: '周二',
-        WED: '周三',
-        THU: '周四',
-        FRI: '周五',
-        SAT: '周六',
-        SUN: '周日'
-      }
       if (dow.includes('-')) {
         const [a, b] = dow.split('-')
-        return `${map[a] ?? a}至${map[b] ?? b} ${timeText(h, m)} 执行`
+        return t('monitor.job.cron.everyWeekRange', {
+          from: map[a] ?? a,
+          to: map[b] ?? b,
+          time: timeText(h, m)
+        })
       }
-      return `每周${map[dow] ?? dow} ${timeText(h, m)} 执行`
+      return t('monitor.job.cron.everyWeekAt', {
+        day: map[dow] ?? dow,
+        time: timeText(h, m)
+      })
     }
 
-    // 0 m H D * ?
     if (
       s === '0' &&
       /^\d{1,2}$/.test(m) &&
@@ -454,231 +669,549 @@
       mon === '*' &&
       dow === '?'
     ) {
-      return `每月 ${dom} 号 ${timeText(h, m)} 执行`
+      return t('monitor.job.cron.everyMonthAt', { day: dom, time: timeText(h, m) })
     }
 
-    return `按 Cron 表达式执行：${exp}`
+    return t('monitor.job.cron.customExpr')
   })
+
+  const copyExpression = async () => {
+    const text = draft.value.trim()
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+      ElMessage.success(t('monitor.job.cron.copied'))
+    } catch {
+      ElMessage.error(t('monitor.job.cron.invalid'))
+    }
+  }
 
   const confirmUse = () => {
     if (!validation.value.ok) return
-    const exp = draft.value.trim()
-    emit('confirm', exp)
+    emit('confirm', draft.value.trim())
     visible.value = false
   }
 </script>
 
 <style scoped lang="scss">
-  .cron-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 16px;
-  }
-
-  .cron-header {
+  .cron-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    border: 1px solid var(--art-card-border);
+    gap: 16px;
+    padding-right: 28px;
+  }
+
+  .cron-head__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .cron-head__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--el-color-primary);
+    font-size: 20px;
+    background: var(--el-color-primary-light-9);
     border-radius: 12px;
-    background: linear-gradient(
-      135deg,
-      var(--el-color-primary-light-9) 0%,
-      var(--el-color-primary-light-8) 100%
-    );
   }
 
-  .mode-toggle :deep(.el-radio-button__inner) {
-    border-radius: 10px;
-    padding: 8px 14px;
-    font-weight: 600;
-  }
-  .mode-toggle :deep(.el-radio-button:first-child .el-radio-button__inner) {
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-  }
-  .mode-toggle :deep(.el-radio-button:last-child .el-radio-button__inner) {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-  }
-
-  .cron-title__name {
-    font-weight: 600;
-    color: var(--art-gray-900);
+  .cron-head__title {
+    font-size: 16px;
+    font-weight: 650;
     line-height: 1.2;
+    color: var(--art-gray-900);
   }
-  .cron-title__desc {
+
+  .cron-head__desc {
     margin-top: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
   }
 
-  .cron-section {
-    margin-top: 14px;
-  }
-  .cron-section__title {
-    margin-bottom: 10px;
-    font-weight: 600;
-    color: var(--art-gray-800);
-  }
-
-  .preset-card {
-    cursor: pointer;
+  .mode-switch {
+    display: inline-flex;
+    padding: 3px;
+    background: var(--el-fill-color-light);
     border-radius: 12px;
-    transition: all 0.2s ease;
-    border: 1px solid var(--art-card-border);
-  }
-  .preset-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgb(0 0 0 / 8%);
-  }
-  .preset-card--active {
-    border-color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
-  }
-  .preset-card__name {
-    font-weight: 600;
-    color: var(--art-gray-900);
-  }
-  .preset-card__desc {
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
   }
 
-  .visual-tabs :deep(.el-tabs__content) {
-    padding: 12px;
-    border: 1px solid var(--art-card-border);
-    border-top: 0;
-    border-radius: 0 0 12px 12px;
-  }
-
-  .form-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .form-row {
-    display: flex;
+  .mode-switch__btn {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .form-row__label {
-    color: var(--art-gray-700);
-  }
-
-  .advanced-section {
-    margin-top: 14px;
-    padding-top: 10px;
-    border-top: 1px solid var(--art-card-border);
-  }
-  .advanced-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .advanced-title {
+    gap: 6px;
+    padding: 8px 14px;
+    color: var(--el-text-color-regular);
+    font-size: 13px;
     font-weight: 600;
-    color: var(--art-gray-800);
-  }
-  .advanced-tip {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-  }
-  .advanced-hint {
-    margin-top: 10px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-  }
-  .mono {
-    font-family:
-      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-      monospace;
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      color: var(--el-text-color-primary);
+    }
+
+    &.is-active {
+      color: var(--el-color-primary);
+      background: var(--el-bg-color);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+    }
   }
 
+  .cron-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+  }
+
+  .cron-main,
   .cron-side {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    min-width: 0;
   }
-  .side-card {
+
+  .cron-panel {
+    padding: 14px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 16px;
+  }
+
+  .cron-panel--editor {
+    flex: 1;
+  }
+
+  .cron-panel__label {
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    color: var(--el-text-color-secondary);
+  }
+
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .preset-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px 10px;
+    text-align: left;
+    background: var(--el-fill-color-lighter);
+    border: 1px solid transparent;
     border-radius: 12px;
-    border: 1px solid var(--art-card-border);
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      border-color: var(--el-color-primary-light-5);
+      transform: translateY(-1px);
+    }
+
+    &.is-active {
+      background: var(--el-color-primary-light-9);
+      border-color: var(--el-color-primary);
+    }
   }
-  .side-card--summary {
-    color: #fff;
-    background: linear-gradient(135deg, #2d3a57 0%, #1f2b44 100%);
+
+  .preset-chip__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: var(--el-color-primary);
+    background: var(--el-bg-color);
+    border-radius: 9px;
+  }
+
+  .preset-chip__meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .preset-chip__name {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--art-gray-900);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preset-chip__desc {
+    overflow: hidden;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .freq-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 4px;
+    background: var(--el-fill-color-light);
+    border-radius: 14px;
+  }
+
+  .freq-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    color: var(--el-text-color-regular);
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
     border: 0;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &.is-active {
+      color: var(--el-color-primary);
+      background: var(--el-bg-color);
+      box-shadow: 0 6px 16px rgb(0 0 0 / 6%);
+    }
+  }
+
+  .cron-sentence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+    min-height: 168px;
+    padding: 22px 18px;
+    font-size: 15px;
+    font-weight: 550;
+    color: var(--art-gray-800);
+    background:
+      radial-gradient(120% 80% at 100% 0%, var(--el-color-primary-light-9), transparent 46%),
+      var(--el-fill-color-lighter);
+    border-radius: 14px;
+  }
+
+  .sentence-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .sentence-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dow-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dow-pill {
+    width: 36px;
+    height: 36px;
+    color: var(--el-text-color-regular);
+    font-size: 13px;
+    font-weight: 650;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.16s ease;
+
+    &.is-active {
+      color: #fff;
+      background: var(--el-color-primary);
+      border-color: var(--el-color-primary);
+    }
+  }
+
+  .dom-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .dom-cell {
+    height: 34px;
+    color: var(--el-text-color-regular);
+    font-size: 12px;
+    font-weight: 650;
+    background: var(--el-bg-color);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.16s ease;
+
+    &:hover {
+      border-color: var(--el-color-primary-light-5);
+    }
+
+    &.is-active {
+      color: #fff;
+      background: var(--el-color-primary);
+    }
+  }
+
+  .advanced-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .advanced-title {
+    font-weight: 650;
+    color: var(--art-gray-800);
+  }
+
+  .advanced-tip,
+  .advanced-hint {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .advanced-hint {
+    margin-top: 10px;
+  }
+
+  .cron-textarea :deep(.el-textarea__inner) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+    letter-spacing: 0.04em;
+    border-radius: 12px;
+  }
+
+  .preview-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+    color: #fff;
+    background:
+      radial-gradient(120% 90% at 100% -10%, rgb(255 255 255 / 18%), transparent 52%),
+      linear-gradient(155deg, var(--el-color-primary) 0%, #1e1b4b 100%);
+    border-radius: 16px;
+  }
+
+  .preview-hero__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    opacity: 0.86;
+  }
+
+  .copy-btn {
+    color: #fff !important;
+    font-weight: 600;
+  }
+
+  .preview-hero__cron {
+    margin-top: 10px;
+    overflow: hidden;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview-hero__plain {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.88;
+  }
+
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .chip {
+    padding: 8px 4px;
+    text-align: center;
+    background: rgb(255 255 255 / 12%);
+    border-radius: 10px;
+  }
+
+  .chip__k {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+
+  .chip__v {
+    overflow: hidden;
+    margin-top: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .side-card {
+    padding: 14px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 16px;
+  }
+
+  .side-card--runs {
+    flex: 1;
   }
 
   .side-title {
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 650;
   }
+
   .side-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
   }
-  .side-cron {
-    margin-top: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
+
   .side-tz {
-    margin-top: 8px;
     font-size: 12px;
-    opacity: 0.8;
+    color: var(--el-text-color-secondary);
   }
+
   .side-desc {
     margin-top: 10px;
     font-size: 13px;
     color: var(--el-text-color-regular);
-  }
-  .side-desc--ok {
-    color: var(--el-color-success);
+
+    &.is-bad {
+      color: var(--el-color-danger);
+    }
   }
 
-  .chips {
-    margin-top: 12px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-  }
-  .chip {
-    padding: 8px 10px;
-    background: rgb(255 255 255 / 10%);
-    border-radius: 12px;
-    text-align: center;
-  }
-  .chip__k {
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
     font-size: 12px;
-    opacity: 0.9;
-  }
-  .chip__v {
-    margin-top: 6px;
-    font-weight: 700;
+    font-weight: 650;
+    border-radius: 999px;
+
+    &.is-ok {
+      color: var(--el-color-success);
+      background: var(--el-color-success-light-9);
+    }
+
+    &.is-bad {
+      color: var(--el-color-danger);
+      background: var(--el-color-danger-light-9);
+    }
   }
 
   .next-list {
-    margin-top: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 12px;
   }
+
   .next-item {
-    padding: 10px 12px;
-    border: 1px solid var(--art-card-border);
-    border-radius: 12px;
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 10px;
   }
-  .next-item__main {
-    font-weight: 600;
+
+  .next-item__idx {
+    color: var(--el-color-primary);
+    font-size: 11px;
+    font-weight: 700;
   }
-  .next-empty {
+
+  .next-item__time {
+    font-size: 13px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .next-item__rel {
+    font-size: 12px;
     color: var(--el-text-color-secondary);
+  }
+
+  .next-empty {
+    padding: 18px 0;
+    color: var(--el-text-color-secondary);
+    text-align: center;
+  }
+
+  @media (max-width: 960px) {
+    .cron-layout,
+    .preset-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cron-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<style lang="scss">
+  .cron-editor-dialog.el-dialog {
+    overflow: hidden;
+    border-radius: 20px !important;
+  }
+
+  .cron-editor-dialog__header {
+    margin-right: 0 !important;
+    padding: 18px 20px 14px !important;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  .cron-editor-dialog__body {
+    padding: 16px 20px 8px !important;
+  }
+
+  .cron-editor-dialog__footer {
+    padding: 12px 20px 18px !important;
+    background: var(--el-fill-color-lighter);
+    border-top: 1px solid var(--el-border-color-lighter);
   }
 </style>
