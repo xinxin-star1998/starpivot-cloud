@@ -3,7 +3,7 @@
 #
 # API Key、模型、向量/重排地址一律走「AI 中心 → 模型供应商」（库表 ai_provider）。
 # RAG 需双开关：本文件 starpivot.ai.rag.enabled=true + 库表 ai_config.rag_enabled=0
-# 供应商 Key 落库加密：环境变量 AI_SECRET_KEY
+# 供应商 Key 落库加密：优先环境变量 AI_SECRET_KEY；生产务必单独配置
 spring:
   ai:
     # 关闭 Spring AI 默认自动配置，避免启动时强校验 spring.ai.openai.api-key。
@@ -37,7 +37,7 @@ starpivot:
     max-memory-messages: 30
     bot-name: ${AI_BOT_NAME:AI 助手}
     bot-avatar: ${AI_BOT_AVATAR:}
-    secret-key: ${AI_SECRET_KEY:}
+    secret-key: ${AI_SECRET_KEY:zDxSXNerVEVr0BjWOjxeiNRzUXNhsOqWZpwCevKoNbo=}
     default-temperature: 0.7
     default-prompt-scene: default
     welcome-message: ${AI_WELCOME_MESSAGE:你好！我是 **{botName}**，可以帮你写作、翻译、编程、分析等各类问题，有什么我可以帮你的吗？}

@@ -11,28 +11,11 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 07/07/2026 19:13:19
+ Date: 18/08/2026 18:35:48
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for mq_message（审批完结 Outbox）
--- ----------------------------
-DROP TABLE IF EXISTS `mq_message`;
-CREATE TABLE `mq_message`  (
-  `message_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息ID',
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '消息内容',
-  `to_exchange` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '目标交换机',
-  `routing_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '路由键',
-  `class_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '消息类型',
-  `message_status` tinyint(0) NULL DEFAULT 0 COMMENT '0-新建 1-已发送 2-错误 3-已抵达 4-投递中',
-  `create_time` datetime(0) NULL DEFAULT NULL,
-  `update_time` datetime(0) NULL DEFAULT NULL,
-  PRIMARY KEY (`message_id`) USING BTREE,
-  INDEX `idx_mq_status_time`(`message_status`, `create_time`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '审批MQ本地消息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for ap_instance
@@ -57,7 +40,7 @@ CREATE TABLE `ap_instance`  (
   UNIQUE INDEX `uk_biz_running`(`biz_key`, `running_flag`) USING BTREE,
   INDEX `idx_starter`(`starter_id`) USING BTREE,
   INDEX `idx_biz`(`biz_module`, `biz_type`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批实例' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批实例' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_instance
@@ -211,7 +194,7 @@ CREATE TABLE `ap_template`  (
   PRIMARY KEY (`template_id`) USING BTREE,
   UNIQUE INDEX `uk_code_version`(`template_code`, `version`) USING BTREE,
   INDEX `idx_module_status`(`biz_module`, `status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_template
@@ -236,7 +219,7 @@ CREATE TABLE `ap_template_bind`  (
   `create_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`bind_id`) USING BTREE,
   INDEX `idx_biz`(`biz_module`, `biz_type`, `status`, `priority`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板业务绑定' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '审批模板业务绑定' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ap_template_bind
@@ -298,5 +281,26 @@ INSERT INTO `ap_template_step` VALUES (5, 3, 'ops_leader', '运营主管', 1, 'D
 INSERT INTO `ap_template_step` VALUES (6, 3, 'finance', '财务审批', 2, 'ROLE', 'finance', 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
 INSERT INTO `ap_template_step` VALUES (7, 4, 'category_leader', '品类负责人', 1, 'DEPT_LEADER', NULL, 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
 INSERT INTO `ap_template_step` VALUES (8, 4, 'quality', '质控审批', 2, 'ROLE', 'finance', 'ANY', NULL, NULL, 'AUTO_REJECT', '2026-06-30 17:34:37');
+
+-- ----------------------------
+-- Table structure for mq_message
+-- ----------------------------
+DROP TABLE IF EXISTS `mq_message`;
+CREATE TABLE `mq_message`  (
+  `message_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息ID',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '消息内容',
+  `to_exchange` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '目标交换机',
+  `routing_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '路由键',
+  `class_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '消息类型',
+  `message_status` tinyint(0) NULL DEFAULT 0 COMMENT '0-新建 1-已发送 2-错误 3-已抵达 4-投递中',
+  `create_time` datetime(0) NULL DEFAULT NULL,
+  `update_time` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`message_id`) USING BTREE,
+  INDEX `idx_mq_status_time`(`message_status`, `create_time`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '审批MQ本地消息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of mq_message
+-- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;

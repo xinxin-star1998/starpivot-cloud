@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 07/07/2026 19:13:54
+ Date: 18/08/2026 18:36:38
 */
 
 SET NAMES utf8mb4;
@@ -46,7 +46,7 @@ CREATE TABLE `sms_coupon`  (
   `audit_status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'DRAFT' COMMENT 'DRAFT/PENDING/APPROVED/REJECTED/WITHDRAWN',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_publish_time`(`publish`, `enable_start_time`, `enable_end_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '优惠券信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '优惠券信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_coupon
@@ -71,7 +71,7 @@ CREATE TABLE `sms_coupon_history`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_member_id`(`member_id`) USING BTREE,
   INDEX `idx_coupon_id`(`coupon_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '优惠券领取历史' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '优惠券领取历史' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_coupon_history
@@ -133,12 +133,15 @@ CREATE TABLE `sms_home_adv`  (
   `auth_id` bigint(0) NULL DEFAULT NULL COMMENT '审核者',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_status_sort`(`status`, `sort`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '首页轮播广告' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '首页轮播广告' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_home_adv
 -- ----------------------------
-INSERT INTO `sms_home_adv` VALUES (1, '小米17 pro max 限时降价1000', 'file/goods/7/2026/06/24/5d4e179a-f937-4280-bbc7-5b583ef2e2ad.jpg', '2026-07-05 12:00:00', '2026-07-05 14:00:00', 1, 0, '', '', 1, NULL, NULL);
+INSERT INTO `sms_home_adv` VALUES (1, '小米17 pro max 限时降价1000', 'file/goods/7/2026/06/24/5d4e179a-f937-4280-bbc7-5b583ef2e2ad.jpg', '2026-07-05 12:00:00', '2027-07-05 14:00:00', 1, 0, '', '', 1, NULL, NULL);
+INSERT INTO `sms_home_adv` VALUES (10, '华为 Mate 70 Pro 新品首发', 'file/goods/7/2026/06/24/a951dc27-c51c-494b-bb52-12e70da3d0fd.jpg', NULL, NULL, 1, 0, '/portal/product/101', '演示轮播', 1, NULL, NULL);
+INSERT INTO `sms_home_adv` VALUES (11, '小米 15 Ultra 影像旗舰', 'file/goods/7/2026/07/04/200dd4c0-6dc8-4f2b-ae3b-65dd439896a2.jpg', NULL, NULL, 1, 0, '/portal/product/102', '演示轮播', 2, NULL, NULL);
+INSERT INTO `sms_home_adv` VALUES (12, 'iPhone 16 Pro 官方正品', 'file/goods/7/2026/06/24/f974367a-2602-4eff-9839-df8a75a31cc8.jpg', NULL, NULL, 1, 0, '/portal/product/103', '演示轮播', 3, NULL, NULL);
 
 -- ----------------------------
 -- Table structure for sms_home_category_hot
@@ -156,7 +159,7 @@ CREATE TABLE `sms_home_category_hot`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_cat_id`(`cat_id`) USING BTREE,
   INDEX `idx_status_sort`(`status`, `sort`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '首页分类热门' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '首页分类热门' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_home_category_hot
@@ -176,7 +179,7 @@ CREATE TABLE `sms_home_subject`  (
   `sort` int(0) NULL DEFAULT 0 COMMENT '排序',
   `img` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '专题图片',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '首页专题' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '首页专题' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_home_subject
@@ -195,7 +198,7 @@ CREATE TABLE `sms_home_subject_spu`  (
   `sort` int(0) NULL DEFAULT 0 COMMENT '排序',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_subject_id`(`subject_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '专题商品' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '专题商品' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_home_subject_spu
@@ -204,6 +207,10 @@ INSERT INTO `sms_home_subject_spu` VALUES (1, 'Mate 30 Pro', 1, 11, 1);
 INSERT INTO `sms_home_subject_spu` VALUES (2, 'Mate 30', 1, 12, 2);
 INSERT INTO `sms_home_subject_spu` VALUES (3, 'P30 Pro', 1, 13, 3);
 INSERT INTO `sms_home_subject_spu` VALUES (4, 'nova 5 Pro', 1, 14, 4);
+INSERT INTO `sms_home_subject_spu` VALUES (10, '海尔 481L 法式冰箱', 1, 111, 1);
+INSERT INTO `sms_home_subject_spu` VALUES (11, '美的 1.5匹 风尊空调', 1, 112, 2);
+INSERT INTO `sms_home_subject_spu` VALUES (12, '戴森 V12 吸尘器', 1, 113, 3);
+INSERT INTO `sms_home_subject_spu` VALUES (13, '徕芬 LF03 吹风机', 1, 115, 4);
 
 -- ----------------------------
 -- Table structure for sms_member_price
@@ -237,7 +244,7 @@ CREATE TABLE `sms_seckill_promotion`  (
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
   `user_id` bigint(0) NULL DEFAULT NULL COMMENT '创建人',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '秒杀活动' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '秒杀活动' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_seckill_promotion
@@ -256,7 +263,7 @@ CREATE TABLE `sms_seckill_session`  (
   `status` tinyint(0) NULL DEFAULT 1 COMMENT '启用状态',
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '秒杀场次' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '秒杀场次' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_seckill_session
@@ -301,7 +308,7 @@ CREATE TABLE `sms_seckill_sku_relation`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_promotion_session`(`promotion_id`, `promotion_session_id`) USING BTREE,
   INDEX `idx_sku_id`(`sku_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '秒杀商品关联' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '秒杀商品关联' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_seckill_sku_relation
@@ -325,7 +332,7 @@ CREATE TABLE `sms_sku_full_reduction`  (
   `add_other` tinyint(0) NULL DEFAULT 0 COMMENT '是否参与其他优惠',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_sku_id`(`sku_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品满减' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品满减' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_sku_full_reduction
@@ -344,7 +351,7 @@ CREATE TABLE `sms_sku_ladder`  (
   `add_other` tinyint(0) NULL DEFAULT 0 COMMENT '0不可叠加 1可叠加',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_sku_id`(`sku_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品阶梯价' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品阶梯价' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_sku_ladder
@@ -362,7 +369,7 @@ CREATE TABLE `sms_spu_bounds`  (
   `work` tinyint(0) NULL DEFAULT NULL COMMENT '积分赠送状态位',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_spu_id`(`spu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'SPU积分设置' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'SPU积分设置' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sms_spu_bounds

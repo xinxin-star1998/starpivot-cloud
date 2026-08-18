@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 07/07/2026 19:14:11
+ Date: 18/08/2026 18:37:09
 */
 
 SET NAMES utf8mb4;
@@ -57059,7 +57059,7 @@ CREATE TABLE `wms_ware_order_task`  (
   INDEX `idx_order_id`(`order_id`) USING BTREE,
   INDEX `idx_order_sn`(`order_sn`) USING BTREE,
   INDEX `idx_task_status`(`task_status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '库存工作单' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '库存工作单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of wms_ware_order_task
@@ -57070,6 +57070,7 @@ INSERT INTO `wms_ware_order_task` VALUES (3, 6, 'SP20260703224706552122', '张�
 INSERT INTO `wms_ware_order_task` VALUES (4, 7, 'SP20260704135653714766', '张三', '15888888888', '北京市北京市西城区皇城国际', NULL, 2, 2, '订单商品出库', NULL, '2026-07-04 13:56:59', 1, '支付成功自动生成（库存已扣减，仅作发货记录）');
 INSERT INTO `wms_ware_order_task` VALUES (5, 8, 'SP20260705183141479976', '张三', '15888888888', '北京市北京市西城区皇城国际', NULL, 2, 2, '订单商品出库', 'SF5468411641535', '2026-07-05 18:31:46', 1, '支付成功自动生成（库存已扣减，仅作发货记录）');
 INSERT INTO `wms_ware_order_task` VALUES (6, 9, 'SP20260705184207923311', '张三', '15888888888', '北京市北京市西城区皇城国际', NULL, 2, 2, '订单商品出库', 'YT0052140042346', '2026-07-05 18:42:10', 1, '支付成功自动生成（库存已扣减，仅作发货记录）');
+INSERT INTO `wms_ware_order_task` VALUES (7, 10, 'SP20260710102646693800', '张三', '15888888888', '北京市北京市西城区皇城国际', NULL, 2, 2, '订单商品出库', NULL, '2026-07-10 10:26:49', 1, '支付成功自动生成（库存已扣减，仅作发货记录）');
 
 -- ----------------------------
 -- Table structure for wms_ware_order_task_detail
@@ -57086,7 +57087,7 @@ CREATE TABLE `wms_ware_order_task_detail`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_task_id`(`task_id`) USING BTREE,
   INDEX `idx_sku_id`(`sku_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '库存工作单明细' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '库存工作单明细' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of wms_ware_order_task_detail
@@ -57098,6 +57099,7 @@ INSERT INTO `wms_ware_order_task_detail` VALUES (4, 99, ' Apple iPhone 11 (A2223
 INSERT INTO `wms_ware_order_task_detail` VALUES (5, 102, '小米promax 黑色 12GB 512GB Ultra版', 1, 4, 1, 3);
 INSERT INTO `wms_ware_order_task_detail` VALUES (6, 102, '小米promax 黑色 12GB 512GB Ultra版', 1, 5, 1, 3);
 INSERT INTO `wms_ware_order_task_detail` VALUES (7, 102, '小米promax 黑色 12GB 512GB Ultra版', 1, 6, 1, 3);
+INSERT INTO `wms_ware_order_task_detail` VALUES (8, 203, '小米 15 Ultra 黑色 16GB+512GB', 1, 7, 1, 3);
 
 -- ----------------------------
 -- Table structure for wms_ware_sku
@@ -57113,7 +57115,7 @@ CREATE TABLE `wms_ware_sku`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_sku_ware`(`sku_id`, `ware_id`) USING BTREE,
   INDEX `idx_ware_id`(`ware_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品库存' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 118 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '商品库存' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of wms_ware_sku
@@ -57125,5 +57127,24 @@ INSERT INTO `wms_ware_sku` VALUES (7, 84, 3, 0, ' Apple iPhone 11 (A2223)  红�
 INSERT INTO `wms_ware_sku` VALUES (8, 38, 3, 100, '华为 HUAWEI Mate 30 Pro 翡冷翠 8GB+256GB', 0);
 INSERT INTO `wms_ware_sku` VALUES (9, 99, 2, 99, ' Apple iPhone 11 (A2223)  红色 6GB 128GB 标准版', 0);
 INSERT INTO `wms_ware_sku` VALUES (10, 102, 1, 97, '小米promax 黑色 12GB 512GB Ultra版', 0);
+INSERT INTO `wms_ware_sku` VALUES (100, 201, 1, 120, '华为 Mate 70 Pro 玄黑 12GB+512GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (101, 202, 1, 80, '华为 Mate 70 Pro 雪域白 12GB+256GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (102, 203, 1, 199, '小米 15 Ultra 黑色 16GB+512GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (103, 204, 2, 150, '小米 15 Ultra 白色 12GB+256GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (104, 205, 1, 300, 'Apple iPhone 16 Pro 黑色钛金属 256GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (105, 206, 2, 100, 'Apple iPhone 16 Pro 原色钛金属 512GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (106, 207, 1, 90, 'OPPO Find X8 Pro 漫步云端 16GB+512GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (107, 208, 2, 70, 'OPPO Find X8 Pro 星野黑 12GB+256GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (108, 209, 1, 110, 'vivo X200 Pro 钛色 16GB+512GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (109, 210, 2, 60, '三星 Galaxy S25 Ultra 钛灰 12GB+256GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (110, 211, 1, 85, '荣耀 Magic7 Pro 月影灰 12GB+512GB', 0);
+INSERT INTO `wms_ware_sku` VALUES (111, 212, 1, 40, '联想 拯救者 Y9000P i9/32G/1TB/RTX4060', 0);
+INSERT INTO `wms_ware_sku` VALUES (112, 213, 2, 35, '戴尔 灵越 14 Plus Ultra7/16G/512G', 0);
+INSERT INTO `wms_ware_sku` VALUES (113, 214, 1, 500, '索尼 WH-1000XM5 黑色', 0);
+INSERT INTO `wms_ware_sku` VALUES (114, 215, 2, 25, '海尔 481L 法式多门冰箱 星蕴银', 0);
+INSERT INTO `wms_ware_sku` VALUES (115, 216, 3, 40, '美的 1.5匹 风尊空调 KFR-35GW', 0);
+INSERT INTO `wms_ware_sku` VALUES (116, 217, 1, 55, '戴森 V12 Detect Slim 金色', 0);
+INSERT INTO `wms_ware_sku` VALUES (117, 218, 1, 200, '耐克 Pegasus 41 男款 42码 黑', 0);
+INSERT INTO `wms_ware_sku` VALUES (118, 219, 2, 800, '徕芬 LF03 星空蓝', 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

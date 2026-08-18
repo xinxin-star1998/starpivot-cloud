@@ -11,7 +11,7 @@
  Target Server Version : 80046
  File Encoding         : 65001
 
- Date: 07/07/2026 19:14:02
+ Date: 18/08/2026 18:36:50
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,7 @@ CREATE TABLE `tms_carrier`  (
   `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '0存在 2删除',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_carrier_code`(`carrier_code`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS承运商' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS承运商' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tms_carrier
@@ -68,7 +68,7 @@ CREATE TABLE `tms_freight_rule`  (
   `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
   `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '0存在 2删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS运费规则' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS运费规则' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tms_freight_rule
@@ -106,7 +106,7 @@ CREATE TABLE `tms_shipment`  (
   INDEX `idx_biz`(`biz_module`, `biz_type`, `biz_id`) USING BTREE,
   INDEX `idx_tracking_no`(`tracking_no`) USING BTREE,
   INDEX `idx_order_sn`(`order_sn`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS运单' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS运单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tms_shipment
@@ -131,7 +131,7 @@ CREATE TABLE `tms_track_event`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_shipment_id`(`shipment_id`) USING BTREE,
   INDEX `idx_event_time`(`event_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS物流轨迹' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'TMS物流轨迹' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tms_track_event

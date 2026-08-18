@@ -3,6 +3,11 @@ server:
   servlet:
     context-path: /api/${starpivot.api.version}
 
+starpivot:
+  ai:
+    # 供应商 API Key 落库加密。Nacos 可覆盖；生产用环境变量 AI_SECRET_KEY。
+    secret-key: ${AI_SECRET_KEY:zDxSXNerVEVr0BjWOjxeiNRzUXNhsOqWZpwCevKoNbo=}
+
 spring:
   application:
     name: starpivot-ai
