@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view class="search-bar">
       <view class="search-input-wrap">
@@ -111,7 +111,7 @@ import {productCover, searchProducts} from '@/api/product'
 import type {PortalBrandBrief, PortalProductListItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {formatMoney} from '@/utils/money'
-import {addSearchKeyword, clearSearchHistory, getSearchHistory, HOT_SEARCH_KEYWORDS} from '@/utils/search-history'
+import {addSearchKeyword, clearSearchHistory, getSearchHistory, HOT_SEARCH_KEYWORDS} from './search-history'
 
 const keyword = ref('')
 const catalogId = ref<number>()

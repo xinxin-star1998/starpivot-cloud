@@ -135,6 +135,7 @@ import type {PortalMemberCenter} from '@/api/types'
 import {clearSession, isLogin} from '@/stores/member'
 import {goLogin} from '@/utils/auth'
 import {getCustomNavMetrics} from '@/utils/nav-bar'
+import {refreshCartBadge} from '@/utils/tabbar-cart'
 
 const loading = ref(false)
 const center = ref<PortalMemberCenter | null>(null)
@@ -185,13 +186,13 @@ function goOrders(status?: number) {
     goLogin()
     return
   }
-  const url = status != null ? `/pages/orders/index?status=${status}` : '/pages/orders/index'
+  const url = status != null ? `/pkg-mall/orders/index?status=${status}` : '/pkg-mall/orders/index'
   uni.navigateTo({ url })
 }
 
 function goAddresses() {
   if (!isLogin()) { goLogin(); return }
-  uni.navigateTo({ url: '/pages/account/addresses/index' })
+  uni.navigateTo({ url: '/pkg-mall/addresses/index' })
 }
 
 function goFavorites() {
@@ -201,7 +202,7 @@ function goFavorites() {
 
 function goCoupons() {
   if (!isLogin()) { goLogin(); return }
-  uni.navigateTo({ url: '/pages/coupons/index' })
+  uni.navigateTo({ url: '/pkg-mall/coupons/index' })
 }
 
 function goReviews() {
@@ -211,7 +212,7 @@ function goReviews() {
 
 function goAfterSales() {
   if (!isLogin()) { goLogin(); return }
-  uni.navigateTo({ url: '/pages/orders/index?afterSale=1' })
+  uni.navigateTo({ url: '/pkg-mall/orders/index?afterSale=1' })
 }
 
 function goProfile() {
@@ -237,6 +238,7 @@ function handleLogout() {
 onShow(() => {
   navMetrics.value = getCustomNavMetrics()
   refresh()
+  refreshCartBadge()
 })
 </script>
 

@@ -1,4 +1,4 @@
-import {fetchSubscribeTemplates} from '@/api/subscribe'
+import {fetchSubscribeTemplates} from '@/pkg-mall/api/subscribe'
 import {isLogin} from '@/stores/member'
 
 /**

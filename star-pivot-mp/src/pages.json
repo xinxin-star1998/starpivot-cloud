@@ -41,23 +41,18 @@
   ],
   "subPackages": [
     {
-      "root": "pages/checkout",
+      "root": "pkg-mall",
       "pages": [
         {
-          "path": "index",
+          "path": "checkout/index",
           "style": {
             "navigationBarTitleText": "确认订单",
             "navigationBarBackgroundColor": "#e1251b",
             "navigationBarTextStyle": "white"
           }
-        }
-      ]
-    },
-    {
-      "root": "pages/orders",
-      "pages": [
+        },
         {
-          "path": "index",
+          "path": "orders/index",
           "style": {
             "navigationBarTitleText": "我的订单",
             "navigationBarBackgroundColor": "#e1251b",
@@ -65,7 +60,7 @@
           }
         },
         {
-          "path": "detail/index",
+          "path": "orders/detail/index",
           "style": {
             "navigationBarTitleText": "订单详情",
             "navigationBarBackgroundColor": "#e1251b",
@@ -73,11 +68,31 @@
           }
         },
         {
-          "path": "return/index",
+          "path": "orders/return/index",
           "style": {
             "navigationBarTitleText": "申请退货",
             "navigationBarBackgroundColor": "#e1251b",
             "navigationBarTextStyle": "white"
+          }
+        },
+        {
+          "path": "seckill/index",
+          "style": {
+            "navigationBarTitleText": "限时秒杀",
+            "navigationBarBackgroundColor": "#e1251b",
+            "navigationBarTextStyle": "white"
+          }
+        },
+        {
+          "path": "coupons/index",
+          "style": {
+            "navigationBarTitleText": "优惠券"
+          }
+        },
+        {
+          "path": "addresses/index",
+          "style": {
+            "navigationBarTitleText": "收货地址"
           }
         }
       ]
@@ -89,30 +104,6 @@
           "path": "index",
           "style": {
             "navigationBarTitleText": "搜索商品"
-          }
-        }
-      ]
-    },
-    {
-      "root": "pages/seckill",
-      "pages": [
-        {
-          "path": "index",
-          "style": {
-            "navigationBarTitleText": "限时秒杀",
-            "navigationBarBackgroundColor": "#e1251b",
-            "navigationBarTextStyle": "white"
-          }
-        }
-      ]
-    },
-    {
-      "root": "pages/coupons",
-      "pages": [
-        {
-          "path": "index",
-          "style": {
-            "navigationBarTitleText": "优惠券"
           }
         }
       ]
@@ -135,17 +126,6 @@
           "path": "webview/index",
           "style": {
             "navigationBarTitleText": "物流查询"
-          }
-        }
-      ]
-    },
-    {
-      "root": "pages/account/addresses",
-      "pages": [
-        {
-          "path": "index",
-          "style": {
-            "navigationBarTitleText": "收货地址"
           }
         }
       ]
@@ -209,11 +189,11 @@
   "preloadRule": {
     "pages/index/index": {
       "network": "all",
-      "packages": ["pages/search", "pages/seckill", "pages/orders"]
+      "packages": ["pages/search", "pkg-mall"]
     },
     "pages/cart/index": {
       "network": "all",
-      "packages": ["pages/checkout"]
+      "packages": ["pkg-mall"]
     }
   },
   "tabBar": {

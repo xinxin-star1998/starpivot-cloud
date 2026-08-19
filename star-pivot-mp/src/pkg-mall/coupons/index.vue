@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view class="tabs">
       <text class="tab" :class="{ active: tab === 'claim' }" @click="switchTab('claim')">领券中心</text>
@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import {onShow} from '@dcloudio/uni-app'
 import {ref} from 'vue'
-import {fetchClaimableCoupons, fetchMyCoupons, receiveCoupon} from '@/api/coupon'
+import {fetchClaimableCoupons, fetchMyCoupons, receiveCoupon} from '@/pkg-mall/api/coupon'
 import type {PortalClaimableCoupon, PortalMyCoupon} from '@/api/types'
 import {requireLogin} from '@/utils/auth'
 import {formatMoney} from '@/utils/money'

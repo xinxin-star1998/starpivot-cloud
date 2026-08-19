@@ -1,5 +1,5 @@
 import {request} from '@/utils/request'
-import type {PortalCheckoutCoupon, PortalClaimableCoupon, PortalMyCoupon} from './types'
+import type {PortalCheckoutCoupon, PortalClaimableCoupon, PortalMyCoupon} from '@/api/types'
 
 export function fetchClaimableCoupons() {
   return request<PortalClaimableCoupon[]>({ url: '/portal/coupon/claimable' })

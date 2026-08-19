@@ -1,5 +1,5 @@
 import {request} from '@/utils/request'
-import type {WxJsapiPayParams} from './types'
+import type {WxJsapiPayParams} from '@/api/types'
 
 export function fetchWxPayEnabled() {
   return request<{ enabled: boolean; mock: boolean; jsapi: boolean }>({

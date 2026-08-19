@@ -1,5 +1,5 @@
 import {request} from '@/utils/request'
-import type {PortalSubjectDetail} from './types'
+import type {PortalSubjectDetail} from '@/api/types'
 
 export function fetchSubjectDetail(id: number, pageNum = 1, pageSize = 16) {
   return request<PortalSubjectDetail>({

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else-if="order">
@@ -91,13 +91,13 @@ import {onLoad} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
 import {fetchReviewableSpuIds} from '@/api/comment'
 import {cancelOrder, confirmReceive, fetchOrderDetail, fetchOrderLogistics} from '@/api/order'
-import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
+import {fetchWxJsapiPay, mockWxPay} from '@/pkg-mall/api/pay'
 import type {PortalOrder, PortalOrderItem, PortalShipmentTracking} from '@/api/types'
 import {requireLogin} from '@/utils/auth'
 import {useGoodsImages} from '@/composables/use-goods-images'
-import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
+import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/pkg-mall/utils/logistics'
 import {formatMoney} from '@/utils/money'
-import {requestOrderSubscribeMessage} from '@/utils/subscribe'
+import {requestOrderSubscribeMessage} from '@/pkg-mall/utils/subscribe'
 
 const loading = ref(true)
 const order = ref<PortalOrder | null>(null)
@@ -250,7 +250,7 @@ function copySn() {
 
 function goReturn() {
   if (!orderId) return
-  uni.navigateTo({ url: `/pages/orders/return/index?orderId=${orderId}` })
+  uni.navigateTo({ url: `/pkg-mall/orders/return/index?orderId=${orderId}` })
 }
 
 function goReview() {

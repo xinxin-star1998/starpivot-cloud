@@ -4,7 +4,7 @@ const TAB_BAR_PAGES = new Set(['pages/index/index', 'pages/cart/index', 'pages/a
 
 let redirectingToLogin = false
 
-/** 当前页路径（含 query），形如 /pages/orders/index?status=0 */
+/** 当前页路径（含 query），形如 /pkg-mall/orders/index?status=0 */
 export function getCurrentPageUrl(): string {
   const pages = getCurrentPages()
   if (!pages.length) return '/pages/index/index'

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="!isLogin()" class="empty-wrap">
       <view class="empty-state">
@@ -161,7 +161,7 @@ function goCheckout() {
     uni.showToast({ title: '请选择商品', icon: 'none' })
     return
   }
-  uni.navigateTo({ url: '/pages/checkout/index?mode=cart' })
+  uni.navigateTo({ url: '/pkg-mall/checkout/index?mode=cart' })
 }
 
 function goHome() {

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else-if="order">
@@ -47,7 +47,7 @@ import {onLoad} from '@dcloudio/uni-app'
 import {ref} from 'vue'
 import {applyOrderReturn, fetchOrderDetail} from '@/api/order'
 import type {PortalOrder, PortalOrderItem} from '@/api/types'
-import {canApplyReturn} from '@/utils/logistics'
+import {canApplyReturn} from '@/pkg-mall/utils/logistics'
 import {requireLogin} from '@/utils/auth'
 
 interface ReturnRow extends PortalOrderItem {

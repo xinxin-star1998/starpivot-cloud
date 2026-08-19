@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else-if="detail">
@@ -447,7 +447,7 @@ function handleBuyNow() {
     return
   }
   uni.navigateTo({
-    url: `/pages/checkout/index?mode=buy&skuId=${skuId}&quantity=${quantity.value}`
+    url: `/pkg-mall/checkout/index?mode=buy&skuId=${skuId}&quantity=${quantity.value}`
   })
 }
 

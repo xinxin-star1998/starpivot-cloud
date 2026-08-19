@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view class="top-bar" :style="topBarStyle">
       <view class="top-row" :style="topRowStyle">
@@ -158,6 +158,7 @@ import type {
 } from '@/api/types'
 import {formatMoney} from '@/utils/money'
 import {getCustomNavMetrics} from '@/utils/nav-bar'
+import {refreshCartBadge} from '@/utils/tabbar-cart'
 
 const HOME_CACHE_TTL_MS = 5 * 60 * 1000
 
@@ -345,7 +346,7 @@ function goSearch(keyword: string, catalogId?: number, brandId?: number) {
 }
 
 function goSeckill() {
-  uni.navigateTo({ url: '/pages/seckill/index' })
+  uni.navigateTo({ url: '/pkg-mall/seckill/index' })
 }
 
 function goSeckillProduct(item: PortalHomeProduct) {
@@ -377,6 +378,7 @@ onLoad(() => {
 onShow(() => {
   startCountdown()
   if (hasLoadedOnce) loadData(false)
+  refreshCartBadge()
 })
 
 onPullDownRefresh(async () => {

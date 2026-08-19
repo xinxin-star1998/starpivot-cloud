@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="afterSaleMode" class="after-sale-tip">请选择需要售后的订单，进入详情后可继续申请退货</view>
 
@@ -62,13 +62,13 @@ import {onLoad, onReachBottom, onShow} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
 import {fetchReviewableSpuIds} from '@/api/comment'
 import {cancelOrder, confirmReceive, fetchOrders} from '@/api/order'
-import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
+import {fetchWxJsapiPay, mockWxPay} from '@/pkg-mall/api/pay'
 import type {PortalOrder, PortalOrderItem} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {requireLogin} from '@/utils/auth'
-import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/utils/logistics'
+import {canApplyReturn, canShowLogistics, openLogisticsTrack} from '@/pkg-mall/utils/logistics'
 import {formatMoney} from '@/utils/money'
-import {requestOrderSubscribeMessage} from '@/utils/subscribe'
+import {requestOrderSubscribeMessage} from '@/pkg-mall/utils/subscribe'
 
 const PAGE_SIZE = 10
 const orders = ref<PortalOrder[]>([])
@@ -132,7 +132,7 @@ function switchTab(status?: number) {
 
 function goDetail(id?: number) {
   if (!id) return
-  uni.navigateTo({ url: `/pages/orders/detail/index?id=${id}` })
+  uni.navigateTo({ url: `/pkg-mall/orders/detail/index?id=${id}` })
 }
 
 function goReview(order: PortalOrder) {
@@ -264,7 +264,7 @@ function trackLogistics(order: PortalOrder) {
 
 function goReturn(id?: number) {
   if (!id) return
-  uni.navigateTo({ url: `/pages/orders/return/index?orderId=${id}` })
+  uni.navigateTo({ url: `/pkg-mall/orders/return/index?orderId=${id}` })
 }
 
 onLoad((query) => {

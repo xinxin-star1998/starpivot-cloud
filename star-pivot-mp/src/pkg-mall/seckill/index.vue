@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view class="header">
       <view class="header-main">
@@ -82,14 +82,14 @@
 <script setup lang="ts">
 import {onShow, onUnload} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
-import {fetchAddressList} from '@/api/address'
+import {fetchAddressList} from '@/pkg-mall/api/address'
 import {fetchOrderSubmitToken} from '@/api/order'
-import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
+import {fetchWxJsapiPay, mockWxPay} from '@/pkg-mall/api/pay'
 import {fetchSeckillPage, submitSeckillOrder} from '@/api/seckill'
 import type {PortalAddress, PortalHomeProduct, PortalSeckillPage} from '@/api/types'
 import {useGoodsImages} from '@/composables/use-goods-images'
 import {requireLogin} from '@/utils/auth'
-import {requestOrderSubscribeMessage} from '@/utils/subscribe'
+import {requestOrderSubscribeMessage} from '@/pkg-mall/utils/subscribe'
 import {formatMoney} from '@/utils/money'
 
 const loading = ref(false)
@@ -242,7 +242,7 @@ async function submitBuy() {
     buyVisible.value = false
     uni.showToast({ title: '下单成功' })
     await payOrder(result.orderId)
-    uni.redirectTo({ url: '/pages/orders/index' })
+    uni.redirectTo({ url: '/pkg-mall/orders/index' })
   } catch (e) {
     uni.showToast({ title: (e as Error).message, icon: 'none' })
     const tokenResult = await fetchOrderSubmitToken()

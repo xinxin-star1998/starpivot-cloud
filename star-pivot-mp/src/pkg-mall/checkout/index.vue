@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else>
@@ -105,15 +105,15 @@
 <script setup lang="ts">
 import {onLoad, onShow} from '@dcloudio/uni-app'
 import {computed, ref} from 'vue'
-import {fetchAddressList, fetchAddressSave} from '@/api/address'
+import {fetchAddressList, fetchAddressSave} from '@/pkg-mall/api/address'
 import {fetchCart} from '@/api/cart'
-import {fetchCheckoutCoupons} from '@/api/coupon'
+import {fetchCheckoutCoupons} from '@/pkg-mall/api/coupon'
 import {fetchOrderPriceTrial, fetchOrderSubmit, fetchOrderSubmitToken} from '@/api/order'
-import {fetchWxJsapiPay, mockWxPay} from '@/api/pay'
+import {fetchWxJsapiPay, mockWxPay} from '@/pkg-mall/api/pay'
 import type {PortalAddress, PortalCartItem, PortalCheckoutCoupon, PortalOrderPriceTrial} from '@/api/types'
 import {requireLogin} from '@/utils/auth'
 import {formatMoney, toCents} from '@/utils/money'
-import {requestOrderSubscribeMessage} from '@/utils/subscribe'
+import {requestOrderSubscribeMessage} from '@/pkg-mall/utils/subscribe'
 
 const loading = ref(true)
 const submitting = ref(false)
@@ -298,7 +298,7 @@ async function payOrder(orderId: number) {
     await mockWxPay(orderId)
     await requestOrderSubscribeMessage()
     uni.showToast({ title: 'Mock 支付成功' })
-    setTimeout(() => uni.redirectTo({ url: '/pages/orders/index' }), 600)
+    setTimeout(() => uni.redirectTo({ url: '/pkg-mall/orders/index' }), 600)
     return
   }
   await new Promise<void>((resolve, reject) => {
@@ -315,7 +315,7 @@ async function payOrder(orderId: number) {
   })
   await requestOrderSubscribeMessage()
   uni.showToast({ title: '支付成功' })
-  setTimeout(() => uni.redirectTo({ url: '/pages/orders/index' }), 600)
+  setTimeout(() => uni.redirectTo({ url: '/pkg-mall/orders/index' }), 600)
 }
 
 async function handleSubmit() {
@@ -343,7 +343,7 @@ async function handleSubmit() {
 }
 
 function goAddresses() {
-  uni.navigateTo({ url: '/pages/account/addresses/index' })
+  uni.navigateTo({ url: '/pkg-mall/addresses/index' })
 }
 
 async function importAddressFromWechat() {

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="!addresses.length && !showForm" class="empty">
       <text>暂无收货地址</text>
@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import {onShow} from '@dcloudio/uni-app'
 import {nextTick, reactive, ref} from 'vue'
-import {fetchAddressList, fetchAddressRemove, fetchAddressSave, fetchAddressUpdate} from '@/api/address'
+import {fetchAddressList, fetchAddressRemove, fetchAddressSave, fetchAddressUpdate} from '@/pkg-mall/api/address'
 import type {PortalAddress, PortalAddressSavePayload} from '@/api/types'
 import RegionPicker, {type RegionNames} from '@/components/region-picker.vue'
 import {requireLogin} from '@/utils/auth'

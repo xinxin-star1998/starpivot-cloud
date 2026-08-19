@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="page">
     <view v-if="loading" class="hint">加载中...</view>
     <template v-else>
@@ -44,7 +44,7 @@ import {computed, ref} from 'vue'
 import {addSubjectCollect, fetchSubjectCollectStatus, removeSubjectCollect} from '@/api/collect'
 import {productCover} from '@/api/product'
 import {useGoodsImages} from '@/composables/use-goods-images'
-import {fetchSubjectDetail} from '@/api/subject'
+import {fetchSubjectDetail} from './subject-api'
 import type {PortalProductListItem, PortalSubjectDetail} from '@/api/types'
 import {buildSharePayload, subjectSharePath} from '@/utils/share'
 import {isLogin} from '@/stores/member'
