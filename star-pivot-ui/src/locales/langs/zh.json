@@ -550,8 +550,11 @@
       "nameRequired": "请输入配置名称",
       "noOptionalModels": "暂无可选模型",
       "optionalModels": "可选模型",
-      "ragEnabled": "启用 RAG",
-      "ragSection": "RAG 设置",
+      "ragEnabled": "知识库问答",
+      "ragHint": "开启后，助手会检索已索引的知识库作答。模型请到「模型供应商」配置。",
+      "ragSection": "知识库",
+      "advanced": "高级设置",
+      "defaultModelPlaceholder": "未接入供应商时手动填写",
       "setDefault": "设为默认",
       "setDefaultFail": "设置默认失败",
       "setDefaultSuccess": "已设为默认",
@@ -560,7 +563,7 @@
       "systemPromptRequired": "请输入系统提示词",
       "welcomeMessage": "欢迎语",
       "welcomeMessagePlaceholder": "请输入欢迎语",
-      "apiHint": "对话与向量请到「AI 中心 → 模型供应商」配置。设为默认对话供应商后，其默认模型即对话默认模型；本页只维护助手人设与 RAG。"
+      "apiHint": "这里只设置助手人设。模型和向量请到「AI 中心 → 模型供应商」配置。"
     },
     "provider": {
       "title": "模型供应商",

@@ -550,8 +550,11 @@
       "nameRequired": "Name Required",
       "noOptionalModels": "No Optional Models",
       "optionalModels": "Optional Models",
-      "ragEnabled": "Rag Enabled",
-      "ragSection": "Rag Section",
+      "ragEnabled": "Knowledge Q&A",
+      "ragHint": "When on, the assistant retrieves indexed knowledge. Configure models in Model Providers.",
+      "ragSection": "Knowledge",
+      "advanced": "Advanced",
+      "defaultModelPlaceholder": "Enter a model ID if no provider is connected",
       "setDefault": "Set Default",
       "setDefaultFail": "Set Default Fail",
       "setDefaultSuccess": "Set Default Success",
@@ -560,7 +563,7 @@
       "systemPromptRequired": "System Prompt Required",
       "welcomeMessage": "Welcome Message",
       "welcomeMessagePlaceholder": "Welcome Message Placeholder",
-      "apiHint": "Configure chat and embedding APIs in Model Providers. The default chat provider supplies the default model. This page only keeps persona and RAG."
+      "apiHint": "This page only sets the assistant persona. Configure models in Model Providers."
     },
     "provider": {
       "title": "Model Providers",

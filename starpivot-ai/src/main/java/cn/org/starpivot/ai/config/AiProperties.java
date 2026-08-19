@@ -58,7 +58,7 @@ public class AiProperties {
     /** 对话接口限流（Redis 滑动窗口，按用户） */
     private RateLimitProperties rateLimit = new RateLimitProperties();
 
-    /** RAG 基础设施开关（Nacos）；需与后台 ai_config.rag_enabled 同时为开才生效 */
+    /** RAG 默认值：无库表配置时使用；有 ai_config 时以后台开关为准 */
     private RagProperties rag = new RagProperties();
 
     /** 查询路由：自动选择场景、模型与是否 RAG */

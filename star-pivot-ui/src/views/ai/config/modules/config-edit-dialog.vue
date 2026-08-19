@@ -2,30 +2,53 @@
   <ElDialog
     :model-value="visible"
     :title="form.configId ? t('ai.config.editConfig') : t('ai.config.addConfig')"
-    width="760px"
+    width="640px"
     destroy-on-close
     @close="emit('update:visible', false)"
   >
-    <ElForm ref="formRef" :model="form" :rules="rules" label-width="110px">
-      <ElAlert class="mb-4" type="info" :closable="false" :title="t('ai.config.apiHint')" />
-      <ElDivider content-position="left">{{ t('ai.config.basicInfo') }}</ElDivider>
+    <ElForm ref="formRef" :model="form" :rules="rules" label-width="100px">
+      <p class="mb-4 text-xs leading-relaxed text-g-500">{{ t('ai.config.apiHint') }}</p>
+
+      <ElFormItem :label="t('ai.config.name')" prop="configName">
+        <ElInput v-model="form.configName" :placeholder="t('ai.config.configNamePlaceholder')" />
+      </ElFormItem>
       <ElRow :gutter="16">
-        <ElCol :span="12">
-          <ElFormItem :label="t('ai.config.name')" prop="configName">
-            <ElInput
-              v-model="form.configName"
-              :placeholder="t('ai.config.configNamePlaceholder')"
-            />
-          </ElFormItem>
-        </ElCol>
         <ElCol :span="12">
           <ElFormItem :label="t('ai.config.botName')" prop="botName">
             <ElInput v-model="form.botName" :placeholder="t('ai.config.botNameDefault')" />
           </ElFormItem>
         </ElCol>
+        <ElCol :span="12">
+          <ElFormItem :label="t('ai.config.botAvatar')">
+            <ElInput v-model="form.botAvatar" :placeholder="t('ai.config.botAvatarPlaceholder')" />
+          </ElFormItem>
+        </ElCol>
       </ElRow>
-      <ElFormItem :label="t('ai.config.botAvatar')">
-        <ElInput v-model="form.botAvatar" :placeholder="t('ai.config.botAvatarPlaceholder')" />
+      <ElFormItem :label="t('ai.config.welcomeMessage')">
+        <ElInput
+          v-model="form.welcomeMessage"
+          type="textarea"
+          :rows="2"
+          :placeholder="t('ai.config.welcomeMessagePlaceholder')"
+        />
+      </ElFormItem>
+      <ElFormItem :label="t('ai.config.systemPrompt')" prop="systemPrompt">
+        <ElInput
+          v-model="form.systemPrompt"
+          :rows="6"
+          :placeholder="t('ai.config.systemPromptPlaceholder')"
+          type="textarea"
+        />
+      </ElFormItem>
+      <ElFormItem :label="t('ai.config.ragEnabled')">
+        <div>
+          <ElSwitch
+            v-model="ragEnabledSwitch"
+            :active-text="t('ai.config.enabled')"
+            :inactive-text="t('ai.config.disabled')"
+          />
+          <p class="mt-1 text-xs text-g-500">{{ t('ai.config.ragHint') }}</p>
+        </div>
       </ElFormItem>
       <ElRow :gutter="16">
         <ElCol :span="12">
@@ -47,33 +70,20 @@
         </ElCol>
       </ElRow>
 
-      <ElDivider content-position="left">{{ t('ai.config.chatSettings') }}</ElDivider>
-      <ElFormItem :label="t('ai.config.welcomeMessage')">
-        <ElInput
-          v-model="form.welcomeMessage"
-          type="textarea"
-          :rows="2"
-          :placeholder="t('ai.config.welcomeMessagePlaceholder')"
-        />
-      </ElFormItem>
-      <ElFormItem :label="t('ai.config.systemPrompt')" prop="systemPrompt">
-        <ElInput
-          v-model="form.systemPrompt"
-          :rows="6"
-          :placeholder="t('ai.config.systemPromptPlaceholder')"
-          type="textarea"
-        />
-      </ElFormItem>
-      <ElRow :gutter="16">
-        <ElCol v-if="!chatModels.length" :span="8">
-          <ElFormItem :label="t('ai.config.defaultModel')" prop="defaultModel">
+      <ElCollapse class="advanced-collapse">
+        <ElCollapseItem :title="t('ai.config.advanced')" name="advanced">
+          <ElFormItem
+            v-if="!chatModels.length"
+            :label="t('ai.config.defaultModel')"
+            prop="defaultModel"
+          >
             <ElSelect
               v-model="form.defaultModel"
               filterable
               allow-create
               default-first-option
               class="!w-full"
-              :placeholder="t('ai.config.apiHint')"
+              :placeholder="t('ai.config.defaultModelPlaceholder')"
             >
               <ElOption
                 v-for="model in chatModels"
@@ -83,47 +93,38 @@
               />
             </ElSelect>
           </ElFormItem>
-        </ElCol>
-        <ElCol :span="chatModels.length ? 12 : 8">
-          <ElFormItem :label="t('ai.config.defaultTemperature')">
-            <ElInputNumber
-              v-model="form.defaultTemperature"
-              :min="0"
-              :max="2"
-              :step="0.1"
-              :precision="2"
-              class="!w-full"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :span="chatModels.length ? 12 : 8">
-          <ElFormItem :label="t('ai.config.maxMemoryMessages')">
-            <ElInputNumber v-model="form.maxMemoryMessages" :min="1" :max="200" class="!w-full" />
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-
-      <ElDivider content-position="left">{{ t('ai.config.ragSection') }}</ElDivider>
-      <ElRow :gutter="16">
-        <ElCol :span="12">
-          <ElFormItem :label="t('ai.config.ragEnabled')">
-            <ElSwitch
-              v-model="ragEnabledSwitch"
-              :active-text="t('ai.config.enabled')"
-              :inactive-text="t('ai.config.disabled')"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :span="12">
+          <ElRow :gutter="16">
+            <ElCol :span="12">
+              <ElFormItem :label="t('ai.config.defaultTemperature')">
+                <ElInputNumber
+                  v-model="form.defaultTemperature"
+                  :min="0"
+                  :max="2"
+                  :step="0.1"
+                  :precision="2"
+                  class="!w-full"
+                />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem :label="t('ai.config.maxMemoryMessages')">
+                <ElInputNumber
+                  v-model="form.maxMemoryMessages"
+                  :min="1"
+                  :max="200"
+                  class="!w-full"
+                />
+              </ElFormItem>
+            </ElCol>
+          </ElRow>
           <ElFormItem :label="t('ai.knowledge.topK')">
             <ElInputNumber v-model="form.ragTopK" :min="1" :max="20" class="!w-full" />
           </ElFormItem>
-        </ElCol>
-      </ElRow>
-
-      <ElFormItem :label="t('common.remark')" class="mt-4">
-        <ElInput v-model="form.remark" type="textarea" :rows="2" />
-      </ElFormItem>
+          <ElFormItem :label="t('common.remark')">
+            <ElInput v-model="form.remark" type="textarea" :rows="2" />
+          </ElFormItem>
+        </ElCollapseItem>
+      </ElCollapse>
     </ElForm>
 
     <template #footer>
@@ -167,7 +168,7 @@
     defaultTemperature: 0.7,
     maxMemoryMessages: 30,
     models: [],
-    ragEnabled: '1',
+    ragEnabled: '0',
     ragTopK: 5,
     isDefault: '1',
     status: '0',
@@ -250,3 +251,16 @@
     })
   }
 </script>
+
+<style scoped lang="scss">
+  .advanced-collapse {
+    :deep(.el-collapse-item__header) {
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+    }
+
+    :deep(.el-collapse-item__wrap) {
+      border-bottom: none;
+    }
+  }
+</style>

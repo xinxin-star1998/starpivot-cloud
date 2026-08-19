@@ -115,11 +115,8 @@ public class AiRuntimeConfigServiceImpl implements AiRuntimeConfigService, Smart
                 .build();
     }
 
-    /** Nacos 总开关 + 后台配置（0=开启 1=关闭）同时满足才启用 RAG */
+    /** 后台配置为唯一业务开关（0=开启）；YAML rag.enabled 仅在无库表配置时作为默认值 */
     private boolean resolveRagEnabled(String ragEnabledFlag) {
-        if (!aiProperties.getRag().isEnabled()) {
-            return false;
-        }
         return "0".equals(ragEnabledFlag);
     }
 

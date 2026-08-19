@@ -31,11 +31,13 @@ public class AiProviderPresetCatalog {
                 .chatEnabled("0")
                 .embeddingEnabled("1")
                 .rerankEnabled("1")
-                .defaultChatModel("deepseek-v4-flash")
+                .defaultChatModel("deepseek-chat")
                 .models(List.of(
+                        model("deepseek-chat", "DeepSeek Chat（便宜）", "chat"),
+                        model("deepseek-reasoner", "DeepSeek Reasoner（推理）", "chat"),
                         model("deepseek-v4-flash", "DeepSeek V4 Flash", "chat"),
-                        model("deepseek-v4-pro", "DeepSeek V4 Pro", "chat")))
-                .remark("OpenAI 兼容。官方当前模型 deepseek-v4-flash / deepseek-v4-pro。")
+                        model("deepseek-v4-pro", "DeepSeek V4 Pro（较贵）", "chat")))
+                .remark("OpenAI 兼容。日常默认 deepseek-chat；推理用 deepseek-reasoner。V4 更贵。")
                 .build();
     }
 

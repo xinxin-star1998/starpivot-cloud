@@ -131,7 +131,9 @@
                     >
                       {{ index + 1 }}. {{ source.docTitle || '未知文档'
                       }}<template v-if="source.pageNum">（第{{ source.pageNum }}页）</template>
-                      <span v-if="source.snippet"> — {{ source.snippet }}</span>
+                      <span v-if="source.snippet" class="text-g-500">
+                        — {{ compactSourceSnippet(source.snippet) }}
+                      </span>
                     </div>
                   </div>
                   <div
@@ -167,7 +169,36 @@
 
           <div class="border-t border-g-300/50 px-4 py-3">
             <div
-              v-if="showModelSelector || showSceneSelector"
+              v-if="canShowAdvancedRoute || routeHint"
+              class="mb-2 flex items-center justify-between gap-2"
+            >
+              <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+                <span
+                  v-if="queryRouterEnabled"
+                  class="rounded-md px-2 py-0.5 text-[11px]"
+                  :class="
+                    usingManualRoute
+                      ? 'bg-g-200/80 text-g-600'
+                      : 'bg-theme/10 text-theme'
+                  "
+                >
+                  {{ usingManualRoute ? '手动' : '自动' }}
+                </span>
+                <span v-if="routeHint" class="text-[11px] text-g-500">{{ routeHint }}</span>
+              </div>
+              <ElButton
+                v-if="canShowAdvancedRoute"
+                text
+                size="small"
+                class="!px-1 !text-xs"
+                :disabled="sending"
+                @click="advancedRouteOpen = !advancedRouteOpen"
+              >
+                {{ advancedRouteOpen ? '收起' : '高级' }}
+              </ElButton>
+            </div>
+            <div
+              v-if="usingManualRoute"
               class="mb-2 flex flex-wrap items-center gap-2"
             >
               <template v-if="showSceneSelector">
@@ -205,7 +236,6 @@
                 </ElSelect>
               </template>
             </div>
-            <p v-if="routeHint" class="mb-2 text-[11px] text-g-500">{{ routeHint }}</p>
             <ElInput
               v-model="messageText"
               type="textarea"
@@ -319,6 +349,7 @@
   const selectedPromptScene = ref('')
   const queryRouterEnabled = ref(false)
   const routeHint = ref('')
+  const advancedRouteOpen = ref(false)
 
   const AUTO_MODEL_OPTION: AiModelOption = { id: AI_AUTO_ROUTE, label: '自动' }
   const AUTO_SCENE_OPTION: AiPromptSceneOption = {
@@ -341,6 +372,27 @@
   const showSceneSelector = computed(
     () => queryRouterEnabled.value || promptSceneOptions.value.length > 1
   )
+  const canShowAdvancedRoute = computed(
+    () => showModelSelector.value || showSceneSelector.value
+  )
+  const usingManualRoute = computed(
+    () => advancedRouteOpen.value && canShowAdvancedRoute.value
+  )
+  const routePayload = computed(() => {
+    if (usingManualRoute.value) {
+      return {
+        model: selectedModel.value || undefined,
+        promptScene: selectedPromptScene.value || undefined
+      }
+    }
+    if (queryRouterEnabled.value) {
+      return { model: AI_AUTO_ROUTE, promptScene: AI_AUTO_ROUTE }
+    }
+    return {
+      model: selectedModel.value || undefined,
+      promptScene: selectedPromptScene.value || undefined
+    }
+  })
 
   const userName = computed(() => {
     const user = userInfo.value?.user
@@ -376,6 +428,12 @@
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const compactSourceSnippet = (text?: string): string => {
+    if (!text) return ''
+    const compact = text.replace(/\s+/g, ' ').trim()
+    return compact.length > 72 ? `${compact.slice(0, 72)}…` : compact
   }
 
   const createWelcomeMessage = (): ChatMessage => ({
@@ -661,8 +719,8 @@
           message: userText,
           conversationId: conversationId.value || undefined,
           regenerate: options?.regenerate,
-          model: selectedModel.value || undefined,
-          promptScene: selectedPromptScene.value || undefined
+          model: routePayload.value.model,
+          promptScene: routePayload.value.promptScene
         },
         {
           onMeta: (meta) => {
