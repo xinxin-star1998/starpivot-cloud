@@ -58,21 +58,4 @@ public class AiPermissionLoader {
                 String.class,
                 userId);
     }
-
-    public boolean hasAllDataScopeRole(Long userId) {
-        String schema = aiProperties.validatedSystemDbSchema();
-        Integer count = jdbcTemplate.queryForObject(
-                """
-                SELECT COUNT(1)
-                FROM %s.sys_role r
-                         INNER JOIN %s.sys_user_role ur ON r.role_id = ur.role_id
-                WHERE ur.user_id = ?
-                  AND r.status = '0'
-                  AND r.del_flag = '0'
-                  AND r.data_scope = '1'
-                """.formatted(schema, schema),
-                Integer.class,
-                userId);
-        return count != null && count > 0;
-    }
 }

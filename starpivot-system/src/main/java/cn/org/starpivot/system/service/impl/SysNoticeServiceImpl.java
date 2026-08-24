@@ -10,6 +10,7 @@ import cn.org.starpivot.system.domain.dto.SysNoticeDTO;
 import cn.org.starpivot.system.domain.dto.SysNoticeQueryDTO;
 import cn.org.starpivot.system.domain.entity.SysNotice;
 import cn.org.starpivot.system.mapper.SysNoticeMapper;
+import cn.org.starpivot.system.service.DataScopeService;
 import cn.org.starpivot.system.service.ISysNoticeService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -32,6 +33,7 @@ import java.util.List;
 public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeMapper, SysNotice> implements ISysNoticeService
 {
 
+    private final DataScopeService dataScopeService;
     /**
      * 分页查询通知公告列表
      * 
@@ -69,6 +71,7 @@ public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeMapper, SysNotice
     {
         SysNotice sysNotice = this.getById(noticeId);
         AssertUtils.notNull(sysNotice, ErrorCode.NOTICE_NOT_FOUND);
+        assertNoticeInScope(sysNotice);
         return convertToVO(sysNotice);
     }
 
@@ -101,6 +104,7 @@ public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeMapper, SysNotice
     {
         SysNotice sysNotice = this.getById(sysNoticeDTO.getNoticeId());
         AssertUtils.notNull(sysNotice, ErrorCode.NOTICE_NOT_FOUND);
+        assertNoticeInScope(sysNotice);
         BeanUtils.copyProperties(sysNoticeDTO, sysNotice, "noticeId");
         sysNotice.setUpdateBy(getCurrentUsername());
         sysNotice.setUpdateTime(java.time.LocalDateTime.now());
@@ -117,6 +121,14 @@ public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeMapper, SysNotice
     @Override
     public boolean deleteSysNoticeByNoticeIds(List<Long> noticeIds)
     {
+        if (noticeIds != null) {
+            for (Long noticeId : noticeIds) {
+                SysNotice notice = this.getById(noticeId);
+                if (notice != null) {
+                    assertNoticeInScope(notice);
+                }
+            }
+        }
         return this.removeByIds(noticeIds);
     }
 
@@ -132,6 +144,12 @@ public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeMapper, SysNotice
         BeanUtils.copyProperties(sysNotice, vo);
         return vo;
     }
+    private void assertNoticeInScope(SysNotice notice) {
+        if (!dataScopeService.isUserNameVisible(notice.getCreateBy())) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权操作数据范围外的公告");
+        }
+    }
+
     /**
      * 获取当前登录用户名
      *

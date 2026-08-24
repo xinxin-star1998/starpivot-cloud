@@ -30,7 +30,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
      * 按数据权限过滤的分页查询用户列表。
      * <p>标注 {@link DataPermission} 以启用数据范围过滤。</p>
      */
-    @DataPermission(deptAlias = "d.dept_id", userAlias = "u.user_id")
+    @DataPermission(deptAlias = "u.dept_id", userAlias = "u.user_id")
     IPage<SysUser> selectPageList(Page<SysUser> page, @Param("param") Map<String, Object> param);
 
     /** 按月份统计用户新增数量。 */
@@ -46,9 +46,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
     List<SysMenu> getMenuByUserId(@Param("userId") Long userId);
 
     /** 分页查询已分配指定角色的用户。 */
+    @DataPermission(deptAlias = "u.dept_id", userAlias = "u.user_id")
     IPage<SysUser> getUserListByRoleId(Page<SysUser> page, @Param("param") Map<String, Object> param);
 
     /** 分页查询未分配指定角色的用户。 */
+    @DataPermission(deptAlias = "u.dept_id", userAlias = "u.user_id")
     IPage<SysUser> unallocatedList(Page<SysUser> page, @Param("param") Map<String, Object> param);
 
     /** 查询用户所属部门 ID。 */

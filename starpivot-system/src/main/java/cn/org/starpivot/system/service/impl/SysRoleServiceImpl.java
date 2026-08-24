@@ -2,6 +2,7 @@ package cn.org.starpivot.system.service.impl;
 
 import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.AppConstants;
+import cn.org.starpivot.common.entity.DataScope;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.exception.BizException;
 import cn.org.starpivot.common.exception.ErrorCode;
@@ -15,6 +16,7 @@ import cn.org.starpivot.system.domain.entity.RoleMenu;
 import cn.org.starpivot.system.domain.entity.SysRole;
 import cn.org.starpivot.system.domain.entity.UserRole;
 import cn.org.starpivot.system.mapper.*;
+import cn.org.starpivot.system.service.DataScopeService;
 import cn.org.starpivot.system.service.SysRoleService;
 import cn.org.starpivot.system.service.UserPermissionCacheService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -33,7 +35,9 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 角色管理服务实现类。
@@ -53,6 +57,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     private final SysDeptMapper sysDeptMapper;
     private final SysMenuMapper sysMenuMapper;
     private final UserPermissionCacheService userPermissionCacheService;
+    private final DataScopeService dataScopeService;
 
     /**
      * 分页查询角色列表。
@@ -132,6 +137,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         role.setDelFlag(AppConstants.DelFlag.NORMAL);
         role.setMenuCheckStrictly(roleDTO.getMenuCheckStrictly() != null ? roleDTO.getMenuCheckStrictly() : 1);
         role.setDeptCheckStrictly(roleDTO.getDeptCheckStrictly() != null ? roleDTO.getDeptCheckStrictly() : 1);
+        if (!StringUtils.hasText(role.getDataScope())) {
+            role.setDataScope(AppConstants.DataScope.SELF);
+        }
 
         String currentUser = SecurityContextUtils.getUsername();
         role.setCreateBy(currentUser);
@@ -385,7 +393,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     @Caching(evict = {
             @CacheEvict(cacheNames = CacheConstants.USER_ROLES, allEntries = true),
-            @CacheEvict(cacheNames = CacheConstants.USER_MENUS, allEntries = true)
+            @CacheEvict(cacheNames = CacheConstants.USER_MENUS, allEntries = true),
+            @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     })
     @Transactional(rollbackFor = Exception.class)
     public boolean assignPermission(RolePermissionAssignDTO rolePermissionAssignDTO) {
@@ -399,6 +408,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
             throw new BizException(ErrorCode.ROLE_NOT_FOUND, "角色不存在");
         }
 
+        assertAssignableDataScope(rolePermissionAssignDTO.getDataScope(), deptIds);
+
         if (StringUtils.hasText(rolePermissionAssignDTO.getDataScope())) {
             role.setDataScope(rolePermissionAssignDTO.getDataScope());
             sysRoleMapper.updateById(role);
@@ -411,6 +422,38 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
         userPermissionCacheService.clearAllUserPermissionCache();
         return true;
+    }
+
+    /**
+     * 分配数据范围不得超过当前用户自身可见范围。
+     */
+    private void assertAssignableDataScope(String requestedScope, List<Long> customDeptIds) {
+        if (!StringUtils.hasText(requestedScope)) {
+            return;
+        }
+        DataScope current = dataScopeService.getCurrentUserDataScope();
+        if (current.isAll()) {
+            return;
+        }
+        if (AppConstants.DataScope.ALL.equals(requestedScope)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权分配全部数据权限");
+        }
+        if (AppConstants.DataScope.SELF.equals(requestedScope)) {
+            return;
+        }
+        List<Long> visibleDeptIds = dataScopeService.getVisibleDeptIds();
+        boolean hasDeptVisibility = visibleDeptIds != null && !visibleDeptIds.isEmpty();
+        if (!hasDeptVisibility) {
+            throw new BizException(ErrorCode.FORBIDDEN, "当前数据范围不足，无法分配该数据权限");
+        }
+        if (AppConstants.DataScope.CUSTOM.equals(requestedScope) && customDeptIds != null) {
+            Set<Long> allowed = new HashSet<>(visibleDeptIds);
+            for (Long deptId : customDeptIds) {
+                if (deptId != null && !allowed.contains(deptId)) {
+                    throw new BizException(ErrorCode.FORBIDDEN, "不能授权超出自身数据范围的部门");
+                }
+            }
+        }
     }
 
     /**

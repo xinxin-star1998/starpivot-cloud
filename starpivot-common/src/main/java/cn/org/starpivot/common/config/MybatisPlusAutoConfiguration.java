@@ -15,7 +15,8 @@ import org.springframework.context.annotation.Bean;
  * MyBatis-Plus 公共自动配置：注册 MySQL 分页插件与数据权限拦截器。
  * <p>
  * 数据权限拦截器依赖 {@link DataScopeProvider} Bean；若上下文中无此 Bean
- * （如非 {@code starpivot-system} 模块且未自行提供实现），则跳过注册。
+ * （如非 {@code starpivot-system} 模块且未自行提供实现），标注了
+ * {@code @DataPermission} 的查询会被追加 {@code 1 = 0}，避免放行全表。
  * </p>
  */
 @AutoConfiguration

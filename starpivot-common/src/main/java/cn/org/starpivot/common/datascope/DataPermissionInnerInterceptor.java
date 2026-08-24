@@ -31,19 +31,14 @@ import java.util.stream.Collectors;
  * 数据权限 MyBatis-Plus 内部拦截器。
  * <p>
  * 在 {@code beforeQuery} 阶段检查 Mapper 方法是否标注 {@link DataPermission}，
- * 若标注则根据当前用户角色的 {@code data_scope} 动态追加 WHERE 条件。
+ * 若标注则根据当前用户角色的数据范围动态追加 WHERE 条件。
+ * 无法解析范围或改写 SQL 时追加 {@code 1 = 0}（失败即拒绝），避免放行全表。
  * </p>
- * <p>拦截器行为：</p>
- * <ul>
- *   <li>{@code data_scope=1}（全部权限）— 不追加任何条件</li>
- *   <li>{@code data_scope=2}（自定义权限）— 追加 {@code dept_id IN (deptIds)}</li>
- *   <li>{@code data_scope=3}（本部门）— 追加 {@code dept_id = userDeptId}</li>
- *   <li>{@code data_scope=4}（本部门及子部门）— 追加 {@code dept_id IN (deptIds)}</li>
- *   <li>{@code data_scope=5}（仅本人）— 追加 {@code userAlias = userId}</li>
- * </ul>
  */
 @Slf4j
 public class DataPermissionInnerInterceptor implements InnerInterceptor {
+
+    static final String DENY_SQL = "1 = 0";
 
     private final ObjectProvider<DataScopeProvider> dataScopeProviderProvider;
 
@@ -59,53 +54,50 @@ public class DataPermissionInnerInterceptor implements InnerInterceptor {
     @Override
     public void beforeQuery(Executor executor, MappedStatement ms, Object parameter,
                             RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
-        // 检查是否忽略拦截器（如 @InterceptorIgnore(dataPermission = "true")）
         if (InterceptorIgnoreHelper.willIgnoreDataPermission(ms.getId())) {
             return;
         }
 
-        // 获取 @DataPermission 注解
         DataPermission annotation = getDataPermissionAnnotation(ms);
         if (annotation == null) {
             return;
         }
 
-        // 获取当前登录用户
         Long userId = SecurityContextUtils.getUserId();
         if (userId == null) {
-            log.debug("DataPermission: no authenticated user, skipping data scope filter");
+            applySqlCondition(boundSql, DENY_SQL, ms.getId());
             return;
         }
 
-        // 延迟获取 DataScopeProvider（避免 Bean 初始化循环依赖）
         DataScopeProvider dataScopeProvider = dataScopeProviderProvider.getIfAvailable();
         if (dataScopeProvider == null) {
-            log.debug("DataPermission: no DataScopeProvider bean found, skipping filter");
+            log.warn("DataPermission: no DataScopeProvider bean, denying rows for mapper {}", ms.getId());
+            applySqlCondition(boundSql, DENY_SQL, ms.getId());
             return;
         }
 
-        // 解析数据权限范围
         DataScope dataScope = dataScopeProvider.resolve(userId);
         if (dataScope == null) {
-            log.debug("DataPermission: unable to resolve data scope for user {}, skipping filter", userId);
+            applySqlCondition(boundSql, DENY_SQL, ms.getId());
             return;
         }
 
-        // 构建 SQL 过滤条件
         String sqlCondition = buildSqlCondition(dataScope, annotation);
         if (!StringUtils.hasText(sqlCondition)) {
-            // 全部数据权限或无需过滤
             return;
         }
+        applySqlCondition(boundSql, sqlCondition, ms.getId());
+    }
 
-        // 修改 SQL
+    private void applySqlCondition(BoundSql boundSql, String sqlCondition, String msId) throws SQLException {
         String originalSql = boundSql.getSql();
         String modifiedSql = appendWhereCondition(originalSql, sqlCondition);
-        if (modifiedSql != null && !modifiedSql.equals(originalSql)) {
-            PluginUtils.MPBoundSql mpBoundSql = PluginUtils.mpBoundSql(boundSql);
-            mpBoundSql.sql(modifiedSql);
-            log.debug("DataPermission: modified SQL for mapper {}, added condition: {}", ms.getId(), sqlCondition);
+        if (!StringUtils.hasText(modifiedSql)) {
+            throw new SQLException("DataPermission: failed to apply data scope filter for " + msId);
         }
+        PluginUtils.MPBoundSql mpBoundSql = PluginUtils.mpBoundSql(boundSql);
+        mpBoundSql.sql(modifiedSql);
+        log.debug("DataPermission: modified SQL for mapper {}, added condition: {}", msId, sqlCondition);
     }
 
     /**
@@ -138,73 +130,73 @@ public class DataPermissionInnerInterceptor implements InnerInterceptor {
     }
 
     /**
-     * 根据 data_scope 构建 SQL WHERE 条件片段。
-     * <p>DataScope 来源约定：</p>
-     * <ul>
-     *   <li>全部权限：{@code deptIds=null}, {@code userDeptId!=null} — 不追加条件</li>
-     *   <li>自定义/本部门/本部门及子部门：{@code deptIds} 非空 — 追加 deptAlias IN/={...}</li>
-     *   <li>仅本人：{@code deptIds=null}, {@code userDeptId=null}, {@code userId!=null} — 追加 userAlias = userId</li>
-     * </ul>
+     * 根据数据范围构建 SQL WHERE 条件片段。
      *
      * @param dataScope  数据权限上下文
      * @param annotation 注解配置
-     * @return SQL 条件片段，无过滤需求时返回空字符串
+     * @return SQL 条件片段；全部权限返回空字符串；无可见数据返回 {@link #DENY_SQL}
      */
-    private String buildSqlCondition(DataScope dataScope, DataPermission annotation) {
-        String deptAlias = annotation.deptAlias();
-        String userAlias = annotation.userAlias();
-        List<Long> deptIds = dataScope.getDeptIds();
-        Long userId = dataScope.getUserId();
-        Long userDeptId = dataScope.getUserDeptId();
-        String sqlFilter = dataScope.getSqlFilter();
+    String buildSqlCondition(DataScope dataScope, DataPermission annotation) {
+        if (dataScope.isAll()) {
+            return "";
+        }
 
-        // 如果 DataScopeProvider 已经直接提供了 SQL 片段，优先使用
+        String sqlFilter = dataScope.getSqlFilter();
         if (StringUtils.hasText(sqlFilter)) {
             return sqlFilter;
         }
 
-        // 有部门 ID 列表：自定义数据权限 / 本部门 / 本部门及子部门
+        String deptAlias = annotation.deptAlias();
+        String userAlias = annotation.userAlias();
+        List<Long> deptIds = dataScope.getDeptIds();
+        Long userId = dataScope.getUserId();
+
+        String deptCondition = null;
         if (deptIds != null && !deptIds.isEmpty()) {
             if (deptIds.size() == 1) {
-                return deptAlias + " = " + deptIds.get(0);
+                deptCondition = deptAlias + " = " + deptIds.get(0);
+            } else {
+                String inList = deptIds.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","));
+                deptCondition = deptAlias + " IN (" + inList + ")";
             }
-            String inList = deptIds.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(","));
-            return deptAlias + " IN (" + inList + ")";
         }
 
-        // 仅本人：deptIds 为空且 userDeptId 也为空（由 buildSelfOnlyScope 构建）
-        if (deptIds == null && userDeptId == null && userId != null) {
-            return userAlias + " = " + userId;
+        String selfCondition = null;
+        if (dataScope.isIncludeSelf() && userId != null) {
+            selfCondition = userAlias + " = " + userId;
         }
 
-        // 全部数据权限（deptIds=null, userDeptId!=null）或其他未知情况：不追加条件
-        return "";
+        if (deptCondition != null && selfCondition != null) {
+            return "(" + deptCondition + " OR " + selfCondition + ")";
+        }
+        if (deptCondition != null) {
+            return deptCondition;
+        }
+        if (selfCondition != null) {
+            return selfCondition;
+        }
+        return DENY_SQL;
     }
 
     /**
      * 将 WHERE 条件追加到原始 SQL。
-     * <p>
-     * 使用 JSqlParser 解析并修改 SQL，支持 SELECT 语句的 WHERE 和子查询。
-     * </p>
      *
      * @param originalSql 原始 SQL
      * @param condition   要追加的条件（不含 AND 前缀）
-     * @return 修改后的 SQL，解析失败时返回 {@code null}
+     * @return 修改后的 SQL，解析与回退均失败时返回 {@code null}
      */
-    private String appendWhereCondition(String originalSql, String condition) {
+    String appendWhereCondition(String originalSql, String condition) {
         try {
             Statement statement = CCJSqlParserUtil.parse(originalSql);
             if (statement instanceof Select select) {
                 processSelect(select, condition);
                 return select.toString();
             }
-            // 非 SELECT 语句暂不处理
             return originalSql;
         } catch (Exception e) {
-            log.warn("DataPermission: failed to parse SQL, skipping modification. SQL: {}", originalSql, e);
-            // 解析失败时回退到字符串拼接方式
+            log.warn("DataPermission: failed to parse SQL, using fallback. SQL: {}", originalSql, e);
             return fallbackAppendCondition(originalSql, condition);
         }
     }
@@ -216,7 +208,6 @@ public class DataPermissionInnerInterceptor implements InnerInterceptor {
         if (select instanceof PlainSelect plainSelect) {
             processPlainSelect(plainSelect, condition);
         } else if (select instanceof SetOperationList setOp) {
-            // UNION 等集合操作：处理每个 SELECT
             for (Select subSelect : setOp.getSelects()) {
                 processSelect(subSelect, condition);
             }
@@ -236,17 +227,17 @@ public class DataPermissionInnerInterceptor implements InnerInterceptor {
                 plainSelect.setWhere(new AndExpression(existingWhere, conditionExpr));
             }
         } catch (Exception e) {
-            log.warn("DataPermission: failed to parse condition expression: {}", condition, e);
+            throw new IllegalStateException("DataPermission: failed to parse condition expression: " + condition, e);
         }
     }
 
     /**
      * 回退方案：通过字符串操作追加 WHERE 条件。
-     * <p>仅在 JSqlParser 解析失败时使用。</p>
+     *
+     * @return 修改后的 SQL，失败时返回 {@code null}
      */
     private String fallbackAppendCondition(String sql, String condition) {
         try {
-            // 简单处理：在 ORDER BY / GROUP BY / LIMIT 之前插入 WHERE 条件
             String upperSql = sql.toUpperCase();
             int insertPos = findInsertPosition(upperSql);
 
@@ -255,12 +246,11 @@ public class DataPermissionInnerInterceptor implements InnerInterceptor {
 
             if (upperSql.contains("WHERE")) {
                 return before + " AND " + condition + " " + after;
-            } else {
-                return before + " WHERE " + condition + " " + after;
             }
+            return before + " WHERE " + condition + " " + after;
         } catch (Exception e) {
-            log.warn("DataPermission: fallback append failed, returning original SQL", e);
-            return sql;
+            log.warn("DataPermission: fallback append failed", e);
+            return null;
         }
     }
 

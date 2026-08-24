@@ -66,35 +66,6 @@
         </collection>
     </resultMap>
 
-    <!--
-        统一数据范围处理片段。
-        使用 choose 结合 dataScope/sqlFilter/deptIds/userDeptId/userId 参数，避免SQL注入并减少重复代码。
-        注意：param 前缀为 SysUserMapper 中 Service 传入的参数结构保持一致。
-    -->
-    <sql id="dataScopeFilter">
-        <!-- 数据范围处理：使用choose标签避免SQL注入风险 -->
-        <choose>
-            <when test="param.dataScope != null and param.dataScope.sqlFilter == '1=1'">
-                <!-- 全部数据，不需要额外条件 -->
-            </when>
-            <!-- 无数据权限：MySQL 不支持 IN ()，用不可能成立的条件（dept_id 通常为正整数FK）-->
-            <when test="param.dataScope != null and param.dataScope.sqlFilter == 'EMPTY_IN'">
-                AND u.dept_id = -1
-            </when>
-            <when test="param.dataScope != null and param.deptIds != null and param.deptIds.size() > 0">
-                AND u.dept_id IN
-                <foreach collection="param.deptIds" item="deptId" open="(" separator="," close=")">
-                    #{deptId}
-                </foreach>
-            </when>
-            <when test="param.userDeptId != null">
-                AND u.dept_id = #{param.userDeptId}
-            </when>
-            <when test="param.userId != null">
-                AND u.create_by = #{param.userId}
-            </when>
-        </choose>
-    </sql>
     <select id="selectPageList" resultMap="SysUserMap">
         select 
             distinct u.user_id,
@@ -140,7 +111,6 @@
             <if test="param.userReqBo.deptId != null">
                 and u.dept_id = #{param.userReqBo.deptId}
             </if>
-            <include refid="dataScopeFilter"/>
         </where>
         order by u.create_time desc
     </select>
@@ -226,7 +196,6 @@
             <if test="param.assignUserReqBo.phonenumber != null and param.assignUserReqBo.phonenumber != ''">
                 and u.phonenumber like concat('%',#{param.assignUserReqBo.phonenumber},'%')
             </if>
-            <include refid="dataScopeFilter"/>
         </where>
         order by u.create_time desc
     </select>
@@ -249,7 +218,6 @@
             <if test="param.assignUserReqBo.phonenumber != null and param.assignUserReqBo.phonenumber != ''">
                 and u.phonenumber like concat('%',#{param.assignUserReqBo.phonenumber},'%')
             </if>
-            <include refid="dataScopeFilter"/>
         </where>
         order by u.create_time desc
     </select>

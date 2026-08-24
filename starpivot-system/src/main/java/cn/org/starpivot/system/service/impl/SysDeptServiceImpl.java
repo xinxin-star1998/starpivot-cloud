@@ -11,6 +11,7 @@ import cn.org.starpivot.system.domain.entity.SysDept;
 import cn.org.starpivot.system.domain.entity.SysUser;
 import cn.org.starpivot.system.mapper.SysDeptMapper;
 import cn.org.starpivot.system.mapper.SysUserMapper;
+import cn.org.starpivot.system.service.DataScopeService;
 import cn.org.starpivot.system.service.SysDeptService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,7 +25,10 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 部门管理服务实现类。
@@ -37,19 +41,34 @@ import java.util.List;
 public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> implements SysDeptService {
 
     private final SysUserMapper userMapper;
+    private final DataScopeService dataScopeService;
 
     /**
-     * 查询部门树形结构。
-     * <p>{@code @Transactional(readOnly = true)} 只读事务；{@code @Cacheable} 结果缓存至 {@link CacheConstants#DEPT_TREE}。</p>
+     * 查询当前用户数据范围内的部门树。
+     * <p>缓存按用户隔离；部门变更时整表失效。</p>
      *
      * @return 按排序号排列的 {@link DeptVO} 树
      */
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
+    @Cacheable(cacheNames = CacheConstants.DEPT_TREE,
+            key = "'user:' + T(cn.org.starpivot.common.security.SecurityContextUtils).getUserId()")
     public List<DeptVO> selectDeptTree() {
         List<SysDept> depts = this.list(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDelFlag, "0"));
-        return buildDeptTree(depts, 0L);
+        List<Long> visibleDeptIds = dataScopeService.getVisibleDeptIds();
+        if (visibleDeptIds != null) {
+            if (visibleDeptIds.isEmpty()) {
+                return List.of();
+            }
+            Set<Long> visible = new HashSet<>(visibleDeptIds);
+            depts = depts.stream()
+                    .filter(dept -> dept.getDeptId() != null && visible.contains(dept.getDeptId()))
+                    .collect(Collectors.toList());
+        }
+        Set<Long> treeIds = depts.stream()
+                .map(SysDept::getDeptId)
+                .collect(Collectors.toSet());
+        return buildDeptTree(depts, 0L, treeIds);
     }
 
     /**
@@ -68,6 +87,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         if ("2".equals(dept.getDelFlag())) {
             throw new BizException(ErrorCode.DEPT_NOT_FOUND, "部门不存在");
         }
+        assertDeptInScope(deptId);
         DeptVO vo = new DeptVO();
         BeanUtils.copyProperties(dept, vo);
         return vo;
@@ -82,9 +102,11 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
      * @throws BizException 同级部门名称已存在时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean insertDept(DeptDTO deptDTO) {
+        Long parentId = deptDTO.getParentId() != null ? deptDTO.getParentId() : 0L;
+        assertParentDeptInScope(parentId);
         if (!checkDeptNameUnique(deptDTO.getDeptName(), deptDTO.getParentId(), null)) {
             throw new BizException(ErrorCode.DEPT_NAME_EXISTS, "部门名称已存在");
         }
@@ -123,7 +145,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
      * @throws BizException 部门不存在、父部门非法或名称重复时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean updateDept(DeptDTO deptDTO) {
         SysDept dept = this.getById(deptDTO.getDeptId());
@@ -131,6 +153,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         if ("2".equals(dept.getDelFlag())) {
             throw new BizException(ErrorCode.DEPT_NOT_FOUND, "部门不存在");
         }
+        assertDeptInScope(deptDTO.getDeptId());
 
         if (deptDTO.getParentId() != null && deptDTO.getParentId().equals(deptDTO.getDeptId())) {
             throw new BizException(ErrorCode.DEPT_PARENT_ERROR, "不能将父部门设置为自己的子部门");
@@ -141,6 +164,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         }
 
         if (deptDTO.getParentId() != null && !deptDTO.getParentId().equals(dept.getParentId())) {
+            assertParentDeptInScope(deptDTO.getParentId());
             SysDept newParentDept = this.getById(deptDTO.getParentId());
             if (newParentDept != null) {
                 deptDTO.setAncestors(newParentDept.getAncestors() + "," + deptDTO.getParentId());
@@ -167,7 +191,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
      * @throws BizException 存在子部门或关联用户时抛出
      */
     @Override
-    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, key = "'all'")
+    @CacheEvict(cacheNames = CacheConstants.DEPT_TREE, allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteDeptByIds(List<Long> deptIds) {
         if (deptIds == null || deptIds.isEmpty()) {
@@ -177,6 +201,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         String currentUser = SecurityContextUtils.getUsername();
 
         for (Long deptId : deptIds) {
+            assertDeptInScope(deptId);
             if (hasChildDept(deptId)) {
                 throw new BizException(ErrorCode.DEPT_HAS_CHILDREN, "部门ID " + deptId + " 存在子部门，不允许删除");
             }
@@ -250,25 +275,27 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
     }
 
     /**
-     * 递归构建部门树，并按 {@code orderNum} 排序。
+     * 递归构建部门树。父节点不在可见集合中的部门提升为根。
      *
-     * @param depts    扁平部门列表
-     * @param parentId 当前层父部门 ID
+     * @param depts      扁平部门列表（已按范围过滤）
+     * @param parentId   当前层父部门 ID，根层传 {@code 0}
+     * @param visibleIds 可见部门 ID
      * @return 子树节点列表
      */
-    private List<DeptVO> buildDeptTree(List<SysDept> depts, Long parentId) {
+    private List<DeptVO> buildDeptTree(List<SysDept> depts, Long parentId, Set<Long> visibleIds) {
         List<DeptVO> deptTree = new ArrayList<>();
 
         for (SysDept dept : depts) {
-            if (parentId.equals(dept.getParentId())) {
-                DeptVO deptVO = new DeptVO();
-                BeanUtils.copyProperties(dept, deptVO);
-
-                List<DeptVO> children = buildDeptTree(depts, dept.getDeptId());
-                deptVO.setChildren(children.isEmpty() ? null : children);
-
-                deptTree.add(deptVO);
+            if (!isNodeAtLevel(dept, parentId, visibleIds)) {
+                continue;
             }
+            DeptVO deptVO = new DeptVO();
+            BeanUtils.copyProperties(dept, deptVO);
+
+            List<DeptVO> children = buildDeptTree(depts, dept.getDeptId(), visibleIds);
+            deptVO.setChildren(children.isEmpty() ? null : children);
+
+            deptTree.add(deptVO);
         }
 
         deptTree.sort((a, b) -> {
@@ -278,6 +305,31 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         });
 
         return deptTree;
+    }
+
+    private boolean isNodeAtLevel(SysDept dept, Long parentId, Set<Long> visibleIds) {
+        Long pid = dept.getParentId() == null ? 0L : dept.getParentId();
+        if (Long.valueOf(0L).equals(parentId)) {
+            return pid == 0L || !visibleIds.contains(pid);
+        }
+        return parentId.equals(pid);
+    }
+
+    private void assertDeptInScope(Long deptId) {
+        if (!dataScopeService.isDeptAccessible(deptId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权操作数据范围外的部门");
+        }
+    }
+
+    private void assertParentDeptInScope(Long parentId) {
+        if (parentId == null || parentId == 0L) {
+            List<Long> visibleDeptIds = dataScopeService.getVisibleDeptIds();
+            if (visibleDeptIds != null) {
+                throw new BizException(ErrorCode.FORBIDDEN, "无权在数据范围外创建根部门");
+            }
+            return;
+        }
+        assertDeptInScope(parentId);
     }
 
     /**

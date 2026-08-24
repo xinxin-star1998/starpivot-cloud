@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service;
 
+import cn.org.starpivot.common.datascope.DataScopeProvider;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.entity.DataScope;
 import cn.org.starpivot.common.security.SecurityContextUtils;
@@ -11,41 +12,27 @@ import cn.org.starpivot.system.mapper.SysDeptMapper;
 import cn.org.starpivot.system.mapper.SysRoleMapper;
 import cn.org.starpivot.system.mapper.SysUserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
- * 数据权限范围服务类。
+ * 数据权限范围服务。
  * <p>
- * 根据当前登录用户的角色数据范围（全部/自定义/本部门/本部门及子部门/仅本人）
- * 计算 MyBatis 查询可用的 SQL 过滤片段，供用户列表等接口的数据隔离。
+ * 作为唯一的 {@link DataScopeProvider} 实现：多角色按并集合并，
+ * 供拦截器过滤查询，并提供写操作的目标可见性校验。
  * </p>
- * <ul>
- *   <li>{@link Slf4j} — 日志记录</li>
- *   <li>{@link Service} — Spring 服务组件</li>
- * </ul>
- *
- * @see cn.org.starpivot.common.entity.DataScope
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DataScopeService {
-
-    private static final String SQL_NONE = "EMPTY_IN";
-    private static final String SQL_ALL = "1=1";
-
-    private static final Map<String, Integer> SCOPE_PRIORITY = Map.of(
-            AppConstants.DataScope.ALL, 1,
-            AppConstants.DataScope.CUSTOM, 2,
-            AppConstants.DataScope.DEPT, 3,
-            AppConstants.DataScope.DEPT_AND_CHILD, 4,
-            AppConstants.DataScope.SELF, 5
-    );
+public class DataScopeService implements DataScopeProvider {
 
     private final SysRoleMapper roleMapper;
     private final SysUserMapper userMapper;
@@ -55,70 +42,168 @@ public class DataScopeService {
     /**
      * 计算当前登录用户的数据权限范围。
      *
-     * @return 含 SQL 过滤条件、部门 ID 集合及用户 ID 的 {@link DataScope} 对象
+     * @return 数据范围上下文；未登录时无可见数据
      */
     public DataScope getCurrentUserDataScope() {
-        Long userId = SecurityContextUtils.getUserId();
+        return resolve(SecurityContextUtils.getUserId());
+    }
+
+    /**
+     * 当前用户是否可访问目标用户（本人、全部权限、或目标部门在范围内）。
+     *
+     * @param targetUserId 目标用户 ID
+     * @return 可见返回 {@code true}
+     */
+    public boolean isTargetUserAccessible(Long targetUserId) {
+        if (targetUserId == null) {
+            return false;
+        }
+        Long currentUserId = SecurityContextUtils.getUserId();
+        if (currentUserId == null) {
+            return false;
+        }
+        if (currentUserId.equals(targetUserId)) {
+            return true;
+        }
+        DataScope scope = resolve(currentUserId);
+        if (scope.isAll()) {
+            return true;
+        }
+        SysUser target = userMapper.selectById(targetUserId);
+        if (target == null || target.getDeptId() == null) {
+            return false;
+        }
+        List<Long> deptIds = scope.getDeptIds();
+        return deptIds != null && deptIds.contains(target.getDeptId());
+    }
+
+    /**
+     * 当前用户是否可在指定部门下创建/归属数据。
+     *
+     * @param deptId 目标部门 ID
+     * @return 全部权限或部门在范围内时返回 {@code true}
+     */
+    public boolean isDeptAccessible(Long deptId) {
+        List<Long> visibleDeptIds = getVisibleDeptIds();
+        if (visibleDeptIds == null) {
+            return true;
+        }
+        return deptId != null && visibleDeptIds.contains(deptId);
+    }
+
+    /**
+     * 当前用户可见的部门 ID。
+     *
+     * @return {@code null} 表示全部部门；空列表表示没有可见部门
+     */
+    public List<Long> getVisibleDeptIds() {
+        DataScope scope = getCurrentUserDataScope();
+        if (scope.isAll()) {
+            return null;
+        }
+        Set<Long> ids = new LinkedHashSet<>();
+        if (scope.getDeptIds() != null) {
+            ids.addAll(scope.getDeptIds());
+        }
+        if (scope.isIncludeSelf() && scope.getUserDeptId() != null) {
+            ids.add(scope.getUserDeptId());
+        }
+        return new ArrayList<>(ids);
+    }
+
+    /**
+     * 当前用户可见的用户名（公告创建人、操作人、登录账号等按用户名归属的数据）。
+     *
+     * @return {@code null} 表示不限制；空列表表示没有可见数据
+     */
+    public List<String> getVisibleUserNames() {
+        DataScope scope = getCurrentUserDataScope();
+        if (scope.isAll()) {
+            return null;
+        }
+        Set<String> names = new LinkedHashSet<>();
+        String current = SecurityContextUtils.getUsername();
+        if (scope.isIncludeSelf() && current != null && !current.isBlank()) {
+            names.add(current);
+        }
+        List<Long> deptIds = scope.getDeptIds();
+        if (deptIds != null && !deptIds.isEmpty()) {
+            List<SysUser> users = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                    .select(SysUser::getUserName)
+                    .in(SysUser::getDeptId, deptIds)
+                    .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL));
+            if (users != null) {
+                for (SysUser user : users) {
+                    if (user.getUserName() != null && !user.getUserName().isBlank()) {
+                        names.add(user.getUserName());
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(names);
+    }
+
+    /**
+     * 指定用户名是否在当前数据范围内。
+     *
+     * @param username 用户名
+     * @return 全部权限或用户名在可见集合中时返回 {@code true}
+     */
+    public boolean isUserNameVisible(String username) {
+        List<String> names = getVisibleUserNames();
+        if (names == null) {
+            return true;
+        }
+        return username != null && names.contains(username);
+    }
+
+    @Override
+    public DataScope resolve(Long userId) {
         if (userId == null) {
-            return new DataScope(SQL_NONE, Collections.emptyList(), null, null);
+            return DataScope.none(null);
         }
 
         SysUser user = userMapper.selectById(userId);
         Long userDeptId = user != null ? user.getDeptId() : null;
-        List<SysRole> roleList = roleMapper.selectRolesByUserId(userId);
 
-        if (isSuperAdmin(userId, roleList)) {
-            return new DataScope(SQL_ALL, Collections.emptyList(), userId, userDeptId);
-        }
-        if (CollectionUtils.isEmpty(roleList)) {
-            return new DataScope(SQL_NONE, Collections.emptyList(), userId, userDeptId);
+        if (AppConstants.ADMIN_USER_ID.equals(userId)) {
+            return DataScope.all(userId, userDeptId);
         }
 
-        ScopeResult result = calculateDataScope(roleList, userDeptId);
-        String sqlFilter = buildSqlFilter(result.scopeType, userId, result.deptIds, userDeptId);
-        Long scopeUserDeptId = AppConstants.DataScope.SELF.equals(result.scopeType) ? null : userDeptId;
-        return new DataScope(sqlFilter, new ArrayList<>(result.deptIds), userId, scopeUserDeptId);
-    }
+        List<SysRole> roleList = roleMapper.selectRoleListByUserId(userId);
+        if (roleList == null || roleList.isEmpty()) {
+            return DataScope.none(userId, userDeptId);
+        }
 
-    private ScopeResult calculateDataScope(List<SysRole> roleList, Long userDeptId) {
-        String highestScope = AppConstants.DataScope.SELF;
-        Set<Long> deptIdSet = new HashSet<>();
+        boolean includeSelf = false;
+        Set<Long> deptIdSet = new LinkedHashSet<>();
 
         for (SysRole role : roleList) {
-            String scope = Optional.ofNullable(role.getDataScope()).map(String::trim).orElse(AppConstants.DataScope.SELF);
-            if (AppConstants.DataScope.ALL.equals(scope)) {
-                return new ScopeResult(AppConstants.DataScope.ALL, Collections.emptySet());
+            if (!AppConstants.Status.NORMAL.equals(role.getStatus())) {
+                continue;
             }
-            if (isHigherPriority(scope, highestScope)) {
-                highestScope = scope;
-                deptIdSet.clear();
-                processScope(scope, role.getRoleId(), userDeptId, deptIdSet);
-            } else if (scope.equals(highestScope) && AppConstants.DataScope.CUSTOM.equals(scope)) {
-                addCustomDeptIds(role.getRoleId(), deptIdSet);
+            if (AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey())) {
+                return DataScope.all(userId, userDeptId);
+            }
+            String scope = Optional.ofNullable(role.getDataScope())
+                    .map(String::trim)
+                    .orElse(AppConstants.DataScope.SELF);
+            switch (scope) {
+                case AppConstants.DataScope.ALL -> {
+                    return DataScope.all(userId, userDeptId);
+                }
+                case AppConstants.DataScope.CUSTOM -> addCustomDeptIds(role.getRoleId(), deptIdSet);
+                case AppConstants.DataScope.DEPT -> {
+                    if (userDeptId != null) {
+                        deptIdSet.add(userDeptId);
+                    }
+                }
+                case AppConstants.DataScope.DEPT_AND_CHILD -> deptIdSet.addAll(getDeptAndChildIds(userDeptId));
+                default -> includeSelf = true;
             }
         }
-        return new ScopeResult(highestScope, deptIdSet);
-    }
 
-    private boolean isHigherPriority(String scope1, String scope2) {
-        return SCOPE_PRIORITY.getOrDefault(scope1, 99) < SCOPE_PRIORITY.getOrDefault(scope2, 99);
-    }
-
-    private void processScope(String scope, Long roleId, Long userDeptId, Set<Long> deptIdSet) {
-        switch (scope) {
-            case AppConstants.DataScope.CUSTOM -> addCustomDeptIds(roleId, deptIdSet);
-            case AppConstants.DataScope.DEPT_AND_CHILD -> {
-                if (userDeptId != null) {
-                    deptIdSet.addAll(selectDeptIdsByParentId(userDeptId));
-                }
-            }
-            case AppConstants.DataScope.DEPT -> {
-                if (userDeptId != null) {
-                    deptIdSet.add(userDeptId);
-                }
-            }
-            default -> { }
-        }
+        return DataScope.restricted(userId, userDeptId, new ArrayList<>(deptIdSet), includeSelf);
     }
 
     private void addCustomDeptIds(Long roleId, Set<Long> deptIdSet) {
@@ -128,52 +213,25 @@ public class DataScopeService {
         }
     }
 
-    private boolean isSuperAdmin(Long userId, List<SysRole> roleList) {
-        if (!AppConstants.ADMIN_USER_ID.equals(userId)) {
-            return false;
+    /**
+     * 本部门及子孙部门。使用 {@code FIND_IN_SET(deptId, ancestors)}，避免 LIKE 误匹配。
+     */
+    private List<Long> getDeptAndChildIds(Long deptId) {
+        if (deptId == null) {
+            return List.of();
         }
-        return roleList.stream().anyMatch(role ->
-                AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey())
-                        || AppConstants.DataScope.ALL.equals(role.getDataScope()));
-    }
-
-    private String buildSqlFilter(String dataScopeType, Long userId, Set<Long> deptIdSet, Long userDeptId) {
-        return switch (dataScopeType) {
-            case AppConstants.DataScope.ALL -> SQL_ALL;
-            case AppConstants.DataScope.CUSTOM, AppConstants.DataScope.DEPT_AND_CHILD -> {
-                if (CollectionUtils.isEmpty(deptIdSet)) {
-                    yield SQL_NONE;
-                }
-                yield "u.dept_id IN (" + String.join(",", deptIdSet.stream().map(String::valueOf).toList()) + ")";
-            }
-            case AppConstants.DataScope.DEPT -> userDeptId == null ? SQL_NONE : "u.dept_id = #{param.userDeptId}";
-            case AppConstants.DataScope.SELF -> "u.user_id = #{param.userId}";
-            default -> SQL_NONE;
-        };
-    }
-
-    private Set<Long> selectDeptIdsByParentId(Long parentId) {
-        Set<Long> deptIdSet = new HashSet<>();
-        if (parentId == null) {
-            return deptIdSet;
-        }
-        deptIdSet.add(parentId);
-        collectChildrenDeptIds(parentId, deptIdSet);
-        return deptIdSet;
-    }
-
-    private void collectChildrenDeptIds(Long parentId, Set<Long> deptIdSet) {
         LambdaQueryWrapper<SysDept> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysDept::getParentId, parentId)
-                .eq(SysDept::getDelFlag, AppConstants.DelFlag.NORMAL)
-                .eq(SysDept::getStatus, AppConstants.Status.NORMAL);
-        List<SysDept> children = deptMapper.selectList(wrapper);
-        for (SysDept child : children) {
-            deptIdSet.add(child.getDeptId());
-            collectChildrenDeptIds(child.getDeptId(), deptIdSet);
+        wrapper.eq(SysDept::getStatus, AppConstants.Status.NORMAL)
+                .and(w -> w.eq(SysDept::getDeptId, deptId)
+                        .or()
+                        .apply("FIND_IN_SET({0}, ancestors)", deptId));
+        List<SysDept> depts = deptMapper.selectList(wrapper);
+        List<Long> ids = new ArrayList<>(depts.size());
+        for (SysDept dept : depts) {
+            if (dept.getDeptId() != null) {
+                ids.add(dept.getDeptId());
+            }
         }
-    }
-
-    private record ScopeResult(String scopeType, Set<Long> deptIds) {
+        return ids;
     }
 }

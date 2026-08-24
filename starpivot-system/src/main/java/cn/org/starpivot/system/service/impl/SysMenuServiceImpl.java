@@ -66,8 +66,8 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     }
 
     /**
-     * 根据用户角色与数据权限获取前端路由菜单树。
-     * <p>管理员或全部数据权限用户返回全量菜单；否则按用户授权过滤，并合并按钮权限至父节点。</p>
+     * 根据用户角色获取前端路由菜单树。
+     * <p>仅超级管理员（用户 ID 为 1 或 admin 角色）返回全量菜单；全部数据权限不扩大菜单。</p>
      * <p>{@code @Transactional(readOnly = true)} 只读事务。</p>
      *
      * @param userId 用户 ID
@@ -80,11 +80,10 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         List<SysRole> roles = sysUserService.getRolesByUserId(userId);
 
         List<SysMenu> allMenu;
-        boolean isAdmin = roles.stream().anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()));
-        boolean hasAllDataScope = roles.stream()
-                .anyMatch(role -> AppConstants.DataScope.ALL.equals(role.getDataScope()));
+        boolean isAdmin = AppConstants.ADMIN_USER_ID.equals(userId)
+                || roles.stream().anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()));
 
-        if (isAdmin || hasAllDataScope) {
+        if (isAdmin) {
             LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(SysMenu::getStatus, AppConstants.Status.NORMAL)
                     .orderByAsc(SysMenu::getOrderNum);

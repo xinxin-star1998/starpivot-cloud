@@ -5,11 +5,13 @@ import cn.org.starpivot.system.domain.bo.OperLogReqBo;
 import cn.org.starpivot.system.domain.bo.OperLogVO;
 import cn.org.starpivot.system.domain.entity.SysOperLog;
 import cn.org.starpivot.system.mapper.SysOperLogMapper;
+import cn.org.starpivot.system.service.DataScopeService;
 import cn.org.starpivot.system.service.SysOperLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -21,7 +23,10 @@ import java.util.List;
  * <p>实现 {@link SysOperLogService}，提供操作审计日志分页查询。</p>
  */
 @Service
+@RequiredArgsConstructor
 public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOperLog> implements SysOperLogService {
+
+    private final DataScopeService dataScopeService;
 
     /**
      * 分页查询操作日志，支持按标题、业务类型、操作人、状态及操作时间范围筛选。
@@ -50,6 +55,7 @@ public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOper
         if (operLogReqBo.getEndTime() != null) {
             queryWrapper.le(SysOperLog::getOperTime, operLogReqBo.getEndTime());
         }
+        applyOperNameScope(queryWrapper);
         queryWrapper.orderByDesc(SysOperLog::getOperTime);
 
         Page<SysOperLog> page = new Page<>(operLogReqBo.getPageNum(), operLogReqBo.getPageSize());
@@ -64,6 +70,18 @@ public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOper
         pageResponse.setPageSize(pageList.getSize());
         pageResponse.setPageCount(pageList.getPages());
         return pageResponse;
+    }
+
+    private void applyOperNameScope(LambdaQueryWrapper<SysOperLog> queryWrapper) {
+        List<String> visibleNames = dataScopeService.getVisibleUserNames();
+        if (visibleNames == null) {
+            return;
+        }
+        if (visibleNames.isEmpty()) {
+            queryWrapper.apply("1 = 0");
+            return;
+        }
+        queryWrapper.in(SysOperLog::getOperName, visibleNames);
     }
 
     /**

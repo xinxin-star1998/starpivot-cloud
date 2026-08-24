@@ -18,22 +18,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysNoticeVo">
-        select notice_id, notice_title, notice_type, notice_content, status, create_by, create_time, update_by, update_time, remark from sys_notice
+        select n.notice_id, n.notice_title, n.notice_type, n.notice_content, n.status,
+               n.create_by, n.create_time, n.update_by, n.update_time, n.remark
+        from sys_notice n
+        left join sys_user u on n.create_by = u.user_name and u.del_flag = '0'
     </sql>
 
     <select id="selectPageList" parameterType="cn.org.starpivot.system.domain.dto.SysNoticeQueryDTO" resultMap="SysNoticeResult">
         <include refid="selectSysNoticeVo"/>
-        <where>  
-            <if test="queryDTO.noticeTitle != null  and queryDTO.noticeTitle != ''"> and notice_title = #{queryDTO.noticeTitle}</if>
-            <if test="queryDTO.noticeType != null  and queryDTO.noticeType != ''"> and notice_type = #{queryDTO.noticeType}</if>
-            <if test="queryDTO.noticeContent != null  and queryDTO.noticeContent != ''"> and notice_content = #{queryDTO.noticeContent}</if>
-            <if test="queryDTO.status != null  and queryDTO.status != ''"> and status = #{queryDTO.status}</if>
+        <where>
+            <if test="queryDTO.noticeTitle != null  and queryDTO.noticeTitle != ''"> and n.notice_title = #{queryDTO.noticeTitle}</if>
+            <if test="queryDTO.noticeType != null  and queryDTO.noticeType != ''"> and n.notice_type = #{queryDTO.noticeType}</if>
+            <if test="queryDTO.noticeContent != null  and queryDTO.noticeContent != ''"> and n.notice_content = #{queryDTO.noticeContent}</if>
+            <if test="queryDTO.status != null  and queryDTO.status != ''"> and n.status = #{queryDTO.status}</if>
         </where>
     </select>
     
     <select id="selectSysNoticeByNoticeId" parameterType="Integer" resultMap="SysNoticeResult">
         <include refid="selectSysNoticeVo"/>
-        where notice_id = #{noticeId}
+        where n.notice_id = #{noticeId}
     </select>
 
     <insert id="insertSysNotice" parameterType="cn.org.starpivot.system.domain.entity.SysNotice" useGeneratedKeys="true" keyProperty="noticeId">

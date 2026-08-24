@@ -102,7 +102,7 @@ public class ApprovalAuthorityResolverConfiguration {
                 if (roleKeys != null && roleKeys.stream().anyMatch(AppConstants.ADMIN_ROLE_KEY::equals)) {
                     return true;
                 }
-                return permissionLoader.hasAllDataScopeRole(user.getUserId());
+                return false;
             } catch (DataAccessException ex) {
                 log.warn("Failed to resolve super-user role from system DB for userId={}", user.getUserId(), ex);
                 return false;

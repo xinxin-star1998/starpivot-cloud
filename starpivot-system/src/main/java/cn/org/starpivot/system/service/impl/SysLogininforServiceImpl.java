@@ -5,11 +5,13 @@ import cn.org.starpivot.system.domain.bo.LogininforReqBo;
 import cn.org.starpivot.system.domain.bo.LogininforVO;
 import cn.org.starpivot.system.domain.entity.SysLogininfor;
 import cn.org.starpivot.system.mapper.SysLogininforMapper;
+import cn.org.starpivot.system.service.DataScopeService;
 import cn.org.starpivot.system.service.SysLogininforService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
@@ -28,8 +30,11 @@ import java.util.Map;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class SysLogininforServiceImpl extends ServiceImpl<SysLogininforMapper, SysLogininfor>
         implements SysLogininforService {
+
+    private final DataScopeService dataScopeService;
 
     /**
      * 异步保存登录日志，失败仅记录错误不阻断主流程。
@@ -71,6 +76,7 @@ public class SysLogininforServiceImpl extends ServiceImpl<SysLogininforMapper, S
         if (logininforReqBo.getEndTime() != null) {
             queryWrapper.le(SysLogininfor::getLoginTime, logininforReqBo.getEndTime());
         }
+        applyUserNameScope(queryWrapper);
         queryWrapper.orderByDesc(SysLogininfor::getLoginTime);
 
         Page<SysLogininfor> page = new Page<>(logininforReqBo.getPageNum(), logininforReqBo.getPageSize());
@@ -85,6 +91,18 @@ public class SysLogininforServiceImpl extends ServiceImpl<SysLogininforMapper, S
         pageResponse.setPageSize(pageList.getSize());
         pageResponse.setPageCount(pageList.getPages());
         return pageResponse;
+    }
+
+    private void applyUserNameScope(LambdaQueryWrapper<SysLogininfor> queryWrapper) {
+        List<String> visibleNames = dataScopeService.getVisibleUserNames();
+        if (visibleNames == null) {
+            return;
+        }
+        if (visibleNames.isEmpty()) {
+            queryWrapper.apply("1 = 0");
+            return;
+        }
+        queryWrapper.in(SysLogininfor::getUserName, visibleNames);
     }
 
     /**

@@ -127,7 +127,7 @@
     roleId: 0,
     roleName: '',
     roleKey: '',
-    dataScope: '1', // 默认全部数据权限
+    dataScope: '5', // 默认仅本人数据权限
     deptIds: [] as number[]
   })
 
@@ -337,14 +337,14 @@
             roleId: props.roleData.roleId || 0,
             roleName: props.roleData.roleName || '',
             roleKey: props.roleData.roleKey || '',
-            dataScope: props.roleData.dataScope || '1'
+            dataScope: props.roleData.dataScope || '5'
           })
         } else {
           Object.assign(form, {
             roleId: 0,
             roleName: '',
             roleKey: '',
-            dataScope: '1'
+            dataScope: '5'
           })
         }
         // 重置状态

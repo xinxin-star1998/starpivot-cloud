@@ -119,9 +119,6 @@ public class SysUserController {
     @PreAuthorize("hasAuthority('system:user:update') or @sysUserService.canUpdateUser(#userDTO.userId)")
     @PostMapping("/update")
     public Result<Void> updateUser(@Valid @RequestBody UserDTO userDTO) {
-        if (!sysUserService.canUpdateUser(userDTO.getUserId())) {
-            return Result.error("无权修改该用户信息");
-        }
         return sysUserService.updateUser(userDTO) ? Result.success("修改用户成功", null) : Result.error("修改用户失败");
     }
 

@@ -85,8 +85,6 @@ public class AuthorityLoaderService {
         if (roles == null || roles.isEmpty()) {
             return false;
         }
-        return roles.stream().anyMatch(role ->
-                AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey())
-                        || AppConstants.DataScope.ALL.equals(role.getDataScope()));
+        return roles.stream().anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()));
     }
 }

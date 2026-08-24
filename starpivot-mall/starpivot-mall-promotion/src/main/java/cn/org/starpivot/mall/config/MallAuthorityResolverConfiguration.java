@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * 商城服务权限解析：后台用户走菜单 perms；C 端会员仅使用 JWT 角色。
  * <p>
- * 超级管理员判定与 system 模块 {@code AuthorityLoaderService} 对齐（JWT + 库内角色 + 全部数据权限）。
+ * 超级管理员判定与 system 模块 {@code AuthorityLoaderService} 对齐（JWT + 库内 admin 角色，不含全部数据权限）。
  * </p>
  */
 @Configuration
@@ -111,7 +111,7 @@ public class MallAuthorityResolverConfiguration {
                 if (roleKeys != null && roleKeys.stream().anyMatch(AppConstants.ADMIN_ROLE_KEY::equals)) {
                     return true;
                 }
-                return permissionLoader.hasAllDataScopeRole(user.getUserId());
+                return false;
             } catch (DataAccessException ex) {
                 log.warn("Failed to resolve super-user role from system DB for userId={}", user.getUserId(), ex);
                 return false;

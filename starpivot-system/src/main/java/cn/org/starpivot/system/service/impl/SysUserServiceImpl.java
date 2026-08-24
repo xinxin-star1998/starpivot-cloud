@@ -5,7 +5,6 @@ import cn.org.starpivot.api.system.dto.RegisterUserResponse;
 import cn.org.starpivot.api.system.dto.SysUserAuthDto;
 import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.entity.AppConstants;
-import cn.org.starpivot.common.entity.DataScope;
 import cn.org.starpivot.common.entity.PageResponse;
 import cn.org.starpivot.common.excel.ExcelImportResult;
 import cn.org.starpivot.common.exception.BizException;
@@ -98,7 +97,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     /**
-     * 获取用户可访问的菜单列表（含管理员与全部数据权限兜底）。
+     * 获取用户可访问的菜单列表。
+     * <p>仅超级管理员（用户 ID 为 1 或 admin 角色）返回全量菜单；全部数据权限不扩大菜单。</p>
      *
      * @param userId 用户 ID
      * @return 菜单列表
@@ -106,12 +106,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     @Cacheable(cacheNames = CacheConstants.USER_MENUS, key = "'all:' + #userId")
     public List<SysMenu> getUserMenus(Long userId) {
-        List<SysRole> roles = getRolesByUserId(userId);
-        boolean isAdmin = roles != null && roles.stream()
-                .anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()));
-        boolean hasAllDataScope = roles != null && roles.stream()
-                .anyMatch(role -> AppConstants.DataScope.ALL.equals(role.getDataScope()));
-        if (isAdmin || hasAllDataScope) {
+        if (isSuperAdmin(userId)) {
             return sysUserMapper.selectAllActiveMenus();
         }
         return sysUserMapper.selectMenusByUserId(userId);
@@ -128,7 +123,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Transactional(readOnly = true)
     public PageResponse<UserVO> pageList(UserReqBo userReqBo) {
         Page<SysUser> page = new Page<>(userReqBo.getPageNum(), userReqBo.getPageSize());
-        Map<String, Object> param = buildDataScopeParam();
+        Map<String, Object> param = new HashMap<>();
         param.put("userReqBo", userReqBo);
         IPage<SysUser> pageList = sysUserMapper.selectPageList(page, param);
         List<UserVO> voList = userVOAssembler.convertToVOList(pageList.getRecords());
@@ -201,6 +196,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Transactional(rollbackFor = Exception.class)
     public boolean addUser(UserDTO userDTO) {
         AssertUtils.isNull(getUserByUsername(userDTO.getUserName()), ErrorCode.USER_USERNAME_EXISTS);
+        assertDeptInDataScope(userDTO.getDeptId());
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(userDTO, sysUser);
         sysUser.setUserType("00");
@@ -233,7 +229,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Transactional(readOnly = true)
     public UserVO selectByUserId(Long userId) {
         SysUser user = this.getById(userId);
-        return user == null ? null : userVOAssembler.convertToVO(user);
+        if (user == null) {
+            return null;
+        }
+        if (!dataScopeService.isTargetUserAccessible(userId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权查看该用户");
+        }
+        return userVOAssembler.convertToVO(user);
     }
 
     /**
@@ -255,6 +257,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         if (!canFullUpdateUser(userDTO.getUserId())) {
             return updateSelfProfile(user, userDTO);
+        }
+        if (userDTO.getDeptId() != null) {
+            assertDeptInDataScope(userDTO.getDeptId());
         }
 
         SysUser existUser = getUserByUsername(userDTO.getUserName());
@@ -295,7 +300,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (isCurrentUserSuperAdmin()) {
             return true;
         }
-        return SecurityContextUtils.hasAuthority("system:user:update");
+        if (!SecurityContextUtils.hasAuthority("system:user:update")) {
+            return false;
+        }
+        return dataScopeService.isTargetUserAccessible(targetUserId);
     }
 
     /**
@@ -338,6 +346,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
             throw new BizException(ErrorCode.USER_NOT_FOUND, "用户不存在");
         }
+        if (!dataScopeService.isTargetUserAccessible(userId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权修改该用户状态");
+        }
         user.setStatus(status);
         user.setUpdateBy(SecurityContextUtils.getUsername());
         user.setUpdateTime(LocalDateTime.now());
@@ -358,6 +369,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         SysUser user = this.getById(userId);
         if (user == null || AppConstants.DelFlag.DELETE.equals(user.getDelFlag())) {
             throw new BizException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        if (!dataScopeService.isTargetUserAccessible(userId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权重置该用户密码");
         }
         user.setPassword(securityUtils.encryptPassword(password));
         user.setPwdUpdateDate(LocalDateTime.now());
@@ -500,15 +514,27 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      */
     @Override
     public boolean isCurrentUserSuperAdmin() {
-        Long currentUserId = SecurityContextUtils.getUserId();
-        if (currentUserId == null) {
+        return isSuperAdmin(SecurityContextUtils.getUserId());
+    }
+
+    private boolean isSuperAdmin(Long userId) {
+        if (userId == null) {
             return false;
         }
-        if (AppConstants.ADMIN_USER_ID.equals(currentUserId)) {
+        if (AppConstants.ADMIN_USER_ID.equals(userId)) {
             return true;
         }
-        List<SysRole> roles = getRolesByUserId(currentUserId);
+        List<SysRole> roles = getRolesByUserId(userId);
         return roles != null && roles.stream().anyMatch(role -> AppConstants.ADMIN_ROLE_KEY.equals(role.getRoleKey()));
+    }
+
+    private void assertDeptInDataScope(Long deptId) {
+        if (isCurrentUserSuperAdmin()) {
+            return;
+        }
+        if (!dataScopeService.isDeptAccessible(deptId)) {
+            throw new BizException(ErrorCode.FORBIDDEN, "只能在数据权限范围内的部门下操作用户");
+        }
     }
 
     /**
@@ -542,6 +568,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             if (userId.equals(currentUserId)) {
                 return "不能删除当前登录用户";
             }
+            if (!dataScopeService.isTargetUserAccessible(userId)) {
+                return "无权删除数据范围外的用户";
+            }
         }
         return null;
     }
@@ -557,6 +586,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         Long currentUserId = SecurityContextUtils.getUserId();
         if (currentUserId != null && currentUserId.equals(targetUserId)) {
             return "不能重置当前登录用户密码";
+        }
+        if (!dataScopeService.isTargetUserAccessible(targetUserId)) {
+            return "无权重置该用户密码";
         }
         return null;
     }
@@ -574,22 +606,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     /**
-     * 构建含当前用户数据权限的 Mapper 查询参数。
-     *
-     * @return 含 dataScope、deptIds、userDeptId、userId 的参数 Map
-     */
-    private Map<String, Object> buildDataScopeParam() {
-        DataScope dataScope = dataScopeService.getCurrentUserDataScope();
-        Map<String, Object> param = new HashMap<>();
-        param.put("dataScope", dataScope);
-        param.put("deptIds", dataScope.getDeptIds());
-        param.put("userDeptId", dataScope.getUserDeptId());
-        param.put("userId", dataScope.getUserId());
-        return param;
-    }
-
-    /**
-     * 带数据权限的分页查询通用入口。
+     * 带数据权限的分页查询通用入口（过滤由 {@code @DataPermission} 拦截器追加）。
      *
      * @param bo    角色分配查询条件
      * @param query Mapper 分页查询函数
@@ -597,7 +614,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      */
     private PageResponse<SysUser> queryPageWithDataScope(AssignUserReqBo bo,
                                                          BiFunction<Page<SysUser>, Map<String, Object>, IPage<SysUser>> query) {
-        Map<String, Object> param = buildDataScopeParam();
+        Map<String, Object> param = new HashMap<>();
         param.put("assignUserReqBo", bo);
         Page<SysUser> page = new Page<>(bo.getPageNum(), bo.getPageSize());
         IPage<SysUser> result = query.apply(page, param);

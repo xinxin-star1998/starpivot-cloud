@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.mapper;
 
+import cn.org.starpivot.common.annotation.DataPermission;
 import cn.org.starpivot.system.domain.dto.SysNoticeQueryDTO;
 import cn.org.starpivot.system.domain.entity.SysNotice;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -16,11 +17,12 @@ import org.apache.ibatis.annotations.Param;
 public interface SysNoticeMapper extends BaseMapper<SysNotice>
 {
     /**
-     * 分页查询通知公告列表
-     * 
+     * 分页查询通知公告列表（按创建人所属部门数据范围过滤）。
+     *
      * @param page 分页参数
      * @param queryDTO 查询条件
      * @return 分页结果
      */
+    @DataPermission(deptAlias = "u.dept_id", userAlias = "u.user_id")
     IPage<SysNotice> selectPageList(Page<SysNotice> page, @Param("queryDTO") SysNoticeQueryDTO queryDTO);
 }
