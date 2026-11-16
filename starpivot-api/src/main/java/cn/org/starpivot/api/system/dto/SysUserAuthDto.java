@@ -53,4 +53,6 @@ public class SysUserAuthDto implements Serializable {
     private String sex;
     /** 创建时间 */
     private String createTime;
+    /** 登录后需修改密码的原因（INIT_PASSWORD / PASSWORD_EXPIRED），为空表示无需修改 */
+    private String passwordModifyReason;
 }

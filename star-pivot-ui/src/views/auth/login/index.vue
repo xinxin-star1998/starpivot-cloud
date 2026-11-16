@@ -121,7 +121,7 @@
   import { HttpError } from '@/utils/http/error'
   import { fetchLogin } from '@/api/auth'
   import { isRegisterEnabled } from '@/utils/auth/register-config'
-  import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
+  import { ElMessageBox, ElNotification, type FormInstance, type FormRules } from 'element-plus'
   import { logger } from '@/utils/sys/logger'
   import { useCaptcha, useCommon } from '@/hooks'
   import { useRoute, useRouter } from 'vue-router'
@@ -214,7 +214,8 @@
         refreshToken,
         username: returnedUsername,
         nickname,
-        deviceSessionId
+        deviceSessionId,
+        passwordModifyReason
       } = response
 
       // 验证token
@@ -254,6 +255,10 @@
 
       // 保存登录信息到本地存储
       saveLoginInfo()
+
+      if (passwordModifyReason) {
+        await promptChangePassword(passwordModifyReason)
+      }
 
       // 获取 redirect 参数，如果存在且不是登录页或根路径则跳转到指定页面，否则跳转到首页
       const redirect = route.query.redirect as string
@@ -317,6 +322,25 @@
       }
     } catch (error) {
       console.error('Failed to save login info:', error)
+    }
+  }
+
+  // 密码策略提示：初始密码或密码过期时引导用户修改密码
+  const promptChangePassword = async (reason?: string) => {
+    const message =
+      reason === 'PASSWORD_EXPIRED'
+        ? '您的密码已过期，请尽快修改密码。'
+        : '您正在使用初始密码登录，请尽快修改密码。'
+
+    try {
+      await ElMessageBox.confirm(message, '安全提示', {
+        confirmButtonText: '去修改',
+        cancelButtonText: '稍后',
+        type: 'warning'
+      })
+      await router.push({ path: '/system/user-center', query: { tab: 'password' } })
+    } catch {
+      // 用户选择稍后
     }
   }
 

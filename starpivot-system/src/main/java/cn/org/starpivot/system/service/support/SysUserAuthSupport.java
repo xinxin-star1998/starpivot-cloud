@@ -6,7 +6,9 @@ import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.security.SecurityUtils;
 import cn.org.starpivot.system.domain.entity.SysRole;
 import cn.org.starpivot.system.domain.entity.SysUser;
+import cn.org.starpivot.system.domain.vo.PasswordModifyHint;
 import cn.org.starpivot.system.mapper.SysUserMapper;
+import cn.org.starpivot.system.service.impl.PasswordPolicyService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ public class SysUserAuthSupport {
 
     private final SysUserMapper sysUserMapper;
     private final SecurityUtils securityUtils;
+    private final PasswordPolicyService passwordPolicyService;
 
     public SysUser findActiveUserByUsername(String username) {
         return sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
@@ -44,7 +47,12 @@ public class SysUserAuthSupport {
         if (!securityUtils.matchesPassword(rawPassword, user.getPassword())) {
             return null;
         }
-        return toAuthDto(user);
+        SysUserAuthDto dto = toAuthDto(user);
+        PasswordModifyHint hint = passwordPolicyService.evaluate(user);
+        if (hint.isRequired()) {
+            dto.setPasswordModifyReason(hint.getReason());
+        }
+        return dto;
     }
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

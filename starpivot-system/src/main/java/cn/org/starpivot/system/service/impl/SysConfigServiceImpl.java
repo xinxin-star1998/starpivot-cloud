@@ -188,6 +188,37 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
         return "true".equalsIgnoreCase(StringUtils.trimWhitespace(selectConfigValueByKey(SysConfigKeys.FORGET_PASSWORD)));
     }
 
+    @Override
+    public String getInitPassword() {
+        return selectConfigValueByKey(SysConfigKeys.USER_INIT_PASSWORD);
+    }
+
+    @Override
+    public int getInitPasswordModifyPolicy() {
+        return parseIntConfig(selectConfigValueByKey(SysConfigKeys.ACCOUNT_INIT_PASSWORD_MODIFY),
+                SysConfigKeys.DEFAULT_INIT_PASSWORD_MODIFY);
+    }
+
+    @Override
+    public int getPasswordValidateDays() {
+        return parseIntConfig(selectConfigValueByKey(SysConfigKeys.ACCOUNT_PASSWORD_VALIDATE_DAYS),
+                SysConfigKeys.DEFAULT_PASSWORD_VALIDATE_DAYS);
+    }
+
+    /**
+     * 解析整型配置值，非法或为空时返回默认值。
+     */
+    private int parseIntConfig(String value, int defaultValue) {
+        if (!StringUtils.hasText(value)) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
     /**
      * 将 {@link SysConfig} 实体转换为 {@link SysConfigVO}。
      *

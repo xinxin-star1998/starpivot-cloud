@@ -43,4 +43,25 @@ public interface SysConfigService extends IService<SysConfig> {
 
     /** 判断系统是否开放忘记密码。 */
     boolean isForgetPasswordEnabled();
+
+    /**
+     * 获取账号初始密码（sys.user.initPassword）。
+     *
+     * @return 初始密码明文，未配置时返回 {@code null}
+     */
+    String getInitPassword();
+
+    /**
+     * 获取初始密码修改策略（sys.account.initPasswordModify）。
+     *
+     * @return {@code 1} 表示登录时需提醒修改初始密码
+     */
+    int getInitPasswordModifyPolicy();
+
+    /**
+     * 获取密码有效期天数（sys.account.passwordValidateDays）。
+     *
+     * @return 有效天数；{@code 0} 或负数表示不限制
+     */
+    int getPasswordValidateDays();
 }

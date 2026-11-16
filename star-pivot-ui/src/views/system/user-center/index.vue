@@ -409,6 +409,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router'
   import { useUserStore } from '@/store/modules/user'
   import {
     fetchGetAvatarPresignedUrl,
@@ -452,7 +453,9 @@
   const userInfo = computed(() => userStore.getUserInfo)
 
   const loading = ref(false)
-  const activeTab = ref('basic')
+  // 支持通过 ?tab=password 等参数定位页签（如登录后引导修改密码）
+  const route = useRoute()
+  const activeTab = ref(typeof route.query.tab === 'string' && route.query.tab ? route.query.tab : 'basic')
 
   /**
    * 用户详情数据

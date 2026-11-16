@@ -93,6 +93,7 @@ public class AuthService {
                     .nickname(userDto.getNickName() != null ? userDto.getNickName() : userDto.getUsername())
                     .expiresIn(jwtProperties.getExpire() / 1000)
                     .deviceSessionId(session.getSessionId())
+                    .passwordModifyReason(userDto.getPasswordModifyReason())
                     .build();
         } catch (BizException ex) {
             throw ex;

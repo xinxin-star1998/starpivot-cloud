@@ -93,6 +93,8 @@ declare namespace Api {
       refreshToken?: string
       /** 当前设备会话ID，用于会话管理 */
       deviceSessionId?: string
+      /** 需修改密码原因：INIT_PASSWORD / PASSWORD_EXPIRED，为空表示无需修改 */
+      passwordModifyReason?: string
     }
 
     /** 用户信息 */

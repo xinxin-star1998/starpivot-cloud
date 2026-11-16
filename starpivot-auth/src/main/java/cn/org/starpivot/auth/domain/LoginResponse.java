@@ -43,4 +43,8 @@ public class LoginResponse {
     /** 设备会话 ID，用于用户中心会话管理 */
     @Schema(description = "设备会话 ID")
     private String deviceSessionId;
+
+    /** 登录后需修改密码的原因（INIT_PASSWORD / PASSWORD_EXPIRED），为空表示无需修改 */
+    @Schema(description = "需修改密码的原因，为空表示无需修改")
+    private String passwordModifyReason;
 }
