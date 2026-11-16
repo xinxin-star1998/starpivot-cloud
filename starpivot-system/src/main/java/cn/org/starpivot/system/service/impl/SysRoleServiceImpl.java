@@ -203,6 +203,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
                 insertRoleMenus(roleDTO.getRoleId(), roleDTO.getMenuIds());
             }
         }
+        if (success) {
+            dataScopeService.evictAllDataScope();
+        }
         return success;
     }
 
@@ -257,6 +260,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
         if (!toUpdate.isEmpty()) {
             this.updateBatchById(toUpdate);
+            dataScopeService.evictAllDataScope();
         }
         return true;
     }
@@ -291,7 +295,11 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         role.setUpdateBy(currentUser);
         role.setUpdateTime(LocalDateTime.now());
 
-        return this.updateById(role);
+        boolean success = this.updateById(role);
+        if (success) {
+            dataScopeService.evictAllDataScope();
+        }
+        return success;
     }
 
     /**
@@ -368,6 +376,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
             userRoles.add(userRole);
         }
         userRoleMapper.insertBatchUserRoles(userRoles);
+        userRoleDTO.getUserIds().forEach(dataScopeService::evictUserDataScope);
         return true;
     }
 
@@ -379,7 +388,11 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
      */
     @Override
     public boolean cancelUser(UserRole userRole) {
-        return userRoleMapper.deleteByRoleIdAndUserId(userRole.getRoleId(), userRole.getUserId());
+        boolean success = userRoleMapper.deleteByRoleIdAndUserId(userRole.getRoleId(), userRole.getUserId());
+        if (success) {
+            dataScopeService.evictUserDataScope(userRole.getUserId());
+        }
+        return success;
     }
 
     /**
@@ -421,6 +434,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         }
 
         userPermissionCacheService.clearAllUserPermissionCache();
+        dataScopeService.evictAllDataScope();
         return true;
     }
 

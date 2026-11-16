@@ -133,7 +133,11 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         dept.setCreateBy(currentUser);
         dept.setCreateTime(LocalDateTime.now());
 
-        return this.save(dept);
+        boolean success = this.save(dept);
+        if (success) {
+            dataScopeService.evictAllDataScope();
+        }
+        return success;
     }
 
     /**
@@ -179,7 +183,11 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
         dept.setUpdateBy(currentUser);
         dept.setUpdateTime(LocalDateTime.now());
 
-        return this.updateById(dept);
+        boolean success = this.updateById(dept);
+        if (success) {
+            dataScopeService.evictAllDataScope();
+        }
+        return success;
     }
 
     /**
@@ -217,6 +225,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
                 this.updateById(dept);
             }
         }
+        dataScopeService.evictAllDataScope();
         return true;
     }
 

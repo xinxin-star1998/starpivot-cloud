@@ -273,6 +273,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         boolean success = this.updateById(user);
 
         if (success) {
+            dataScopeService.evictUserDataScope(userDTO.getUserId());
             if (userDTO.getRoleIds() != null) {
                 userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userDTO.getUserId()));
                 if (!userDTO.getRoleIds().isEmpty()) {
@@ -433,12 +434,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (userIds == null || userIds.isEmpty()) {
             return false;
         }
-        return this.update(new LambdaUpdateWrapper<SysUser>()
+        boolean success = this.update(new LambdaUpdateWrapper<SysUser>()
                 .in(SysUser::getUserId, userIds)
                 .eq(SysUser::getDelFlag, AppConstants.DelFlag.NORMAL)
                 .set(SysUser::getDelFlag, AppConstants.DelFlag.DELETE)
                 .set(SysUser::getUpdateBy, SecurityContextUtils.getUsername())
                 .set(SysUser::getUpdateTime, LocalDateTime.now()));
+        if (success) {
+            userIds.forEach(dataScopeService::evictUserDataScope);
+        }
+        return success;
     }
 
     /**

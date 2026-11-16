@@ -1,5 +1,6 @@
 package cn.org.starpivot.system.service;
 
+import cn.org.starpivot.common.cache.CacheConstants;
 import cn.org.starpivot.common.datascope.DataScopeProvider;
 import cn.org.starpivot.common.entity.AppConstants;
 import cn.org.starpivot.common.entity.DataScope;
@@ -14,9 +15,13 @@ import cn.org.starpivot.system.mapper.SysUserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +43,7 @@ public class DataScopeService implements DataScopeProvider {
     private final SysUserMapper userMapper;
     private final SysDeptMapper deptMapper;
     private final RoleDeptMapper roleDeptMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 计算当前登录用户的数据权限范围。
@@ -162,7 +168,71 @@ public class DataScopeService implements DataScopeProvider {
         if (userId == null) {
             return DataScope.none(null);
         }
+        String cacheKey = CacheConstants.dataScopeKey(userId);
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached instanceof DataScope scope) {
+                return scope;
+            }
+        } catch (Exception e) {
+            // 缓存异常不影响业务，回退实时计算
+            log.warn("读取数据权限缓存失败，回退实时计算, userId: {}", userId, e);
+        }
+        DataScope scope = computeDataScope(userId);
+        try {
+            redisTemplate.opsForValue().set(cacheKey, scope, CacheConstants.TTL_DATA_SCOPE);
+        } catch (Exception e) {
+            log.warn("写入数据权限缓存失败, userId: {}", userId, e);
+        }
+        return scope;
+    }
 
+    /**
+     * 失效单个用户的数据权限缓存（用户所属角色、所属部门变更时调用）。
+     *
+     * @param userId 用户 ID
+     */
+    public void evictUserDataScope(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        try {
+            redisTemplate.delete(CacheConstants.dataScopeKey(userId));
+        } catch (Exception e) {
+            log.warn("失效用户数据权限缓存失败, userId: {}", userId, e);
+        }
+    }
+
+    /**
+     * 失效所有用户的数据权限缓存（角色数据范围/角色-部门关系、部门树变更时调用）。
+     */
+    public void evictAllDataScope() {
+        try {
+            Set<String> keys = scanKeys(CacheConstants.dataScopePattern());
+            if (!keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
+        } catch (Exception e) {
+            log.warn("失效全部数据权限缓存失败", e);
+        }
+    }
+
+    private Set<String> scanKeys(String pattern) {
+        Set<String> keys = new HashSet<>();
+        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(100).build();
+        try (Cursor<String> cursor = redisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                keys.add(cursor.next());
+            }
+        }
+        return keys;
+    }
+
+    /**
+     * 计算指定用户的数据权限范围（不走缓存）。角色数据范围、角色-部门关系、部门树变更后
+     * 通过 {@link #evictUserDataScope(Long)} / {@link #evictAllDataScope()} 主动失效。
+     */
+    private DataScope computeDataScope(Long userId) {
         SysUser user = userMapper.selectById(userId);
         Long userDeptId = user != null ? user.getDeptId() : null;
 

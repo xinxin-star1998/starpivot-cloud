@@ -51,6 +51,8 @@ public final class CacheConstants {
     public static final String USER_ROLES = "user_roles";
     /** 用户菜单列表（Spring Cache） */
     public static final String USER_MENUS = "user_menus";
+    /** 数据权限范围 */
+    public static final String DATA_SCOPE = "data_scope";
 
     // ── login_tokens 子类型 ─────────────────────────────────────────────
 
@@ -71,6 +73,7 @@ public final class CacheConstants {
     public static final Duration TTL_USER_ROLES = Duration.ofMinutes(15);
     public static final Duration TTL_USER_MENUS = Duration.ofMinutes(15);
     public static final Duration TTL_DASHBOARD = Duration.ofMinutes(5);
+    public static final Duration TTL_DATA_SCOPE = Duration.ofMinutes(5);
 
     // ── 键构建 ──────────────────────────────────────────────────────────
 
@@ -112,6 +115,14 @@ public final class CacheConstants {
 
     public static String userPermissionPattern() {
         return USER_PERMISSIONS + ":*";
+    }
+
+    public static String dataScopeKey(Long userId) {
+        return DATA_SCOPE + ":" + userId;
+    }
+
+    public static String dataScopePattern() {
+        return DATA_SCOPE + ":*";
     }
 
     public static String gatewayRateLimitKey(String ruleId, String clientKey) {
@@ -160,6 +171,7 @@ public final class CacheConstants {
         REMARKS.put(GENERATOR_SESSION, "代码生成会话");
         REMARKS.put(USER_ROLES, "用户角色");
         REMARKS.put(USER_MENUS, "用户菜单");
+        REMARKS.put(DATA_SCOPE, "数据权限");
     }
 
     /** 监控页固定展示的缓存分组（顺序与若依一致，并扩展项目自有分组） */
@@ -179,7 +191,8 @@ public final class CacheConstants {
                 DASHBOARD,
                 GENERATOR_SESSION,
                 USER_ROLES,
-                USER_MENUS
+                USER_MENUS,
+                DATA_SCOPE
         );
     }
 
