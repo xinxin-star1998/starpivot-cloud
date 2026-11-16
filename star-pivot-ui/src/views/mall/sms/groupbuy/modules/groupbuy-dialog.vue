@@ -30,16 +30,36 @@
         />
       </ElFormItem>
       <ElFormItem label="成团人数" prop="groupSize">
-        <ElInputNumber v-model="formData.groupSize" :min="2" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.groupSize"
+          :min="2"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="活动库存" prop="stockCount">
-        <ElInputNumber v-model="formData.stockCount" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.stockCount"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="每人限购">
-        <ElInputNumber v-model="formData.limitBuy" :min="1" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.limitBuy"
+          :min="1"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
       <ElFormItem label="成团有效期">
-        <ElInputNumber v-model="formData.validHours" :min="1" controls-position="right" style="width: 100%">
+        <ElInputNumber
+          v-model="formData.validHours"
+          :min="1"
+          controls-position="right"
+          style="width: 100%"
+        >
           <template #append>小时</template>
         </ElInputNumber>
       </ElFormItem>
@@ -60,7 +80,12 @@
         </ElRadioGroup>
       </ElFormItem>
       <ElFormItem label="排序">
-        <ElInputNumber v-model="formData.sort" :min="0" controls-position="right" style="width: 100%" />
+        <ElInputNumber
+          v-model="formData.sort"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
       </ElFormItem>
     </ElForm>
     <template #footer>

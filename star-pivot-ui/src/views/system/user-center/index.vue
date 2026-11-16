@@ -455,7 +455,9 @@
   const loading = ref(false)
   // 支持通过 ?tab=password 等参数定位页签（如登录后引导修改密码）
   const route = useRoute()
-  const activeTab = ref(typeof route.query.tab === 'string' && route.query.tab ? route.query.tab : 'basic')
+  const activeTab = ref(
+    typeof route.query.tab === 'string' && route.query.tab ? route.query.tab : 'basic'
+  )
 
   /**
    * 用户详情数据

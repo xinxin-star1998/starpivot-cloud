@@ -176,11 +176,7 @@
                 <span
                   v-if="queryRouterEnabled"
                   class="rounded-md px-2 py-0.5 text-[11px]"
-                  :class="
-                    usingManualRoute
-                      ? 'bg-g-200/80 text-g-600'
-                      : 'bg-theme/10 text-theme'
-                  "
+                  :class="usingManualRoute ? 'bg-g-200/80 text-g-600' : 'bg-theme/10 text-theme'"
                 >
                   {{ usingManualRoute ? '手动' : '自动' }}
                 </span>
@@ -197,10 +193,7 @@
                 {{ advancedRouteOpen ? '收起' : '高级' }}
               </ElButton>
             </div>
-            <div
-              v-if="usingManualRoute"
-              class="mb-2 flex flex-wrap items-center gap-2"
-            >
+            <div v-if="usingManualRoute" class="mb-2 flex flex-wrap items-center gap-2">
               <template v-if="showSceneSelector">
                 <span class="shrink-0 text-xs text-g-500">场景</span>
                 <ElSelect
@@ -372,12 +365,8 @@
   const showSceneSelector = computed(
     () => queryRouterEnabled.value || promptSceneOptions.value.length > 1
   )
-  const canShowAdvancedRoute = computed(
-    () => showModelSelector.value || showSceneSelector.value
-  )
-  const usingManualRoute = computed(
-    () => advancedRouteOpen.value && canShowAdvancedRoute.value
-  )
+  const canShowAdvancedRoute = computed(() => showModelSelector.value || showSceneSelector.value)
+  const usingManualRoute = computed(() => advancedRouteOpen.value && canShowAdvancedRoute.value)
   const routePayload = computed(() => {
     if (usingManualRoute.value) {
       return {

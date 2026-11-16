@@ -64,7 +64,10 @@
 
   defineOptions({ name: 'SmsGroupBuyActivity' })
 
-  const searchForm = ref({ title: undefined as string | undefined, status: undefined as number | undefined })
+  const searchForm = ref({
+    title: undefined as string | undefined,
+    status: undefined as number | undefined
+  })
   const dialogVisible = ref(false)
   const dialogType = ref<DialogType>('add')
   const currentId = ref<number>()

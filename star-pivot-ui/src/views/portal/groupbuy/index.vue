@@ -10,7 +10,9 @@
             <div class="activity-card__cover">
               <img :src="coverUrls.get(item.skuImg || '') || placeholderImg" :alt="item.title" />
               <span v-if="item.state === 'upcoming'" class="activity-card__badge">即将开始</span>
-              <span v-else-if="item.state === 'ended'" class="activity-card__badge ended">已结束</span>
+              <span v-else-if="item.state === 'ended'" class="activity-card__badge ended"
+                >已结束</span
+              >
             </div>
             <div class="activity-card__body">
               <p class="activity-card__title">{{ item.title || item.skuName }}</p>
@@ -28,7 +30,13 @@
                 :disabled="item.state !== 'ongoing' || (item.remainStock ?? 0) <= 0"
                 @click="openDetail(item)"
               >
-                {{ (item.remainStock ?? 0) <= 0 ? '已拼完' : item.state === 'upcoming' ? '未开始' : '去拼团' }}
+                {{
+                  (item.remainStock ?? 0) <= 0
+                    ? '已拼完'
+                    : item.state === 'upcoming'
+                      ? '未开始'
+                      : '去拼团'
+                }}
               </ElButton>
             </div>
           </div>
@@ -39,7 +47,10 @@
       <ElTabPane label="我的拼团" name="mine">
         <div v-if="myGroups.length" class="record-list">
           <div v-for="record in myGroups" :key="record.id" class="record-item">
-            <img :src="coverUrls.get(record.skuImg || '') || placeholderImg" :alt="record.skuName" />
+            <img
+              :src="coverUrls.get(record.skuImg || '') || placeholderImg"
+              :alt="record.skuName"
+            />
             <div class="record-item__main">
               <p class="record-item__title">{{ record.title || record.skuName }}</p>
               <p class="record-item__meta">
@@ -70,10 +81,18 @@
       </ElTabPane>
     </ElTabs>
 
-    <ElDialog v-model="detailVisible" :title="detail?.activity?.title || '拼团详情'" width="640px" destroy-on-close>
+    <ElDialog
+      v-model="detailVisible"
+      :title="detail?.activity?.title || '拼团详情'"
+      width="640px"
+      destroy-on-close
+    >
       <div v-if="detail?.activity" class="detail">
         <div class="detail__head">
-          <img :src="coverUrls.get(detail.activity.skuImg || '') || placeholderImg" :alt="detail.activity.skuName" />
+          <img
+            :src="coverUrls.get(detail.activity.skuImg || '') || placeholderImg"
+            :alt="detail.activity.skuName"
+          />
           <div class="detail__info">
             <p class="detail__name">{{ detail.activity.skuName }}</p>
             <p class="detail__price">拼团价 ¥{{ formatPrice(detail.activity.groupPrice) }}</p>
@@ -92,7 +111,9 @@
                 还差 {{ group.remainCount }} 人成团 · 剩余 {{ formatRemain(group.remainSeconds) }}
               </p>
             </div>
-            <ElButton type="primary" size="small" @click="openOrderDialog(group.groupNo)">去参团</ElButton>
+            <ElButton type="primary" size="small" @click="openOrderDialog(group.groupNo)"
+              >去参团</ElButton
+            >
           </div>
         </div>
         <ElEmpty v-else description="暂无进行中的团，快来开团吧" :image-size="60" />
@@ -106,7 +127,12 @@
     <ElDialog v-model="orderVisible" title="确认拼团" width="480px" destroy-on-close>
       <ElForm label-width="80px">
         <ElFormItem label="数量">
-          <ElInputNumber v-model="orderQuantity" :min="1" :max="maxQuantity" :disabled="submitting" />
+          <ElInputNumber
+            v-model="orderQuantity"
+            :min="1"
+            :max="maxQuantity"
+            :disabled="submitting"
+          />
         </ElFormItem>
         <ElFormItem label="收货地址">
           <ElSelect v-model="selectedAddressId" placeholder="选择地址" style="width: 100%">
