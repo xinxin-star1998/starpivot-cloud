@@ -73,6 +73,11 @@ public class PortalOrderController {
     @PostMapping("/submit")
     @PreAuthorize("hasAuthority('" + PortalConstants.MEMBER_ROLE + "')")
     public Result<PortalOrderSubmitVo> submit(@Valid @RequestBody PortalOrderSubmitBo bo) {
+        // 活动价只能由营销模块内部下单链路写入，C 端请求一律忽略，避免价格篡改
+        bo.setActivityType(null);
+        bo.setActivityId(null);
+        bo.setActivityRecordId(null);
+        bo.setActivityPrice(null);
         return Result.success(portalOrderService.submit(PortalMemberContext.requireMemberId(), bo));
     }
 

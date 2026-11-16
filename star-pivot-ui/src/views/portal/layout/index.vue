@@ -50,6 +50,9 @@
       links: [
         { label: '商城首页', action: () => router.push('/portal') },
         { label: '商品搜索', action: () => router.push('/portal/search') },
+        { label: '限时秒杀', action: () => router.push('/portal/seckill') },
+        { label: '拼团优惠', action: () => router.push('/portal/groupbuy') },
+        { label: '砍价免费拿', action: () => router.push('/portal/bargain') },
         { label: '优惠券', action: () => router.push('/portal/coupons') },
         { label: '我的订单', action: () => router.push('/portal/orders') }
       ]

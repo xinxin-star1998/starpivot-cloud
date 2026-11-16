@@ -134,6 +134,18 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         meta: { title: '限时秒杀', isHideTab: true }
       },
       {
+        path: 'groupbuy',
+        name: 'PortalGroupBuy',
+        component: () => import('@views/portal/groupbuy/index.vue'),
+        meta: { title: '拼团优惠', isHideTab: true }
+      },
+      {
+        path: 'bargain',
+        name: 'PortalBargain',
+        component: () => import('@views/portal/bargain/index.vue'),
+        meta: { title: '砍价免费拿', isHideTab: true }
+      },
+      {
         path: 'account',
         name: 'PortalAccount',
         component: () => import('@views/portal/account/index.vue'),

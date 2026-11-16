@@ -120,7 +120,12 @@ public class PortalOrderServiceImpl implements PortalOrderService {
         }
 
         PortalOrderPricingResult pricing = portalOrderPricingService.calculate(
-                memberId, orderItems, bo.getCouponHistoryId(), bo.getUseIntegration(), true);
+                memberId,
+                orderItems,
+                bo.getActivityType() != null ? null : bo.getCouponHistoryId(),
+                bo.getUseIntegration(),
+                true,
+                bo.getActivityPrice());
 
         String orderSn = portalOrderAssembler.generateOrderSn();
         LocalDateTime now = LocalDateTime.now();

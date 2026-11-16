@@ -123,6 +123,10 @@ public class OrderInternalService {
         bo.setCouponHistoryId(request.getCouponHistoryId());
         bo.setUseIntegration(request.getUseIntegration());
         bo.setOrderToken(request.getOrderToken());
+        bo.setActivityType(request.getActivityType());
+        bo.setActivityId(request.getActivityId());
+        bo.setActivityRecordId(request.getActivityRecordId());
+        bo.setActivityPrice(request.getActivityPrice());
         if (request.getItems() != null) {
             bo.setItems(request.getItems().stream().map(i -> {
                 PortalOrderItemBo item = new PortalOrderItemBo();

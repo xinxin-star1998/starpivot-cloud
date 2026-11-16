@@ -2,7 +2,9 @@ package cn.org.starpivot.mall.mq;
 
 import cn.org.starpivot.api.event.MqQueueNames;
 import cn.org.starpivot.api.mall.order.dto.OrderPaidFollowupMessage;
+import cn.org.starpivot.mall.portal.service.PortalBargainService;
 import cn.org.starpivot.mall.portal.service.PortalCouponService;
+import cn.org.starpivot.mall.portal.service.PortalGroupBuyService;
 import cn.org.starpivot.mq.config.RabbitListenerConfiguration;
 import cn.org.starpivot.mq.core.MessageEnvelope;
 import cn.org.starpivot.mq.core.MqMessageConverter;
@@ -19,7 +21,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * 消费订单支付成功事件，异步确认优惠券核销。
+ * 消费订单支付成功事件，异步确认优惠券核销并推进拼团/砍价状态。
  */
 @Slf4j
 @Component
@@ -28,11 +30,19 @@ public class MallPromotionOrderPaidMqListener extends AbstractMqListener<OrderPa
 
     private final PortalCouponService portalCouponService;
 
+    private final PortalGroupBuyService portalGroupBuyService;
+
+    private final PortalBargainService portalBargainService;
+
     public MallPromotionOrderPaidMqListener(MqMessageConverter messageConverter,
                                             ObjectProvider<IdempotentChecker> idempotentCheckerProvider,
-                                            PortalCouponService portalCouponService) {
+                                            PortalCouponService portalCouponService,
+                                            PortalGroupBuyService portalGroupBuyService,
+                                            PortalBargainService portalBargainService) {
         super(messageConverter, idempotentCheckerProvider);
         this.portalCouponService = portalCouponService;
+        this.portalGroupBuyService = portalGroupBuyService;
+        this.portalBargainService = portalBargainService;
     }
 
     @RabbitListener(
@@ -57,5 +67,7 @@ public class MallPromotionOrderPaidMqListener extends AbstractMqListener<OrderPa
             return;
         }
         portalCouponService.confirmUsed(message.getOrderId());
+        portalGroupBuyService.onOrderPaid(message.getOrderId());
+        portalBargainService.onOrderPaid(message.getOrderId());
     }
 }

@@ -58,7 +58,8 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
                 items,
                 bo.getCouponHistoryId(),
                 bo.getUseIntegration(),
-                false);
+                false,
+                null);
         return toTrialVo(memberId, result);
     }
 
@@ -69,9 +70,16 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
             List<PortalOrderItemBo> orderItems,
             Long couponHistoryId,
             Integer useIntegration,
-            boolean validateIntegration) {
+            boolean validateIntegration,
+            BigDecimal activityPrice) {
         if (CollectionUtils.isEmpty(orderItems)) {
             throw new BizException("下单商品不能为空");
+        }
+        if (activityPrice != null && activityPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BizException("活动成交价必须大于0");
+        }
+        if (activityPrice != null && orderItems.size() > 1) {
+            throw new BizException("活动订单仅支持单个商品");
         }
 
         MemberDto member = requireMember(memberId);
@@ -97,13 +105,17 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
             }
             int qty = itemBo.getQuantity() == null || itemBo.getQuantity() <= 0 ? 1 : itemBo.getQuantity();
             BigDecimal originalUnit = money(sku.getPrice());
-            BigDecimal unitPrice = resolveUnitPrice(
-                    sku, seckillPriceMap.get(itemBo.getSkuId()), memberPriceMap.get(itemBo.getSkuId()), level);
+            BigDecimal unitPrice = activityPrice != null
+                    ? money(activityPrice)
+                    : resolveUnitPrice(
+                            sku, seckillPriceMap.get(itemBo.getSkuId()), memberPriceMap.get(itemBo.getSkuId()), level);
 
             BigDecimal lineOriginal = money(originalUnit.multiply(BigDecimal.valueOf(qty)));
             BigDecimal lineAfterUnitPromo = money(unitPrice.multiply(BigDecimal.valueOf(qty)));
-            BigDecimal lineAmount = applyLadderAndFullReduction(
-                    itemBo.getSkuId(), qty, unitPrice, lineAfterUnitPromo, ladderMap, fullReductionMap);
+            BigDecimal lineAmount = activityPrice != null
+                    ? lineAfterUnitPromo
+                    : applyLadderAndFullReduction(
+                            itemBo.getSkuId(), qty, unitPrice, lineAfterUnitPromo, ladderMap, fullReductionMap);
 
             BigDecimal linePromotion = money(lineOriginal.subtract(lineAmount).max(BigDecimal.ZERO));
 
@@ -124,7 +136,7 @@ public class PortalOrderPricingServiceImpl implements PortalOrderPricingService 
         BigDecimal merchandiseAmount = money(originalAmount.subtract(promotionAmount).max(BigDecimal.ZERO));
 
         CouponCalculateResultDto couponResult =
-                promotionFeignSupport.calculateCoupon(memberId, couponHistoryId, orderItems);
+                promotionFeignSupport.calculateCoupon(memberId, activityPrice != null ? null : couponHistoryId, orderItems);
         BigDecimal couponAmount = money(couponResult.getDiscountAmount() == null ? BigDecimal.ZERO : couponResult.getDiscountAmount());
         Long couponId = couponResult.getCouponId();
 

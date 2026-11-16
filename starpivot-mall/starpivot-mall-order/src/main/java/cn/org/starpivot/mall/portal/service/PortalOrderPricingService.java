@@ -4,6 +4,7 @@ import cn.org.starpivot.mall.portal.domain.bo.PortalOrderItemBo;
 import cn.org.starpivot.mall.portal.domain.bo.PortalOrderPriceTrialBo;
 import cn.org.starpivot.mall.portal.domain.vo.PortalOrderPriceTrialVo;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -18,12 +19,14 @@ public interface PortalOrderPricingService {
      * 下单计价（与 submit 共用逻辑）。
      *
      * @param validateIntegration true 时校验积分余额并抛业务异常
+     * @param activityPrice       活动成交单价；非空时覆盖普通计价且不叠加优惠券/满减/阶梯价
      */
     PortalOrderPricingResult calculate(
             Long memberId,
             List<PortalOrderItemBo> orderItems,
             Long couponHistoryId,
             Integer useIntegration,
-            boolean validateIntegration);
+            boolean validateIntegration,
+            BigDecimal activityPrice);
 
 }

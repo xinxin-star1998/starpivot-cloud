@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -63,4 +64,16 @@ public class PortalOrderSubmitBo {
     /** 下单防重令牌（GET /portal/order/submit-token 获取） */
     @NotBlank(message = "订单提交令牌不能为空")
     private String orderToken;
+
+    /** 活动类型：1拼团 2砍价，非活动订单为空 */
+    private Integer activityType;
+
+    /** 活动 ID */
+    private Long activityId;
+
+    /** 活动参与记录 ID */
+    private Long activityRecordId;
+
+    /** 活动成交单价，非空时覆盖普通计价（不参与优惠券/满减/阶梯价） */
+    private BigDecimal activityPrice;
 }

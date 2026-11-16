@@ -34,6 +34,10 @@ public class OrderPortalFeignSupport {
         request.setCouponHistoryId(bo.getCouponHistoryId());
         request.setUseIntegration(bo.getUseIntegration());
         request.setOrderToken(bo.getOrderToken());
+        request.setActivityType(bo.getActivityType());
+        request.setActivityId(bo.getActivityId());
+        request.setActivityRecordId(bo.getActivityRecordId());
+        request.setActivityPrice(bo.getActivityPrice());
         if (bo.getItems() != null) {
             request.setItems(bo.getItems().stream().map(this::toTrialItem).toList());
         }
