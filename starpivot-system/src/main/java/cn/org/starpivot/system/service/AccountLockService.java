@@ -14,6 +14,12 @@ import org.springframework.stereotype.Service;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -95,6 +101,34 @@ public class AccountLockService {
         String lockKey = CacheConstants.accountLockKey(username);
         Boolean exists = redisTemplate.hasKey(lockKey);
         return Boolean.TRUE.equals(exists);
+    }
+
+    /**
+     * 批量检查哪些账户处于锁定状态（一次 multiGet 代替循环内逐个 hasKey）。
+     *
+     * @param usernames 用户名集合
+     * @return 已锁定的用户名集合
+     */
+    public Set<String> findLockedUsernames(Collection<String> usernames) {
+        if (usernames == null || usernames.isEmpty()) {
+            return Collections.emptySet();
+        }
+        List<String> distinctNames = usernames.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (distinctNames.isEmpty()) {
+            return Collections.emptySet();
+        }
+        List<String> keys = distinctNames.stream().map(CacheConstants::accountLockKey).toList();
+        List<Object> values = redisTemplate.opsForValue().multiGet(keys);
+        Set<String> lockedNames = new HashSet<>();
+        for (int i = 0; i < distinctNames.size(); i++) {
+            if (values != null && values.get(i) != null) {
+                lockedNames.add(distinctNames.get(i));
+            }
+        }
+        return lockedNames;
     }
 
     /**

@@ -67,8 +67,11 @@ public class UserVOAssembler {
             voList.add(convertToVO(user, deptNameMap, userRolesMap, userPostIdsMap, postNameMap));
         }
         if (accountLockService != null) {
+            // 一次 multiGet 批量查询锁定状态，代替逐用户 hasKey
+            Set<String> lockedUsernames = accountLockService.findLockedUsernames(
+                    voList.stream().map(UserVO::getUserName).collect(Collectors.toList()));
             for (UserVO vo : voList) {
-                vo.setIsLocked(vo.getUserName() != null && accountLockService.isAccountLocked(vo.getUserName()));
+                vo.setIsLocked(vo.getUserName() != null && lockedUsernames.contains(vo.getUserName()));
             }
         }
         return voList;

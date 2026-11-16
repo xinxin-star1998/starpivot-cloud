@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 菜单管理服务实现类。
@@ -197,18 +198,28 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
             return false;
         }
 
-        for (Long menuId : menuIds) {
-            LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(SysMenu::getParentId, menuId);
-            if (this.count(wrapper) > 0) {
-                throw new BizException(ErrorCode.MENU_HAS_CHILDREN, "菜单ID " + menuId + " 存在子菜单，不允许删除");
-            }
+        // 批量校验子菜单：一次 IN 查询代替循环内逐条 count
+        List<SysMenu> children = this.list(new LambdaQueryWrapper<SysMenu>()
+                .select(SysMenu::getParentId)
+                .in(SysMenu::getParentId, menuIds));
+        if (!children.isEmpty()) {
+            Map<Long, Long> childCountByParent = children.stream()
+                    .collect(Collectors.groupingBy(SysMenu::getParentId, Collectors.counting()));
+            Long blockedMenuId = children.get(0).getParentId();
+            log.warn("存在子菜单，不允许删除: menuId={}, 子菜单数量={}", blockedMenuId, childCountByParent.get(blockedMenuId));
+            throw new BizException(ErrorCode.MENU_HAS_CHILDREN, "菜单ID " + blockedMenuId + " 存在子菜单，不允许删除");
+        }
 
-            LambdaQueryWrapper<RoleMenu> roleMenuWrapper = new LambdaQueryWrapper<>();
-            roleMenuWrapper.eq(RoleMenu::getMenuId, menuId);
-            if (roleMenuMapper.selectCount(roleMenuWrapper) > 0) {
-                throw new BizException(ErrorCode.MENU_USED_BY_ROLE, "菜单ID " + menuId + " 已被角色使用，不允许删除");
-            }
+        // 批量校验角色引用：一次 IN 查询代替循环内逐条 selectCount
+        List<RoleMenu> roleMenus = roleMenuMapper.selectList(new LambdaQueryWrapper<RoleMenu>()
+                .select(RoleMenu::getMenuId)
+                .in(RoleMenu::getMenuId, menuIds));
+        if (!roleMenus.isEmpty()) {
+            Map<Long, Long> roleCountByMenu = roleMenus.stream()
+                    .collect(Collectors.groupingBy(RoleMenu::getMenuId, Collectors.counting()));
+            Long blockedMenuId = roleMenus.get(0).getMenuId();
+            log.warn("菜单已被角色使用，不允许删除: menuId={}, 使用角色数量={}", blockedMenuId, roleCountByMenu.get(blockedMenuId));
+            throw new BizException(ErrorCode.MENU_USED_BY_ROLE, "菜单ID " + blockedMenuId + " 已被角色使用，不允许删除");
         }
 
         boolean result = this.removeByIds(menuIds);
