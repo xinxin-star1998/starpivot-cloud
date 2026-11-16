@@ -57,6 +57,8 @@
         <wechatpay-java.version>0.2.16</wechatpay-java.version>
         <aliyun-dypnsapi.version>1.2.3</aliyun-dypnsapi.version>
         <spring-ai.version>1.1.8</spring-ai.version>
+        <!-- Redisson 分布式协调（锁/限流），3.52.0 起 starter 自带匹配 Spring Boot 3.5 的 redisson-spring-data-35 -->
+        <redisson.version>3.52.0</redisson.version>
     </properties>
 
     <dependencyManagement>
@@ -286,6 +288,13 @@
                 <groupId>io.github.linpeilie</groupId>
                 <artifactId>mapstruct-plus-spring-boot-starter</artifactId>
                 <version>${mapstruct-plus.version}</version>
+            </dependency>
+
+            <!-- ========== Redisson ========== -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
             </dependency>
 
             <!-- ========== 内部自定义模块（示例，后续新增业务模块都在这里声明） ========== -->

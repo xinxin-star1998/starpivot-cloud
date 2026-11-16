@@ -5,16 +5,17 @@ import cn.org.starpivot.mall.config.MallSeckillProperties;
 import cn.org.starpivot.mall.portal.PortalConstants;
 import cn.org.starpivot.mall.portal.service.PortalSeckillRateLimitService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.redisson.api.RRateLimiter;
+import org.redisson.api.RateIntervalUnit;
+import org.redisson.api.RateType;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
 public class PortalSeckillRateLimitServiceImpl implements PortalSeckillRateLimitService {
 
-    private final StringRedisTemplate stringRedisTemplate;
+    private final RedissonClient redissonClient;
     private final MallSeckillProperties mallSeckillProperties;
 
     @Override
@@ -23,12 +24,10 @@ public class PortalSeckillRateLimitServiceImpl implements PortalSeckillRateLimit
             throw new BizException("请先登录");
         }
         int max = Math.max(1, mallSeckillProperties.getMaxRequestsPerSecond());
-        String key = PortalConstants.seckillRateKey(memberId);
-        Long count = stringRedisTemplate.opsForValue().increment(key);
-        if (count != null && count == 1L) {
-            stringRedisTemplate.expire(key, Duration.ofSeconds(1));
-        }
-        if (count != null && count > max) {
+        RRateLimiter rateLimiter = redissonClient.getRateLimiter(PortalConstants.seckillRateKey(memberId));
+        // 仅首次初始化速率；修改配置后需删除对应 key 生效
+        rateLimiter.trySetRate(RateType.OVERALL, max, 1, RateIntervalUnit.SECONDS);
+        if (!rateLimiter.tryAcquire()) {
             throw new BizException("操作过于频繁，请稍后再试");
         }
     }
