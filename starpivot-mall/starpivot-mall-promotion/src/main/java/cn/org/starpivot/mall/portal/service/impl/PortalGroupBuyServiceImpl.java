@@ -213,7 +213,7 @@ public class PortalGroupBuyServiceImpl implements PortalGroupBuyService {
         List<Long> activityIds = records.stream().map(SmsGroupBuyRecord::getActivityId).distinct().toList();
         Map<Long, SmsGroupBuyActivity> activityMap = smsGroupBuyActivityMapper.selectBatchIds(activityIds).stream()
                 .collect(Collectors.toMap(SmsGroupBuyActivity::getId, item -> item, (a, b) -> a));
-        List<Long> groupNos = records.stream().map(SmsGroupBuyRecord::getGroupNo).distinct().toList();
+        List<String> groupNos = records.stream().map(SmsGroupBuyRecord::getGroupNo).distinct().toList();
         Map<String, Long> joinedMap = smsGroupBuyRecordMapper.selectList(Wrappers.<SmsGroupBuyRecord>lambdaQuery()
                         .in(SmsGroupBuyRecord::getGroupNo, groupNos)
                         .in(SmsGroupBuyRecord::getStatus,
