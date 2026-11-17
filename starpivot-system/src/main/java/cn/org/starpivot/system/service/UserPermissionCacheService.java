@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +52,7 @@ public class UserPermissionCacheService {
         if (userId == null) {
             return;
         }
-        redisTemplate.delete(cacheKey(userId));
+        evictAfterCommit(() -> redisTemplate.delete(cacheKey(userId)));
     }
 
     /** @deprecated 请使用 {@link #clearUserPermissionCacheByUserId(Long)} */
@@ -63,10 +65,26 @@ public class UserPermissionCacheService {
      * 清除全部用户权限缓存（按 Redis Key 模式 SCAN 批量删除）。
      */
     public void clearAllUserPermissionCache() {
-        Set<String> keys = scanKeys(CacheConstants.userPermissionPattern());
-        if (!keys.isEmpty()) {
-            redisTemplate.delete(keys);
+        evictAfterCommit(() -> {
+            Set<String> keys = scanKeys(CacheConstants.userPermissionPattern());
+            if (!keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
+        });
+    }
+
+    private void evictAfterCommit(Runnable eviction) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()
+                && TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    eviction.run();
+                }
+            });
+            return;
         }
+        eviction.run();
     }
 
     private Set<String> scanKeys(String pattern) {

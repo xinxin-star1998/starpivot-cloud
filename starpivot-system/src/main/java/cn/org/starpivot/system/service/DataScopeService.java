@@ -19,6 +19,8 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -196,25 +198,43 @@ public class DataScopeService implements DataScopeProvider {
         if (userId == null) {
             return;
         }
-        try {
-            redisTemplate.delete(CacheConstants.dataScopeKey(userId));
-        } catch (Exception e) {
-            log.warn("失效用户数据权限缓存失败, userId: {}", userId, e);
-        }
+        evictAfterCommit(() -> {
+            try {
+                redisTemplate.delete(CacheConstants.dataScopeKey(userId));
+            } catch (Exception e) {
+                log.warn("失效用户数据权限缓存失败, userId: {}", userId, e);
+            }
+        });
     }
 
     /**
      * 失效所有用户的数据权限缓存（角色数据范围/角色-部门关系、部门树变更时调用）。
      */
     public void evictAllDataScope() {
-        try {
-            Set<String> keys = scanKeys(CacheConstants.dataScopePattern());
-            if (!keys.isEmpty()) {
-                redisTemplate.delete(keys);
+        evictAfterCommit(() -> {
+            try {
+                Set<String> keys = scanKeys(CacheConstants.dataScopePattern());
+                if (!keys.isEmpty()) {
+                    redisTemplate.delete(keys);
+                }
+            } catch (Exception e) {
+                log.warn("失效全部数据权限缓存失败", e);
             }
-        } catch (Exception e) {
-            log.warn("失效全部数据权限缓存失败", e);
+        });
+    }
+
+    private void evictAfterCommit(Runnable eviction) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()
+                && TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    eviction.run();
+                }
+            });
+            return;
         }
+        eviction.run();
     }
 
     private Set<String> scanKeys(String pattern) {

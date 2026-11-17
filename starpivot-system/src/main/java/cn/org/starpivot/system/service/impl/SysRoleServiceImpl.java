@@ -376,7 +376,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
             userRoles.add(userRole);
         }
         userRoleMapper.insertBatchUserRoles(userRoles);
-        userRoleDTO.getUserIds().forEach(dataScopeService::evictUserDataScope);
+        // 角色变更后在事务提交时失效受影响用户的权限缓存与数据权限缓存，避免等待 TTL 过期
+        userRoleDTO.getUserIds().forEach(this::evictUserPermissionCaches);
         return true;
     }
 
@@ -390,9 +391,23 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     public boolean cancelUser(UserRole userRole) {
         boolean success = userRoleMapper.deleteByRoleIdAndUserId(userRole.getRoleId(), userRole.getUserId());
         if (success) {
-            dataScopeService.evictUserDataScope(userRole.getUserId());
+            evictUserPermissionCaches(userRole.getUserId());
         }
         return success;
+    }
+
+    /**
+     * 失效指定用户的权限缓存与数据权限缓存。
+     * <p>角色-用户关系变更后调用，避免用户继续以旧权限访问直到缓存 TTL 过期。</p>
+     *
+     * @param userId 受影响的用户 ID
+     */
+    private void evictUserPermissionCaches(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        userPermissionCacheService.clearUserPermissionCacheByUserId(userId);
+        dataScopeService.evictUserDataScope(userId);
     }
 
     /**
